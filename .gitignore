@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# pnpm (optional; uncomment if you use a local store)
+# .pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+.turbo/
+.vercel/
+
+# Testing / coverage
+coverage/
+
+# Environment — never commit secrets (keep *.example committed)
+.env
+.env.*
+!.env.example
+!.env*.example
+
+# Logs & debug
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Studio — gesamten Ordnerinhalt ausschließen (Anpassung nach erstem Commit möglich)
+studio/**
+!studio/.gitkeep
+
+# TypeScript
+*.tsbuildinfo

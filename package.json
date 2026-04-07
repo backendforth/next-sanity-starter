@@ -1,0 +1,23 @@
+{
+  "name": "next-sanity-boilerplate",
+  "version": "1.0.0",
+  "description": "Next and Sanity Boilerplate",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --stream -r run dev",
+    "studio:dev": "pnpm --filter studio run dev",
+    "build": "pnpm --stream -r run build",
+    "studio:build": "pnpm --filter studio run build",
+    "studio:deploy": "pnpm --filter studio run deploy",
+    "studio:generate": "pnpm --filter studio run generate",
+    "update": "pnpm up --stream -r",
+    "studio:update": "pnpm up --filter studio"
+  },
+  "author": "backendforth",
+  "license": "ISC",
+  "pnpm": {
+    "overrides": {
+      "magicast": "^0.3.5"
+    }
+  }
+}

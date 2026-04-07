@@ -1,5 +1,5 @@
 # Dependencies
-node_modules/
+node\_modules/
 
 # Build outputs (Next, bundlers, etc.)
 .next/
@@ -10,10 +10,10 @@ out/
 # Environment (never commit secrets)
 .env
 .env.local
-.env.*.local
+.env.\*.local
 
 # Logs
-*.log
+\*.log
 
 # OS
-.DS_Store
+.DS\_Store

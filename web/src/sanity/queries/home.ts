@@ -1,7 +1,9 @@
+import { modulesFieldGroq } from "./modulesProjection";
+
 export const homeQuery = `*[_id == "home"][0]{
   _id,
   title,
-  modules,
+  ${modulesFieldGroq},
   seo {
     title,
     description,

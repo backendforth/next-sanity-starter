@@ -1,12 +1,10 @@
 import { cache } from "react";
 import { client } from "@/src/sanity/client";
+import type { StackModule } from "@/src/sanity/types/modules";
 import type { IntlStringEntry } from "@/src/sanity/localizedString";
 import { homeQuery } from "@/src/sanity/queries";
 
-export type HomeModule = {
-  _type?: string;
-  _key?: string;
-};
+export type HomeModule = StackModule;
 
 export type HomeDocument = {
   _id: string;

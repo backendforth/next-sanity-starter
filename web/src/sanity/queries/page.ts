@@ -1,8 +1,10 @@
+import { modulesFieldGroq } from "./modulesProjection";
+
 export const pageBySlugQuery = `*[_type == "page" && slug.current == $slug][0]{
   _id,
   title,
   slug,
-  modules,
+  ${modulesFieldGroq},
   seo {
     title,
     description,

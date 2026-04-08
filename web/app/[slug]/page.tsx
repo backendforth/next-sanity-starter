@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { client } from "@/src/sanity/client";
+import { ModuleStack } from "@/components/modules/ModuleStack";
+import type { StackModule } from "@/src/sanity/types/modules";
 import {
   pickLocalizedString,
   type IntlStringEntry,
 } from "@/src/sanity/localizedString";
-import { moduleLabel } from "@/src/sanity/moduleLabel";
 import { pageBySlugQuery, pageSlugsQuery } from "@/src/sanity/queries";
 
 type PageSeo = {
@@ -14,10 +15,7 @@ type PageSeo = {
   imageUrl?: string | null;
 } | null;
 
-type PageModule = {
-  _type?: string;
-  _key?: string;
-};
+type PageModule = StackModule;
 
 type PageDocument = {
   _id: string;
@@ -96,13 +94,7 @@ export default async function Page({ params }: PageProps) {
             <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               Modules
             </h2>
-            <ol className="list-decimal space-y-2 pl-5 text-zinc-700 dark:text-zinc-300">
-              {modules.map((mod) => (
-                <li key={mod._key ?? mod._type}>
-                  {moduleLabel(mod._type)}
-                </li>
-              ))}
-            </ol>
+            <ModuleStack modules={modules} />
           </section>
         ) : (
           <p className="text-zinc-600 dark:text-zinc-400">

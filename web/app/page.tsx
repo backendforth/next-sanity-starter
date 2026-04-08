@@ -1,6 +1,6 @@
+import { ModuleStack } from "@/components/modules/ModuleStack";
 import { getHome } from "@/src/sanity/getHome";
 import { pickLocalizedString } from "@/src/sanity/localizedString";
-import { moduleLabel } from "@/src/sanity/moduleLabel";
 
 export default async function Home() {
   const home = await getHome();
@@ -37,13 +37,7 @@ export default async function Home() {
             <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               Modules
             </h2>
-            <ol className="list-decimal space-y-2 pl-5 text-zinc-700 dark:text-zinc-300">
-              {modules.map((mod) => (
-                <li key={mod._key ?? mod._type}>
-                  {moduleLabel(mod._type)}
-                </li>
-              ))}
-            </ol>
+            <ModuleStack modules={modules} />
           </section>
         ) : (
           <p className="text-zinc-600 dark:text-zinc-400">

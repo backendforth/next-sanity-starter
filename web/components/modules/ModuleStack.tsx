@@ -20,10 +20,10 @@ export function ModuleStack({ modules, locale = "en" }: ModuleStackProps) {
         return (
           <div
             key={key}
-            className="rounded-lg border border-dashed border-zinc-300 px-4 py-3 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+            className="rounded-lg border border-dashed border-borderSubtle px-4 py-3 text-sm text-textMuted"
           >
-            <span className="font-medium text-zinc-600 dark:text-zinc-300">{moduleLabel(mod._type)}</span>
-            <span className="block text-xs text-zinc-400 dark:text-zinc-500">
+            <span className="font-medium text-textColor">{moduleLabel(mod._type)}</span>
+            <span className="block text-xs text-grey">
               No frontend renderer for this module type yet.
             </span>
           </div>

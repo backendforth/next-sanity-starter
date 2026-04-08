@@ -1,0 +1,76 @@
+/* Primitive + semantic color tokens (referenced from tailwind.config.ts). */
+
+:root {
+  color-scheme: light;
+
+  --white: #ffffff;
+  --black: #0a0a0a;
+  --grey: #a1a1aa;
+
+  --red: #dc2626;
+  --orange: #ea580c;
+  --yellow: #ca8a04;
+  --darkBlue: #1e3a8a;
+  --lightBlue: #38bdf8;
+  --pink: #ec4899;
+  --coral: #fb7185;
+  --raspberry: #be123c;
+  --rose: #f43f5e;
+
+  --brandColor: #18181b;
+  --accentColor: #3b82f6;
+
+  --textColor: #18181b;
+  --textMuted: #52525b;
+  --headingColor: #18181b;
+
+  --linkColor: var(--red);
+  --hoverColor: #991b1b;
+  --activeColor: var(--bluepressed);
+  --bluepressed: #1e40af;
+
+  --bgColor: #ffffff;
+  --surfaceMuted: #fafafa;
+  --borderSubtle: #e4e4e7;
+
+  --linkDecoration: var(--grey);
+  --linkDecorationHover: #71717a;
+
+  --codeBg: #e4e4e7;
+  --codeText: #27272a;
+
+  --errorColor: #dc2626;
+  --successColor: #16a34a;
+  --dangerColor: #b91c1c;
+
+  /* Aliases used by layout / legacy */
+  --background: var(--bgColor);
+  --foreground: var(--textColor);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --grey: #71717a;
+
+  --brandColor: #fafafa;
+  --textColor: #fafafa;
+  --textMuted: #a1a1aa;
+  --headingColor: #fafafa;
+
+  --linkColor: #f87171;
+  --hoverColor: #fca5a5;
+
+  --bgColor: #0a0a0a;
+  --surfaceMuted: #000000;
+  --borderSubtle: #27272a;
+
+  --linkDecoration: #71717a;
+  --linkDecorationHover: #a1a1aa;
+
+  --codeBg: #27272a;
+  --codeText: #e4e4e7;
+
+  --background: var(--bgColor);
+  --foreground: var(--textColor);
+}

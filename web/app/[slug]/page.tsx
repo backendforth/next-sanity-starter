@@ -78,26 +78,26 @@ export default async function Page({ params }: PageProps) {
   const modules = doc.modules ?? [];
 
   return (
-    <div className="flex flex-col flex-1 bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex flex-col flex-1 bg-surfaceMuted font-sans dark:bg-bgColor">
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16 sm:px-8">
         <header className="flex flex-col gap-2">
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-3xl font-semibold tracking-tight text-headingColor">
             {heading}
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-textMuted">
             /{doc.slug?.current ?? slug}
           </p>
         </header>
 
         {modules.length > 0 ? (
           <section className="flex flex-col gap-4">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-textMuted">
               Modules
             </h2>
             <ModuleStack modules={modules} />
           </section>
         ) : (
-          <p className="text-zinc-600 dark:text-zinc-400">
+          <p className="text-textMuted">
             No modules on this page yet. Add modules in Sanity Studio.
           </p>
         )}

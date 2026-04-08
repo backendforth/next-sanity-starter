@@ -54,7 +54,16 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
 
-## 7. Content modules (`module.*`)
+## 7. Shared media objects (`media.*`)
+
+Reusable **`type: "object"`** types for image and Mux video live under **`objects/media/`**:
+
+- **`media.image`** — image (hotspot) and optional caption.
+- **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption.
+
+They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
+
+## 8. Content modules (`module.*`)
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
@@ -78,11 +87,26 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 `richTextMedia` and `documentModuleTypes` should expose the **same** set of `module.*` types unless you intentionally restrict a module to only one context (unusual). If they drift, editors will see different insert options in the body vs. the **Modules** field.
 
-## 8. Mux / media
+### Module overview
 
-Video fields use types provided by **`sanity-plugin-mux-input`** (e.g. `mux.video`). The plugin is already registered in **`sanity.config.ts`**; your object schema only references the field `type`. See **`schemas/objects/modules/media.ts`**.
+| Module | Role |
+|--------|------|
+| `module.media` | Image or Mux video via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) depending on `type`. |
+| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). |
+| `module.contentRefs` | Optional heading; **`allowMultiple`** toggles single **`reference`** vs **`references`** array to **`PAGE_REFERENCES`** (same as internal links). |
+| `module.text` | Title + rich text body. |
 
-## 9. Initial value templates (optional)
+**Breaking change (JSON / GROQ):** Legacy `module.media` stored `image`, `video`, `videoSettings`, and `caption` at the root. Current data nests these under **`imageContent`** and **`videoContent`** (caption lives on the nested `media.image` / `media.video` objects). Update queries and front-end mapping accordingly, or migrate old documents.
+
+### Internal page references
+
+`module.contentRefs` uses **`PAGE_REFERENCES`** in **`schemas/constants/references.ts`**. To allow more routable singletons in the picker, extend that list and follow the presentation/routing notes in section 4.
+
+## 9. Mux / media
+
+Video fields use types provided by **`sanity-plugin-mux-input`** (e.g. `mux.video`). The plugin is already registered in **`sanity.config.ts`**; your object schema only references the field `type`. **`module.media`** and **`media.video`** use **`mux.video`** for all video.
+
+## 10. Initial value templates (optional)
 
 If you need “New document” templates with presets, register them in **`config/initialValueTemplates.ts`** and wire through `sanity.config.ts` (`initialValueTemplates`). The default in this repo is an empty array.
 
@@ -98,3 +122,4 @@ If you need “New document” templates with presets, register them in **`confi
 | Languages | `schemas/constants/languages.ts`, `sanity.config.ts` (plugin) |
 | Slug rules | `validation: validateSlug` on slug fields |
 | New **module** | New file under `objects/modules/`, `index.ts`, `richTextMedia.ts`, `modulesArrayField.ts` (`documentModuleTypes`) |
+| New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |

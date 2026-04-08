@@ -26,60 +26,38 @@ export const moduleMedia = defineType({
       validation: (rule) => rule.required(),
     },
     {
-      title: "Video file",
-      name: "video",
-      type: "mux.video",
-      hidden: ({ parent }) => parent?.type !== "video",
-      validation: (rule) =>
-        rule.custom((field, context) => {
-          const parent = context.parent as { type?: string } | undefined;
-          if (parent?.type === "video" && !field) {
-            return "Video is required.";
-          }
-          return true;
-        }),
-    },
-    {
-      name: "image",
+      name: "imageContent",
       title: "Image",
-      type: "image",
-      description:
-        "When type is video, this image is used as the poster / fallback.",
-      options: { hotspot: true },
+      type: "media.image",
+      hidden: ({ parent }) => parent?.type !== "image",
       validation: (rule) =>
         rule.custom((field, context) => {
           const parent = context.parent as { type?: string } | undefined;
-          if (parent?.type === "image" && !field) {
-            return "Image is required.";
+          if (parent?.type === "image") {
+            const img = field as { image?: unknown } | undefined;
+            if (!img?.image) {
+              return "Image is required.";
+            }
           }
           return true;
         }),
     },
     {
-      name: "videoSettings",
-      title: "Video player settings",
-      type: "object",
+      name: "videoContent",
+      title: "Video",
+      type: "media.video",
       hidden: ({ parent }) => parent?.type !== "video",
-      fields: [
-        {
-          type: "boolean",
-          name: "autoplay",
-          title: "Autoplay",
-          description: "Autoplay videos are muted in most browsers.",
-          initialValue: false,
-        },
-        {
-          type: "boolean",
-          name: "controls",
-          title: "Controls",
-          initialValue: true,
-        },
-      ],
-    },
-    {
-      name: "caption",
-      title: "Caption",
-      type: "string",
+      validation: (rule) =>
+        rule.custom((field, context) => {
+          const parent = context.parent as { type?: string } | undefined;
+          if (parent?.type === "video") {
+            const vc = field as { video?: unknown } | undefined;
+            if (!vc?.video) {
+              return "Video is required.";
+            }
+          }
+          return true;
+        }),
     },
   ],
   components: {
@@ -88,12 +66,11 @@ export const moduleMedia = defineType({
   preview: {
     select: {
       type: "type",
-      image: "image",
-      poster: "image.asset",
-      filename: "image.asset.originalFilename",
-      dimensions: "image.asset.metadata.dimensions",
-      tracks: "video.asset.data.tracks",
-      duration: "video.asset.data.duration",
+      image: "imageContent.image",
+      filename: "imageContent.image.asset.originalFilename",
+      dimensions: "imageContent.image.asset.metadata.dimensions",
+      tracks: "videoContent.video.asset.data.tracks",
+      duration: "videoContent.video.asset.data.duration",
     },
     prepare(selection) {
       const { type, image, filename, dimensions, tracks, duration } = selection;

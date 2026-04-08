@@ -9,6 +9,7 @@ import { netlifyTool } from "sanity-plugin-netlify";
 
 import { initialValueTemplates } from "./config/initialValueTemplates";
 import { structure } from "./config/structure";
+import { studioDataset } from "./config/studioDataset";
 import { schemaTypes } from "./schemas";
 import {
   defaultLanguageIds,
@@ -16,7 +17,7 @@ import {
 } from "./schemas/constants/languages";
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
-const dataset = process.env.SANITY_STUDIO_DATASET ?? "production";
+const dataset = studioDataset;
 
 if (!projectId) {
   throw new Error(
@@ -24,17 +25,20 @@ if (!projectId) {
   );
 }
 
+const isDev = process.env.NODE_ENV === "development";
+
 export default defineConfig({
   name: "default",
   title: "Next Sanity Boilerplate",
   projectId,
   dataset,
+  releases: { enabled: isDev },
   plugins: [
     dashboardTool({
       widgets: [projectInfoWidget()],
     }),
     structureTool({ structure }),
-    visionTool(),
+    ...(isDev ? [visionTool()] : []),
     media(),
     muxInput(),
     netlifyTool(),

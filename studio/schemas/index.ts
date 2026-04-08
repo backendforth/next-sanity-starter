@@ -3,7 +3,10 @@ import { richText } from "./objects/editors/richText";
 import { richTextMedia } from "./objects/editors/richTextMedia";
 import { link } from "./objects/link";
 import { linkFunctions } from "./objects/linkFunctions";
+import { mediaImage } from "./objects/media/image";
+import { mediaVideo } from "./objects/media/video";
 import { moduleCarousel } from "./objects/modules/carousel";
+import { moduleContentRefs } from "./objects/modules/contentRefs";
 import { moduleMedia } from "./objects/modules/media";
 import { moduleText } from "./objects/modules/text";
 import { seoFallback, seoPage } from "./objects/seo/page";
@@ -18,8 +21,11 @@ export const schemaTypes = [
   seoPage,
   seoFallback,
   link,
+  mediaImage,
+  mediaVideo,
   moduleCarousel,
   moduleMedia,
+  moduleContentRefs,
   moduleText,
   richText,
   richTextMedia,

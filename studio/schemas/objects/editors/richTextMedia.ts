@@ -25,6 +25,7 @@ export const richTextMedia = defineType({
     },
     { type: "module.media" },
     { type: "module.carousel" },
+    { type: "module.contentRefs" },
     { type: "module.text" },
   ],
 });

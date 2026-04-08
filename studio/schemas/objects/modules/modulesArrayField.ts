@@ -4,6 +4,7 @@ import { defineField } from "sanity";
 export const documentModuleTypes = [
   { type: "module.media" },
   { type: "module.carousel" },
+  { type: "module.contentRefs" },
   { type: "module.text" },
 ] as const;
 

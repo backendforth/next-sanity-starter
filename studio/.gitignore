@@ -1,0 +1,12 @@
+# Used by Biome (vcs.useIgnoreFile) and local studio tooling.
+node_modules/
+dist/
+.sanity/
+schema.json
+sanity.types.gen.ts
+.env
+.env.local
+.env.*.local
+
+# Local prod→dev dataset export tarball (sync-prod-to-dev script)
+.sync-tmp/

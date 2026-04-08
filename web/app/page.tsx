@@ -1,6 +1,6 @@
 import { ModuleStack } from "@/components/modules/ModuleStack";
-import { getHome } from "@/src/sanity/getHome";
-import { pickLocalizedString } from "@/src/sanity/localizedString";
+import { getHome } from "@/sanity/getHome";
+import { pickLocalizedString } from "@/sanity/localizedString";
 
 export default async function Home() {
   const home = await getHome();

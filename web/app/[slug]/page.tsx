@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { client } from "@/src/sanity/client";
+import { client } from "@/sanity/client";
 import { ModuleStack } from "@/components/modules/ModuleStack";
-import type { StackModule } from "@/src/sanity/types/modules";
+import type { StackModule } from "@/sanity/types/modules";
 import {
   pickLocalizedString,
   type IntlStringEntry,
-} from "@/src/sanity/localizedString";
-import { pageBySlugQuery, pageSlugsQuery } from "@/src/sanity/queries";
+} from "@/sanity/localizedString";
+import { pageBySlugQuery, pageSlugsQuery } from "@/sanity/queries";
 
 type PageSeo = {
   title?: string | null;

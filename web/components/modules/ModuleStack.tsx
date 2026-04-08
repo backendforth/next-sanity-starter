@@ -1,8 +1,8 @@
-import { moduleLabel } from "@/src/sanity/moduleLabel";
-import type { ModuleTextData, StackModule } from "@/src/sanity/types/modules";
+import { moduleLabel } from "@/sanity/moduleLabel";
+import type { ModuleTextData, StackModule } from "@/sanity/types/modules";
 import { ModuleText } from "./ModuleText";
 
-export type { StackModule } from "@/src/sanity/types/modules";
+export type { StackModule } from "@/sanity/types/modules";
 
 type ModuleStackProps = {
   modules: StackModule[];

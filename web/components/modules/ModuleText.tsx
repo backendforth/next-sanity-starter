@@ -1,6 +1,6 @@
-import { pickLocalizedPortableTextBlocks } from "@/src/sanity/localizedPortableText";
-import { pickLocalizedString } from "@/src/sanity/localizedString";
-import type { ModuleTextData } from "@/src/sanity/types/modules";
+import { pickLocalizedPortableTextBlocks } from "@/sanity/localizedPortableText";
+import { pickLocalizedString } from "@/sanity/localizedString";
+import type { ModuleTextData } from "@/sanity/types/modules";
 import { SanityPortableText } from "./SanityPortableText";
 
 type ModuleTextProps = {

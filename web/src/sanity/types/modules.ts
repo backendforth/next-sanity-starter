@@ -1,5 +1,5 @@
-import type { IntlRichTextEntry } from "@/src/sanity/localizedPortableText";
-import type { IntlStringEntry } from "@/src/sanity/localizedString";
+import type { IntlRichTextEntry } from "@/sanity/localizedPortableText";
+import type { IntlStringEntry } from "@/sanity/localizedString";
 
 export type ModuleTextData = {
   _type: "module.text";

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { getHome } from "@/src/sanity/getHome";
-import { pickLocalizedString } from "@/src/sanity/localizedString";
+import { getHome } from "@/sanity/getHome";
+import { pickLocalizedString } from "@/sanity/localizedString";
 import "./globals.css";
 
 const geistSans = Geist({

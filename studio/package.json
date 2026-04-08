@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "sanity dev",
+    "dev": "node scripts/dev-with-hint.mjs",
+    "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "sanity deploy",

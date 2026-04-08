@@ -40,6 +40,8 @@ You do not “switch” datasets inside the running Studio UI; the **build or de
 
 For CI or hosts without a Sanity token, rely on explicit env vars or the default name order documented in **`studio/.env.example`**.
 
+To **copy content from production into development** on demand (e.g. refresh your dev dataset), use the manual script documented in **`studio/README.md`**: `pnpm run sync:prod-to-dev` inside `studio/` (or `pnpm studio:sync-prod-to-dev` from the repo root).
+
 ## Other files (short)
 
 - **`env.ts`** — wraps `projectId` and the resolved **`studioDataset`** for image URLs and similar.

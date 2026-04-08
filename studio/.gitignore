@@ -7,3 +7,6 @@ sanity.types.gen.ts
 .env
 .env.local
 .env.*.local
+
+# Local prod→dev dataset export tarball (sync-prod-to-dev script)
+.sync-tmp/

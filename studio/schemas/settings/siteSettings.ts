@@ -1,31 +1,50 @@
-import { EarthGlobeIcon, TextIcon } from "@sanity/icons";
+import { CogIcon, DesktopIcon, SearchIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+/** Global site settings. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteSettings = defineType({
   name: "siteSettings",
-  title: "Site settings",
+  title: "Settings",
   type: "document",
-  icon: EarthGlobeIcon,
+  icon: CogIcon,
   groups: [
     {
-      title: "Editorial",
-      name: "editorial",
-      icon: TextIcon,
+      title: "Site Settings",
+      name: "site",
+      icon: DesktopIcon,
+    },
+    {
+      title: "SEO",
+      name: "seo",
+      icon: SearchIcon,
     },
   ],
   fields: [
     {
-      name: "label",
-      title: "Label",
+      title: "Site Title",
+      name: "title",
       type: "string",
-      description: "Internal label for the desk (optional).",
-      group: "editorial",
+      validation: (rule) => rule.required(),
+      group: "site",
+    },
+    {
+      title: "Favicon",
+      name: "favicon",
+      type: "image",
+      group: "site",
+    },
+    {
+      title: "SEO",
+      name: "seo",
+      type: "seo.fallback",
+      group: "seo",
     },
   ],
   preview: {
-    prepare() {
+    select: { title: "title" },
+    prepare({ title }) {
       return {
-        title: "Site settings",
+        title: title || "Settings",
       };
     },
   },

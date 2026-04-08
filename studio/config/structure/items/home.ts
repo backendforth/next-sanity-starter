@@ -5,6 +5,6 @@ export function homeStructureItem(S: StructureBuilder) {
   return S.listItem()
     .title("Home")
     .icon(HomeIcon)
-    .id("singleton-home")
+    .id("home")
     .child(S.document().schemaType("home").documentId("home"));
 }

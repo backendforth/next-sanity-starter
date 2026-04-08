@@ -1,9 +1,11 @@
+import { ControlsIcon } from "@sanity/icons";
 import type { StructureResolver } from "sanity/structure";
 
 import { errorSettingsStructureItem } from "./items/errorSettings";
-import { globalSeoStructureItem } from "./items/globalSeo";
 import { homeStructureItem } from "./items/home";
 import { pagesStructureItem } from "./items/pages";
+import { siteCookieBannerStructureItem } from "./items/siteCookieBanner";
+import { siteNavStructureItem } from "./items/siteNav";
 import { siteSettingsStructureItem } from "./items/siteSettings";
 
 export const structure: StructureResolver = (S) =>
@@ -13,7 +15,17 @@ export const structure: StructureResolver = (S) =>
       homeStructureItem(S),
       pagesStructureItem(S),
       S.divider(),
-      siteSettingsStructureItem(S),
-      globalSeoStructureItem(S),
-      errorSettingsStructureItem(S),
+      S.listItem()
+        .title("Settings")
+        .icon(ControlsIcon)
+        .child(
+          S.list()
+            .title("Settings")
+            .items([
+              siteSettingsStructureItem(S),
+              siteNavStructureItem(S),
+              errorSettingsStructureItem(S),
+              siteCookieBannerStructureItem(S),
+            ]),
+        ),
     ]);

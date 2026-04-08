@@ -27,3 +27,31 @@ export const seoPage = defineType({
     },
   ],
 });
+
+export const seoFallback = defineType({
+  name: "seo.fallback",
+  title: "SEO Fallback",
+  type: "object",
+  fields: [
+    {
+      name: "title",
+      title: "Meta title",
+      type: "string",
+      description: "Default <title> and Open Graph title.",
+    },
+    {
+      name: "description",
+      title: "Meta description",
+      type: "text",
+      rows: 3,
+    },
+    {
+      name: "image",
+      title: "Social / OG image",
+      type: "image",
+      options: {
+        hotspot: true,
+      },
+    },
+  ],
+});

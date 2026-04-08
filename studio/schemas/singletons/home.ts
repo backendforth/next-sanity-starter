@@ -1,6 +1,8 @@
 import { HomeIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+import { modulesArrayField } from "../objects/modules/modulesArrayField";
+
 export const home = defineType({
   name: "home",
   title: "Home",
@@ -26,12 +28,8 @@ export const home = defineType({
       group: "editorial",
       validation: (rule) => rule.required(),
     },
-    {
-      name: "body",
-      title: "Body",
-      type: "internationalizedArrayRichTextMedia",
-      group: "editorial",
-    },
+
+    modulesArrayField({ group: "editorial" }),
     {
       name: "seo",
       title: "SEO",

@@ -1,6 +1,8 @@
 import { ErrorOutlineIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+import { modulesArrayField } from "../objects/modules/modulesArrayField";
+
 export const errorSettings = defineType({
   name: "errorSettings",
   title: "Error pages",
@@ -42,6 +44,7 @@ export const errorSettings = defineType({
       description: "Basic rich text (no media modules).",
       group: "editorial",
     },
+    modulesArrayField({ group: "editorial" }),
   ],
   preview: {
     prepare() {

@@ -54,11 +54,35 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
 
-## 7. Mux / media
+## 7. Content modules (`module.*`)
+
+Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
+
+1. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`).
+2. **On documents** — as items in the **`modules`** array field, defined by **`objects/modules/modulesArrayField.ts`** (`documentModuleTypes` + `modulesArrayField({ group })` on pages and singletons).
+
+When you add a **new** module, wire it up in **both** places so behaviour stays consistent: inline in text **and** in the stacked `modules` list.
+
+### Adding a new module (checklist)
+
+1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
+   - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
+   - **`type: "object"`** — fields, `preview`, optional `icon`, etc.
+2. **Register the type** — export it and add it to **`schemas/index.ts`** → `schemaTypes` (keep module types together with other `module.*` entries).
+3. **Rich text (inline blocks)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**.
+4. **Document-level `modules` arrays** — append the same `{ type: "module.<id>" }` to **`documentModuleTypes`** in **`objects/modules/modulesArrayField.ts`**.
+
+You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
+
+### Keep lists in sync
+
+`richTextMedia` and `documentModuleTypes` should expose the **same** set of `module.*` types unless you intentionally restrict a module to only one context (unusual). If they drift, editors will see different insert options in the body vs. the **Modules** field.
+
+## 8. Mux / media
 
 Video fields use types provided by **`sanity-plugin-mux-input`** (e.g. `mux.video`). The plugin is already registered in **`sanity.config.ts`**; your object schema only references the field `type`. See **`schemas/objects/modules/media.ts`**.
 
-## 8. Initial value templates (optional)
+## 9. Initial value templates (optional)
 
 If you need “New document” templates with presets, register them in **`config/initialValueTemplates.ts`** and wire through `sanity.config.ts` (`initialValueTemplates`). The default in this repo is an empty array.
 
@@ -73,3 +97,4 @@ If you need “New document” templates with presets, register them in **`confi
 | Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
 | Languages | `schemas/constants/languages.ts`, `sanity.config.ts` (plugin) |
 | Slug rules | `validation: validateSlug` on slug fields |
+| New **module** | New file under `objects/modules/`, `index.ts`, `richTextMedia.ts`, `modulesArrayField.ts` (`documentModuleTypes`) |

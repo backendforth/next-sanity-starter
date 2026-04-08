@@ -5,6 +5,7 @@ import { link } from "./objects/link";
 import { linkFunctions } from "./objects/linkFunctions";
 import { moduleCarousel } from "./objects/modules/carousel";
 import { moduleMedia } from "./objects/modules/media";
+import { moduleText } from "./objects/modules/text";
 import { seoFallback, seoPage } from "./objects/seo/page";
 import { errorSettings } from "./settings/error";
 import { siteCookieBanner } from "./settings/siteCookieBanner";
@@ -19,6 +20,7 @@ export const schemaTypes = [
   link,
   moduleCarousel,
   moduleMedia,
+  moduleText,
   richText,
   richTextMedia,
   siteSettings,

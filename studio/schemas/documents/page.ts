@@ -1,7 +1,7 @@
 import { DocumentTextIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
-
 import { validateSlug } from "../../utils/validateSlug";
+import { modulesArrayField } from "../objects/modules/modulesArrayField";
 
 export const page = defineType({
   name: "page",
@@ -40,12 +40,7 @@ export const page = defineType({
       validation: validateSlug,
       group: "editorial",
     },
-    {
-      name: "body",
-      title: "Body",
-      type: "internationalizedArrayRichTextMedia",
-      group: "editorial",
-    },
+    modulesArrayField({ group: "editorial" }),
     {
       name: "seo",
       title: "SEO",

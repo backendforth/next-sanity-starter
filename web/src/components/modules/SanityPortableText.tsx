@@ -75,7 +75,7 @@ function LinkMark({
 const components: Partial<PortableTextComponents> = {
   block: {
     normal: ({ children }) => (
-      <p className="mb-4 text-base leading-relaxed text-textMuted last:mb-0">{children}</p>
+      <p className="mb-4 text-base leading-relaxed text-textMuted last:mb-0 font-serif">{children}</p>
     ),
     h2: ({ children }) => (
       <h2 className="mb-3 mt-8 text-2xl font-semibold tracking-tight text-headingColor first:mt-0">

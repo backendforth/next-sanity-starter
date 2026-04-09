@@ -1,20 +1,16 @@
+@import "./fonts.css";
 @import "./colors.css";
 @import "./sizes.css";
 @import "tailwindcss";
 @config "../../../tailwind.config.ts";
 @import "./safelist.css";
 
-@theme inline {
-  --font-sans: var(--font-dm-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 :root {
   --radius-md: 0.375rem;
 }
 
 body {
+  @apply font-sans;
   background: var(--bgColor);
   color: var(--textColor);
-  font-family: var(--font-dm-sans), Helvetica, Arial, sans-serif;
 }

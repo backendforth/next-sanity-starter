@@ -28,7 +28,7 @@ export default {
       },
       fontFamily: {
         sans: ["var(--font-dm-sans)", "Helvetica", "Arial", "sans-serif"],
-        serif: ["Georgia", "serif"],
+        serif: ["var(--font-baskervville)", "Georgia", "serif"],
         mono: ["var(--font-geist-mono)", "Courier New", "monospace"],
       },
       colors: {

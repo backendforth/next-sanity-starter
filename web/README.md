@@ -14,17 +14,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Languages (default vs fallback, URL prefixes)
 
-**One file to edit:** [`src/i18n/site-locales.ts`](./src/i18n/site-locales.ts) — see [`src/i18n/README.md`](./src/i18n/README.md) for how each file in `i18n/` fits together.
+**Single source (Next + Studio):** [`packages/languages/src/index.ts`](../packages/languages/src/index.ts) — package **`@repo/languages`**. Web re-exports via [`src/i18n/site-locales.ts`](./src/i18n/site-locales.ts); see [`src/i18n/README.md`](./src/i18n/README.md). Why not root `.env`? [packages/languages/README.md](../packages/languages/README.md).
 
 | What | Where |
 |------|--------|
-| Supported languages | `SITE_LOCALES` — list every locale code (`"en"`, `"de"`, …). |
-| **Default** (no URL prefix) | `SITE_DEFAULT_LOCALE` — must be one entry in `SITE_LOCALES`. |
-| Fallback when a Sanity field has no translation | Same list order: after the exact / base tag, other entries in `SITE_LOCALES` are tried (see `sanity/utils/sanityLocalizedText.ts`). |
+| Supported languages | `SITE_LOCALES` in `packages/languages` — order = fallback order in `sanityLocalizedText`. |
+| **Default** (no URL prefix) | `SITE_DEFAULT_LOCALE` — must be in `SITE_LOCALES`. |
+| Studio UI labels | `SITE_LOCALE_LABELS` in `packages/languages` — one title per id. |
+| Fallback when a Sanity field has no translation | Same as `SITE_LOCALES` order (after exact / base tags). |
 
 ### Switch **English** as default (current setup)
 
 ```ts
+// packages/languages/src/index.ts
 export const SITE_LOCALES = ["en", "de"] as const;
 export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "en";
 ```
@@ -35,6 +37,7 @@ export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "en";
 ### Switch **German** as default
 
 ```ts
+// packages/languages/src/index.ts
 export const SITE_LOCALES = ["de", "en"] as const;
 export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "de";
 ```
@@ -42,12 +45,12 @@ export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "de";
 - URLs: `/`, `/about` → German. English: `/en`, `/en/about`.
 - **Reserved path segment:** `en`.
 
-After changing `site-locales.ts`, restart the dev server. Routing uses [`src/middleware.ts`](./src/middleware.ts); helpers [`src/i18n/paths.ts`](./src/i18n/paths.ts) (`localePath`) for links.
+After changing `packages/languages`, restart **web** and **studio** dev servers. Routing uses [`src/middleware.ts`](./src/middleware.ts); helpers [`src/i18n/paths.ts`](./src/i18n/paths.ts) (`localePath`) for links.
 
 ### Add another language (e.g. French)
 
-1. Append `"fr"` to `SITE_LOCALES` (and keep `SITE_DEFAULT_LOCALE` in that list).
-2. Add `fr` / `fr-FR` in Sanity for internationalized fields so content can be filled.
+1. In `packages/languages/src/index.ts`: append `"fr"` to `SITE_LOCALES`, add `fr: "Français"` to `SITE_LOCALE_LABELS`.
+2. Content: fill `fr` entries in Studio internationalized fields.
 3. URLs become `/fr`, `/fr/about`, … (each non-default locale gets a prefix; avoid using that segment as a slug for the default locale).
 
 ---

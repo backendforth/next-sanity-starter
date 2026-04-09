@@ -13,6 +13,7 @@
     "format": "biome format --write ."
   },
   "dependencies": {
+    "@repo/languages": "workspace:*",
     "@sanity/code-input": "^7.0.12",
     "@sanity/dashboard": "^5",
     "@sanity/icons": "^3.7.4",

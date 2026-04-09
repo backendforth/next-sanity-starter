@@ -12,13 +12,13 @@ const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
  * Home at `/`; slugged types share `/:slug` (see `SLUG_BASED_DOCUMENT_TYPES`).
  */
 export const presentationMainDocuments = defineDocuments([
-  { route: "/", type: "home" },
-  ...(SLUG_BASED_DOCUMENT_TYPES.length > 0
-    ? [
-        {
-          route: "/:slug",
-          filter: `_type in [${slugTypeList}] && slug.current == $slug`,
-        },
-      ]
-    : []),
+	{ route: "/", type: "home" },
+	...(SLUG_BASED_DOCUMENT_TYPES.length > 0
+		? [
+				{
+					route: "/:slug",
+					filter: `_type in [${slugTypeList}] && slug.current == $slug`,
+				},
+			]
+		: []),
 ]);

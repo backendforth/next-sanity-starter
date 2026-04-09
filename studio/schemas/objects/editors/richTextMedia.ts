@@ -10,20 +10,20 @@ import { portableTextStyles } from "./text/styles";
  * `internationalizedArrayRichTextMedia`.
  */
 export const richTextMedia = defineType({
-  name: "richTextMedia",
-  title: "Rich text (with media)",
-  type: "array",
-  of: [
-    {
-      type: "block",
-      styles: portableTextStyles,
-      lists: portableTextLists,
-      marks: {
-        decorators: portableTextDecorators,
-        annotations: portableTextAnnotations,
-      },
-    },
-    { type: "module.media" },
-    { type: "module.carousel" },
-  ],
+	name: "richTextMedia",
+	title: "Rich text (with media)",
+	type: "array",
+	of: [
+		{
+			type: "block",
+			styles: portableTextStyles,
+			lists: portableTextLists,
+			marks: {
+				decorators: portableTextDecorators,
+				annotations: portableTextAnnotations,
+			},
+		},
+		{ type: "module.media" },
+		{ type: "module.carousel" },
+	],
 });

@@ -10,18 +10,18 @@ import { portableTextStyles } from "./text/styles";
  * `internationalizedArrayRichText`.
  */
 export const richText = defineType({
-  name: "richText",
-  title: "Rich text",
-  type: "array",
-  of: [
-    {
-      type: "block",
-      styles: portableTextStyles,
-      lists: portableTextLists,
-      marks: {
-        decorators: portableTextDecorators,
-        annotations: portableTextAnnotations,
-      },
-    },
-  ],
+	name: "richText",
+	title: "Rich text",
+	type: "array",
+	of: [
+		{
+			type: "block",
+			styles: portableTextStyles,
+			lists: portableTextLists,
+			marks: {
+				decorators: portableTextDecorators,
+				annotations: portableTextAnnotations,
+			},
+		},
+	],
 });

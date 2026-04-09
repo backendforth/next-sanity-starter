@@ -6,7 +6,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "eslint"
+		"lint": "eslint",
+		"format": "pnpx @biomejs/biome format --write ."
 	},
 	"dependencies": {
 		"@portabletext/react": "^6.0.3",

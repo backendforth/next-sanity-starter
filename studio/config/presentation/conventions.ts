@@ -16,9 +16,9 @@ export const SITE_ROOT_DOCUMENT_TYPES = new Set(["home"]);
  * Document types where Presentation should not offer Web Preview locations (settings-only).
  */
 export const DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW = new Set([
-  "siteSettings",
-  "siteNav",
-  "siteCookieBanner",
+	"siteSettings",
+	"siteNav",
+	"siteCookieBanner",
 ]);
 
 /** Replaces the default “Used on N pages” label in the Presentation locations banner. */

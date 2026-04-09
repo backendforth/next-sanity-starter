@@ -4,135 +4,135 @@ import { defineType } from "sanity";
 import { PAGE_REFERENCES } from "../constants/references";
 
 export const link = defineType({
-  title: "Link",
-  name: "link",
-  type: "object",
-  icon: LinkIcon,
-  fields: [
-    {
-      title: "Type",
-      name: "type",
-      type: "string",
-      initialValue: "internal",
-      options: {
-        list: [
-          { title: "Internal", value: "internal" },
-          { title: "External", value: "external" },
-          { title: "Function", value: "function" },
-        ],
-        layout: "radio",
-        direction: "horizontal",
-      },
-      validation: (rule) => rule.required(),
-    },
-    {
-      title: "Title",
-      name: "title",
-      type: "string",
-      description:
-        "If empty for internal links, the referenced document title is used where available. Required for external and function links.",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { type?: string } | undefined;
-          const t = parent?.type;
-          const str = typeof value === "string" ? value : "";
-          if ((t === "external" || t === "function") && !str.trim()) {
-            return "This field is required";
-          }
-          return true;
-        }),
-    },
-    {
-      name: "reference",
-      type: "reference",
-      weak: true,
-      to: [...PAGE_REFERENCES],
-      hidden: ({ parent }) => parent?.type !== "internal",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { type?: string } | undefined;
-          if (parent?.type === "internal" && !value) {
-            return "Reference is required";
-          }
-          return true;
-        }),
-    },
-    {
-      name: "url",
-      title: "URL",
-      type: "url",
-      hidden: ({ parent }) => parent?.type !== "external",
-      validation: (rule) =>
-        rule
-          .custom((value, context) => {
-            const parent = context.parent as { type?: string } | undefined;
-            if (parent?.type === "external" && !value) {
-              return "URL is required";
-            }
-            return true;
-          })
-          .uri({ scheme: ["http", "https", "mailto", "tel"] }),
-    },
-    {
-      title: "Open in a new window?",
-      name: "blank",
-      type: "boolean",
-      hidden: ({ parent }) => parent?.type !== "external",
-      initialValue: true,
-    },
-    {
-      name: "func",
-      title: "Function",
-      type: "linkFunctions",
-      hidden: ({ parent }) => parent?.type !== "function",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { type?: string } | undefined;
-          if (parent?.type === "function" && !value) {
-            return "Function is required";
-          }
-          return true;
-        }),
-    },
-  ],
-  preview: {
-    select: {
-      funcKey: "func.key",
-      funcParams: "func.params",
-      referenceType: "reference._type",
-      slug: "reference.slug.current",
-      title: "title",
-      type: "type",
-      url: "url",
-    },
-    prepare(selection) {
-      const { funcKey, funcParams, referenceType, slug, title, type, url } =
-        selection;
+	title: "Link",
+	name: "link",
+	type: "object",
+	icon: LinkIcon,
+	fields: [
+		{
+			title: "Type",
+			name: "type",
+			type: "string",
+			initialValue: "internal",
+			options: {
+				list: [
+					{ title: "Internal", value: "internal" },
+					{ title: "External", value: "external" },
+					{ title: "Function", value: "function" },
+				],
+				layout: "radio",
+				direction: "horizontal",
+			},
+			validation: (rule) => rule.required(),
+		},
+		{
+			title: "Title",
+			name: "title",
+			type: "string",
+			description:
+				"If empty for internal links, the referenced document title is used where available. Required for external and function links.",
+			validation: (rule) =>
+				rule.custom((value, context) => {
+					const parent = context.parent as { type?: string } | undefined;
+					const t = parent?.type;
+					const str = typeof value === "string" ? value : "";
+					if ((t === "external" || t === "function") && !str.trim()) {
+						return "This field is required";
+					}
+					return true;
+				}),
+		},
+		{
+			name: "reference",
+			type: "reference",
+			weak: true,
+			to: [...PAGE_REFERENCES],
+			hidden: ({ parent }) => parent?.type !== "internal",
+			validation: (rule) =>
+				rule.custom((value, context) => {
+					const parent = context.parent as { type?: string } | undefined;
+					if (parent?.type === "internal" && !value) {
+						return "Reference is required";
+					}
+					return true;
+				}),
+		},
+		{
+			name: "url",
+			title: "URL",
+			type: "url",
+			hidden: ({ parent }) => parent?.type !== "external",
+			validation: (rule) =>
+				rule
+					.custom((value, context) => {
+						const parent = context.parent as { type?: string } | undefined;
+						if (parent?.type === "external" && !value) {
+							return "URL is required";
+						}
+						return true;
+					})
+					.uri({ scheme: ["http", "https", "mailto", "tel"] }),
+		},
+		{
+			title: "Open in a new window?",
+			name: "blank",
+			type: "boolean",
+			hidden: ({ parent }) => parent?.type !== "external",
+			initialValue: true,
+		},
+		{
+			name: "func",
+			title: "Function",
+			type: "linkFunctions",
+			hidden: ({ parent }) => parent?.type !== "function",
+			validation: (rule) =>
+				rule.custom((value, context) => {
+					const parent = context.parent as { type?: string } | undefined;
+					if (parent?.type === "function" && !value) {
+						return "Function is required";
+					}
+					return true;
+				}),
+		},
+	],
+	preview: {
+		select: {
+			funcKey: "func.key",
+			funcParams: "func.params",
+			referenceType: "reference._type",
+			slug: "reference.slug.current",
+			title: "title",
+			type: "type",
+			url: "url",
+		},
+		prepare(selection) {
+			const { funcKey, funcParams, referenceType, slug, title, type, url } =
+				selection;
 
-      let subtitle = "";
+			let subtitle = "";
 
-      if (type === "internal") {
-        if (referenceType === "home") {
-          subtitle = "→ /";
-        } else if (referenceType === "page" && slug) {
-          subtitle = `→ /${slug}`;
-        } else if (referenceType) {
-          subtitle = `→ (${referenceType})`;
-        } else {
-          subtitle = "(No reference)";
-        }
-      } else if (type === "external" && url) {
-        subtitle = `→ ${url}`;
-      } else if (type === "function") {
-        subtitle = funcKey
-          ? `→ ${funcKey}${funcParams ? ` (${funcParams})` : ""}`
-          : "→ (function)";
-      }
+			if (type === "internal") {
+				if (referenceType === "home") {
+					subtitle = "→ /";
+				} else if (referenceType === "page" && slug) {
+					subtitle = `→ /${slug}`;
+				} else if (referenceType) {
+					subtitle = `→ (${referenceType})`;
+				} else {
+					subtitle = "(No reference)";
+				}
+			} else if (type === "external" && url) {
+				subtitle = `→ ${url}`;
+			} else if (type === "function") {
+				subtitle = funcKey
+					? `→ ${funcKey}${funcParams ? ` (${funcParams})` : ""}`
+					: "→ (function)";
+			}
 
-      return {
-        title: title || referenceType || "Link",
-        subtitle,
-      };
-    },
-  },
+			return {
+				title: title || referenceType || "Link",
+				subtitle,
+			};
+		},
+	},
 });

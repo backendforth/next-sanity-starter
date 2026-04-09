@@ -13,7 +13,10 @@
     "studio:generate": "pnpm --filter studio run generate",
     "studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev",
     "update": "pnpm up --stream -r",
-    "studio:update": "pnpm up --filter studio"
+    "studio:update": "pnpm up --filter studio",
+    "format": "pnpm --filter web run format && pnpm --filter studio run format",
+    "format:web": "pnpm --filter web run format",
+    "format:studio": "pnpm --filter studio run format"
   },
   "author": "backendforth",
   "license": "ISC",

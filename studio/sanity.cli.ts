@@ -6,8 +6,8 @@ const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = studioDataset;
 
 export default defineCliConfig({
-  api: {
-    projectId: projectId ?? "",
-    dataset,
-  },
+	api: {
+		projectId: projectId ?? "",
+		dataset,
+	},
 });

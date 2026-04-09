@@ -11,70 +11,70 @@ import { netlifyTool } from "sanity-plugin-netlify";
 
 import { initialValueTemplates } from "./config/initialValueTemplates";
 import {
-  presentationLocationsResolver,
-  presentationMainDocuments,
+	presentationLocationsResolver,
+	presentationMainDocuments,
 } from "./config/presentation/resolve";
 import { structure } from "./config/structure";
 import { studioDataset } from "./config/studioDataset";
 import { schemaTypes } from "./schemas";
 import {
-  defaultLanguageIds,
-  studioLanguages,
+	defaultLanguageIds,
+	studioLanguages,
 } from "./schemas/constants/languages";
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = studioDataset;
 const previewOrigin =
-  process.env.SANITY_STUDIO_PREVIEW_ORIGIN ?? "http://localhost:3000";
+	process.env.SANITY_STUDIO_PREVIEW_ORIGIN ?? "http://localhost:3000";
 
 if (!projectId) {
-  throw new Error(
-    "Missing SANITY_STUDIO_PROJECT_ID. Copy studio/.env.example to studio/.env and set your project ID.",
-  );
+	throw new Error(
+		"Missing SANITY_STUDIO_PROJECT_ID. Copy studio/.env.example to studio/.env and set your project ID.",
+	);
 }
 
 const isDev = process.env.NODE_ENV === "development";
 
 export default defineConfig({
-  name: "default",
-  title: "Next Sanity Boilerplate",
-  projectId,
-  dataset,
-  releases: { enabled: isDev },
-  plugins: [
-    dashboardTool({
-      widgets: [projectInfoWidget()],
-    }),
-    structureTool({ structure }),
-    presentationTool({
-      title: "Web Preview",
-      previewUrl: {
-        initial: previewOrigin,
-        previewMode: {
-          enable: "/api/draft-mode/enable",
-          disable: "/api/draft-mode/disable",
-        },
-      },
-      allowOrigins: ["http://localhost:*"],
-      resolve: {
-        locations: presentationLocationsResolver,
-        mainDocuments: presentationMainDocuments,
-      },
-    }),
-    codeInput(),
-    ...(isDev ? [visionTool()] : []),
-    media(),
-    muxInput(),
-    netlifyTool(),
-    internationalizedArray({
-      languages: [...studioLanguages],
-      defaultLanguages: [...defaultLanguageIds],
-      fieldTypes: ["string", "richText", "richTextMedia"],
-      buttonAddAll: false,
-    }),
-  ],
-  schema: {
-    types: schemaTypes,
-  },
-  initialValueTemplates,
+	name: "default",
+	title: "Next Sanity Boilerplate",
+	projectId,
+	dataset,
+	releases: { enabled: isDev },
+	plugins: [
+		dashboardTool({
+			widgets: [projectInfoWidget()],
+		}),
+		structureTool({ structure }),
+		presentationTool({
+			title: "Web Preview",
+			previewUrl: {
+				initial: previewOrigin,
+				previewMode: {
+					enable: "/api/draft-mode/enable",
+					disable: "/api/draft-mode/disable",
+				},
+			},
+			allowOrigins: ["http://localhost:*"],
+			resolve: {
+				locations: presentationLocationsResolver,
+				mainDocuments: presentationMainDocuments,
+			},
+		}),
+		codeInput(),
+		...(isDev ? [visionTool()] : []),
+		media(),
+		muxInput(),
+		netlifyTool(),
+		internationalizedArray({
+			languages: [...studioLanguages],
+			defaultLanguages: [...defaultLanguageIds],
+			fieldTypes: ["string", "richText", "richTextMedia"],
+			buttonAddAll: false,
+		}),
+	],
+	schema: {
+		types: schemaTypes,
+	},
+	initialValueTemplates,
 });

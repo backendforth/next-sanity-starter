@@ -1,14 +1,17 @@
-import { pickLocalizedPortableTextBlocks } from "@/sanity/localizedPortableText";
-import { pickLocalizedString } from "@/sanity/localizedString";
 import type { ModuleTextData } from "@/sanity/types/modules";
-import { SanityPortableText } from "./SanityPortableText";
+import {
+  pickLocalizedPortableTextBlocks,
+  pickLocalizedString,
+} from "@/sanity/utils";
+import { defaultLocale } from "@/src/i18n/config";
+import { RichTextMedia } from "../text/RichTextMedia";
 
 type ModuleTextProps = {
   module: ModuleTextData;
   locale?: string;
 };
 
-export function ModuleText({ module, locale = "en" }: ModuleTextProps) {
+export function ModuleText({ module, locale = defaultLocale }: ModuleTextProps) {
   const title = pickLocalizedString(module.title, locale);
   const blocks = pickLocalizedPortableTextBlocks(module.body, locale);
 
@@ -17,7 +20,7 @@ export function ModuleText({ module, locale = "en" }: ModuleTextProps) {
       {title ? (
         <h2 className="text-xl font-semibold tracking-tight text-headingColor">{title}</h2>
       ) : null}
-      <SanityPortableText value={blocks} />
+      <RichTextMedia value={blocks} />
     </article>
   );
 }

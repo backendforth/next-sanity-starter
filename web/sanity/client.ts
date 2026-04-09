@@ -1,11 +1,16 @@
 import { createClient } from "next-sanity";
 
-const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
-const dataset = process.env.SANITY_STUDIO_DATASET_PRODUCTION;
+import {
+  getResolvedStudioDataset,
+  getSanityStudioProjectId,
+} from "./resolveStudioDataset";
+
+const projectId = getSanityStudioProjectId();
+const dataset = getResolvedStudioDataset();
 
 if (!projectId || !dataset) {
   throw new Error(
-    "Missing NEXT_PUBLIC_SANITY_PROJECT_ID or SANITY_STUDIO_DATASET_DEVELOPMENT",
+    "Missing SANITY_STUDIO_PROJECT_ID (or NEXT_PUBLIC_SANITY_PROJECT_ID) and/or could not resolve dataset — set SANITY_STUDIO_DATASET or SANITY_STUDIO_DATASET_DEVELOPMENT / SANITY_STUDIO_DATASET_PRODUCTION like in studio/.env.example",
   );
 }
 

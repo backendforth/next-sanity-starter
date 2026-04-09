@@ -13,9 +13,9 @@ export const modulesQuery = `modules[]{
 }`;
 
 export {
-  moduleCarouselQuery,
-  moduleContentRefsQuery,
-  moduleMediaQuery,
-  moduleTextQuery,
+	moduleCarouselQuery,
+	moduleContentRefsQuery,
+	moduleMediaQuery,
+	moduleTextQuery,
 };
 export { richTextMediaQuery } from "../text/richTextMedia";

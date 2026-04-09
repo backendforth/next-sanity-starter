@@ -6,22 +6,21 @@ import { NavbarClient } from "./NavbarClient";
 import { resolveMainMenuRows } from "./navHref";
 
 type Props = {
-  locale: AppLocale;
-  mainMenu?: NavMenuLink[] | null;
-  siteTitle?: string | null;
+	locale: AppLocale;
+	mainMenu?: NavMenuLink[] | null;
+	siteTitle?: string | null;
 };
 
 export function Navbar({ locale, mainMenu, siteTitle }: Props) {
-  const rows = resolveMainMenuRows(mainMenu, locale);
-  const homeHref = localePath("/", locale);
-  const trimmedTitle =
-    typeof siteTitle === "string" ? siteTitle.trim() : "";
-  const brandLabel =
-    trimmedTitle.length > 0 && trimmedTitle !== "Navigation"
-      ? trimmedTitle
-      : "Site";
+	const rows = resolveMainMenuRows(mainMenu, locale);
+	const homeHref = localePath("/", locale);
+	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
+	const brandLabel =
+		trimmedTitle.length > 0 && trimmedTitle !== "Navigation"
+			? trimmedTitle
+			: "Site";
 
-  return (
-    <NavbarClient rows={rows} homeHref={homeHref} brandLabel={brandLabel} />
-  );
+	return (
+		<NavbarClient rows={rows} homeHref={homeHref} brandLabel={brandLabel} />
+	);
 }

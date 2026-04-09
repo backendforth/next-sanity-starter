@@ -12,130 +12,106 @@ import type { ReactNode } from "react";
  */
 
 type ResolvedRef = {
-  _type?: string;
-  slug?: string | null;
+	_type?: string;
+	slug?: string | null;
 };
 
 /** Portable Text `link` mark — aligned with GROQ `linkQuery` / `studio/schemas/objects/link.ts`. */
 export type RichTextMediaLinkMark = {
-  _type?: string;
-  type?: "internal" | "external" | "function" | string;
-  title?: string | null;
-  url?: string | null;
-  blank?: boolean | null;
-  resolvedReference?: ResolvedRef | null;
-  func?: { key?: string; params?: string | null } | null;
+	_type?: string;
+	type?: "internal" | "external" | "function" | string;
+	title?: string | null;
+	url?: string | null;
+	blank?: boolean | null;
+	resolvedReference?: ResolvedRef | null;
+	func?: { key?: string; params?: string | null } | null;
 };
 
 function internalHref(ref: ResolvedRef | null | undefined): string | undefined {
-  if (!ref?._type) return undefined;
-  if (ref._type === "home") return "/";
-  if (ref._type === "page" && ref.slug) return `/${ref.slug}`;
-  return undefined;
+	if (!ref?._type) return undefined;
+	if (ref._type === "home") return "/";
+	if (ref._type === "page" && ref.slug) return `/${ref.slug}`;
+	return undefined;
 }
 
 function LinkMark({
-  children,
-  value,
+	children,
+	value,
 }: {
-  children?: ReactNode;
-  value?: RichTextMediaLinkMark;
+	children?: ReactNode;
+	value?: RichTextMediaLinkMark;
 }) {
-  if (!value || value._type !== "link") {
-    return <>{children}</>;
-  }
+	if (!value || value._type !== "link") {
+		return <>{children}</>;
+	}
 
-  if (value.type === "external" && value.url) {
-    const blank = value.blank !== false;
-    return (
-      <a
-        href={value.url}
-        target={blank ? "_blank" : undefined}
-        rel={blank ? "noopener noreferrer" : undefined}
-      >
-        {children}
-      </a>
-    );
-  }
+	if (value.type === "external" && value.url) {
+		const blank = value.blank !== false;
+		return (
+			<a
+				href={value.url}
+				target={blank ? "_blank" : undefined}
+				rel={blank ? "noopener noreferrer" : undefined}
+			>
+				{children}
+			</a>
+		);
+	}
 
-  if (value.type === "internal") {
-    const href = internalHref(value.resolvedReference ?? undefined);
-    if (href) {
-      return (
-        <a
-          href={href}
-        >
-          {children}
-        </a>
-      );
-    }
-  }
+	if (value.type === "internal") {
+		const href = internalHref(value.resolvedReference ?? undefined);
+		if (href) {
+			return <a href={href}>{children}</a>;
+		}
+	}
 
-  if (value.type === "function") {
-    return (
-      <span className="cursor-default underline decoration-dotted decoration-linkDecoration">
-        {children}
-      </span>
-    );
-  }
+	if (value.type === "function") {
+		return (
+			<span className="cursor-default underline decoration-dotted decoration-linkDecoration">
+				{children}
+			</span>
+		);
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 }
 
 const components: Partial<PortableTextComponents> = {
-  block: {
-    normal: ({ children }) => (
-      <p className="mb-4 last:mb-0">{children}</p>
-    ),
-    h2: ({ children }) => (
-      <h2 className="mb-3 mt-8 first:mt-0">
-        {children}
-      </h2>
-    ),
-    h3: ({ children }) => (
-      <h3 className="mb-2 mt-6 first:mt-0">
-        {children}
-      </h3>
-    ),
-    h4: ({ children }) => (
-      <h4 className="mb-2 mt-4 first:mt-0">
-        {children}
-      </h4>
-    ),
-  },
-  list: {
-    bullet: ({ children }) => (
-      <ul className="mb-4 space-y-1 pl-6">{children}</ul>
-    ),
-    number: ({ children }) => (
-      <ol className="mb-4 space-y-1 pl-6">{children}</ol>
-    ),
-  },
-  listItem: {
-    bullet: ({ children }) => <li>{children}</li>,
-    number: ({ children }) => <li>{children}</li>,
-  },
-  marks: {
-    strong: ({ children }) => <strong>{children}</strong>,
-    em: ({ children }) => <em className="italic">{children}</em>,
-    code: ({ children }) => (
-      <code className="px-1.5 py-0.5">
-        {children}
-      </code>
-    ),
-    link: ({ children, value }) => (
-      <LinkMark value={value as RichTextMediaLinkMark}>{children}</LinkMark>
-    ),
-  },
-  types: {
-    "module.media": () => null,
-    "module.carousel": () => null,
-  },
+	block: {
+		normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+		h2: ({ children }) => <h2 className="mb-3 mt-8 first:mt-0">{children}</h2>,
+		h3: ({ children }) => <h3 className="mb-2 mt-6 first:mt-0">{children}</h3>,
+		h4: ({ children }) => <h4 className="mb-2 mt-4 first:mt-0">{children}</h4>,
+	},
+	list: {
+		bullet: ({ children }) => (
+			<ul className="mb-4 space-y-1 pl-6">{children}</ul>
+		),
+		number: ({ children }) => (
+			<ol className="mb-4 space-y-1 pl-6">{children}</ol>
+		),
+	},
+	listItem: {
+		bullet: ({ children }) => <li>{children}</li>,
+		number: ({ children }) => <li>{children}</li>,
+	},
+	marks: {
+		strong: ({ children }) => <strong>{children}</strong>,
+		em: ({ children }) => <em className="italic">{children}</em>,
+		code: ({ children }) => <code className="px-1.5 py-0.5">{children}</code>,
+		link: ({ children, value }) => (
+			<LinkMark value={value as RichTextMediaLinkMark}>{children}</LinkMark>
+		),
+	},
+	types: {
+		"module.media": () => null,
+		"module.carousel": () => null,
+	},
 };
 
 type RichTextMediaProps = {
-  value: PortableTextBlock[];
-  className?: string;
+	value: PortableTextBlock[];
+	className?: string;
 };
 
 /**
@@ -143,10 +119,14 @@ type RichTextMediaProps = {
  * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields.
  */
 export function RichTextMedia({ value, className }: RichTextMediaProps) {
-  if (!value.length) return null;
-  return (
-    <div className={clsx("rich-text-media", className)}>
-      <PortableText value={value} components={components} onMissingComponent={false} />
-    </div>
-  );
+	if (!value.length) return null;
+	return (
+		<div className={clsx("rich-text-media", className)}>
+			<PortableText
+				value={value}
+				components={components}
+				onMissingComponent={false}
+			/>
+		</div>
+	);
 }

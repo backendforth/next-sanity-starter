@@ -8,7 +8,7 @@ import { seoQuery } from "./seo";
  * Resolves link annotations like module text bodies.
  */
 function internationalizedRichTextArrayField(fieldName: string): string {
-  return `${fieldName}[]{
+	return `${fieldName}[]{
   _key,
   _type,
   language,

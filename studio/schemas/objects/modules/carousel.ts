@@ -30,7 +30,7 @@ export const moduleCarousel = defineType({
       name: "imagesOnly",
       title: "Images only",
       description:
-        "When off, each slide is a full media block (image or Mux video). When on, slides are plain images (same as before).",
+        "On: slides are plain images (hotspot). Off: each slide uses the Media module (image or Mux video, same as elsewhere on the site).",
       type: "boolean",
       initialValue: true,
     },

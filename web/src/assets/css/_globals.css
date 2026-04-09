@@ -1,9 +1,9 @@
 @import "./fonts.css";
 @import "./colors.css";
 @import "./sizes.css";
-@import "./typography.css";
 @import "tailwindcss";
 @config "../../../tailwind.config.ts";
+@import "./typography.css";
 @import "./safelist.css";
 
 :root {

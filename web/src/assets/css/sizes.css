@@ -30,6 +30,7 @@
   --quoteParagraph-default-max-size: rem(28);
   --subTitle-default-max-size: rem(22);
   --paragraph-default-max-size: rem(16);
+  --smallParagraph-default-max-size: rem(14);
   --caption-default-max-size: rem(14.5);
 
   /* Spacing, Height, and Width Variables */

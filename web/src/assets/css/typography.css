@@ -139,6 +139,10 @@ p {
   @apply font-paragraph;
 }
 
+a {
+  @apply font-bold underline hover:text-hoverColor;
+}
+
 small {
   @apply font-smallParagraph;
 }
@@ -149,6 +153,18 @@ blockquote {
 
 figcaption {
   @apply font-caption;
+}
+
+code {
+  @apply rounded bg-codeBg font-mono;
+}
+
+ul {
+  @apply list-disc;
+}
+
+ol {
+  @apply list-decimal;
 }
 
 blockquote p {

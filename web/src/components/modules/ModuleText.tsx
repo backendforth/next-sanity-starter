@@ -18,7 +18,7 @@ export function ModuleText({ module, locale = defaultLocale }: ModuleTextProps) 
   return (
     <article className="flex flex-col gap-4 border-b border-borderSubtle pb-10 last:border-b-0 last:pb-0">
       {title ? (
-        <h2 className="text-xl font-semibold tracking-tight text-headingColor">{title}</h2>
+        <h2>{title}</h2>
       ) : null}
       <RichTextMedia value={blocks} />
     </article>

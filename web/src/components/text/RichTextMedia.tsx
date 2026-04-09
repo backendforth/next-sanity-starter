@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import type { ReactNode } from "react";
@@ -84,41 +85,41 @@ function LinkMark({
 const components: Partial<PortableTextComponents> = {
   block: {
     normal: ({ children }) => (
-      <p className="mb-4 text-base leading-relaxed text-textMuted last:mb-0">{children}</p>
+      <p className="mb-4 last:mb-0">{children}</p>
     ),
     h2: ({ children }) => (
-      <h2 className="mb-3 mt-8 text-2xl font-semibold tracking-tight text-headingColor first:mt-0">
+      <h2 className="mb-3 mt-8 first:mt-0">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="mb-2 mt-6 text-xl font-semibold tracking-tight text-headingColor first:mt-0">
+      <h3 className="mb-2 mt-6 first:mt-0">
         {children}
       </h3>
     ),
     h4: ({ children }) => (
-      <h4 className="mb-2 mt-4 text-lg font-semibold tracking-tight text-headingColor first:mt-0">
+      <h4 className="mb-2 mt-4 first:mt-0">
         {children}
       </h4>
     ),
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="mb-4 list-disc space-y-1 pl-6 text-textMuted">{children}</ul>
+      <ul className="mb-4 space-y-1 pl-6">{children}</ul>
     ),
     number: ({ children }) => (
-      <ol className="mb-4 list-decimal space-y-1 pl-6 text-textMuted">{children}</ol>
+      <ol className="mb-4 space-y-1 pl-6">{children}</ol>
     ),
   },
   listItem: {
-    bullet: ({ children }) => <li className="leading-relaxed">{children}</li>,
-    number: ({ children }) => <li className="leading-relaxed">{children}</li>,
+    bullet: ({ children }) => <li>{children}</li>,
+    number: ({ children }) => <li>{children}</li>,
   },
   marks: {
-    strong: ({ children }) => <strong className="font-semibold text-textColor">{children}</strong>,
+    strong: ({ children }) => <strong>{children}</strong>,
     em: ({ children }) => <em className="italic">{children}</em>,
     code: ({ children }) => (
-      <code className="rounded bg-codeBg px-1.5 py-0.5 font-mono text-[0.9em] text-codeText">
+      <code className="px-1.5 py-0.5">
         {children}
       </code>
     ),
@@ -144,7 +145,7 @@ type RichTextMediaProps = {
 export function RichTextMedia({ value, className }: RichTextMediaProps) {
   if (!value.length) return null;
   return (
-    <div className={className}>
+    <div className={clsx("rich-text-media", className)}>
       <PortableText value={value} components={components} onMissingComponent={false} />
     </div>
   );

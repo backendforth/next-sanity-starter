@@ -68,23 +68,6 @@ export default {
         error: "var(--errorColor)",
         success: "var(--successColor)",
         danger: "var(--dangerColor)",
-
-        /* shadcn / radix-ui semantic aliases */
-        background: "var(--bgColor)",
-        foreground: "var(--textColor)",
-        primary: "var(--brandColor)",
-        "primary-foreground": "var(--white)",
-        secondary: "var(--surfaceMuted)",
-        "secondary-foreground": "var(--textColor)",
-        muted: "var(--surfaceMuted)",
-        "muted-foreground": "var(--textMuted)",
-        accent: "var(--surfaceMuted)",
-        "accent-foreground": "var(--textColor)",
-        destructive: "var(--dangerColor)",
-        "destructive-foreground": "var(--white)",
-        border: "var(--borderSubtle)",
-        input: "var(--borderSubtle)",
-        ring: "var(--accentColor)",
       },
       aspectRatio: {
         "4/3": "4 / 3",

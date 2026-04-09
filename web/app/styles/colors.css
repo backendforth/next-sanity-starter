@@ -24,7 +24,7 @@
   --textMuted: #52525b;
   --headingColor: #18181b;
 
-  --linkColor: var(--red);
+  --linkColor: #3b82f6;
   --hoverColor: #991b1b;
   --activeColor: var(--bluepressed);
   --bluepressed: #1e40af;
@@ -48,6 +48,7 @@
   --foreground: var(--textColor);
 }
 
+/* TODO: dark mode colors not implemented yet */
 .dark {
   color-scheme: dark;
 

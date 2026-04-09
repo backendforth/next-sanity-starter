@@ -40,7 +40,6 @@ function LinkMark({
     return (
       <a
         href={value.url}
-        className="text-linkColor underline decoration-linkDecoration underline-offset-2 hover:decoration-linkDecorationHover"
         target={blank ? "_blank" : undefined}
         rel={blank ? "noopener noreferrer" : undefined}
       >
@@ -55,7 +54,6 @@ function LinkMark({
       return (
         <a
           href={href}
-          className="text-linkColor underline decoration-linkDecoration underline-offset-2 hover:decoration-linkDecorationHover"
         >
           {children}
         </a>

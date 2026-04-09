@@ -43,7 +43,7 @@ export async function resolveStudioDatasetAsync(
       const fallbackName = names[0];
       if (env.NODE_ENV === "development") {
         console.warn(
-          `[sanity] Keines der bevorzugten Datasets (${preferred.join(", ")}) existiert im Projekt. Verwende "${fallbackName}". Lege "${preferred[0]}" an oder setze SANITY_STUDIO_DATASET.`,
+          `[sanity] None of the preferred datasets (${preferred.join(", ")}) exist on this project. Using "${fallbackName}". Create "${preferred[0]}" or set SANITY_STUDIO_DATASET.`,
         );
       }
       if (fallbackName !== undefined) {
@@ -55,7 +55,7 @@ export async function resolveStudioDatasetAsync(
   const primary = preferred[0];
   if (primary === undefined) {
     throw new Error(
-      "[sanity] Interner Fehler: keine Dataset-Präferenz ermittelbar.",
+      "[sanity] Internal error: could not determine dataset preference.",
     );
   }
   return primary;

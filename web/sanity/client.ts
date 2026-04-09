@@ -1,12 +1,6 @@
 import { createClient } from "next-sanity";
 
-import {
-  getResolvedStudioDataset,
-  getSanityStudioProjectId,
-} from "./resolveStudioDataset";
-
-const projectId = getSanityStudioProjectId();
-const dataset = getResolvedStudioDataset();
+import { dataset, projectId } from "./sanityEnv";
 
 if (!projectId || !dataset) {
   throw new Error(

@@ -1,4 +1,4 @@
-import { ModuleStack } from "@/components/modules/ModuleStack";
+import { ModuleStack } from "@/src/components/modules/ModuleStack";
 import { getHome } from "@/sanity/getHome";
 import { pickLocalizedString } from "@/sanity/localizedString";
 

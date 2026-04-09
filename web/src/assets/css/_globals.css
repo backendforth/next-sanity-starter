@@ -1,8 +1,8 @@
-@import "./styles/colors.css";
-@import "./styles/sizes.css";
+@import "./colors.css";
+@import "./sizes.css";
 @import "tailwindcss";
-@config "../tailwind.config.ts";
-@import "./styles/safelist.css";
+@config "../../../tailwind.config.ts";
+@import "./safelist.css";
 
 @theme inline {
   --font-sans: var(--font-dm-sans);

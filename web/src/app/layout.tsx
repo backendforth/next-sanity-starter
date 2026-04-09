@@ -3,7 +3,7 @@ import { DM_Sans, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { getHome } from "@/sanity/getHome";
 import { pickLocalizedString } from "@/sanity/localizedString";
-import "./globals.css";
+import "../assets/css/_globals.css";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",

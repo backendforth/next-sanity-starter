@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
-import { ModuleStack } from "@/components/modules/ModuleStack";
+import { ModuleStack } from "@/src/components/modules/ModuleStack";
 import type { StackModule } from "@/sanity/types/modules";
 import {
   pickLocalizedString,

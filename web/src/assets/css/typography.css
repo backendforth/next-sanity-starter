@@ -1,0 +1,9 @@
+html {
+  font-size: 16px;
+  text-wrap: balance;
+
+  @variant xl {
+    /* font-size: 1.1111vw; */
+    font-size: clamp(1rem, 1.111111vw, 1.5rem);
+  }
+}

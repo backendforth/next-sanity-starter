@@ -1,6 +1,7 @@
 @import "./fonts.css";
 @import "./colors.css";
 @import "./sizes.css";
+@import "./typography.css";
 @import "tailwindcss";
 @config "../../../tailwind.config.ts";
 @import "./safelist.css";

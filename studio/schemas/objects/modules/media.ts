@@ -23,41 +23,41 @@ export const moduleMedia = defineType({
         layout: "radio",
         direction: "horizontal",
       },
-      validation: (rule) => rule.required(),
+      // validation: (rule) => rule.required(),
     },
     {
       name: "imageContent",
       title: "Image",
       type: "media.image",
       hidden: ({ parent }) => parent?.type !== "image",
-      validation: (rule) =>
-        rule.custom((field, context) => {
-          const parent = context.parent as { type?: string } | undefined;
-          if (parent?.type === "image") {
-            const img = field as { image?: unknown } | undefined;
-            if (!img?.image) {
-              return "Image is required.";
-            }
-          }
-          return true;
-        }),
+      // validation: (rule) =>
+      //   rule.custom((field, context) => {
+      //     const parent = context.parent as { type?: string } | undefined;
+      //     if (parent?.type === "image") {
+      //       const img = field as { image?: unknown } | undefined;
+      //       if (!img?.image) {
+      //         return "Image is required.";
+      //       }
+      //     }
+      //     return true;
+      //   }),
     },
     {
       name: "videoContent",
       title: "Video",
       type: "media.video",
       hidden: ({ parent }) => parent?.type !== "video",
-      validation: (rule) =>
-        rule.custom((field, context) => {
-          const parent = context.parent as { type?: string } | undefined;
-          if (parent?.type === "video") {
-            const vc = field as { video?: unknown } | undefined;
-            if (!vc?.video) {
-              return "Video is required.";
-            }
-          }
-          return true;
-        }),
+      // validation: (rule) =>
+      //   rule.custom((field, context) => {
+      //     const parent = context.parent as { type?: string } | undefined;
+      //     if (parent?.type === "video") {
+      //       const vc = field as { video?: unknown } | undefined;
+      //       if (!vc?.video) {
+      //         return "Video is required.";
+      //       }
+      //     }
+      //     return true;
+      //   }),
     },
   ],
   components: {

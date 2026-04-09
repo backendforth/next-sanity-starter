@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import Script from "next/script";
+import { Footer } from "@/src/components/navigation/Footer";
+import { Navbar } from "@/src/components/navigation/Navbar";
 import {
   defaultLocale,
+  isAppLocale,
   LOCALE_HEADER_NAME,
 } from "@/src/i18n/config";
+import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
 import "../assets/css/_globals.css";
 
 const dmSans = DM_Sans({
@@ -32,7 +36,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const h = await headers();
-  const locale = h.get(LOCALE_HEADER_NAME) ?? defaultLocale;
+  const rawLocale = h.get(LOCALE_HEADER_NAME) ?? defaultLocale;
+  const locale = isAppLocale(rawLocale) ? rawLocale : defaultLocale;
+  const siteNav = await fetchSiteNavMenus();
 
   return (
     <html
@@ -44,7 +50,13 @@ export default async function RootLayout({
         <Script id="prefers-dark" strategy="beforeInteractive">
           {`(function(){try{var d=document.documentElement;if(window.matchMedia("(prefers-color-scheme: dark)").matches)d.classList.add("dark");}catch(e){}})()`}
         </Script>
-        {children}
+        <Navbar
+          locale={locale}
+          mainMenu={siteNav?.mainMenu}
+          siteTitle={siteNav?.title}
+        />
+        <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        <Footer locale={locale} footerMenu={siteNav?.footerMenu} />
       </body>
     </html>
   );

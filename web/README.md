@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js app (`web/`)
 
-## Getting Started
+Copy **`.env.example`** to **`.env.local`** and set at least `SANITY_STUDIO_PROJECT_ID` (same values as `studio/.env`). See `sanity/README.md` for the Sanity data layer.
 
-First, run the development server:
+From the monorepo root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm web:dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Languages (default vs fallback, URL prefixes)
+
+**One file to edit:** [`src/i18n/site-locales.ts`](./src/i18n/site-locales.ts) — see [`src/i18n/README.md`](./src/i18n/README.md) for how each file in `i18n/` fits together.
+
+| What | Where |
+|------|--------|
+| Supported languages | `SITE_LOCALES` — list every locale code (`"en"`, `"de"`, …). |
+| **Default** (no URL prefix) | `SITE_DEFAULT_LOCALE` — must be one entry in `SITE_LOCALES`. |
+| Fallback when a Sanity field has no translation | Same list order: after the exact / base tag, other entries in `SITE_LOCALES` are tried (see `sanity/utils/sanityLocalizedText.ts`). |
+
+### Switch **English** as default (current setup)
+
+```ts
+export const SITE_LOCALES = ["en", "de"] as const;
+export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "en";
+```
+
+- URLs: `/`, `/about` → English. German: `/de`, `/de/about`.
+- **Reserved path segment:** `de` (do not use `de` as a page slug on the English site).
+
+### Switch **German** as default
+
+```ts
+export const SITE_LOCALES = ["de", "en"] as const;
+export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "de";
+```
+
+- URLs: `/`, `/about` → German. English: `/en`, `/en/about`.
+- **Reserved path segment:** `en`.
+
+After changing `site-locales.ts`, restart the dev server. Routing uses [`src/middleware.ts`](./src/middleware.ts); helpers [`src/i18n/paths.ts`](./src/i18n/paths.ts) (`localePath`) for links.
+
+### Add another language (e.g. French)
+
+1. Append `"fr"` to `SITE_LOCALES` (and keep `SITE_DEFAULT_LOCALE` in that list).
+2. Add `fr` / `fr-FR` in Sanity for internationalized fields so content can be filled.
+3. URLs become `/fr`, `/fr/about`, … (each non-default locale gets a prefix; avoid using that segment as a slug for the default locale).
+
+---
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- App layout and routes live under `src/app/` (see `[locale]` segments).

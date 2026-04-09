@@ -95,14 +95,12 @@ Page queries return **JSON**. Persist that in your store, not the query string.
 
 **Option A — React `cache` (dedupe per request, no external store):**
 
-```ts
-import { cache } from "react";
-import { client } from "@/sanity/client";
-import { pageBySlugQuery } from "@/sanity/queries";
+The app uses **`fetchPageBySlug`** from `@/sanity/fetchSanityData` (wraps `pageBySlugQuery` + `client.fetch`) so `generateMetadata` and the page component share one request per slug.
 
-export const getPage = cache((slug: string) =>
-  client.fetch(pageBySlugQuery, { slug }),
-);
+```ts
+import { fetchPageBySlug } from "@/sanity/fetchSanityData";
+
+const doc = await fetchPageBySlug(slug);
 ```
 
 **Option B — Zustand (client):** fetch via `/api/...` or Server Action, then `set({ page: data })`.

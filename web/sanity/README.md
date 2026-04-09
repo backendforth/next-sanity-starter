@@ -7,15 +7,20 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | Path | Role |
 |------|------|
 | `client.ts` | `createClient` — use for `fetch` in Server Components, Route Handlers, Server Actions |
+| `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
+| `resolveStudioDataset.ts` | `getSanityStudioProjectId`, `resolveStudioDatasetAsync` — explicit env → Management API or HTTP probe → preference order |
+| `fetchSanityData.ts` | Cached `fetchHomeDocument` / `fetchPageBySlug` using `homeQuery` / `pageBySlugQuery` (dedupes layout + page requests) |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `types/modules/` | TS types for `module.*` payloads (and shared image types) |
-| `utils/` | `parseLocalizedText` (`sanityLocalizedText`), `sanityImageBuilder`, `sanityModuleLabel` |
+| `utils/` | Localization (`parseLocalizedText`, `pickLocalizedString`, `pickLocalizedPortableTextBlocks`, …), `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
 
 Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
 
 ---
 
 ## Translations (`utils/sanityLocalizedText.ts`)
+
+**Which locale the page uses** comes from the URL (`[locale]` route segment), driven by **`src/i18n/site-locales.ts`** (default language, list of languages, fallback order). See the root **`web/README.md`** section *Languages*.
 
 Sanity uses **`internationalizedArray*`** fields: arrays of `{ language | _key, value }`.
 
@@ -40,6 +45,15 @@ const body = parseLocalizedText({ entries: module.body, locale: "de", as: "block
 
 // Or let the field shape decide (string vs blocks):
 const either = parseLocalizedText({ entries: someField, locale: "de" });
+```
+
+For **React** components, prefer **`pickLocalizedString`** and **`pickLocalizedPortableTextBlocks`** (same resolution rules, including nested i18n inside Portable Text). Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`) — aligned with schema **`richTextMedia`**.
+
+```ts
+import { pickLocalizedString, pickLocalizedPortableTextBlocks } from "@/sanity/utils";
+
+const heading = pickLocalizedString(doc.title, "de");
+const blocks = pickLocalizedPortableTextBlocks(module.body, "de");
 ```
 
 ---
@@ -70,13 +84,13 @@ function HeroImage({ image }: { image: SanityImageField | null }) {
 }
 ```
 
-Env: uses `SANITY_STUDIO_PROJECT_ID` / `SANITY_STUDIO_DATASET_PRODUCTION` with optional `NEXT_PUBLIC_*` fallbacks — keep them aligned with `client.ts`.
+Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise missing `development` or `production` is detected and the other name is used when possible.
 
 ---
 
 ## Module labels (`utils/sanityModuleLabel.ts`)
 
-**`getSanityModuleLabel(moduleType)`** maps `_type` strings like `module.text` to short UI labels (e.g. for placeholders or dev overlays). Safe to use in fallbacks when a module has no React renderer yet.
+**`getSanityModuleLabel(moduleType)`** maps `_type` strings like `module.text` to short UI labels (e.g. placeholders or dev overlays). Import from **`@/sanity/utils`** (same barrel as localization).
 
 ---
 
@@ -147,4 +161,4 @@ For production, swap the `<pre>` block for your real module renderer that switch
 
 ## Environment
 
-`client.ts` expects `SANITY_STUDIO_PROJECT_ID` and `SANITY_STUDIO_DATASET_PRODUCTION` (see file). Image builder may also read `NEXT_PUBLIC_*` variants — document your deployment env in the main app README.
+See **`web/.env.example`**: copy to **`.env.local`** for Next.js. Variables match `studio/.env` for project id and dataset resolution (`sanityEnv.ts`, `client.ts`, image URL builder). Optional **`SANITY_STUDIO_DATASET_RESOLVER_TOKEN`** or **`SANITY_AUTH_TOKEN`** lists datasets via the Management API; without a token, resolution uses an HTTP probe (and treats **401** on private datasets as “exists”). Optional **`NEXT_PUBLIC_SANITY_*`** if the browser needs project id or dataset (e.g. client-side image URLs).

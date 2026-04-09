@@ -1,4 +1,12 @@
+/**
+ * Resolves `sanity-plugin-internationalized-array` fields for a requested locale.
+ * Fallback order: exact language tag → base tag → other configured locales (`locales` in
+ * `@/src/i18n/site-locales.ts`) → any entry with content. Routing passes
+ * `locale` from `params` (see `middleware.ts`); keep all of that here — no second i18n layer.
+ */
 import type { PortableTextBlock } from "@portabletext/types";
+
+import { defaultLocale, locales } from "@/src/i18n/config";
 
 type LocalizedEntryValue = string | PortableTextBlock[] | null | undefined;
 
@@ -41,10 +49,10 @@ function pickPreferredEntry(
   entries: IntlTextEntry[],
   localeCandidates: string[],
 ): IntlTextEntry | undefined {
-  for (const locale of localeCandidates) {
+  for (const loc of localeCandidates) {
     const matched = entries.find(
       (entry) =>
-        (entry.language === locale || entry._key === locale) &&
+        (entry.language === loc || entry._key === loc) &&
         hasUsableValue(entry.value),
     );
     if (matched) {
@@ -54,8 +62,30 @@ function pickPreferredEntry(
   return undefined;
 }
 
+/** Any entry with content (last resort if no `locales` match). */
 function pickFallbackEntry(entries: IntlTextEntry[]): IntlTextEntry | undefined {
   return entries.find((entry) => hasUsableValue(entry.value));
+}
+
+/**
+ * Order: exact tag (e.g. `de-DE`), base language, then other entries in `locales` (from `site-locales.ts`), then any remaining entry.
+ */
+function getLocaleFallbackChain(locale: string): string[] {
+  const normalized = locale.trim();
+  const base = normalized.split("-")[0] || defaultLocale;
+  const chain: string[] = [];
+  if (normalized && normalized !== base) {
+    chain.push(normalized);
+  }
+  if (!chain.includes(base)) {
+    chain.push(base);
+  }
+  for (const l of locales) {
+    if (l !== base && !chain.includes(l)) {
+      chain.push(l);
+    }
+  }
+  return chain;
 }
 
 function coerceResolvedValue(
@@ -78,10 +108,12 @@ function resolveLocalizedEntries(
     return undefined;
   }
 
-  const localeCandidates = getLocaleCandidates(locale);
-  const preferred = pickPreferredEntry(entries, localeCandidates);
-  if (preferred) {
-    return coerceResolvedValue(preferred.value);
+  for (const step of getLocaleFallbackChain(locale)) {
+    const candidates = getLocaleCandidates(step);
+    const preferred = pickPreferredEntry(entries, candidates);
+    if (preferred) {
+      return coerceResolvedValue(preferred.value);
+    }
   }
 
   const fallback = pickFallbackEntry(entries);
@@ -89,8 +121,8 @@ function resolveLocalizedEntries(
 }
 
 /**
- * Erkennt `sanity-plugin-internationalized-array`-Einträge (`language` / `_key` + `value`).
- * Nicht mit beliebigen Objekt-Arrays verwechseln: jedes Element braucht `value`.
+ * Detects `sanity-plugin-internationalized-array` entries (`language` / `_key` + `value`).
+ * Do not confuse with arbitrary object arrays: each element must have `value`.
  */
 function looksLikeIntlEntryArray(value: unknown): value is IntlTextEntry[] {
   if (!Array.isArray(value) || value.length === 0) {
@@ -106,10 +138,9 @@ function looksLikeIntlEntryArray(value: unknown): value is IntlTextEntry[] {
 }
 
 /**
- * Läuft rekursiv durch Objekte und Arrays und löst verschachtelte
- * `internationalizedArray*`-Felder auf (z. B. `module.text` im Rich Text, Links mit
- * lokalisierten Objekten), sodass die Ausgabe der einsprachigen Kette
- * `richtext → Blöcke → …` entspricht.
+ * Walks objects and arrays recursively and resolves nested `internationalizedArray*` fields
+ * (e.g. `module.text` in rich text, links with localized objects) so the result matches
+ * the single-locale chain `rich text → blocks → …`.
  */
 function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
   if (value == null) {
@@ -146,8 +177,8 @@ function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
 }
 
 /**
- * Wählt die passende Locale für `internationalizedArrayRichText*` und löst alle
- * eingebetteten i18n-Felder in Blöcken, Mark-Defs und Modulen auf.
+ * Picks the locale for `internationalizedArrayRichText*` and resolves all embedded i18n
+ * fields in blocks, mark defs, and modules.
  */
 export function resolveLocalizedPortableTextDeep(
   entries: IntlRichTextEntry[] | null | undefined,
@@ -206,4 +237,20 @@ export function parseLocalizedText({
     return deepResolveLocalizedTree(raw, locale) as PortableTextBlock[];
   }
   return raw;
+}
+
+/** Convenience for i18n string fields (`internationalizedArrayString`). */
+export function pickLocalizedString(
+  entries: IntlStringEntry[] | null | undefined,
+  locale: string = defaultLocale,
+): string | undefined {
+  return parseLocalizedText({ entries, locale, as: "string" });
+}
+
+/** Convenience for `internationalizedArrayRichText*` / `richTextMedia` bodies. */
+export function pickLocalizedPortableTextBlocks(
+  entries: IntlRichTextEntry[] | null | undefined,
+  locale: string,
+): PortableTextBlock[] {
+  return resolveLocalizedPortableTextDeep(entries, locale);
 }

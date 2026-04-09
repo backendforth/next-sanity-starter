@@ -9,7 +9,7 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | File | Export(s) | Role |
 |------|-----------|------|
 | `seo.ts` | `seoQuery` | SEO object: title, description, resolved `imageUrl` |
-| `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery` | Image / Mux video field shapes and a generic `mediaQuery` helper |
+| `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
 | `link.ts` | `linkQuery` | Portable Text `link` marks: `internal` (route, slug, `resolvedReference`), `external` (href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
 | `settings.ts` | `siteSettingsQuery`, `siteNavQuery`, `errorSettingsQuery`, `siteCookieBannerQuery`, `navMenusQuery`, `settingsBundleQuery` | Singleton settings + combined nav menus + one-shot bundle |
 | `sitemap.ts` | `pageSlugsQuery`, `sitemapPagesQuery` | Slug list for `[slug]` routes; sitemap rows include `home` + all `page` docs with `path` / `lastmod` fields |

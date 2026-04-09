@@ -129,8 +129,6 @@ const components: Partial<PortableTextComponents> = {
   types: {
     "module.media": () => null,
     "module.carousel": () => null,
-    "module.contentRefs": () => null,
-    "module.text": () => null,
   },
 };
 

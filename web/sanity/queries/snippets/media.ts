@@ -34,9 +34,12 @@ export const videoQuery = `{
 }`;
 
 /**
- * Ein Feld, dessen Wurzel ein `asset` hat (Sanity-`image` oder Mux-Video): erkennt automatisch
- * Video vs. Bild an `asset`. Im Projektionskontext des Feldes verwenden, z. B.:
- * `"media": image{ ${mediaQuery} }` oder für ein reines `image`-Slide: `"media": ${mediaQuery}`.
+ * Field whose root has an `asset` (Sanity `image` or Mux video): picks image vs video from `asset`.
+ *
+ * - As a **value** after a key: `"media": ${mediaQuery}` (bare `select` is valid here).
+ * - **Inside** a field projection `image{ … }` / `video{ … }`: use only `…${mediaQuerySpread}` —
+ *   a standalone `{ select(…) }` is invalid in GROQ object projections (parser:
+ *   "Attribute or a string key expected"); spread fixes that.
  */
 export const mediaQuery = `select(
   defined(asset->playbackId) || defined(asset->data.playbackId) => {
@@ -48,3 +51,6 @@ export const mediaQuery = `select(
     ...${imageQuery}
   }
 )`;
+
+/** For `image{ ${mediaQuerySpread} }` / `video{ ${mediaQuerySpread} }` — see `mediaQuery`. */
+export const mediaQuerySpread = `...${mediaQuery}`;

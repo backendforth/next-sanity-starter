@@ -1,42 +1,46 @@
 import type { Metadata } from "next";
+import { DM_Sans, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import Script from "next/script";
-import { getHome } from "@/sanity/getHome";
-import { pickLocalizedString } from "@/sanity/localizedString";
+import {
+  defaultLocale,
+  LOCALE_HEADER_NAME,
+} from "@/src/i18n/config";
 import "../assets/css/_globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const home = await getHome();
-  if (!home) {
-    return {
-      title: "Site",
-      description: undefined,
-    };
-  }
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
 
-  const heading = pickLocalizedString(home.title);
-  const metaTitle = home.seo?.title?.trim() || heading || "Home";
-  const description = home.seo?.description?.trim() || undefined;
-  const ogImage = home.seo?.imageUrl || undefined;
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
-  return {
-    title: metaTitle,
-    description,
-    openGraph: {
-      title: metaTitle,
-      description,
-      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: {
+    default: "Site",
+    template: "%s",
+  },
+};
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const h = await headers();
+  const locale = h.get(LOCALE_HEADER_NAME) ?? defaultLocale;
+
   return (
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-bgColor text-textColor">
+    <html
+      lang={locale}
+      className={`${dmSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-full flex flex-col bg-bgColor text-textColor font-sans">
         <Script id="prefers-dark" strategy="beforeInteractive">
           {`(function(){try{var d=document.documentElement;if(window.matchMedia("(prefers-color-scheme: dark)").matches)d.classList.add("dark");}catch(e){}})()`}
         </Script>

@@ -1,6 +1,6 @@
 import type { SanityImageAssetRef, SanityImageField } from "./shared";
 
-/** Einheitliche Ausgabe von `mediaQuery` / `resolvedMedia.media`. */
+/** Unified shape from `mediaQuery` / `resolvedMedia.media`. */
 export type ResolvedMediaPayload = {
   kind?: "image" | "video";
   [key: string]: unknown;

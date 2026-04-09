@@ -6,7 +6,7 @@ export type ModuleCarouselData = {
   _key?: string;
   heading?: IntlStringEntry[] | null;
   imagesOnly?: boolean | null;
-  /** Bild-Slides: je Slide `media` aus `mediaQuery` (kind + Daten). */
+  /** Image slides: each slide has `media` from `mediaQuery` (kind + payload). */
   slides?: Array<{
     _key?: string;
     _type?: string;

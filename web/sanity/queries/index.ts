@@ -1,5 +1,10 @@
 export { seoQuery } from "./snippets/seo";
-export { imageQuery, mediaQuery, videoQuery } from "./snippets/media";
+export {
+  imageQuery,
+  mediaQuery,
+  mediaQuerySpread,
+  videoQuery,
+} from "./snippets/media";
 export { linkQuery } from "./snippets/link";
 export {
   errorSettingsQuery,

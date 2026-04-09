@@ -1,7 +1,7 @@
-import { imageQuery, mediaQuery, videoQuery } from "../../snippets/media";
+import { imageQuery, mediaQuerySpread } from "../../snippets/media";
 
 /**
- * `resolvedMedia` für `module.media` — gleiche Logik wie in der Projektion, für Carousel `resolvedSlides`.
+ * `resolvedMedia` for `module.media` — same logic as the projection; for carousel, `resolvedSlides`.
  */
 export const moduleMediaResolvedMediaQuery = `
   select(
@@ -9,30 +9,30 @@ export const moduleMediaResolvedMediaQuery = `
       "kind": "video",
       "caption": videoContent.caption,
       "videoSettings": videoContent.videoSettings,
-      "media": videoContent.video{ ${mediaQuery} },
+      "media": videoContent.video{ ${mediaQuerySpread} },
       "poster": videoContent.poster${imageQuery}
     },
     {
       "kind": "image",
       "caption": imageContent.caption,
-      "media": imageContent.image{ ${mediaQuery} }
+      "media": imageContent.image{ ${mediaQuerySpread} }
     }
   )
 `;
 
 /**
- * `module.media` (`objects/modules/media.ts`) — Bild/Video über `mediaQuery` am jeweiligen Asset-Feld.
+ * `module.media` (`objects/modules/media.ts`) — image/video via `mediaQuery` on each asset field.
  */
 export const moduleMediaInnerFields = `
   type,
   imageContent{
     caption,
-    "media": image{ ${mediaQuery} }
+    "media": image{ ${mediaQuerySpread} }
   },
   videoContent{
     caption,
     videoSettings,
-    "media": video{ ${mediaQuery} },
+    "media": video{ ${mediaQuerySpread} },
     "poster": poster${imageQuery}
   },
   "resolvedMedia": ${moduleMediaResolvedMediaQuery}

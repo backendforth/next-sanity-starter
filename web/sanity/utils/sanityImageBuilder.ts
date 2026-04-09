@@ -1,9 +1,6 @@
 import { createImageUrlBuilder, type SanityImageSource } from "@sanity/image-url";
 
-import {
-  getResolvedStudioDataset,
-  getSanityStudioProjectId,
-} from "@/sanity/resolveStudioDataset";
+import { dataset, projectId } from "@/sanity/sanityEnv";
 import type { SanityImageField } from "@/sanity/types/modules";
 
 type ImageFit = "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
@@ -18,9 +15,6 @@ type BuildImageUrlOptions = {
   auto?: ImageAuto;
   dpr?: 1 | 2 | 3;
 };
-
-const projectId = getSanityStudioProjectId();
-const dataset = getResolvedStudioDataset();
 
 const builder = createImageUrlBuilder({ projectId, dataset });
 

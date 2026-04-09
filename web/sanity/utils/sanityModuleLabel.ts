@@ -17,5 +17,5 @@ export function getSanityModuleLabel(moduleType: string | undefined): string {
   if (!moduleType) {
     return "Module";
   }
-  return SANITY_MODULE_LABELS[moduleType] ?? humanizeModuleType(moduleType) || "Module";
+  return SANITY_MODULE_LABELS[moduleType] ?? (humanizeModuleType(moduleType) || "Module");
 }

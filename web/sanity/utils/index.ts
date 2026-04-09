@@ -1,6 +1,8 @@
 export * from "./sanityImageBuilder";
 export {
   parseLocalizedText,
+  pickLocalizedPortableTextBlocks,
+  pickLocalizedString,
   resolveLocalizedPortableTextDeep,
   type IntlRichTextEntry,
   type IntlStringEntry,

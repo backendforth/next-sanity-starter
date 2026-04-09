@@ -1,27 +1,6 @@
-/**
- * Synchrone Dataset-Auswahl — gleiche Regeln wie `studio/config/resolveStudioDataset.ts`,
- * wenn kein Management-API-Call läuft: explizites Dataset gewinnt, sonst `NODE_ENV`.
- *
- * Das Studio kann zusätzlich per API das erste *existierende* bevorzugte Dataset wählen; das Web
- * repliziert das nicht (kein Token nötig). Bei Abweichungen `SANITY_STUDIO_DATASET` setzen.
- */
-export function getResolvedStudioDataset(
-  env: NodeJS.ProcessEnv = process.env,
-): string {
-  const explicit =
-    env.SANITY_STUDIO_DATASET?.trim() ||
-    env.NEXT_PUBLIC_SANITY_DATASET?.trim();
-  if (explicit) {
-    return explicit;
-  }
-
-  const devName =
-    env.SANITY_STUDIO_DATASET_DEVELOPMENT?.trim() ?? "development";
-  const prodName =
-    env.SANITY_STUDIO_DATASET_PRODUCTION?.trim() ?? "production";
-  const isDev = env.NODE_ENV === "development";
-  return isDev ? devName : prodName;
-}
+/** JS client uses `2024-01-01`; HTTP URLs need the `v` prefix. */
+const SANITY_API_VERSION = "2024-01-01";
+const SANITY_HTTP_API_PATH = `v${SANITY_API_VERSION}`;
 
 export function getSanityStudioProjectId(
   env: NodeJS.ProcessEnv = process.env,
@@ -33,15 +12,136 @@ export function getSanityStudioProjectId(
   );
 }
 
+export type ResolveStudioDatasetOptions = {
+  /** When true, skip Management API and HTTP probes (use preference order only). */
+  skipProbe?: boolean;
+};
+
 /**
- * `true`, wenn das aufgelöste Dataset dem konfigurierten Development-Namen entspricht
- * (z. B. `development` bei `next dev` ohne `SANITY_STUDIO_DATASET`, oder explizit gesetzt).
+ * `SANITY_STUDIO_DATASET` / `NEXT_PUBLIC_SANITY_DATASET` always win.
+ * Otherwise: dev build prefers development dataset, production build prefers production.
+ * - With Management API token: first preferred name that exists on the project (same as Studio).
+ * - Without token: HTTP probe on the Data API — first preferred name that returns not 404
+ *   (so missing `development` falls back to `production` and vice versa).
+ *
+ * Resolved **`dataset`** for runtime is re-exported from **`sanityEnv.ts`** (single await at startup).
  */
-export function isSanityStudioDevContext(
-  env: NodeJS.ProcessEnv = process.env,
-): boolean {
-  const resolved = getResolvedStudioDataset(env);
+export async function resolveStudioDatasetAsync(
+  env: NodeJS.ProcessEnv,
+  options: ResolveStudioDatasetOptions = {},
+): Promise<string> {
+  const explicit =
+    env.SANITY_STUDIO_DATASET?.trim() || env.NEXT_PUBLIC_SANITY_DATASET?.trim();
+  if (explicit) {
+    return explicit;
+  }
+
+  const projectId =
+    env.SANITY_STUDIO_PROJECT_ID?.trim() ||
+    env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
   const devName =
     env.SANITY_STUDIO_DATASET_DEVELOPMENT?.trim() ?? "development";
-  return resolved === devName;
+  const prodName =
+    env.SANITY_STUDIO_DATASET_PRODUCTION?.trim() ?? "production";
+  const isDev = env.NODE_ENV === "development";
+  const preferred = isDev ? [devName, prodName] : [prodName, devName];
+
+  const token =
+    env.SANITY_STUDIO_DATASET_RESOLVER_TOKEN?.trim() ||
+    env.SANITY_AUTH_TOKEN?.trim();
+
+  if (!options.skipProbe && projectId && token) {
+    const names = await fetchProjectDatasetNames(projectId, token);
+    if (names?.length) {
+      const set = new Set(names);
+      for (const name of preferred) {
+        if (set.has(name)) {
+          return name;
+        }
+      }
+      const fallbackName = names[0];
+      if (fallbackName !== undefined) {
+        if (env.NODE_ENV === "development") {
+          console.warn(
+            `[sanity] None of the preferred datasets (${preferred.join(", ")}) exist. Using "${fallbackName}". Create "${preferred[0]}" or set SANITY_STUDIO_DATASET.`,
+          );
+        }
+        return fallbackName;
+      }
+    }
+  }
+
+  if (!options.skipProbe && projectId) {
+    for (const name of preferred) {
+      if (await probeDatasetExists(projectId, name)) {
+        return name;
+      }
+    }
+    if (env.NODE_ENV === "development") {
+      console.warn(
+        `[sanity] Neither "${preferred[0]}" nor "${preferred[1] ?? ""}" responded as existing datasets. Using "${preferred[0]}" — create a dataset or set SANITY_STUDIO_DATASET.`,
+      );
+    }
+  }
+
+  const primary = preferred[0];
+  if (primary === undefined) {
+    throw new Error("[sanity] Could not resolve dataset preference.");
+  }
+  return primary;
+}
+
+async function fetchProjectDatasetNames(
+  projectId: string,
+  token: string,
+): Promise<string[] | null> {
+  try {
+    const res = await fetch(
+      `https://api.sanity.io/v2021-06-07/projects/${projectId}/datasets`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    if (!res.ok) {
+      return null;
+    }
+    const data: unknown = await res.json();
+    if (Array.isArray(data) && data.every((x) => typeof x === "string")) {
+      return data as string[];
+    }
+    if (
+      Array.isArray(data) &&
+      data.length > 0 &&
+      typeof data[0] === "object" &&
+      data[0] !== null &&
+      "name" in (data[0] as object)
+    ) {
+      return (data as { name: string }[]).map((d) => d.name);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** True if the dataset exists (Data API returns something other than 404). */
+async function probeDatasetExists(
+  projectId: string,
+  dataset: string,
+): Promise<boolean> {
+  try {
+    const query = encodeURIComponent('*[_id == "sanity.imageAsset"][0]');
+    const url = `https://${projectId}.api.sanity.io/${SANITY_HTTP_API_PATH}/data/query/${dataset}?query=${query}`;
+    const res = await fetch(url, { method: "GET" });
+    if (res.status === 404) {
+      return false;
+    }
+    // Private datasets often return 401 without a token; the dataset still exists.
+    if (res.status === 401 || res.status === 403) {
+      return true;
+    }
+    return res.ok;
+  } catch {
+    return false;
+  }
 }

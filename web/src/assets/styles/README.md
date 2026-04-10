@@ -20,7 +20,7 @@ It is **imported twice**: in **`tokens.css`** (before sizes/typography) and in *
 | Folder / file | Role |
 |---------------|------|
 | `variables/colors.pcss` | `--color-*`; dark via `prefers-color-scheme` |
-| `variables/sizes.pcss` | layout + `--size-*`; tiers via `theme(--breakpoint-*)` in `@media` |
+| `variables/sizes.pcss` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
 | `variables/typography.pcss` | type scale; same `theme(--breakpoint-*)` tiers |
 | `variables/typography-clamp.css` | optional fluid `clamp()` — import manually if needed |
 | `tailwind.config.ts` | `theme.extend` → CSS vars; **screens** from `breakpoints.pcss` `@theme` |

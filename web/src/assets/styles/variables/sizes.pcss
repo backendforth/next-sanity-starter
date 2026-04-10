@@ -1,24 +1,24 @@
-/* Layout + spacing — tiers: `@media (width >= theme(--breakpoint-*))` (values from `breakpoints.pcss` `@theme`). */
+/* Layout + spacing — `--space-*`, content widths, `--container-spacing`; tiers via `theme(--breakpoint-*)`. */
 
 :root {
   --nav-bar-height: rem(78);
   --footer-height: rem(624);
 
-  --content-max-width-wide: rem(1440);
-  --content-max-width-narrow: rem(976);
-  --container-padding: rem(24);
+  --content-max-width: rem(1440);
+  --content-min-width: rem(976);
+  --container-spacing: rem(24);
   --container-gutter: calc(
-    (var(--content-max-width-wide) - var(--content-max-width-narrow)) / 2
+    (var(--content-max-width) - var(--content-min-width)) / 2
   );
 
-  --size-min: rem(2);
-  --size-xs: rem(8);
-  --size-sm: rem(16);
-  --size-md: rem(32);
-  --size-lg: rem(48);
-  --size-xl: rem(64);
-  --size-max: rem(96);
-  --size-extra: rem(192);
+  --space-min: rem(2);
+  --space-xs: rem(8);
+  --space-sm: rem(16);
+  --space-md: rem(32);
+  --space-lg: rem(48);
+  --space-xl: rem(64);
+  --space-max: rem(96);
+  --space-extra: rem(192);
 
   --radius-md: 0.375rem;
 }
@@ -27,18 +27,18 @@
   :root {
     --nav-bar-height: rem(114);
     --footer-height: rem(283);
-    --container-padding: rem(32);
-    --content-max-width-wide: rem(1536);
-    --content-max-width-narrow: rem(1024);
+    --container-spacing: rem(32);
+    --content-max-width: rem(1536);
+    --content-min-width: rem(1024);
 
-    --size-min: rem(2);
-    --size-xs: rem(9);
-    --size-sm: rem(18);
-    --size-md: rem(36);
-    --size-lg: rem(54);
-    --size-xl: rem(72);
-    --size-max: rem(104);
-    --size-extra: rem(216);
+    --space-min: rem(2);
+    --space-xs: rem(9);
+    --space-sm: rem(18);
+    --space-md: rem(36);
+    --space-lg: rem(54);
+    --space-xl: rem(72);
+    --space-max: rem(104);
+    --space-extra: rem(216);
   }
 }
 
@@ -46,18 +46,18 @@
   :root {
     --nav-bar-height: rem(120);
     --footer-height: rem(300);
-    --container-padding: rem(40);
-    --content-max-width-wide: rem(1680);
-    --content-max-width-narrow: rem(1120);
+    --container-spacing: rem(40);
+    --content-max-width: rem(1680);
+    --content-min-width: rem(1120);
 
-    --size-min: rem(2);
-    --size-xs: rem(10);
-    --size-sm: rem(20);
-    --size-md: rem(40);
-    --size-lg: rem(56);
-    --size-xl: rem(80);
-    --size-max: rem(112);
-    --size-extra: rem(224);
+    --space-min: rem(2);
+    --space-xs: rem(10);
+    --space-sm: rem(20);
+    --space-md: rem(40);
+    --space-lg: rem(56);
+    --space-xl: rem(80);
+    --space-max: rem(112);
+    --space-extra: rem(224);
   }
 }
 
@@ -65,17 +65,17 @@
   :root {
     --nav-bar-height: rem(124);
     --footer-height: rem(320);
-    --container-padding: rem(48);
-    --content-max-width-wide: rem(1800);
-    --content-max-width-narrow: rem(1200);
+    --container-spacing: rem(48);
+    --content-max-width: rem(1800);
+    --content-min-width: rem(1200);
 
-    --size-min: rem(2);
-    --size-xs: rem(10);
-    --size-sm: rem(20);
-    --size-md: rem(40);
-    --size-lg: rem(60);
-    --size-xl: rem(88);
-    --size-max: rem(120);
-    --size-extra: rem(240);
+    --space-min: rem(2);
+    --space-xs: rem(10);
+    --space-sm: rem(20);
+    --space-md: rem(40);
+    --space-lg: rem(60);
+    --space-xl: rem(88);
+    --space-max: rem(120);
+    --space-extra: rem(240);
   }
 }

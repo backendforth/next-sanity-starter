@@ -11,10 +11,6 @@
 @import "./typography/typography.pcss";
 @import "./tailwind/safelist.pcss";
 
-:root {
-  --radius-md: 0.375rem;
-}
-
 body {
   @apply font-text;
   background: var(--color-bg);

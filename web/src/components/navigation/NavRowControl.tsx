@@ -7,7 +7,7 @@ import { cn } from "@/src/utils/cn";
 import type { ResolvedNavRow } from "./navHref";
 
 const defaultLinkClassName =
-  "rounded-sm px-2 py-1.5 text-textColor underline-offset-4 transition-colors hover:text-linkColor focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accentColor";
+  "rounded-sm px-2 py-1.5 text-text-color underline-offset-4 transition-colors hover:text-link-color focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-color";
 
 type Props = {
   row: ResolvedNavRow;

@@ -1,0 +1,127 @@
+/* Base + type utilities; tokens in variables/typography.pcss */
+
+html,
+body {
+  hyphens: none;
+}
+
+html {
+  font-size: var(--font-size-root);
+  text-wrap: balance;
+}
+
+@utility type-extra-large {
+  @apply font-bold font-text not-italic;
+  font-size: var(--font-size-9xl);
+  line-height: var(--line-height-9xl);
+  letter-spacing: var(--letter-spacing-none);
+}
+
+@utility type-page-title {
+  @apply font-bold font-text not-italic;
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-xl);
+  letter-spacing: var(--letter-spacing-none);
+}
+
+@utility type-section-title {
+  @apply font-normal font-headline;
+  font-size: var(--font-size-2xl);
+  letter-spacing: var(--letter-spacing-md);
+  line-height: var(--line-height-md);
+}
+
+@utility type-content-title {
+  @apply font-normal font-headline;
+  font-size: var(--font-size-lg);
+  letter-spacing: var(--letter-spacing-md);
+  line-height: var(--line-height-md);
+}
+
+@utility type-quote-paragraph {
+  @apply font-headline italic;
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-lg);
+  letter-spacing: var(--letter-spacing-sm);
+}
+
+@utility type-sub-title {
+  @apply font-bold font-text not-italic;
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-lg);
+  letter-spacing: var(--letter-spacing-sm);
+}
+
+@utility type-paragraph {
+  @apply font-normal font-text not-italic;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-sm);
+}
+
+@utility type-paragraph-small {
+  @apply font-normal font-text not-italic;
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-xs);
+}
+
+@utility type-caption {
+  @apply font-headline not-italic;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-lg);
+  letter-spacing: var(--letter-spacing-sm);
+}
+
+h1 {
+  @apply type-page-title;
+}
+
+h2 {
+  @apply type-section-title;
+}
+
+h3 {
+  @apply type-content-title;
+}
+
+h4,
+h5,
+h6 {
+  @apply type-sub-title;
+}
+
+p {
+  @apply type-paragraph;
+}
+
+a {
+  @apply font-bold underline hover:text-hover-color;
+}
+
+small {
+  @apply type-paragraph-small;
+}
+
+blockquote {
+  @apply type-quote-paragraph;
+}
+
+figcaption {
+  @apply type-caption;
+}
+
+blockquote p {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+code {
+  @apply rounded bg-code-bg font-mono;
+}
+
+ul {
+  @apply list-disc;
+}
+
+ol {
+  @apply list-decimal;
+}

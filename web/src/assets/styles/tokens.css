@@ -1,0 +1,5 @@
+/* Responsive tokens — `breakpoints.pcss` (`@theme` breakpoints) first; globals imports it again after `tailwindcss`. */
+
+@import "./variables/breakpoints.pcss";
+@import "./variables/sizes.pcss";
+@import "./variables/typography.pcss";

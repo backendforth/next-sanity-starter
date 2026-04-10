@@ -1,0 +1,71 @@
+/* Type scale — tiers: `@media (width >= theme(--breakpoint-*))` (values from `breakpoints.pcss` `@theme`). */
+
+:root {
+  --font-size-xs: rem(12);
+  --font-size-sm: rem(14.5);
+  --font-size-md: rem(16);
+  --font-size-lg: rem(18);
+  --font-size-xl: rem(20);
+  --font-size-2xl: rem(25);
+  --font-size-3xl: rem(28);
+  --font-size-4xl: rem(30);
+  --font-size-9xl: rem(132);
+
+  --font-size-root: 16px;
+
+  --line-height-xs: rem(18);
+  --line-height-sm: rem(24);
+  --line-height-md: rem(28);
+  --line-height-lg: rem(29);
+  --line-height-xl: rem(43);
+  --line-height-9xl: var(--font-size-9xl);
+
+  --letter-spacing-none: 0;
+  --letter-spacing-sm: 0.045em;
+  --letter-spacing-md: 0.07em;
+}
+
+@media (width >= theme(--breakpoint-md)) {
+  :root {
+    --font-size-xs: rem(13);
+    --font-size-xl: rem(21);
+    --font-size-4xl: rem(37);
+    --font-size-9xl: rem(164);
+
+    --line-height-xl: rem(48);
+    --line-height-md: rem(30);
+    --line-height-lg: rem(33);
+    --line-height-sm: rem(25);
+    --line-height-xs: rem(19);
+  }
+}
+
+@media (width >= theme(--breakpoint-2xl)) {
+  :root {
+    --font-size-xs: rem(13);
+    --font-size-xl: rem(21);
+    --font-size-4xl: rem(40);
+    --font-size-9xl: rem(180);
+
+    --line-height-xl: rem(52);
+    --line-height-md: rem(31);
+    --line-height-lg: rem(37);
+    --line-height-sm: rem(26);
+    --line-height-xs: rem(19);
+  }
+}
+
+@media (width >= theme(--breakpoint-wide)) {
+  :root {
+    --font-size-xs: rem(14);
+    --font-size-xl: rem(22);
+    --font-size-4xl: rem(44);
+    --font-size-9xl: rem(196);
+
+    --line-height-xl: rem(56);
+    --line-height-md: rem(32);
+    --line-height-lg: rem(42);
+    --line-height-sm: rem(26);
+    --line-height-xs: rem(20);
+  }
+}

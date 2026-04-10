@@ -1,8 +1,10 @@
+/** @type {import('postcss-load-config').Config} */
 const config = {
   plugins: {
+    "postcss-import": {},
     "@tailwindcss/postcss": {},
-    'postcss-nested-ancestors': {},
-    'postcss-functions': {
+    "postcss-nested-ancestors": {},
+    "postcss-functions": {
       functions: {
         rem: (value) => {
           const number = parseFloat(value);
@@ -10,7 +12,7 @@ const config = {
         },
       },
     },
-    'postcss-calc': {}, // This should come after postcss-functions
+    "postcss-calc": {},
   },
 };
 

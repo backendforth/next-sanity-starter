@@ -1,0 +1,79 @@
+/* Layout + spacing — tiers: `@media (width >= theme(--breakpoint-*))` (values from `breakpoints.pcss` `@theme`). */
+
+:root {
+  --nav-bar-height: rem(78);
+  --footer-height: rem(624);
+
+  --content-max-width-wide: rem(1440);
+  --content-max-width-narrow: rem(976);
+  --container-padding: rem(24);
+  --container-gutter: calc(
+    (var(--content-max-width-wide) - var(--content-max-width-narrow)) / 2
+  );
+
+  --size-min: rem(2);
+  --size-xs: rem(8);
+  --size-sm: rem(16);
+  --size-md: rem(32);
+  --size-lg: rem(48);
+  --size-xl: rem(64);
+  --size-max: rem(96);
+  --size-extra: rem(192);
+}
+
+@media (width >= theme(--breakpoint-md)) {
+  :root {
+    --nav-bar-height: rem(114);
+    --footer-height: rem(283);
+    --container-padding: rem(32);
+    --content-max-width-wide: rem(1536);
+    --content-max-width-narrow: rem(1024);
+
+    --size-min: rem(2);
+    --size-xs: rem(9);
+    --size-sm: rem(18);
+    --size-md: rem(36);
+    --size-lg: rem(54);
+    --size-xl: rem(72);
+    --size-max: rem(104);
+    --size-extra: rem(216);
+  }
+}
+
+@media (width >= theme(--breakpoint-2xl)) {
+  :root {
+    --nav-bar-height: rem(120);
+    --footer-height: rem(300);
+    --container-padding: rem(40);
+    --content-max-width-wide: rem(1680);
+    --content-max-width-narrow: rem(1120);
+
+    --size-min: rem(2);
+    --size-xs: rem(10);
+    --size-sm: rem(20);
+    --size-md: rem(40);
+    --size-lg: rem(56);
+    --size-xl: rem(80);
+    --size-max: rem(112);
+    --size-extra: rem(224);
+  }
+}
+
+@media (width >= theme(--breakpoint-wide)) {
+  :root {
+    --nav-bar-height: rem(124);
+    --footer-height: rem(320);
+    --container-padding: rem(48);
+    --content-max-width-wide: rem(1800);
+    --content-max-width-narrow: rem(1200);
+
+    --size-min: rem(2);
+    --size-xs: rem(10);
+    --size-sm: rem(20);
+    --size-md: rem(40);
+    --size-lg: rem(60);
+    --size-xl: rem(88);
+    --size-max: rem(120);
+    --size-extra: rem(240);
+  }
+}

@@ -31,11 +31,11 @@ export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-borderSubtle bg-bgColor/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-border-subtle bg-bg-color/95 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-6 py-4 sm:px-8">
         <Link
           href={homeHref}
-          className="shrink-0 font-medium text-headingColor underline-offset-4 transition-colors hover:text-linkColor focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accentColor"
+          className="shrink-0 font-medium text-heading-color underline-offset-4 transition-colors hover:text-link-color focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-color"
           onClick={close}
         >
           {brandLabel}
@@ -59,7 +59,7 @@ export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
             <div className="flex md:hidden">
               <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-sm p-2 text-textColor hover:bg-surfaceMuted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accentColor"
+                className="inline-flex items-center justify-center rounded-sm p-2 text-text-color hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-color"
                 aria-expanded={open}
                 aria-controls={menuId}
                 aria-label={open ? "Close menu" : "Open menu"}
@@ -102,7 +102,7 @@ export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
       {rows.length > 0 && open ? (
         <div
           id={menuId}
-          className="border-t border-borderSubtle bg-bgColor md:hidden"
+          className="border-t border-border-subtle bg-bg-color md:hidden"
         >
           <nav
             className="mx-auto flex max-w-3xl flex-col gap-1 px-6 py-4 sm:px-8"

@@ -1,0 +1,39 @@
+/*
+ * Breakpoints — only `@theme` below (single source of truth). Tailwind generates `xs:`, `sm:`, `md:`, …
+ *
+ * Custom CSS at the same thresholds, pick one:
+ * - `@media (width >= theme(--breakpoint-md)) { … }` — explicit media query (e.g. tokens/sizes/typography).
+ * - `@variant md { … }` / `@variant 2xl { … }` — reuse the screen variant (needs a stylesheet processed after `@import "tailwindcss"`, e.g. `globals.css`).
+ */
+
+@theme {
+  --breakpoint-*: initial;
+
+  --breakpoint-xs: 48.75rem;
+  --breakpoint-sm: 56.25rem;
+  --breakpoint-md: 73.75rem;
+  --breakpoint-lg: 90rem;
+  --breakpoint-xl: 100rem;
+  --breakpoint-2xl: 112.5rem;
+  --breakpoint-wide: 125rem;
+}
+
+@custom-variant portrait (@media (orientation: portrait));
+@custom-variant landscape (@media (orientation: landscape));
+
+@custom-variant phone-landscape (
+  @media (orientation: landscape) and (max-height: 31.25rem)
+);
+
+@custom-variant phone-only-landscape (
+  @media (orientation: landscape) and (max-width: 47.9375rem) and (max-height: 31.25rem)
+);
+
+@custom-variant tablet-landscape (
+  @media (orientation: landscape) and (min-width: 48rem) and (max-width: 64rem)
+);
+
+@custom-variant touch-coarse (@media (pointer: coarse));
+@custom-variant fine-pointer (@media (pointer: fine));
+@custom-variant tall (@media (min-height: 50rem));
+@custom-variant short-viewport (@media (max-height: 40rem));

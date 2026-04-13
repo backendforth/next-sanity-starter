@@ -21,5 +21,8 @@
     "overrides": {
       "magicast": "^0.3.5"
     }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.10"
   }
 }

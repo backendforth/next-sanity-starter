@@ -1,6 +1,6 @@
+import type { NavMenuLink } from "@/sanity/types/nav";
 import type { AppLocale } from "@/src/i18n/config";
 import { localePath } from "@/src/i18n/paths";
-import type { NavMenuLink } from "@/sanity/types/nav";
 
 export type ResolvedNavRow =
 	| {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Navbar } from "@/src/components/navigation/Navbar";
 import {
@@ -7,7 +8,6 @@ import {
 	isAppLocale,
 	LOCALE_HEADER_NAME,
 } from "@/src/i18n/config";
-import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 

@@ -1,5 +1,5 @@
-import { seoQuery } from "../snippets/seo";
 import { modulesQuery } from "../components/modules";
+import { seoQuery } from "../snippets/seo";
 
 export const pageBySlugQuery = `*[_type == "page" && slug.current == $slug][0]{
   _id,

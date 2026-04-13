@@ -10,9 +10,8 @@ import {
 	localePath,
 	pathWithoutLocalePrefix,
 } from "@/src/i18n/paths";
-
-import type { ResolvedNavRow } from "./navHref";
 import { NavRowControl } from "./NavRowControl";
+import type { ResolvedNavRow } from "./navHref";
 
 type LanguageOption = {
 	id: AppLocale;

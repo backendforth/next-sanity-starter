@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { fetchHomeDocument } from "@/sanity/fetchSanityData";
 import { pickLocalizedString } from "@/sanity/utils";
+import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { locales } from "@/src/i18n/config";
 
 type PageProps = {

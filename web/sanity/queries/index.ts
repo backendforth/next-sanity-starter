@@ -1,11 +1,21 @@
-export { seoQuery } from "./snippets/seo";
+export {
+	moduleCarouselQuery,
+	moduleContentRefsQuery,
+	moduleMediaQuery,
+	modulesQuery,
+	moduleTextQuery,
+	richTextMediaQuery,
+} from "./components/modules";
+export { homeQuery } from "./pages/home";
+export { pageBySlugQuery } from "./pages/page";
+export { linkQuery } from "./snippets/link";
 export {
 	imageQuery,
 	mediaQuery,
 	mediaQuerySpread,
 	videoQuery,
 } from "./snippets/media";
-export { linkQuery } from "./snippets/link";
+export { seoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
 	navMenusQuery,
@@ -16,13 +26,3 @@ export {
 	siteSettingsQuery,
 } from "./snippets/settings";
 export { pageSlugsQuery, sitemapPagesQuery } from "./snippets/sitemap";
-export {
-	moduleCarouselQuery,
-	moduleContentRefsQuery,
-	moduleMediaQuery,
-	moduleTextQuery,
-	modulesQuery,
-	richTextMediaQuery,
-} from "./components/modules";
-export { homeQuery } from "./pages/home";
-export { pageBySlugQuery } from "./pages/page";

@@ -1,11 +1,11 @@
 export * from "./sanityImageBuilder";
 export {
+	type IntlRichTextEntry,
+	type IntlStringEntry,
+	type IntlTextEntry,
 	parseLocalizedText,
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
 	resolveLocalizedPortableTextDeep,
-	type IntlRichTextEntry,
-	type IntlStringEntry,
-	type IntlTextEntry,
 } from "./sanityLocalizedText";
 export * from "./sanityModuleLabel";

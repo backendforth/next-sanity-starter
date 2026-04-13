@@ -6,7 +6,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "eslint"
+		"lint": "pnpm --workspace-root exec biome check web",
+		"format": "pnpm --workspace-root exec biome format --write web"
 	},
 	"dependencies": {
 		"@repo/languages": "workspace:*",
@@ -25,8 +26,6 @@
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
-		"eslint": "^9",
-		"eslint-config-next": "16.2.2",
 		"groq-js": "^1.29.0",
 		"postcss-calc": "^10.1.1",
 		"postcss-functions": "^4.0.2",

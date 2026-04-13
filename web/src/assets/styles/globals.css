@@ -1,15 +1,19 @@
-/* tokens.css loads sizes/typography + breakpoints first; this file adds Tailwind + breakpoints again for @theme registration. */
+/*
+ * tokens.css loads sizes + typography variables + breakpoints first.
+ * All `@import` rules here must come *before* `@import "tailwindcss"`.
+ * After postcss-import expands `tailwindcss`, any later `@import` is invalid
+ * (CSS requires @import at the top) and is dropped — so breakpoints, typography
+ * utilities, and safelist never reached the Tailwind pipeline.
+ */
 
 @import "./typography/fonts.css";
 @import "./variables/colors.css";
+@import "./variables/breakpoints.css";
+@import "./typography/typography.css";
+@import "./tailwind/safelist.css";
 
 @import "tailwindcss";
 @config "../../../tailwind.config.ts";
-
-@import "./variables/breakpoints.css";
-
-@import "./typography/typography.css";
-@import "./tailwind/safelist.css";
 
 body {
   @apply font-text;

@@ -6,7 +6,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 | File | Role |
 |------|------|
-| **`site-locales.ts`** | **Edit this.** `SITE_LOCALES` (supported codes + fallback order) and `SITE_DEFAULT_LOCALE` (language without URL prefix). |
+| **`site-locales.ts`** | Re-exports from **`@repo/languages`** — edit [`packages/languages/src/index.ts`](../../../packages/languages/src/index.ts) instead. |
 | **`config.ts`** | Re-exports for the app: `locales`, `defaultLocale`, `AppLocale`, `isAppLocale`, `LOCALE_HEADER_NAME`. |
 | **`paths.ts`** | `localePath(pathname, locale)` — build correct links for the current language (default = no prefix). |
 | **`middleware.ts`** | Rewrites unprefixed URLs to `/{defaultLocale}/…`, sets `LOCALE_HEADER_NAME` for `app/layout.tsx` (`<html lang>`). Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. |
@@ -19,5 +19,5 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 ## Quick reference
 
-- **Change default language or add languages:** `site-locales.ts` — then restart `pnpm web:dev`.
+- **Change default language or add languages:** `packages/languages/src/index.ts` — restart `pnpm web:dev` and `pnpm studio:dev`.
 - **Full examples** (EN vs DE default, adding `fr`): [../../README.md](../../README.md) (section *Languages*).

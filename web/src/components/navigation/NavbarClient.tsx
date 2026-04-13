@@ -1,20 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+
+import type { AppLocale } from "@/src/i18n/config";
+import {
+  localeFromPathname,
+  localePath,
+  pathWithoutLocalePrefix,
+} from "@/src/i18n/paths";
 
 import type { ResolvedNavRow } from "./navHref";
 import { NavRowControl } from "./NavRowControl";
+
+type LanguageOption = {
+  id: AppLocale;
+  title: string;
+};
 
 type Props = {
   rows: ResolvedNavRow[];
   homeHref: string;
   brandLabel: string;
+  locale: AppLocale;
+  languages: readonly LanguageOption[];
 };
 
-export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
+export function NavbarClient({
+  rows,
+  homeHref,
+  brandLabel,
+  locale,
+  languages,
+}: Props) {
   const [open, setOpen] = useState(false);
-  const menuId = useId();
+  const pathname = usePathname() ?? "/";
+  const router = useRouter();
+  const fromPath = localeFromPathname(pathname);
+  const currentLocale = languages.some((l) => l.id === fromPath)
+    ? fromPath
+    : locale;
+  const pathWithoutLocale = pathWithoutLocalePrefix(pathname);
+
+  const onLanguageChange = useCallback(
+    (next: AppLocale) => {
+      router.push(localePath(pathWithoutLocale, next));
+      setOpen(false);
+    },
+    [pathWithoutLocale, router],
+  );
+
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
@@ -41,8 +77,8 @@ export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
           {brandLabel}
         </Link>
 
-        {rows.length > 0 ? (
-          <>
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
+          {rows.length > 0 ? (
             <nav
               className="hidden items-center gap-1 md:flex"
               aria-label="Main"
@@ -55,13 +91,29 @@ export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
                 />
               ))}
             </nav>
+          ) : null}
 
+          <select
+            aria-label="Language"
+            className="max-w-[min(100%,11rem)] cursor-pointer rounded-sm border border-color-border-subtle bg-color-bg py-1.5 pl-2 pr-8 text-sm text-color-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent"
+            value={currentLocale}
+            onChange={(e) => {
+              onLanguageChange(e.target.value as AppLocale);
+            }}
+          >
+            {languages.map((lang) => (
+              <option key={lang.id} value={lang.id}>
+                {lang.title}
+              </option>
+            ))}
+          </select>
+
+          {rows.length > 0 ? (
             <div className="flex md:hidden">
               <button
                 type="button"
                 className="inline-flex items-center justify-center rounded-sm p-2 text-color-text hover:bg-color-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent"
                 aria-expanded={open}
-                aria-controls={menuId}
                 aria-label={open ? "Close menu" : "Open menu"}
                 onClick={() => setOpen((v) => !v)}
               >
@@ -95,13 +147,12 @@ export function NavbarClient({ rows, homeHref, brandLabel }: Props) {
                 )}
               </button>
             </div>
-          </>
-        ) : null}
+          ) : null}
+        </div>
       </div>
 
       {rows.length > 0 && open ? (
         <div
-          id={menuId}
           className="border-t border-color-border-subtle bg-color-bg md:hidden"
         >
           <nav

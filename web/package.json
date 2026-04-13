@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@repo/languages": "workspace:*",
     "@portabletext/react": "^6.0.3",
     "@portabletext/types": "^4.0.2",
     "@sanity/image-url": "^2.1.1",

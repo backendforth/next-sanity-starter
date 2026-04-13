@@ -20,7 +20,7 @@ Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/ut
 
 ## Translations (`utils/sanityLocalizedText.ts`)
 
-**Which locale the page uses** comes from the URL (`[locale]` route segment), driven by **`src/i18n/site-locales.ts`** (default language, list of languages, fallback order). See the root **`web/README.md`** section *Languages*.
+**Which locale the page uses** comes from the URL (`[locale]` route segment). Language ids and order match **`@repo/languages`** (`packages/languages/src/index.ts`), re-exported as **`src/i18n/site-locales.ts`**. See **`web/README.md`** (*Languages*) and **`packages/languages/README.md`**.
 
 Sanity uses **`internationalizedArray*`** fields: arrays of `{ language | _key, value }`.
 

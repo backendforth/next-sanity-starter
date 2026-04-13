@@ -20,6 +20,8 @@ importers:
 
   packages/languages: {}
 
+  packages/strip-readmes: {}
+
   studio:
     dependencies:
       '@repo/languages':

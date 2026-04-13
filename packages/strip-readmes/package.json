@@ -1,0 +1,13 @@
+{
+	"name": "@repo/strip-readmes",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"strip-readmes": "./bin/strip-readmes.mjs"
+	},
+	"scripts": {
+		"strip": "node ./bin/strip-readmes.mjs",
+		"strip:dry-run": "node ./bin/strip-readmes.mjs --dry-run"
+	}
+}

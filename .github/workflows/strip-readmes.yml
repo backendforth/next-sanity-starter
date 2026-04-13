@@ -1,0 +1,32 @@
+# Manual only: Actions → Strip README files → Run workflow
+# Deletes every README.md (same logic as `pnpm run strip-readmes`), then commits if anything changed.
+name: Strip README files
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  strip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Remove all README.md files
+        run: pnpm --filter @repo/strip-readmes run strip
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: remove README files (boilerplate cleanup)"

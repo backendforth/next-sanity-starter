@@ -30,7 +30,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-bg-color text-text-color font-text">
+      <body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
         <Navbar
           locale={locale}
           mainMenu={siteNav?.mainMenu}

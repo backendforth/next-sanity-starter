@@ -10,7 +10,7 @@ type Props = {
 };
 
 const footerLinkClassName =
-  "text-sm text-text-muted hover:text-link-color py-1";
+  "text-sm text-color-text-muted hover:text-color-link py-1";
 
 export function Footer({ locale, footerMenu }: Props) {
   const rows = resolveFooterMenuRows(footerMenu, locale);
@@ -20,7 +20,7 @@ export function Footer({ locale, footerMenu }: Props) {
   }
 
   return (
-    <footer className="mt-auto border-t border-border-subtle bg-bg-color">
+    <footer className="mt-auto border-t border-color-border-subtle bg-color-bg">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-8 sm:px-8">
         <nav
           className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2"

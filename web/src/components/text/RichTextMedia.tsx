@@ -73,7 +73,7 @@ function LinkMark({
 
   if (value.type === "function") {
     return (
-      <span className="cursor-default underline decoration-dotted decoration-link-decoration">
+      <span className="cursor-default underline decoration-dotted decoration-color-link-decoration">
         {children}
       </span>
     );

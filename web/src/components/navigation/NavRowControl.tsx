@@ -6,8 +6,7 @@ import { cn } from "@/src/utils/cn";
 
 import type { ResolvedNavRow } from "./navHref";
 
-const defaultLinkClassName =
-	"rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent";
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
 	row: ResolvedNavRow;
@@ -15,14 +14,14 @@ type Props = {
 	className?: string;
 };
 
-export function NavRowControl({ row, onNavigate, className }: Props) {
-	const linkClassName = cn(defaultLinkClassName, className);
+// ─── Component ───────────────────────────────────────────────────────────────
 
+export function NavRowControl({ row, onNavigate, className }: Props) {
 	if (row.kind === "button") {
 		return (
 			<button
 				type="button"
-				className={cn(linkClassName, "cursor-not-allowed opacity-60")}
+				className={cn(className, "rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent cursor-not-allowed opacity-60")}
 				disabled
 				title="Modal link — not connected yet"
 			>
@@ -35,7 +34,7 @@ export function NavRowControl({ row, onNavigate, className }: Props) {
 		return (
 			<a
 				href={row.href}
-				className={linkClassName}
+				className="rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent"
 				{...(row.blank ? { target: "_blank", rel: "noopener noreferrer" } : {})}
 				onClick={onNavigate}
 			>
@@ -46,14 +45,14 @@ export function NavRowControl({ row, onNavigate, className }: Props) {
 
 	if (row.href.startsWith("#")) {
 		return (
-			<a href={row.href} className={linkClassName} onClick={onNavigate}>
+			<a href={row.href} className="rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent" onClick={onNavigate}>
 				{row.label}
 			</a>
 		);
 	}
 
 	return (
-		<Link href={row.href} className={linkClassName} onClick={onNavigate}>
+		<Link href={row.href} className="rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent" onClick={onNavigate}>
 			{row.label}
 		</Link>
 	);

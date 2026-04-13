@@ -6,15 +6,16 @@ import {
 import { defaultLocale } from "@/src/i18n/config";
 import { RichTextMedia } from "../text/RichTextMedia";
 
-type ModuleTextProps = {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Props = {
 	module: ModuleTextData;
 	locale?: string;
 };
 
-export function ModuleText({
-	module,
-	locale = defaultLocale,
-}: ModuleTextProps) {
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function ModuleText({ module, locale = defaultLocale }: Props) {
 	const title = pickLocalizedString(module.title, locale);
 	const blocks = pickLocalizedPortableTextBlocks(module.body, locale);
 

@@ -9,31 +9,31 @@
 @theme {
   --breakpoint-*: initial;
 
-  --breakpoint-xs: 48.75rem;
-  --breakpoint-sm: 56.25rem;
-  --breakpoint-md: 73.75rem;
-  --breakpoint-lg: 90rem;
-  --breakpoint-xl: 100rem;
-  --breakpoint-2xl: 112.5rem;
-  --breakpoint-wide: 125rem;
+  --breakpoint-xs: 780px;
+  --breakpoint-sm: 900px;
+  --breakpoint-md: 1180px;
+  --breakpoint-lg: 1440px;
+  --breakpoint-xl: 1600px;
+  --breakpoint-2xl: 1800px;
+  --breakpoint-wide: 2000px;
 }
 
 @custom-variant portrait (@media (orientation: portrait));
 @custom-variant landscape (@media (orientation: landscape));
 
 @custom-variant phone-landscape (
-  @media (orientation: landscape) and (max-height: 31.25rem)
+  @media (orientation: landscape) and (max-height: 500px)
 );
 
 @custom-variant phone-only-landscape (
-  @media (orientation: landscape) and (max-width: 47.9375rem) and (max-height: 31.25rem)
+  @media (orientation: landscape) and (max-width: 767px) and (max-height: 500px)
 );
 
 @custom-variant tablet-landscape (
-  @media (orientation: landscape) and (min-width: 48rem) and (max-width: 64rem)
+  @media (orientation: landscape) and (min-width: 768px) and (max-width: 1024px)
 );
 
 @custom-variant touch-coarse (@media (pointer: coarse));
 @custom-variant fine-pointer (@media (pointer: fine));
-@custom-variant tall (@media (min-height: 50rem));
-@custom-variant short-viewport (@media (max-height: 40rem));
+@custom-variant tall (@media (min-height: 800px));
+@custom-variant short-viewport (@media (max-height: 640px));

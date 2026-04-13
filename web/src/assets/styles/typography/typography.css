@@ -7,6 +7,10 @@ body {
 html {
   font-size: var(--font-size-root);
   text-wrap: balance;
+
+  @variant lg {
+    font-size: clamp(1rem, 1.111111vw, 1.5rem);
+  }
 }
 
 @utility extra-large {

@@ -1,7 +1,7 @@
 /* Three woff2 in `public/fonts/` — match `url("/fonts/…")` + `@font-face` names to `--font-family-*`.
    sans+text → sans face; serif+headline → serif; mono alone. Or use next/font/local and drop @font-face. */
 
-@font-face {
+/* @font-face {
   font-family: "PlaceholderSans";
   src: url("/fonts/REPLACE-WITH-SANS.woff2") format("woff2");
   font-weight: 100 900;
@@ -23,7 +23,7 @@
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
-}
+} */
 
 :root {
   --font-family-sans: "PlaceholderSans", ui-sans-serif, system-ui, sans-serif;

@@ -86,6 +86,6 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 ## Related docs
 
-- [`../README.md`](../README.md) — Studio overview and sync summary  
-- [`../utils/README.md`](../utils/README.md) — How dataset resolution works in the Studio app  
-- [`../.env.example`](../.env.example) — Env vars for project ID and dataset names  
+- [`../README.md`](../README.md) — Studio overview and sync summary
+- [`../utils/README.md`](../utils/README.md) — How dataset resolution works in the Studio app
+- [`../.env.example`](../.env.example) — Env vars for project ID and dataset names

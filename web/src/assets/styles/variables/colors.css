@@ -1,0 +1,87 @@
+/* Semantic `--color-*` → Tailwind `theme.extend.colors`. Dark: `prefers-color-scheme`. */
+
+:root {
+  color-scheme: light;
+
+  --color-white: #ffffff;
+  --color-black: #0a0a0a;
+  --color-grey: #a1a1aa;
+
+  /* optional extra primitives — uncomment + tailwind keys if needed
+  --color-red: #dc2626;
+  --color-orange: #ea580c;
+  --color-yellow: #ca8a04;
+  --color-dark-blue: #1e3a8a;
+  --color-light-blue: #38bdf8;
+  --color-pink: #ec4899;
+  --color-coral: #fb7185;
+  --color-raspberry: #be123c;
+  --color-rose: #f43f5e;
+  */
+
+  --color-brand: #18181b;
+  --color-accent: #3b82f6;
+
+  --color-text: #18181b;
+  --color-text-muted: #52525b;
+  --color-heading: #18181b;
+
+  --color-link: #3b82f6;
+  --color-hover: #991b1b;
+  --color-blue-pressed: #1e40af;
+  --color-active: var(--color-blue-pressed);
+
+  --color-bg: #ffffff;
+  --color-surface-muted: #fafafa;
+  --color-border-subtle: #e4e4e7;
+
+  --color-link-decoration: var(--color-grey);
+  --color-link-decoration-hover: #71717a;
+
+  --color-code-bg: #e4e4e7;
+  --color-code-text: #27272a;
+
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+  --color-danger: #b91c1c;
+
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --color-grey: #71717a;
+
+    --color-brand: #fafafa;
+    --color-accent: #60a5fa;
+
+    --color-text: #fafafa;
+    --color-text-muted: #a1a1aa;
+    --color-heading: #fafafa;
+
+    --color-link: #60a5fa;
+    --color-hover: #93c5fd;
+    --color-blue-pressed: #3b82f6;
+    --color-active: var(--color-blue-pressed);
+
+    --color-bg: #0a0a0a;
+    --color-surface-muted: #171717;
+    --color-border-subtle: #27272a;
+
+    --color-link-decoration: #71717a;
+    --color-link-decoration-hover: #a1a1aa;
+
+    --color-code-bg: #27272a;
+    --color-code-text: #e4e4e7;
+
+    --color-error: #f87171;
+    --color-success: #4ade80;
+    --color-danger: #fca5a5;
+
+    --background: var(--color-bg);
+    --foreground: var(--color-text);
+  }
+}

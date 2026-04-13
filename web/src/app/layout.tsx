@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
-import Script from "next/script";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Navbar } from "@/src/components/navigation/Navbar";
 import {
@@ -10,18 +8,8 @@ import {
   LOCALE_HEADER_NAME,
 } from "@/src/i18n/config";
 import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
-import "../assets/css/_globals.css";
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import "../assets/styles/tokens.css";
+import "../assets/styles/globals.css";
 
 export const metadata: Metadata = {
   title: {
@@ -41,15 +29,8 @@ export default async function RootLayout({
   const siteNav = await fetchSiteNavMenus();
 
   return (
-    <html
-      lang={locale}
-      className={`${dmSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-full flex flex-col bg-bgColor text-textColor font-sans">
-        <Script id="prefers-dark" strategy="beforeInteractive">
-          {`(function(){try{var d=document.documentElement;if(window.matchMedia("(prefers-color-scheme: dark)").matches)d.classList.add("dark");}catch(e){}})()`}
-        </Script>
+    <html lang={locale} className="h-full antialiased" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
         <Navbar
           locale={locale}
           mainMenu={siteNav?.mainMenu}

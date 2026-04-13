@@ -2,14 +2,6 @@ import type { PreviewProps } from "sanity";
 
 import { renderPreviewMedia } from "./ModuleBlockPreview";
 
-const kickerStyle = {
-  fontSize: "0.68rem",
-  textTransform: "uppercase" as const,
-  letterSpacing: "0.04em",
-  opacity: 0.6,
-  marginBottom: 2,
-};
-
 const thumbStyle = {
   width: 56,
   height: 56,
@@ -22,8 +14,8 @@ const thumbStyle = {
   justifyContent: "center",
 };
 
-/** Compact preview for `module.media` in document **modules** arrays (not portable text). */
-export function MediaPreview(props: PreviewProps) {
+/** Compact preview for `module.carousel` in document **modules** arrays (not portable text). */
+export function CarouselPreview(props: PreviewProps) {
   const { title, subtitle, media } = props;
 
   return (
@@ -37,7 +29,6 @@ export function MediaPreview(props: PreviewProps) {
     >
       <div style={thumbStyle}>{renderPreviewMedia(media)}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={kickerStyle}>Media</div>
         {title ? (
           <div
             style={{ fontWeight: 600, fontSize: "0.85rem", lineHeight: 1.25 }}

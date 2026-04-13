@@ -1,12 +1,21 @@
-import { defineField } from "sanity";
+import { defineArrayMember, defineField } from "sanity";
+
+import { CarouselPreview } from "../../components/previews/CarouselPreview";
+import { MediaPreview } from "../../components/previews/MediaPreview";
 
 /** Types allowed in document-level `modules` arrays (keep in sync with `richTextMedia` block types). */
 export const moduleTypes = [
-  { type: "module.media" },
-  { type: "module.carousel" },
+  defineArrayMember({
+    type: "module.media",
+    components: { preview: MediaPreview },
+  }),
+  defineArrayMember({
+    type: "module.carousel",
+    components: { preview: CarouselPreview },
+  }),
   { type: "module.contentRefs" },
   { type: "module.text" },
-] as const;
+];
 
 type ModulesArrayOptions = {
   /** Sanity field group name (e.g. `editorial`, `site`). Omit to place in the default group. */

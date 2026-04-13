@@ -1,19 +1,5 @@
-import { ImagesIcon } from "@sanity/icons";
-import { defineType } from "sanity";
-
-function headingLabel(heading: unknown, fallback: string): string {
-  if (!Array.isArray(heading)) {
-    return fallback;
-  }
-  const first = heading.find(
-    (t: { value?: unknown }) =>
-      typeof t?.value === "string" && t.value.trim().length > 0,
-  );
-  if (first && typeof first.value === "string") {
-    return first.value.trim();
-  }
-  return fallback;
-}
+import { ImagesIcon, PlayIcon } from "@sanity/icons";
+import { defineType, type PreviewProps } from "sanity";
 
 export const moduleCarousel = defineType({
   name: "module.carousel",
@@ -67,13 +53,23 @@ export const moduleCarousel = defineType({
   ],
   preview: {
     select: {
-      heading: "heading",
       imagesOnly: "imagesOnly",
       slideCount: "slides.length",
       slidesMediaCount: "slidesMedia.length",
+      firstPlainSlide: "slides.0",
+      mediaSlideType: "slidesMedia.0.type",
+      mediaSlideImage: "slidesMedia.0.imageContent.image",
+      mediaSlidePoster: "slidesMedia.0.videoContent.poster",
     },
-    prepare({ heading, imagesOnly, slideCount, slidesMediaCount }) {
-      const title = headingLabel(heading, "Carousel");
+    prepare({
+      imagesOnly,
+      slideCount,
+      slidesMediaCount,
+      firstPlainSlide,
+      mediaSlideType,
+      mediaSlideImage,
+      mediaSlidePoster,
+    }) {
       const count =
         imagesOnly === false
           ? typeof slidesMediaCount === "number"
@@ -82,10 +78,23 @@ export const moduleCarousel = defineType({
           : typeof slideCount === "number"
             ? slideCount
             : 0;
-      const mode = imagesOnly === false ? "Media slides" : "Image slides";
+
+      type PreviewMedia = NonNullable<PreviewProps["media"]>;
+      let media: PreviewMedia = ImagesIcon as PreviewMedia;
+      if (imagesOnly !== false) {
+        if (firstPlainSlide) {
+          media = firstPlainSlide as PreviewMedia;
+        }
+      } else if (mediaSlideType === "image" && mediaSlideImage) {
+        media = mediaSlideImage as PreviewMedia;
+      } else if (mediaSlideType === "video") {
+        media = (mediaSlidePoster ?? PlayIcon) as PreviewMedia;
+      }
+
       return {
-        title,
-        subtitle: `${count} slide${count === 1 ? "" : "s"} · ${mode}`,
+        title: "Carousel",
+        subtitle: `${count} slide${count === 1 ? "" : "s"}`,
+        media,
       };
     },
   },

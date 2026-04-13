@@ -1,3 +1,5 @@
+import { studioLanguages } from "@repo/languages";
+
 import type { AppLocale } from "@/src/i18n/config";
 import type { NavMenuLink } from "@/sanity/types/nav";
 import { localePath } from "@/src/i18n/paths";
@@ -22,6 +24,12 @@ export function Navbar({ locale, mainMenu, siteTitle }: Props) {
       : "Site";
 
   return (
-    <NavbarClient rows={rows} homeHref={homeHref} brandLabel={brandLabel} />
+    <NavbarClient
+      rows={rows}
+      homeHref={homeHref}
+      brandLabel={brandLabel}
+      locale={locale}
+      languages={studioLanguages}
+    />
   );
 }

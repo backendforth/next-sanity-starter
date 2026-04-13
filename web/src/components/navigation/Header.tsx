@@ -14,7 +14,7 @@ import type { AppLocale } from "@/src/i18n/config";
 import { localePath } from "@/src/i18n/paths";
 import type { ResolvedNavRow } from "../../utils/navHref";
 import { resolveMainMenuRows } from "../../utils/navHref";
-import { MenuItem } from "./MenuItem";
+import { NavItem } from "./NavItem";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ function NavLinks({
 	return (
 		<>
 			{rows.map((row) => (
-				<MenuItem key={row.id} row={row} onNavigate={onNavigate} />
+				<NavItem key={row.id} row={row} onNavigate={onNavigate} />
 			))}
 		</>
 	);

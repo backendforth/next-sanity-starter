@@ -31,7 +31,7 @@ function useLocationHash(): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function MenuItem({ row, onNavigate, className }: Props) {
+export function NavItem({ row, onNavigate, className }: Props) {
 	const pathname = usePathname() ?? "/";
 	const hash = useLocationHash();
 

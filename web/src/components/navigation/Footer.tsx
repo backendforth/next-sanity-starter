@@ -1,7 +1,7 @@
 import type { NavMenuLink } from "@/sanity/types/nav";
 import type { AppLocale } from "@/src/i18n/config";
 
-import { MenuItem } from "./MenuItem";
+import { NavItem } from "./NavItem";
 import { resolveFooterMenuRows } from "../../utils/navHref";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -28,7 +28,7 @@ export function Footer({ locale, footerMenu }: Props) {
 					aria-label="Footer"
 				>
 					{rows.map((row) => (
-						<MenuItem
+						<NavItem
 							key={row.id}
 							row={row}
 							className="text-sm text-color-text-muted hover:text-color-link py-1"

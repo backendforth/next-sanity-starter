@@ -17,14 +17,14 @@ export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "en";
 
 /** Studio UI labels — one per id in `SITE_LOCALES`. */
 export const SITE_LOCALE_LABELS = {
-  en: "English",
-  de: "Deutsch",
+	en: "English",
+	de: "Deutsch",
 } as const satisfies Record<SiteLocaleCode, string>;
 
 /** `internationalizedArray({ languages })` */
 export const studioLanguages = SITE_LOCALES.map((id) => ({
-  id,
-  title: SITE_LOCALE_LABELS[id],
+	id,
+	title: SITE_LOCALE_LABELS[id],
 }));
 
 /** `internationalizedArray({ defaultLanguages })` — usually the same as default URL locale. */

@@ -1,7 +1,7 @@
 import {
-  SITE_DEFAULT_LOCALE,
-  SITE_LOCALES,
-  type SiteLocaleCode,
+	SITE_DEFAULT_LOCALE,
+	SITE_LOCALES,
+	type SiteLocaleCode,
 } from "./site-locales";
 
 export const locales = SITE_LOCALES;
@@ -9,7 +9,7 @@ export const defaultLocale = SITE_DEFAULT_LOCALE;
 export type AppLocale = SiteLocaleCode;
 
 export function isAppLocale(value: string): value is AppLocale {
-  return (locales as readonly string[]).includes(value);
+	return (locales as readonly string[]).includes(value);
 }
 
 /** Set by `middleware.ts` for `RootLayout` (`lang`) and server components. */

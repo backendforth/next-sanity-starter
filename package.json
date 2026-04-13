@@ -1,28 +1,28 @@
 {
-  "name": "next-sanity-boilerplate",
-  "version": "1.0.0",
-  "description": "Next and Sanity Boilerplate",
-  "private": true,
-  "scripts": {
-    "dev": "pnpm --stream -r run dev",
-    "web:dev": "pnpm --filter web run dev",
-    "studio:dev": "pnpm --filter studio run dev",
-    "build": "pnpm --stream -r run build",
-    "studio:build": "pnpm --filter studio run build",
-    "studio:deploy": "pnpm --filter studio run deploy",
-    "studio:generate": "pnpm --filter studio run generate",
-    "studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev",
-    "update": "pnpm up --stream -r",
-    "studio:update": "pnpm up --filter studio"
-  },
-  "author": "backendforth",
-  "license": "ISC",
-  "pnpm": {
-    "overrides": {
-      "magicast": "^0.3.5"
-    }
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.4.10"
-  }
+	"name": "next-sanity-boilerplate",
+	"version": "1.0.0",
+	"description": "Next and Sanity Boilerplate",
+	"private": true,
+	"scripts": {
+		"dev": "pnpm --stream -r run dev",
+		"web:dev": "pnpm --filter web run dev",
+		"studio:dev": "pnpm --filter studio run dev",
+		"build": "pnpm --stream -r run build",
+		"studio:build": "pnpm --filter studio run build",
+		"studio:deploy": "pnpm --filter studio run deploy",
+		"studio:generate": "pnpm --filter studio run generate",
+		"studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev",
+		"update": "pnpm up --stream -r",
+		"studio:update": "pnpm up --filter studio"
+	},
+	"author": "backendforth",
+	"license": "ISC",
+	"pnpm": {
+		"overrides": {
+			"magicast": "^0.3.5"
+		}
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.10"
+	}
 }

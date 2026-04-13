@@ -9,8 +9,8 @@ import { moduleMediaInnerFields } from "../modules/media";
  * `module.contentRefs`, `module.text` (nested `body` up to `depth` levels).
  */
 function buildRichTextMediaQuery(depth: number): string {
-  if (depth <= 0) {
-    return `
+	if (depth <= 0) {
+		return `
     ...,
     _type == "block" => {
       ...,
@@ -22,9 +22,9 @@ function buildRichTextMediaQuery(depth: number): string {
       }
     }
   `;
-  }
+	}
 
-  return `
+	return `
     ...,
     _type == "block" => {
       ...,

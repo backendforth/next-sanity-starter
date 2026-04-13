@@ -1,20 +1,20 @@
 export type SanityImageDimensions = {
-  width?: number;
-  height?: number;
-  aspectRatio?: number;
+	width?: number;
+	height?: number;
+	aspectRatio?: number;
 };
 
 export type SanityImageAssetRef = {
-  _id?: string;
-  url?: string | null;
-  metadata?: {
-    dimensions?: SanityImageDimensions | null;
-    lqip?: string | null;
-  } | null;
+	_id?: string;
+	url?: string | null;
+	metadata?: {
+		dimensions?: SanityImageDimensions | null;
+		lqip?: string | null;
+	} | null;
 };
 
 export type SanityImageField = {
-  crop?: unknown;
-  hotspot?: unknown;
-  asset?: SanityImageAssetRef | null;
+	crop?: unknown;
+	hotspot?: unknown;
+	asset?: SanityImageAssetRef | null;
 } | null;

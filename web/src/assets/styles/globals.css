@@ -16,7 +16,7 @@
 @config "../../../tailwind.config.ts";
 
 body {
-  @apply font-text;
-  background: var(--color-bg);
-  color: var(--color-text);
+	@apply font-text;
+	background: var(--color-bg);
+	color: var(--color-text);
 }

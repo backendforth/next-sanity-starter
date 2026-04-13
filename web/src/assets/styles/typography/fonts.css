@@ -26,10 +26,10 @@
 } */
 
 :root {
-  --font-family-sans: "PlaceholderSans", ui-sans-serif, system-ui, sans-serif;
-  --font-family-serif: "PlaceholderSerif", ui-serif, Georgia, serif;
-  --font-family-mono: "PlaceholderMono", ui-monospace, monospace;
+	--font-family-sans: "PlaceholderSans", ui-sans-serif, system-ui, sans-serif;
+	--font-family-serif: "PlaceholderSerif", ui-serif, Georgia, serif;
+	--font-family-mono: "PlaceholderMono", ui-monospace, monospace;
 
-  --font-family-text: var(--font-family-sans);
-  --font-family-headline: var(--font-family-serif);
+	--font-family-text: var(--font-family-sans);
+	--font-family-headline: var(--font-family-serif);
 }

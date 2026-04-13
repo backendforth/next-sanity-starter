@@ -28,6 +28,10 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "groq-js": "^1.29.0",
+    "postcss-calc": "^10.1.1",
+    "postcss-functions": "^4.0.2",
+    "postcss-import": "^16.1.1",
+    "postcss-nested-ancestors": "^3.0.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"
   }

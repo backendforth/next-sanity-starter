@@ -11,6 +11,7 @@ export {
   navMenusQuery,
   settingsBundleQuery,
   siteCookieBannerQuery,
+  siteNavMenusQuery,
   siteNavQuery,
   siteSettingsQuery,
 } from "./snippets/settings";

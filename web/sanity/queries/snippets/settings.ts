@@ -46,6 +46,13 @@ export const siteNavQuery = `*[_id == "siteNav"][0]{
   ${modulesQuery}
 }`;
 
+/** Same resolved menus as `siteNavQuery` without `modules[]` (lighter layout fetch). */
+export const siteNavMenusQuery = `*[_id == "siteNav"][0]{
+  _id,
+  title,
+  ${navMenusQuery}
+}`;
+
 /** Document id: `siteSettings`. */
 export const siteSettingsQuery = `*[_id == "siteSettings"][0]{
   _id,

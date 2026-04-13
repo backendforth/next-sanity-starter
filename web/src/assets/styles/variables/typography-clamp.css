@@ -1,0 +1,17 @@
+/*
+ * Optional fluid `--font-size-*-clamp` — not imported by default.
+ * Import in globals.css after typography.css; wire utilities to `*-clamp` vars.
+ * svw = stable with mobile UI chrome; use dvw instead if you prefer dynamic viewport width.
+ */
+
+:root {
+  --font-size-xs-clamp: clamp(rem(12), calc(rem(12) + 0.15svw), rem(14));
+  --font-size-sm-clamp: clamp(rem(14.5), calc(rem(14.5) + 0.1svw), rem(16));
+  --font-size-md-clamp: clamp(rem(16), calc(rem(16) + 0.05svw), rem(17));
+  --font-size-lg-clamp: clamp(rem(18), calc(rem(18) + 0.08svw), rem(19));
+  --font-size-xl-clamp: clamp(rem(20), calc(rem(20) + 0.125svw), rem(22));
+  --font-size-2xl-clamp: clamp(rem(25), calc(rem(25) + 0.125svw), rem(27));
+  --font-size-3xl-clamp: clamp(rem(28), calc(rem(28) + 0.125svw), rem(30));
+  --font-size-4xl-clamp: clamp(rem(30), calc(rem(30) + 0.875svw), rem(44));
+  --font-size-9xl-clamp: clamp(rem(132), calc(rem(132) + 4svw), rem(196));
+}

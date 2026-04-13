@@ -1,8 +1,9 @@
 import { cache } from "react";
 
 import { client } from "./client";
-import { homeQuery, pageBySlugQuery } from "./queries";
+import { homeQuery, pageBySlugQuery, siteNavMenusQuery } from "./queries";
 import type { ContentModule } from "./types/modules";
+import type { SiteNavMenusDocument } from "./types/nav";
 import type { IntlStringEntry } from "./utils";
 
 export type PageSeo = {
@@ -34,4 +35,9 @@ export const fetchHomeDocument = cache(() =>
 /** Dedupes page fetches between `generateMetadata` and the page component. */
 export const fetchPageBySlug = cache((slug: string) =>
   client.fetch<PageDocument | null>(pageBySlugQuery, { slug }),
+);
+
+/** `siteNav` main/footer menus with resolved links; no embedded modules. */
+export const fetchSiteNavMenus = cache(() =>
+  client.fetch<SiteNavMenusDocument | null>(siteNavMenusQuery),
 );

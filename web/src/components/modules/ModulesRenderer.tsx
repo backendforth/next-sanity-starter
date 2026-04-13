@@ -23,10 +23,9 @@ export function ModulesRenderer({
         return (
           <div
             key={key}
-            className="rounded-lg border border-dashed border-borderSubtle px-4 py-3 text-sm text-textMuted"
           >
-            <span className="font-medium text-textColor">{getSanityModuleLabel(mod._type)}</span>
-            <span className="block text-xs text-grey">
+            <span>{getSanityModuleLabel(mod._type)}</span>
+            <span>
               No frontend renderer for this module type yet.
             </span>
           </div>

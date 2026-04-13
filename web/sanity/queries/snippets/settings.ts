@@ -1,6 +1,6 @@
+import { modulesQuery } from "../components/modules";
 import { linkQuery } from "./link";
 import { imageQuery } from "./media";
-import { modulesQuery } from "../components/modules";
 import { seoQuery } from "./seo";
 
 /**

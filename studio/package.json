@@ -9,8 +9,8 @@
     "build": "sanity build",
     "deploy": "sanity deploy",
     "generate": "sanity schema extract --enforce-required-fields && sanity typegen generate",
-    "lint": "biome check .",
-    "format": "biome format --write ."
+    "lint": "pnpm --workspace-root exec biome check studio",
+    "format": "pnpm --workspace-root exec biome format --write studio"
   },
   "dependencies": {
     "@repo/languages": "workspace:*",
@@ -30,7 +30,6 @@
     "styled-components": "^6.1.19"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.10",
     "@types/react": "^19",
     "typescript": "^5"
   }

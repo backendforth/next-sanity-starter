@@ -1,5 +1,5 @@
-import { getSanityModuleLabel } from "@/sanity/utils";
 import type { ContentModule, ModuleTextData } from "@/sanity/types/modules";
+import { getSanityModuleLabel } from "@/sanity/utils";
 import { defaultLocale } from "@/src/i18n/config";
 import { ModuleText } from "./ModuleText";
 

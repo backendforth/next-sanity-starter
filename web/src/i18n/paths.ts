@@ -1,4 +1,4 @@
-import { defaultLocale, isAppLocale, type AppLocale } from "./config";
+import { type AppLocale, defaultLocale, isAppLocale } from "./config";
 
 /**
  * Locale implied by the visible URL (default locale has no prefix).

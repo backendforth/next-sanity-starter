@@ -1,6 +1,6 @@
-import clsx from "clsx";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
+import clsx from "clsx";
 import type { ReactNode } from "react";
 
 /**

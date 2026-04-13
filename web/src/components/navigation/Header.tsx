@@ -1,31 +1,22 @@
 "use client";
 
-import { studioLanguages } from "@repo/languages";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 
 import type { NavMenuLink } from "@/sanity/types/nav";
-import type { AppLocale } from "@/src/i18n/config";
 import {
-	localeFromPathname,
-	localePath,
-	pathWithoutLocalePrefix,
-} from "@/src/i18n/paths";
-
-import { NavRowControl } from "./NavRowControl";
+	type StudioLanguageOption,
+	useLanguage,
+} from "@/src/contexts/LanguageContext";
+import type { AppLocale } from "@/src/i18n/config";
+import { localePath } from "@/src/i18n/paths";
 import type { ResolvedNavRow } from "../../utils/navHref";
 import { resolveMainMenuRows } from "../../utils/navHref";
+import { NavRowControl } from "./NavRowControl";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type LanguageOption = {
-	id: AppLocale;
-	title: string;
-};
-
 type Props = {
-	locale: AppLocale;
 	mainMenu?: NavMenuLink[] | null;
 	siteTitle?: string | null;
 };
@@ -101,7 +92,7 @@ function LanguageSelect({
 	onLanguageChange,
 }: {
 	currentLocale: AppLocale;
-	languages: readonly LanguageOption[];
+	languages: readonly StudioLanguageOption[];
 	onLanguageChange: (next: AppLocale) => void;
 }) {
 	return (
@@ -148,33 +139,26 @@ function MobileMenuButton({
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Header({ locale, mainMenu, siteTitle }: Props) {
-	const rows = resolveMainMenuRows(mainMenu, locale);
-	const homeHref = localePath("/", locale);
+export function Header({ mainMenu, siteTitle }: Props) {
+	const { currentLocale, languages, setLocale } = useLanguage();
+
+	const rows = resolveMainMenuRows(mainMenu, currentLocale);
+	const homeHref = localePath("/", currentLocale);
 	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
 	const brandLabel =
 		trimmedTitle.length > 0 && trimmedTitle !== "Navigation"
 			? trimmedTitle
 			: "Site";
 
-	const languages: readonly LanguageOption[] = studioLanguages;
-
 	const [open, setOpen] = useState(false);
 	const menuId = useId();
-	const pathname = usePathname() ?? "/";
-	const router = useRouter();
-	const fromPath = localeFromPathname(pathname);
-	const currentLocale = languages.some((l) => l.id === fromPath)
-		? fromPath
-		: locale;
-	const pathWithoutLocale = pathWithoutLocalePrefix(pathname);
 
 	const onLanguageChange = useCallback(
 		(next: AppLocale) => {
-			router.push(localePath(pathWithoutLocale, next));
+			setLocale(next);
 			setOpen(false);
 		},
-		[pathWithoutLocale, router],
+		[setLocale],
 	);
 
 	const close = useCallback(() => setOpen(false), []);

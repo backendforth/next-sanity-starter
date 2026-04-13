@@ -1,4 +1,4 @@
-/* Type scale — tiers: `@media (width >= theme(--breakpoint-*))` (values from `breakpoints.pcss` `@theme`). */
+/* Type scale — tiers: `@media (width >= theme(--breakpoint-*))` (values from `breakpoints.css` `@theme`). */
 
 :root {
   --font-size-xs: rem(12);

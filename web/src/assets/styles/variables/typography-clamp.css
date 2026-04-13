@@ -1,6 +1,6 @@
 /*
  * Optional fluid `--font-size-*-clamp` — not imported by default.
- * Import in globals.css after typography.pcss; wire utilities to `*-clamp` vars.
+ * Import in globals.css after typography.css; wire utilities to `*-clamp` vars.
  * svw = stable with mobile UI chrome; use dvw instead if you prefer dynamic viewport width.
  */
 

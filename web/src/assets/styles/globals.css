@@ -1,15 +1,15 @@
 /* tokens.css loads sizes/typography + breakpoints first; this file adds Tailwind + breakpoints again for @theme registration. */
 
-@import "./typography/fonts.pcss";
-@import "./variables/colors.pcss";
+@import "./typography/fonts.css";
+@import "./variables/colors.css";
 
 @import "tailwindcss";
 @config "../../../tailwind.config.ts";
 
-@import "./variables/breakpoints.pcss";
+@import "./variables/breakpoints.css";
 
-@import "./typography/typography.pcss";
-@import "./tailwind/safelist.pcss";
+@import "./typography/typography.css";
+@import "./tailwind/safelist.css";
 
 body {
   @apply font-text;

@@ -116,6 +116,7 @@ export function NavbarClient({
 									{open ? "Close menu" : "Open menu"}
 								</span>
 								{open ? (
+									// biome-ignore lint/a11y/noSvgWithoutTitle: decorative; button has aria-label
 									<svg
 										width={22}
 										height={22}
@@ -128,6 +129,7 @@ export function NavbarClient({
 										<path d="M6 6l12 12M18 6L6 18" />
 									</svg>
 								) : (
+									// biome-ignore lint/a11y/noSvgWithoutTitle: decorative; button has aria-label
 									<svg
 										width={22}
 										height={22}

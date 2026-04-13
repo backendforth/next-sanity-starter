@@ -70,27 +70,27 @@ Other root scripts: `pnpm build` (all packages), `pnpm studio:build`, `pnpm stud
 Next.js 16, React 19, **Tailwind CSS v4** (+ PostCSS: import, functions/`rem()`, calc, nested-ancestors), **next-sanity**, **Portable Text** (`@portabletext/react`), **@sanity/image-url**, **clsx** / **tailwind-merge**, **`@repo/languages`**.
 
 **Studio (`studio/package.json`)**  
-**Sanity v5**, **Vision**, **Dashboard**, **internationalized-array**, **Media**, **Mux input**, **Netlify plugin**, **Code input**, **`@repo/languages`**, **Biome** (lint/format in studio).
+**Sanity v5**, **Vision**, **Dashboard**, **internationalized-array**, **Media**, **Mux input**, **Netlify plugin**, **Code input**, **`@repo/languages`**. Lint/format via root **Biome** (`pnpm --filter studio run lint`).
 
-**Tooling (root)**  
-**Biome** (`biome.json`) — formatter + linter + CSS (Tailwind directives) + import organize; **ESLint** remains on **web** via `eslint-config-next` (`pnpm --filter web run lint`).
+**Tooling (Biome)**  
+**Root [`biome.json`](biome.json)** is the only Biome config file — there is **no `web/biome.json`** and **no `studio/biome.json`**. **`web/`** and **`studio/`** are linted/formatted via **`pnpm --workspace-root exec biome …`** from each package’s `lint` / `format` scripts, using the root-installed **`@biomejs/biome`**. Studio keeps **2-space indentation** through a root **`overrides`** entry for `studio/**` (the rest of the repo uses **tabs** from the base config).
 
 ## Linting & formatting (Biome)
 
-Config: **[`biome.json`](biome.json)** at the repo root (tabs, double quotes in JS, recommended rules, Tailwind-aware CSS parser, VCS/git ignore).
+**Root config:** **[`biome.json`](biome.json)** (tabs, double quotes in JS, recommended rules, Tailwind-aware CSS parser, VCS/git ignore). Running Biome from the repo root with no path uses the default project scope — **`web/`** is included unless you exclude it in `biome.json`.
 
 From the **repository root**, after `pnpm install` (Biome is a root `devDependency`):
 
 | Task | Command |
 |------|---------|
 | **Format** (write) | `pnpm exec biome format --write .` |
-| | or: `pnpx @biomejs/biome format --write .` — applies Biome’s formatter using `biome.json` |
+| | or: `pnpx @biomejs/biome format --write .` — applies Biome’s formatter using root `biome.json` |
 | **Lint + format check** | `pnpm exec biome check .` |
 | **Lint + safe fixes + format** | `pnpm exec biome check --write .` |
 
-**Studio** also defines `pnpm --filter studio run lint` → `biome check .` and `pnpm --filter studio run format` → `biome format --write .` scoped to `studio/`.
+**Web only:** `pnpm --filter web run lint` / `pnpm --filter web run format` — same root config, paths limited to **`web/`**.
 
-**Web** uses **ESLint** for Next.js: `pnpm --filter web run lint`.
+**Studio:** `pnpm --filter studio run lint` / `format` — same root `biome.json`, scoped to **`studio/`** (formatter override: 2 spaces in `studio/**`).
 
 ---
 

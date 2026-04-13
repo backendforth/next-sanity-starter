@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { fetchPageBySlug } from "@/sanity/fetchSanityData";
-import { pickLocalizedString } from "@/sanity/utils";
 import { pageSlugsQuery } from "@/sanity/queries";
+import { pickLocalizedString } from "@/sanity/utils";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { locales } from "@/src/i18n/config";
 

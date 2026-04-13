@@ -12,10 +12,10 @@ export const modulesQuery = `modules[]{
   ${moduleContentRefsQuery}
 }`;
 
+export { richTextMediaQuery } from "../text/richTextMedia";
 export {
 	moduleCarouselQuery,
 	moduleContentRefsQuery,
 	moduleMediaQuery,
 	moduleTextQuery,
 };
-export { richTextMediaQuery } from "../text/richTextMedia";

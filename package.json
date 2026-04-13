@@ -4,6 +4,9 @@
 	"description": "Next and Sanity Boilerplate",
 	"private": true,
 	"scripts": {
+		"lint": "biome check .",
+		"format": "biome format --write .",
+		"prepare": "husky",
 		"dev": "pnpm --stream -r run dev",
 		"web:dev": "pnpm --filter web run dev",
 		"studio:dev": "pnpm --filter studio run dev",
@@ -23,6 +26,8 @@
 		}
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.10"
-	}
+		"@biomejs/biome": "^2.4.10",
+		"husky": "^9.1.7"
+	},
+	"packageManager": "pnpm@10.21.0"
 }

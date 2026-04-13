@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
 import { Footer } from "@/src/components/navigation/Footer";
-import { Navbar } from "@/src/components/navigation/Navbar";
+import { Header } from "@/src/components/navigation/Header";
 import {
 	defaultLocale,
 	isAppLocale,
 	LOCALE_HEADER_NAME,
 } from "@/src/i18n/config";
-import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -31,7 +31,7 @@ export default async function RootLayout({
 	return (
 		<html lang={locale} className="h-full antialiased" suppressHydrationWarning>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<Navbar
+				<Header
 					locale={locale}
 					mainMenu={siteNav?.mainMenu}
 					siteTitle={siteNav?.title}

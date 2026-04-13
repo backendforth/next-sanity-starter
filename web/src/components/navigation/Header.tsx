@@ -1,17 +1,21 @@
 "use client";
 
+import { studioLanguages } from "@repo/languages";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 
+import type { NavMenuLink } from "@/sanity/types/nav";
 import type { AppLocale } from "@/src/i18n/config";
 import {
 	localeFromPathname,
 	localePath,
 	pathWithoutLocalePrefix,
 } from "@/src/i18n/paths";
+
 import { NavRowControl } from "./NavRowControl";
-import type { ResolvedNavRow } from "./navHref";
+import type { ResolvedNavRow } from "../../utils/navHref";
+import { resolveMainMenuRows } from "../../utils/navHref";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,11 +25,9 @@ type LanguageOption = {
 };
 
 type Props = {
-	rows: ResolvedNavRow[];
-	homeHref: string;
-	brandLabel: string;
 	locale: AppLocale;
-	languages: readonly LanguageOption[];
+	mainMenu?: NavMenuLink[] | null;
+	siteTitle?: string | null;
 };
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -146,13 +148,17 @@ function MobileMenuButton({
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function NavbarClient({
-	rows,
-	homeHref,
-	brandLabel,
-	locale,
-	languages,
-}: Props) {
+export function Header({ locale, mainMenu, siteTitle }: Props) {
+	const rows = resolveMainMenuRows(mainMenu, locale);
+	const homeHref = localePath("/", locale);
+	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
+	const brandLabel =
+		trimmedTitle.length > 0 && trimmedTitle !== "Navigation"
+			? trimmedTitle
+			: "Site";
+
+	const languages: readonly LanguageOption[] = studioLanguages;
+
 	const [open, setOpen] = useState(false);
 	const menuId = useId();
 	const pathname = usePathname() ?? "/";

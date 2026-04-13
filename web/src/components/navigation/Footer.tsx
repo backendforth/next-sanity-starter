@@ -2,7 +2,7 @@ import type { NavMenuLink } from "@/sanity/types/nav";
 import type { AppLocale } from "@/src/i18n/config";
 
 import { NavRowControl } from "./NavRowControl";
-import { resolveFooterMenuRows } from "./navHref";
+import { resolveFooterMenuRows } from "../../utils/navHref";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

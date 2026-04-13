@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import { cn } from "@/src/utils/cn";
 
-import type { ResolvedNavRow } from "./navHref";
+import type { ResolvedNavRow } from "../../utils/navHref";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

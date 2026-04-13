@@ -1,7 +1,7 @@
 import { DocumentTextIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 import { validateSlug } from "../../utils/validateSlug";
-import { modulesArrayField } from "../objects/modules/moduleDocumentArrayField";
+import { modulesArrayField } from "../objects/modules/modulesArrayField";
 
 export const page = defineType({
   name: "page",

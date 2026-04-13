@@ -68,7 +68,7 @@ They are composed by **`module.media`** and can be embedded elsewhere without du
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
 1. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`).
-2. **On documents** — as items in the **`modules`** array field, defined by **`objects/modules/moduleDocumentArrayField.ts`** (`documentModuleTypes` + `modulesArrayField({ group })` on pages and singletons).
+2. **On documents** — as items in the **`modules`** array field, defined by **`objects/modules/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons).
 
 When you add a **new** module, wire it up in **both** places so behaviour stays consistent: inline in text **and** in the stacked `modules` list.
 
@@ -79,13 +79,13 @@ When you add a **new** module, wire it up in **both** places so behaviour stays 
    - **`type: "object"`** — fields, `preview`, optional `icon`, etc.
 2. **Register the type** — export it and add it to **`schemas/index.ts`** → `schemaTypes` (keep module types together with other `module.*` entries).
 3. **Rich text (inline blocks)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**.
-4. **Document-level `modules` arrays** — append the same `{ type: "module.<id>" }` to **`documentModuleTypes`** in **`objects/modules/moduleDocumentArrayField.ts`**.
+4. **Document-level `modules` arrays** — append the same `{ type: "module.<id>" }` to **`moduleTypes`** in **`objects/modules/modulesArrayField.ts`**.
 
 You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
 
 ### Keep lists in sync
 
-`richTextMedia` and `documentModuleTypes` should expose the **same** set of `module.*` types unless you intentionally restrict a module to only one context (unusual). If they drift, editors will see different insert options in the body vs. the **Modules** field.
+`richTextMedia` and **`moduleTypes`** (in **`modulesArrayField.ts`**) should expose the **same** set of `module.*` types unless you intentionally restrict a module to only one context (unusual). If they drift, editors will see different insert options in the body vs. the **Modules** field.
 
 ### Module overview
 
@@ -121,5 +121,5 @@ If you need “New document” templates with presets, register them in **`confi
 | Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
 | Languages | `schemas/constants/languages.ts`, `sanity.config.ts` (plugin) |
 | Slug rules | `validation: validateSlug` on slug fields |
-| New **module** | New file `objects/modules/module<Name>.ts`, `index.ts`, `richTextMedia.ts`, `moduleDocumentArrayField.ts` (`documentModuleTypes`) |
+| New **module** | New file `objects/modules/module<Name>.ts`, `index.ts`, `richTextMedia.ts`, `modulesArrayField.ts` (`moduleTypes`) |
 | New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |

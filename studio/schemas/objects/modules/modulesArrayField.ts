@@ -1,7 +1,7 @@
 import { defineField } from "sanity";
 
 /** Types allowed in document-level `modules` arrays (keep in sync with `richTextMedia` block types). */
-export const documentModuleTypes = [
+export const moduleTypes = [
   { type: "module.media" },
   { type: "module.carousel" },
   { type: "module.contentRefs" },
@@ -24,6 +24,6 @@ export function modulesArrayField(options?: ModulesArrayOptions) {
       "Content modules to be displayed on the page. Add any number; order is used on the frontend.",
     type: "array",
     ...(options?.group ? { group: options.group } : {}),
-    of: [...documentModuleTypes],
+    of: [...moduleTypes],
   });
 }

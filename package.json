@@ -5,7 +5,7 @@
 	"private": true,
 	"scripts": {
 		"lint": "biome check .",
-		"format": "biome format --write .",
+		"format": "biome check --write .",
 		"strip-readmes": "pnpm --filter @repo/strip-readmes run strip",
 		"strip-readmes:dry-run": "pnpm --filter @repo/strip-readmes run strip:dry-run",
 		"prepare": "husky",

@@ -83,10 +83,9 @@ From the **repository root**, after `pnpm install` (Biome is a root `devDependen
 
 | Task | Command |
 |------|---------|
-| **Format** (write) | `pnpm exec biome format --write .` |
-| | or: `pnpx @biomejs/biome format --write .` — applies Biome’s formatter using root `biome.json` |
-| **Lint + format check** | `pnpm exec biome check .` |
-| **Lint + safe fixes + format** | `pnpm exec biome check --write .` |
+| **Lint (check)** | `pnpm run lint` — `biome check .` |
+| **Format + safe fixes** (formatter, import order, …) | `pnpm run format` — **`biome check --write .`** |
+| **Formatter only** (no `organizeImports`) | `pnpm exec biome format --write .` |
 
 **Web only:** `pnpm --filter web run lint` / `pnpm --filter web run format` — same root config, paths limited to **`web/`**.
 

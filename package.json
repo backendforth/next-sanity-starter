@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --stream -r run dev",
+    "web:dev": "pnpm --filter web run dev",
     "studio:dev": "pnpm --filter studio run dev",
     "build": "pnpm --stream -r run build",
     "studio:build": "pnpm --filter studio run build",

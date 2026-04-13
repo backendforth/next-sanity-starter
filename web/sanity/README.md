@@ -1,0 +1,164 @@
+# `web/sanity` — data layer for Sanity + Next.js
+
+This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** for fetched module shapes, and **utilities** (localization, images, labels). It is designed so pages and components can stay thin: fetch at the route, map types, render.
+
+## Layout
+
+| Path | Role |
+|------|------|
+| `client.ts` | `createClient` — use for `fetch` in Server Components, Route Handlers, Server Actions |
+| `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
+| `resolveStudioDataset.ts` | `getSanityStudioProjectId`, `resolveStudioDatasetAsync` — explicit env → Management API or HTTP probe → preference order |
+| `fetchSanityData.ts` | Cached `fetchHomeDocument` / `fetchPageBySlug` using `homeQuery` / `pageBySlugQuery` (dedupes layout + page requests) |
+| `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
+| `types/modules/` | TS types for `module.*` payloads (and shared image types) |
+| `utils/` | Localization (`parseLocalizedText`, `pickLocalizedString`, `pickLocalizedPortableTextBlocks`, …), `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
+
+Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
+
+---
+
+## Translations (`utils/sanityLocalizedText.ts`)
+
+**Which locale the page uses** comes from the URL (`[locale]` route segment), driven by **`src/i18n/site-locales.ts`** (default language, list of languages, fallback order). See the root **`web/README.md`** section *Languages*.
+
+Sanity uses **`internationalizedArray*`** fields: arrays of `{ language | _key, value }`.
+
+Use a single entry point:
+
+**`parseLocalizedText({ entries, locale?, as? })`**
+
+- **`entries`** — the array field from your fetched document (e.g. `doc.title`, `module.body`).
+- **`locale`** — optional; defaults to `"en"`. Locale tags like `en-US` also try the base language (`en`).
+- **`as`** — optional; default **`"auto"`**:
+  - **`auto`** — returns a **string** or **Portable Text blocks**, depending on what that field stores; if the requested locale is missing, falls back to another language that has content.
+  - **`string`** — returns `string | undefined` (rich-text fields resolve to `undefined`).
+  - **`blocks`** — returns `PortableTextBlock[]` (plain-string fields resolve to `[]`).
+
+Example:
+
+```ts
+import { parseLocalizedText } from "@/sanity/utils";
+
+const title = parseLocalizedText({ entries: doc.title, locale: "de", as: "string" });
+const body = parseLocalizedText({ entries: module.body, locale: "de", as: "blocks" });
+
+// Or let the field shape decide (string vs blocks):
+const either = parseLocalizedText({ entries: someField, locale: "de" });
+```
+
+For **React** components, prefer **`pickLocalizedString`** and **`pickLocalizedPortableTextBlocks`** (same resolution rules, including nested i18n inside Portable Text). Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`) — aligned with schema **`richTextMedia`**.
+
+```ts
+import { pickLocalizedString, pickLocalizedPortableTextBlocks } from "@/sanity/utils";
+
+const heading = pickLocalizedString(doc.title, "de");
+const blocks = pickLocalizedPortableTextBlocks(module.body, "de");
+```
+
+---
+
+## Image builder (`utils/sanityImageBuilder.ts`)
+
+Builds optimized CDN URLs from fetched **`image`** fields (`SanityImageField` from `@/sanity/types/modules`) using `@sanity/image-url`, and exposes metadata helpers.
+
+Common exports:
+
+- **`buildFetchedImageUrl(image, { width, height, quality, fit, auto, dpr })`**
+- **`urlForFetchedImage(image, width)`** — convenience default (format + quality)
+- **`getImageOrientation`**, **`isPortraitImage`**, **`isLandscapeImage`**
+- **`getImageAspectRatio`**, **`getImageLqip`**, **`getImageDimensions`**
+
+Example:
+
+```ts
+import { buildFetchedImageUrl, getImageOrientation } from "@/sanity/utils";
+import type { SanityImageField } from "@/sanity/types/modules";
+
+function HeroImage({ image }: { image: SanityImageField | null }) {
+  if (!image) return null;
+  const url =
+    buildFetchedImageUrl(image, { width: 1200, auto: "format", quality: 85 }) ?? "";
+  const orientation = getImageOrientation(image);
+  return <img src={url} alt="" data-orientation={orientation} />;
+}
+```
+
+Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise missing `development` or `production` is detected and the other name is used when possible.
+
+---
+
+## Module labels (`utils/sanityModuleLabel.ts`)
+
+**`getSanityModuleLabel(moduleType)`** maps `_type` strings like `module.text` to short UI labels (e.g. placeholders or dev overlays). Import from **`@/sanity/utils`** (same barrel as localization).
+
+---
+
+## Queries
+
+- **Overview** — GROQ basics, folder layout, Sanity Vision examples (home, pages, nav, settings). See `queries/README.md`.
+- **Snippets** — reusable GROQ string pieces (`linkQuery`, `seoQuery`, `settingsBundleQuery`, …). See `queries/snippets/README.md`.
+- **Components** — `modulesQuery`, `richTextMediaQuery`, per-module projections. See `queries/components/README.md`.
+- **Pages** — `homeQuery`, `pageBySlugQuery`. See `queries/pages/README.md`.
+- **Sitemap / slugs** — `pageSlugsQuery`, `sitemapPagesQuery` in `queries/snippets/sitemap.ts`.
+
+Central export: `import { ... } from "@/sanity/queries"`.
+
+---
+
+## Example: page-level fetch with title + modules (Next.js App Router)
+
+This example assumes your page document has i18n `title` and a `modules` array matching `modulesQuery`. Adjust types to your app.
+
+```tsx
+// app/[slug]/page.tsx
+import { notFound } from "next/navigation";
+import { client } from "@/sanity/client";
+import { pageBySlugQuery } from "@/sanity/queries";
+import { parseLocalizedText, type IntlStringEntry } from "@/sanity/utils";
+import type { ContentModule } from "@/sanity/types/modules";
+
+type PageDocument = {
+  _id: string;
+  title?: IntlStringEntry[] | null;
+  modules?: ContentModule[] | null;
+};
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const doc = await client.fetch<PageDocument | null>(pageBySlugQuery, { slug });
+
+  if (!doc) {
+    notFound();
+  }
+
+  const heading = parseLocalizedText({ entries: doc.title, as: "string" }) ?? slug;
+  const modules = doc.modules ?? [];
+
+  return (
+    <main className="mx-auto max-w-3xl px-6 py-16">
+      <h1 className="text-3xl font-semibold">{heading}</h1>
+      <ul className="mt-8 space-y-6">
+        {modules.map((mod, i) => (
+          <li key={mod._key ?? i}>
+            <pre className="rounded border p-4 text-xs">{mod._type}</pre>
+            {/* Replace with real module components (ModuleText, ModuleMedia, …) */}
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+For production, swap the `<pre>` block for your real module renderer that switches on `mod._type` and narrows with `ContentModule` / specific `ModuleTextData` types.
+
+---
+
+## Environment
+
+See **`web/.env.example`**: copy to **`.env.local`** for Next.js. Variables match `studio/.env` for project id and dataset resolution (`sanityEnv.ts`, `client.ts`, image URL builder). Optional **`SANITY_STUDIO_DATASET_RESOLVER_TOKEN`** or **`SANITY_AUTH_TOKEN`** lists datasets via the Management API; without a token, resolution uses an HTTP probe (and treats **401** on private datasets as “exists”). Optional **`NEXT_PUBLIC_SANITY_*`** if the browser needs project id or dataset (e.g. client-side image URLs).

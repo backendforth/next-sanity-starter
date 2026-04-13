@@ -1,0 +1,65 @@
+# Netlify — Next.js app in `web/` (pnpm monorepo).
+#
+# Build runs from the repository root so pnpm can resolve workspace packages (e.g. `@repo/languages`).
+# In the Netlify UI, keep the base directory at the repo root unless you mirror this layout elsewhere.
+#
+# Set in Site settings → Environment variables (Build + Runtime as needed):
+#   SANITY_STUDIO_PROJECT_ID  — required for Next ↔ Sanity
+#   SANITY_STUDIO_DATASET     — optional if you pin a dataset
+#   NEXT_PUBLIC_SANITY_*      — optional client fallbacks
+# Full list: `web/.env.example`
+#
+# Publish directory (why not `dist/`?):
+# - Next.js writes its build output to `.next/` (not `dist/` like Vite or a static export `out/`).
+# - `@netlify/plugin-nextjs` / OpenNext reads that output and packages SSR, functions, and assets
+#   for Netlify; the live site is not a single flat `dist` folder.
+# - `publish = "web/.next"` is the path to that Next output relative to the repo root (monorepo).
+
+[build]
+  command = "pnpm install --frozen-lockfile && pnpm --filter web run build"
+  publish = "web/.next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  # Raise if the Next.js build runs out of memory on Netlify.
+  NODE_OPTIONS = "--max-old-space-size=8192"
+
+# Security headers (baseline)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Hashed static assets (Next.js)
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Optional: if you expose a sitemap at this path (e.g. `app/sitemap.ts`).
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# App Router Route Handlers (`app/api/...`)
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# Minimal redirects
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301

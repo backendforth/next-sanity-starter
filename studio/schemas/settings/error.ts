@@ -1,7 +1,7 @@
 import { ErrorOutlineIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { modulesArrayField } from "../objects/modules/modulesArrayField";
+import { modulesArrayField } from "../objects/modules/moduleDocumentArrayField";
 
 export const errorSettings = defineType({
   name: "errorSettings",

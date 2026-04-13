@@ -1,5 +1,5 @@
 /**
- * `module.contentRefs` (`objects/modules/contentRefs.ts`) — references only `PAGE_REFERENCES` (home, page).
+ * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`) — references only `PAGE_REFERENCES` (home, page).
  */
 export const moduleContentRefsInnerFields = `
   heading,

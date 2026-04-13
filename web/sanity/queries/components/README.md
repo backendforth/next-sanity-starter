@@ -29,5 +29,5 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 
 1. Add a new `module.*` schema in Studio.
 2. Add `modules/<name>.ts` and register it in `modules/index.ts`.
-3. If the module also appears in **rich text**, keep `text/richTextMedia.ts` in sync with `studio/.../richTextMedia.ts` and `modulesArrayField`.
+3. If the module also appears in **rich text**, keep `text/richTextMedia.ts` in sync with `studio/.../richTextMedia.ts` and `moduleDocumentArrayField`.
 4. Extend types under `web/sanity/types/modules/`.

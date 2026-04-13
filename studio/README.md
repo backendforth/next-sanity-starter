@@ -11,7 +11,7 @@ This package is the Sanity Studio for the project: schemas, Desk structure, Visu
 | **Prod → dev sync** | Optional CLI script exports `production` to a local tarball and imports into `development` (`--replace`). Shown as a hint when you start `pnpm dev` in `studio/`. | `scripts/sync-prod-to-dev.mjs`, below |
 | **Multi-language** | Same language ids as the Next app: **`@repo/languages`** (`packages/languages/src/index.ts`). Re-exported as `studioLanguages` / `defaultLanguageIds` in `schemas/constants/languages.ts`. | `packages/languages/README.md`, `utils/README.md` |
 | **Slug validation** | Shared `validateSlug` helper enforces URL-safe slugs (lowercase, numbers, hyphens) on fields that power frontend routes. | `utils/validateSlug.ts`, used e.g. in `schemas/documents/page.ts` |
-| **Mux integration** | `sanity-plugin-mux-input` is registered in `sanity.config.ts`; video fields use the `mux.video` type in schema objects (e.g. media modules). | `sanity.config.ts`, `schemas/objects/modules/media.ts` |
+| **Mux integration** | `sanity-plugin-mux-input` is registered in `sanity.config.ts`; video fields use the `mux.video` type in schema objects (e.g. media modules). | `sanity.config.ts`, `schemas/objects/modules/moduleMedia.ts` |
 
 Other plugins in this Studio include the **dashboard**, **structure** (custom sidebar), **code input**, **media library**, **Netlify**, and optionally **Vision** (GROQ) in development only.
 

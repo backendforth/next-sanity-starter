@@ -2,7 +2,7 @@ import { mediaQuery } from "../../snippets/media";
 import { moduleMediaInnerFields, moduleMediaResolvedMediaQuery } from "./media";
 
 /**
- * `module.carousel` (`objects/modules/carousel.ts`):
+ * `module.carousel` (`objects/modules/moduleCarousel.ts`):
  * `imagesOnly` → `slides` (plain `image` items); otherwise `slidesMedia` (`module.media` = image or video).
  */
 export const moduleCarouselInnerFields = `

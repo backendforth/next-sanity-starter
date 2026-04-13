@@ -21,7 +21,7 @@ export const moduleMediaResolvedMediaQuery = `
 `;
 
 /**
- * `module.media` (`objects/modules/media.ts`) — image/video via `mediaQuery` on each asset field.
+ * `module.media` (`objects/modules/moduleMedia.ts`) — image/video via `mediaQuery` on each asset field.
  */
 export const moduleMediaInnerFields = `
   type,

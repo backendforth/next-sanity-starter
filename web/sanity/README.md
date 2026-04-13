@@ -8,7 +8,7 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 |------|------|
 | `client.ts` | `createClient` — use for `fetch` in Server Components, Route Handlers, Server Actions |
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
-| `resolveStudioDataset.ts` | `getSanityStudioProjectId`, `resolveStudioDatasetAsync` — explicit env → Management API or HTTP probe → preference order |
+| `resolveStudioDataset.ts` | `getSanityStudioProjectId`, `resolveStudioDatasetAsync` — explicit env → Management API or HTTP probe → dev-first vs prod-first by deploy context |
 | `fetchSanityData.ts` | Cached `fetchHomeDocument` / `fetchPageBySlug` using `homeQuery` / `pageBySlugQuery` (dedupes layout + page requests) |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `types/modules/` | TS types for `module.*` payloads (and shared image types) |
@@ -84,7 +84,7 @@ function HeroImage({ image }: { image: SanityImageField | null }) {
 }
 ```
 
-Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise missing `development` or `production` is detected and the other name is used when possible.
+Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise **`resolveStudioDataset.ts`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`); missing `development` or `production` is detected and the other name is used when possible.
 
 ---
 

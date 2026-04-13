@@ -38,4 +38,4 @@ Nothing in this repo auto-registers new types in the sidebar or in Presentation;
 
 ## Dataset resolution
 
-`config/studioDataset.ts` and `config/resolveStudioDataset.ts` choose which Sanity dataset the Studio uses (development vs production naming, optional Management API). See `studio/utils/README.md` for editor-facing notes.
+`config/studioDataset.ts` and `config/resolveStudioDataset.ts` choose which Sanity dataset the Studio uses (development vs production naming, optional Management API, and dev-first vs prod-first order by deploy context — see the same file). See `studio/utils/README.md` for editor-facing notes.

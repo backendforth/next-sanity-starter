@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
 import { Footer } from "@/src/components/navigation/Footer";
-import { Navbar } from "@/src/components/navigation/Navbar";
+import { Header } from "@/src/components/navigation/Header";
+import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import {
 	defaultLocale,
 	isAppLocale,
@@ -31,13 +32,11 @@ export default async function RootLayout({
 	return (
 		<html lang={locale} className="h-full antialiased" suppressHydrationWarning>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<Navbar
-					locale={locale}
-					mainMenu={siteNav?.mainMenu}
-					siteTitle={siteNav?.title}
-				/>
-				<div className="flex min-h-0 flex-1 flex-col">{children}</div>
-				<Footer locale={locale} footerMenu={siteNav?.footerMenu} />
+				<LanguageProvider locale={locale}>
+					<Header mainMenu={siteNav?.mainMenu} siteTitle={siteNav?.title} />
+					<div className="flex min-h-0 flex-1 flex-col">{children}</div>
+					<Footer locale={locale} footerMenu={siteNav?.footerMenu} />
+				</LanguageProvider>
 			</body>
 		</html>
 	);

@@ -11,6 +11,8 @@ import type { ReactNode } from "react";
  * it is not wired in the UI yet — add a separate renderer if you introduce fields that use it.
  */
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 type ResolvedRef = {
 	_type?: string;
 	slug?: string | null;
@@ -27,12 +29,21 @@ export type RichTextMediaLinkMark = {
 	func?: { key?: string; params?: string | null } | null;
 };
 
+type RichTextMediaProps = {
+	value: PortableTextBlock[];
+	className?: string;
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function internalHref(ref: ResolvedRef | null | undefined): string | undefined {
 	if (!ref?._type) return undefined;
 	if (ref._type === "home") return "/";
 	if (ref._type === "page" && ref.slug) return `/${ref.slug}`;
 	return undefined;
 }
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function LinkMark({
 	children,
@@ -76,6 +87,8 @@ function LinkMark({
 	return <>{children}</>;
 }
 
+// ─── Portable Text configuration ─────────────────────────────────────────────
+
 const components: Partial<PortableTextComponents> = {
 	block: {
 		normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
@@ -109,10 +122,7 @@ const components: Partial<PortableTextComponents> = {
 	},
 };
 
-type RichTextMediaProps = {
-	value: PortableTextBlock[];
-	className?: string;
-};
+// ─── Component ───────────────────────────────────────────────────────────────
 
 /**
  * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded modules).

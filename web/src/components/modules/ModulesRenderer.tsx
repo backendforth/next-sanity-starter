@@ -3,16 +3,28 @@ import { getSanityModuleLabel } from "@/sanity/utils";
 import { defaultLocale } from "@/src/i18n/config";
 import { ModuleText } from "./ModuleText";
 
-type ModulesRendererProps = {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Props = {
 	modules: ContentModule[];
 	locale?: string;
 };
 
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
+	return (
+		<div>
+			<span>{getSanityModuleLabel(moduleType)}</span>
+			<span>No frontend renderer for this module type yet.</span>
+		</div>
+	);
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
 /** Renders the document `modules[]` stack (one UI block per `module.*` type). */
-export function ModulesRenderer({
-	modules,
-	locale = defaultLocale,
-}: ModulesRendererProps) {
+export function ModulesRenderer({ modules, locale = defaultLocale }: Props) {
 	return (
 		<div className="flex flex-col gap-10">
 			{modules.map((mod, index) => {
@@ -26,12 +38,7 @@ export function ModulesRenderer({
 						/>
 					);
 				}
-				return (
-					<div key={key}>
-						<span>{getSanityModuleLabel(mod._type)}</span>
-						<span>No frontend renderer for this module type yet.</span>
-					</div>
-				);
+				return <UnknownModule key={key} moduleType={mod._type} />;
 			})}
 		</div>
 	);

@@ -4,6 +4,10 @@
  * After postcss-import expands `tailwindcss`, any later `@import` is invalid
  * (CSS requires @import at the top) and is dropped — so breakpoints, typography
  * utilities, and safelist never reached the Tailwind pipeline.
+ *
+ * Font files: `@font-face` `url(...)` paths live in imported sheets (e.g.
+ * `typography/fonts.css`) and resolve relative to *that* file — not relative to
+ * this `globals.css` path.
  */
 
 @import "./typography/fonts.css";

@@ -1,3 +1,14 @@
+/*
+ * @font-face `url()` resolves relative to *this* file:
+ *   `src/assets/styles/typography/fonts.css`
+ * — not relative to `globals.css`.
+ *
+ * Choose one convention:
+ * • Files in `web/public/fonts/`  →  `url("/fonts/your-font.woff2")` (recommended here).
+ * • Files in `web/src/assets/fonts/`  →  `url("../../fonts/your-font.woff2")`
+ *   (up from `typography/` → `styles/` → `assets/`, then `fonts/`).
+ */
+
 /* Three woff2 in `public/fonts/` — match `url("/fonts/…")` + `@font-face` names to `--font-family-*`.
    sans+text → sans face; serif+headline → serif; mono alone. Or use next/font/local and drop @font-face. */
 

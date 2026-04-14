@@ -23,6 +23,11 @@ export type MediaImageProps = {
 	 */
 	sizesFallback?: string;
 	className?: string;
+	/**
+	 * Marks the image as LCP (Largest Contentful Paint) candidate.
+	 * Sets `loading="eager"`, `priority`, and `fetchPriority="high"`.
+	 */
+	priority?: boolean;
 };
 
 const DEFAULT_SIZES_FALLBACK =
@@ -50,6 +55,7 @@ export function MediaImage({
 	caption,
 	sizesFallback = DEFAULT_SIZES_FALLBACK,
 	className,
+	priority = false,
 }: MediaImageProps) {
 	const image = resolveSanityImageFieldForUrl(imagePayload);
 	const [ref, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
@@ -81,7 +87,9 @@ export function MediaImage({
 				alt={imageAltFromField(image, alt, caption)}
 				fill
 				sizes={sizes}
-				loading="lazy"
+				loading={priority ? "eager" : "lazy"}
+				priority={priority}
+				fetchPriority={priority ? "high" : "auto"}
 				quality={85}
 				placeholder={lqip ? "blur" : "empty"}
 				blurDataURL={lqip ?? undefined}

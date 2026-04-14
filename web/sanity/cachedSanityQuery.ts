@@ -1,8 +1,11 @@
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { client } from "./client";
 import { homeQuery, pageBySlugQuery } from "./queries";
 import type { HomeDocument, PageDocument } from "./types/pages";
+
+const REVALIDATE_SECONDS = 60;
 
 /**
  * Static GROQ (no `$params`) — deduped within a request when the same `query`
@@ -19,18 +22,33 @@ export const cachedSanityQuery = cache(async <T>(query: string) => {
 /**
  * `pageBySlugQuery` with `$slug` — one fetch per slug per request.
  * Use for **`generateMetadata`** and the page (deduped per slug within the request).
+ *
+ * Combines React `cache()` (per-request) with `unstable_cache` (cross-request).
+ * Revalidates via tag `page-{slug}` or time-based after `REVALIDATE_SECONDS`.
  */
 export const cachedPageDocumentBySlug = cache(async (slug: string) => {
-	const data = await client.fetch<PageDocument | null>(pageBySlugQuery, {
-		slug,
-	});
+	const fetchPage = unstable_cache(
+		async () =>
+			client.fetch<PageDocument | null>(pageBySlugQuery, {
+				slug,
+			}),
+		[`page-${slug}`],
+		{ revalidate: REVALIDATE_SECONDS, tags: [`page-${slug}`, "pages"] },
+	);
+	const data = await fetchPage();
 	return { data };
 });
 
 /**
- * Home singleton — same cache as `cachedSanityQuery(homeQuery)`.
+ * Home singleton — cross-request cached with tag `home`.
  * Call from **`generateMetadata`** and the page: one Sanity request per request (React `cache` dedupe).
  */
-export function cachedHomeDocument() {
-	return cachedSanityQuery<HomeDocument | null>(homeQuery);
-}
+export const cachedHomeDocument = cache(async () => {
+	const fetchHome = unstable_cache(
+		async () => client.fetch<HomeDocument | null>(homeQuery),
+		["home-document"],
+		{ revalidate: REVALIDATE_SECONDS, tags: ["home"] },
+	);
+	const data = await fetchHome();
+	return { data };
+});

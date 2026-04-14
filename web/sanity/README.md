@@ -9,8 +9,11 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | `client.ts` | `createClient` — use for `fetch` in Server Components, Route Handlers, Server Actions |
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
 | `resolveStudioDataset.ts` | `getSanityStudioProjectId`, `resolveStudioDatasetAsync` — explicit env → Management API or HTTP probe → dev-first vs prod-first by deploy context |
-| `fetchSanityData.ts` | Cached `fetchHomeDocument` / `fetchPageBySlug` using `homeQuery` / `pageBySlugQuery` (dedupes layout + page requests) |
+| `cachedSanityQuery.ts` | `cachedSanityQuery(query)` (no params) and `cachedPageDocumentBySlug(slug)` — React `cache` dedupe for metadata + page |
+| `fetchSanityData.ts` | Thin wrappers: `fetchHomeDocument` / `fetchPageBySlug` / `fetchSiteNavMenus` (same cache as `cachedSanityQuery`) |
+| `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
+| `types/pages.ts` | `HomeDocument`, `PageDocument`, `PageSeo` — import in **`app/**/page.tsx`** next to route fetches (barrel: `types/index.ts`) |
 | `types/modules/` | TS types for `module.*` payloads (and shared image types) |
 | `utils/` | Localization (`parseLocalizedText`, `pickLocalizedString`, `pickLocalizedPortableTextBlocks`, …), `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
 

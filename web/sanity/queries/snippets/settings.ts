@@ -1,7 +1,7 @@
 import { modulesQuery } from "../components/modules";
 import { linkQuery } from "./link";
 import { imageQuery } from "./media";
-import { seoQuery } from "./seo";
+import { pageSeoQuery } from "./seo";
 
 /**
  * `internationalizedArrayRichText` field: array of { language, value: portable text }.
@@ -59,7 +59,7 @@ export const siteSettingsQuery = `*[_id == "siteSettings"][0]{
   title,
   "favicon": favicon${imageQuery},
   ${modulesQuery},
-  ${seoQuery}
+  ${pageSeoQuery}
 }`;
 
 /** Document id: `errorSettings`. */

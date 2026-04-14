@@ -1,0 +1,59 @@
+/**
+ * Portable Text block-style previews in Studio (richText / richTextMedia).
+ *
+ * These classes mirror the *intent* of web utilities in
+ * `web/src/assets/styles/typography/typography.css` (@utility paragraph, section-title,
+ * content-title, sub-title). Studio does not run Tailwind — keep sizes/families roughly
+ * aligned, or duplicate critical `--font-*` tokens here if you need pixel parity.
+ *
+ * Opt out: remove `component` from each style in `schemas/objects/editors/text/styles.ts`
+ * and/or stop importing this file from `sanity.config.ts`.
+ */
+
+:root {
+	--pt-preview-font-text: ui-sans-serif, system-ui, sans-serif;
+	--pt-preview-font-headline: ui-serif, Georgia, "Times New Roman", serif;
+}
+
+.pt-preview {
+	min-width: 0;
+}
+
+/* Web @utility paragraph — body copy */
+.pt-preview--normal {
+	font-family: var(--pt-preview-font-text);
+	font-weight: 400;
+	font-style: normal;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+/* Web h2 / @utility section-title */
+.pt-preview--h2 {
+	font-family: var(--pt-preview-font-headline);
+	font-weight: 400;
+	font-style: normal;
+	font-size: 1.5625rem;
+	line-height: 1.15;
+	letter-spacing: 0.07em;
+}
+
+/* Web h3 / @utility content-title */
+.pt-preview--h3 {
+	font-family: var(--pt-preview-font-headline);
+	font-weight: 400;
+	font-style: normal;
+	font-size: 1.125rem;
+	line-height: 1.2;
+	letter-spacing: 0.07em;
+}
+
+/* Web h4–h6 / @utility sub-title */
+.pt-preview--h4 {
+	font-family: var(--pt-preview-font-text);
+	font-weight: 700;
+	font-style: normal;
+	font-size: 1.25rem;
+	line-height: 1.25;
+	letter-spacing: 0.045em;
+}

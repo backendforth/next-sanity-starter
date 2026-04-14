@@ -62,6 +62,9 @@ export default {
 			brightness: {
 				70: ".70",
 			},
+			maxWidth: {
+				container: "var(--content-max-width)",
+			},
 			/* `spacing` drives padding/margin/gap and (via Tailwind defaults) matching `w-*` / `h-*` / `max-w-*` / `min-h-*` etc. */
 			spacing: {
 				min: "var(--space-min)",

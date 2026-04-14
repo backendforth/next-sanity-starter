@@ -54,7 +54,7 @@ Paste into **Vision** (adjust dataset in Studio if needed). For queries using `$
 *[_id == "home"][0]{ _id, title }
 ```
 
-**Same SEO projection as the app** (`seoQuery` in [`snippets/seo.ts`](./snippets/seo.ts)), with raw `modules` (full `modules[]` expansion is large — see [`pages/home.ts`](./pages/home.ts) / `modulesQuery`):
+**App route queries** interpolate **`seoQuery`** from [`snippets/seo.ts`](./snippets/seo.ts) (local `seo` plus `settingsSeo` from `siteSettings`). Minimal Vision check without the join:
 
 ```groq
 *[_id == "home"][0]{
@@ -73,7 +73,7 @@ Paste into **Vision** (adjust dataset in Studio if needed). For queries using `$
 
 **Params (Vision):** `{ "slug": "<slug>" }` — slug only, no leading slash.
 
-Aligned with [`pages/page.ts`](./pages/page.ts) (`seo` + raw `modules`):
+Aligned with [`pages/page.ts`](./pages/page.ts) (`seoQuery` + raw `modules`; Vision example below omits the `settingsSeo` join):
 
 ```groq
 *[_type == "page" && slug.current == $slug][0]{

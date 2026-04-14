@@ -1,41 +1,26 @@
 import { cache } from "react";
 
+import {
+	cachedPageDocumentBySlug,
+	cachedSanityQuery,
+} from "./cachedSanityQuery";
 import { client } from "./client";
-import { homeQuery, pageBySlugQuery, siteNavMenusQuery } from "./queries";
-import type { ContentModule } from "./types/modules";
+import { homeQuery, siteNavMenusQuery } from "./queries";
 import type { SiteNavMenusDocument } from "./types/nav";
-import type { IntlStringEntry } from "./utils";
+import type { HomeDocument } from "./types/pages";
 
-export type PageSeo = {
-	title?: string | null;
-	description?: string | null;
-	imageUrl?: string | null;
-} | null;
+/** Prefer `import type { … } from "@/sanity/types/pages"` (or `@/sanity/types`) in routes. */
+export type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
 
-export type HomeDocument = {
-	_id: string;
-	title?: IntlStringEntry[] | null;
-	modules?: ContentModule[] | null;
-	seo?: PageSeo;
-};
+/** Document body for layouts / pages — uses the same cache as `cachedSanityQuery(homeQuery)`. */
+export async function fetchHomeDocument() {
+	return (await cachedSanityQuery<HomeDocument | null>(homeQuery)).data;
+}
 
-export type PageDocument = {
-	_id: string;
-	title?: IntlStringEntry[] | null;
-	slug?: { current?: string | null } | null;
-	modules?: ContentModule[] | null;
-	seo?: PageSeo;
-};
-
-/** Dedupes home fetches between `app/layout` metadata and `app/page`. */
-export const fetchHomeDocument = cache(() =>
-	client.fetch<HomeDocument | null>(homeQuery),
-);
-
-/** Dedupes page fetches between `generateMetadata` and the page component. */
-export const fetchPageBySlug = cache((slug: string) =>
-	client.fetch<PageDocument | null>(pageBySlugQuery, { slug }),
-);
+/** Same cache as `cachedPageDocumentBySlug` — prefer that helper if you want `{ data }`. */
+export async function fetchPageBySlug(slug: string) {
+	return (await cachedPageDocumentBySlug(slug)).data;
+}
 
 /** `siteNav` main/footer menus with resolved links; no embedded modules. */
 export const fetchSiteNavMenus = cache(() =>

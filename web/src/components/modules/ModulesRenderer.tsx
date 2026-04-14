@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import type {
 	ContentModule,
 	ModuleMediaData,
@@ -5,8 +6,13 @@ import type {
 } from "@/sanity/types/modules";
 import { getSanityModuleLabel } from "@/sanity/utils";
 import { defaultLocale } from "@/src/i18n/config";
-import { ModuleMedia } from "./ModuleMedia";
-import { ModuleText } from "./ModuleText";
+
+const ModuleMedia = dynamic(() =>
+	import("./ModuleMedia").then((m) => m.ModuleMedia),
+);
+const ModuleText = dynamic(() =>
+	import("./ModuleText").then((m) => m.ModuleText),
+);
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

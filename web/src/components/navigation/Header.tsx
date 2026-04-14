@@ -3,23 +3,22 @@
 import Link from "next/link";
 import { useCallback, useEffect, useId, useState } from "react";
 
-import type { NavMenuLink } from "@/sanity/types/nav";
+import type { MainMenuItem } from "@/sanity/types/nav";
 import { CloseIcon } from "@/src/components/icons/CloseIcon";
 import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
-import {
-	type StudioLanguageOption,
-	useLanguage,
-} from "@/src/contexts/LanguageContext";
-import type { AppLocale } from "@/src/i18n/config";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import { localePath } from "@/src/i18n/paths";
-import type { ResolvedNavRow } from "../../utils/navHref";
-import { resolveMainMenuRows } from "../../utils/navHref";
+import {
+	type MainMenuEntry,
+	resolveMainMenuEntries,
+} from "../../utils/navHref";
+import { LanguageSwitch } from "./LanguageSwitch";
 import { NavItem } from "./NavItem";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	mainMenu?: NavMenuLink[] | null;
+	mainMenu?: MainMenuItem[] | null;
 	siteTitle?: string | null;
 };
 
@@ -36,46 +35,28 @@ function useEscapeKey(enabled: boolean, onEscape: () => void) {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function NavLinks({
-	rows,
+function MainMenuItems({
+	entries,
 	onNavigate,
+	onAfterLocaleChange,
 }: {
-	rows: ResolvedNavRow[];
+	entries: MainMenuEntry[];
 	onNavigate: () => void;
+	onAfterLocaleChange: () => void;
 }) {
 	return (
 		<>
-			{rows.map((row) => (
-				<NavItem key={row.id} row={row} onNavigate={onNavigate} />
-			))}
+			{entries.map((entry) =>
+				entry.kind === "languageSwitch" ? (
+					<LanguageSwitch
+						key={entry.id}
+						onAfterLocaleChange={onAfterLocaleChange}
+					/>
+				) : (
+					<NavItem key={entry.id} row={entry} onNavigate={onNavigate} />
+				),
+			)}
 		</>
-	);
-}
-
-function LanguageSelect({
-	currentLocale,
-	languages,
-	onLanguageChange,
-}: {
-	currentLocale: AppLocale;
-	languages: readonly StudioLanguageOption[];
-	onLanguageChange: (next: AppLocale) => void;
-}) {
-	return (
-		<select
-			aria-label="Language"
-			className="max-w-[min(100%,11rem)] cursor-pointer rounded-sm border border-color-border-subtle bg-color-bg py-1.5 pl-2 pr-8 text-sm text-color-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent"
-			value={currentLocale}
-			onChange={(e) => {
-				onLanguageChange(e.target.value as AppLocale);
-			}}
-		>
-			{languages.map((lang) => (
-				<option key={lang.id} value={lang.id}>
-					{lang.title}
-				</option>
-			))}
-		</select>
 	);
 }
 
@@ -106,9 +87,9 @@ function MobileMenuButton({
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Header({ mainMenu, siteTitle }: Props) {
-	const { currentLocale, languages, setLocale } = useLanguage();
+	const { currentLocale } = useLanguage();
 
-	const rows = resolveMainMenuRows(mainMenu, currentLocale);
+	const entries = resolveMainMenuEntries(mainMenu, currentLocale);
 	const homeHref = localePath("/", currentLocale);
 	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
 	const brandLabel =
@@ -119,20 +100,13 @@ export function Header({ mainMenu, siteTitle }: Props) {
 	const [open, setOpen] = useState(false);
 	const menuId = useId();
 
-	const onLanguageChange = useCallback(
-		(next: AppLocale) => {
-			setLocale(next);
-			setOpen(false);
-		},
-		[setLocale],
-	);
-
 	const close = useCallback(() => setOpen(false), []);
+	const closeMenuAfterLocaleChange = useCallback(() => setOpen(false), []);
 	const toggle = useCallback(() => setOpen((v) => !v), []);
 
 	useEscapeKey(open, close);
 
-	if (!rows.length) {
+	if (!entries.length) {
 		return (
 			<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
 				<div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-6 py-4 sm:px-8">
@@ -142,11 +116,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					>
 						{brandLabel}
 					</Link>
-					<LanguageSelect
-						currentLocale={currentLocale}
-						languages={languages}
-						onLanguageChange={onLanguageChange}
-					/>
 				</div>
 			</header>
 		);
@@ -164,15 +133,16 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				</Link>
 
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
-					<nav className="hidden items-center gap-1 md:flex" aria-label="Main">
-						<NavLinks rows={rows} onNavigate={close} />
+					<nav
+						className="hidden flex-wrap items-center justify-end gap-1 md:flex"
+						aria-label="Main"
+					>
+						<MainMenuItems
+							entries={entries}
+							onNavigate={close}
+							onAfterLocaleChange={closeMenuAfterLocaleChange}
+						/>
 					</nav>
-
-					<LanguageSelect
-						currentLocale={currentLocale}
-						languages={languages}
-						onLanguageChange={onLanguageChange}
-					/>
 
 					<div className="flex md:hidden">
 						<MobileMenuButton open={open} menuId={menuId} onToggle={toggle} />
@@ -189,7 +159,11 @@ export function Header({ mainMenu, siteTitle }: Props) {
 						className="mx-auto flex max-w-3xl flex-col gap-1 px-6 py-4 sm:px-8"
 						aria-label="Main"
 					>
-						<NavLinks rows={rows} onNavigate={close} />
+						<MainMenuItems
+							entries={entries}
+							onNavigate={close}
+							onAfterLocaleChange={closeMenuAfterLocaleChange}
+						/>
 					</nav>
 				</div>
 			) : null}

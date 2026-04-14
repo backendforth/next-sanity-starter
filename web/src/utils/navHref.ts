@@ -1,4 +1,4 @@
-import type { NavMenuLink } from "@/sanity/types/nav";
+import type { MainMenuItem, NavMenuLink } from "@/sanity/types/nav";
 import type { AppLocale } from "@/src/i18n/config";
 import { localePath } from "@/src/i18n/paths";
 
@@ -18,6 +18,11 @@ export type ResolvedNavRow =
 			action: "open-modal";
 			params?: string | null;
 	  };
+
+/** Main menu row or inline language switch (from `nav.languageSwitch` in Studio). */
+export type MainMenuEntry =
+	| ResolvedNavRow
+	| { kind: "languageSwitch"; id: string };
 
 function rowId(link: NavMenuLink, index: number, idPrefix: string): string {
 	const k = link._key;
@@ -149,6 +154,42 @@ export function resolveMainMenuRows(
 	locale: AppLocale,
 ): ResolvedNavRow[] {
 	return resolveMenuRows(mainMenu, locale, "nav");
+}
+
+function mainMenuEntryId(item: MainMenuItem, index: number): string {
+	const k = item._key;
+	if (typeof k === "string" && k.length > 0) {
+		return `nav-${k}`;
+	}
+	return `nav-${index}`;
+}
+
+/**
+ * Resolves the main menu in order: links become {@link ResolvedNavRow};
+ * `nav.languageSwitch` blocks become a single `languageSwitch` entry.
+ */
+export function resolveMainMenuEntries(
+	mainMenu: MainMenuItem[] | null | undefined,
+	locale: AppLocale,
+): MainMenuEntry[] {
+	if (!mainMenu?.length) {
+		return [];
+	}
+	const out: MainMenuEntry[] = [];
+	mainMenu.forEach((item, index) => {
+		if (item._type === "nav.languageSwitch") {
+			out.push({
+				kind: "languageSwitch",
+				id: mainMenuEntryId(item, index),
+			});
+			return;
+		}
+		const row = resolveNavMenuLink(item, locale, index, "nav");
+		if (row) {
+			out.push(row);
+		}
+	});
+	return out;
 }
 
 export function resolveFooterMenuRows(

@@ -33,9 +33,17 @@ export type NavLinkFunction = {
 
 export type NavMenuLink = NavLinkInternal | NavLinkExternal | NavLinkFunction;
 
+/** Marker block from Studio — renders the locale `<select>` at this position in the main menu. */
+export type NavLanguageSwitchItem = {
+	_key?: string;
+	_type: "nav.languageSwitch";
+};
+
+export type MainMenuItem = NavMenuLink | NavLanguageSwitchItem;
+
 export type SiteNavMenusDocument = {
 	_id: string;
 	title?: string | null;
-	mainMenu?: NavMenuLink[] | null;
+	mainMenu?: MainMenuItem[] | null;
 	footerMenu?: NavMenuLink[] | null;
 };

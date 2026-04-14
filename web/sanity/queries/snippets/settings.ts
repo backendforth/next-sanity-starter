@@ -24,18 +24,32 @@ function internationalizedRichTextArrayField(fieldName: string): string {
 }`;
 }
 
-/** Main + footer link lists with resolved `link` objects (`internal` / `external` / `function`). */
-export const navMenusQuery = `
-  "mainMenu": mainMenu[]{
+/** Main menu: links plus optional `nav.languageSwitch` blocks (order preserved). */
+const navMainMenuQuery = `mainMenu[]{
+  _key,
+  _type,
+  _type == "link" => {
     _key,
     _type,
     ${linkQuery}
   },
-  "footerMenu": footerMenu[]{
+  _type == "nav.languageSwitch" => {
     _key,
-    _type,
-    ${linkQuery}
+    _type
   }
+}`;
+
+/** Footer: links only. */
+const navFooterMenuQuery = `footerMenu[]{
+  _key,
+  _type,
+  ${linkQuery}
+}`;
+
+/** Main + footer link lists with resolved `link` objects (`internal` / `external` / `function`). */
+export const navMenusQuery = `
+  "mainMenu": ${navMainMenuQuery},
+  "footerMenu": ${navFooterMenuQuery}
 `;
 
 /** Document id: `siteNav` (see studio structure). */

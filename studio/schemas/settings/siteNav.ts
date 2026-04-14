@@ -21,7 +21,7 @@ export const siteNav = defineType({
       title: "Main Menu",
       name: "mainMenu",
       type: "array",
-      of: [{ type: "link" }],
+      of: [{ type: "link" }, { type: "nav.languageSwitch" }],
     },
     {
       title: "Footer Menu",

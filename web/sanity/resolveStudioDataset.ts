@@ -118,8 +118,9 @@ export async function resolveStudioDatasetAsync(
 		}
 		if (preferDevFirst) {
 			console.warn(
-				`[sanity] Neither "${preferred[0]}" nor "${preferred[1] ?? ""}" responded as existing datasets. Using "${preferred[0]}" — create a dataset or set SANITY_STUDIO_DATASET.`,
+				`[sanity] "${devName}" is not available or could not be verified. Using "${prodName}". Set SANITY_STUDIO_DATASET / NEXT_PUBLIC_SANITY_DATASET to override.`,
 			);
+			return prodName;
 		}
 	}
 

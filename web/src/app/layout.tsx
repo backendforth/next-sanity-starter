@@ -13,9 +13,12 @@ import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
 export const metadata: Metadata = {
+	metadataBase: new URL(
+		process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
+	),
 	title: {
 		default: "Site",
-		template: "%s",
+		template: "%s | Site",
 	},
 };
 

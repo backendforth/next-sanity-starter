@@ -41,30 +41,42 @@ export type ResolveSanityMetadataInput = {
 	titleFallback: string;
 	/** When everything else is empty (e.g. missing singleton). */
 	siteTitleFallback?: string;
+	/** Site name for Open Graph (defaults to siteTitleFallback). */
+	siteName?: string;
 };
 
 /**
- * Next.js `Metadata` from merged Sanity SEO + optional Open Graph image.
+ * Next.js `Metadata` from merged Sanity SEO + Open Graph + Twitter cards.
  */
 export function resolveSanityMetadata({
 	seo,
 	settingsSeo,
 	titleFallback,
 	siteTitleFallback = "Site",
+	siteName,
 }: ResolveSanityMetadataInput): Metadata {
 	const merged = mergePageAndSettingsSeo(seo ?? null, settingsSeo ?? null);
 	const metaTitle =
 		merged.title?.trim() || titleFallback.trim() || siteTitleFallback;
 	const description = merged.description?.trim() || undefined;
 	const ogImage = merged.imageUrl?.trim() || undefined;
+	const resolvedSiteName = siteName || siteTitleFallback;
 
 	return {
 		title: metaTitle,
 		description,
 		openGraph: {
+			type: "website",
+			siteName: resolvedSiteName,
 			title: metaTitle,
 			description,
 			...(ogImage ? { images: [{ url: ogImage }] } : {}),
+		},
+		twitter: {
+			card: ogImage ? "summary_large_image" : "summary",
+			title: metaTitle,
+			description,
+			...(ogImage ? { images: [ogImage] } : {}),
 		},
 	};
 }

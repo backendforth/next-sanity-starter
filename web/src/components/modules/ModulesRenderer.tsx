@@ -1,6 +1,11 @@
-import type { ContentModule, ModuleTextData } from "@/sanity/types/modules";
+import type {
+	ContentModule,
+	ModuleMediaData,
+	ModuleTextData,
+} from "@/sanity/types/modules";
 import { getSanityModuleLabel } from "@/sanity/utils";
 import { defaultLocale } from "@/src/i18n/config";
+import { ModuleMedia } from "./ModuleMedia";
 import { ModuleText } from "./ModuleText";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -37,6 +42,9 @@ export function ModulesRenderer({ modules, locale = defaultLocale }: Props) {
 							locale={locale}
 						/>
 					);
+				}
+				if (mod._type === "module.media") {
+					return <ModuleMedia key={key} module={mod as ModuleMediaData} />;
 				}
 				return <UnknownModule key={key} moduleType={mod._type} />;
 			})}

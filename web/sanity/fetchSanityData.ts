@@ -5,10 +5,12 @@ import {
 	cachedSanityQuery,
 } from "./cachedSanityQuery";
 import { client } from "./client";
-import { homeQuery, siteNavMenusQuery } from "./queries";
+import { errorSettingsQuery, homeQuery, siteNavMenusQuery } from "./queries";
+import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { SiteNavMenusDocument } from "./types/nav";
 import type { HomeDocument } from "./types/pages";
 
+export type { ErrorSettingsDocument } from "./types/errorSettings";
 /** Prefer `import type { … } from "@/sanity/types/pages"` (or `@/sanity/types`) in routes. */
 export type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
 
@@ -25,4 +27,9 @@ export async function fetchPageBySlug(slug: string) {
 /** `siteNav` main/footer menus with resolved links; no embedded modules. */
 export const fetchSiteNavMenus = cache(() =>
 	client.fetch<SiteNavMenusDocument | null>(siteNavMenusQuery),
+);
+
+/** Error settings singleton for 404 / 500 pages. */
+export const fetchErrorSettings = cache(() =>
+	client.fetch<ErrorSettingsDocument | null>(errorSettingsQuery),
 );

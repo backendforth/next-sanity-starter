@@ -100,7 +100,6 @@ export const siteCookieBanner = defineType({
         },
       ],
     },
-    modulesArrayField(),
   ],
   preview: {
     select: { title: "title" },

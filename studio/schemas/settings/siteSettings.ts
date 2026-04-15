@@ -35,7 +35,6 @@ export const siteSettings = defineType({
       type: "image",
       group: "site",
     },
-    modulesArrayField({ group: "site" }),
     {
       title: "SEO",
       name: "seo",

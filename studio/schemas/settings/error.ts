@@ -44,7 +44,6 @@ export const errorSettings = defineType({
       description: "Basic rich text (no media modules).",
       group: "editorial",
     },
-    modulesArrayField({ group: "editorial" }),
   ],
   preview: {
     prepare() {

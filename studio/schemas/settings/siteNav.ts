@@ -29,7 +29,6 @@ export const siteNav = defineType({
       type: "array",
       of: [{ type: "link" }],
     },
-    modulesArrayField(),
   ],
   preview: {
     select: { title: "title" },

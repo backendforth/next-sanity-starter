@@ -118,10 +118,7 @@ export function MediaVideo({
 	return (
 		<div
 			ref={containerRef}
-			className={clsx(
-				"relative w-full overflow-hidden",
-				className,
-			)}
+			className={clsx("relative w-full overflow-hidden", className)}
 			style={{ aspectRatio: aspectCss }}
 		>
 			{showPoster ? (

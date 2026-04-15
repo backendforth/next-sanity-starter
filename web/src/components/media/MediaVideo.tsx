@@ -119,7 +119,7 @@ export function MediaVideo({
 		<div
 			ref={containerRef}
 			className={clsx(
-				"relative w-full overflow-hidden bg-color-text/5",
+				"relative w-full overflow-hidden",
 				className,
 			)}
 			style={{ aspectRatio: aspectCss }}

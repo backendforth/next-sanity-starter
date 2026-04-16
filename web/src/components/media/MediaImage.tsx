@@ -24,10 +24,6 @@ export type MediaImageProps = {
 	 * `object-fit` for the image. Hotspot from Sanity sets `object-position` when present.
 	 */
 	objectFit?: CSSProperties["objectFit"];
-	/**
-	 * LCP candidate: eager load + high fetch priority.
-	 */
-	priority?: boolean;
 };
 
 function imageAltFromField(
@@ -54,7 +50,6 @@ export function MediaImage({
 	className,
 	fillParent = false,
 	objectFit = "cover",
-	priority = false,
 }: MediaImageProps) {
 	void _sizesFallback;
 
@@ -90,9 +85,9 @@ export function MediaImage({
 			<img
 				src={src}
 				alt={imageAltFromField(image, alt, caption)}
-				loading={priority ? "eager" : "lazy"}
-				fetchPriority={priority ? "high" : "auto"}
+				loading="lazy"
 				decoding="async"
+				data-lazy=""
 				className="absolute inset-0 block h-full w-full max-w-none"
 				style={imgStyle}
 			/>

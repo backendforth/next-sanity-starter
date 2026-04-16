@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import {
@@ -24,12 +25,34 @@ export async function fetchPageBySlug(slug: string) {
 	return (await cachedPageDocumentBySlug(slug)).data;
 }
 
-/** `siteNav` main/footer menus with resolved links; no embedded modules. */
-export const fetchSiteNavMenus = cache(() =>
-	client.fetch<SiteNavMenusDocument | null>(siteNavMenusQuery),
+/**
+ * `siteNav` main/footer menus — rendered in RootLayout on every request.
+ *
+ * Two-layer caching:
+ * - `react.cache()` → deduplicates within a single render pass (generateMetadata + layout)
+ * - `unstable_cache` → persists across requests; revalidates hourly or on-demand via tag `site-nav`
+ *
+ * Trigger on-demand revalidation from your webhook handler:
+ *   `revalidateTag("site-nav")`
+ */
+const _fetchSiteNavMenusCached = unstable_cache(
+	() => client.fetch<SiteNavMenusDocument | null>(siteNavMenusQuery),
+	["site-nav-menus"],
+	{ revalidate: 3600, tags: ["site-nav"] },
 );
 
-/** Error settings singleton for 404 / 500 pages. */
-export const fetchErrorSettings = cache(() =>
-	client.fetch<ErrorSettingsDocument | null>(errorSettingsQuery),
+export const fetchSiteNavMenus = cache(_fetchSiteNavMenusCached);
+
+/**
+ * Error settings singleton — fetched by 404 / 500 pages.
+ *
+ * Error pages are rendered infrequently; 1-hour cache + on-demand tag is sufficient.
+ * Revalidate via tag `error-settings` from your webhook handler when the document changes.
+ */
+const _fetchErrorSettingsCached = unstable_cache(
+	() => client.fetch<ErrorSettingsDocument | null>(errorSettingsQuery),
+	["error-settings"],
+	{ revalidate: 3600, tags: ["error-settings"] },
 );
+
+export const fetchErrorSettings = cache(_fetchErrorSettingsCached);

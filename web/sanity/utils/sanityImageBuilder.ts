@@ -105,6 +105,47 @@ export function getCroppedImageDisplayDimensions(
 	return { width: cw, height: ch };
 }
 
+/** Sanity image hotspot (normalized 0–1 on the original asset) — Studio “focus” UI. */
+export type SanityImageHotspot = {
+	x?: number;
+	y?: number;
+	width?: number;
+	height?: number;
+};
+
+/**
+ * Maps Sanity `hotspot` to CSS `object-position` for use with `object-fit` (`cover`, `contain`, …).
+ * `x` / `y` are 0–1 from the left / top; output is percentage pair as required by CSS.
+ *
+ * @see https://www.sanity.io/docs/image-type#hotspot
+ */
+export function cssObjectPositionFromSanityHotspot(
+	hotspot: unknown,
+): string | undefined {
+	if (hotspot == null || typeof hotspot !== "object") {
+		return undefined;
+	}
+	const h = hotspot as SanityImageHotspot;
+	const x = typeof h.x === "number" && Number.isFinite(h.x) ? h.x : undefined;
+	const y = typeof h.y === "number" && Number.isFinite(h.y) ? h.y : undefined;
+	if (x === undefined || y === undefined) {
+		return undefined;
+	}
+	const xp = Math.min(1, Math.max(0, x));
+	const yp = Math.min(1, Math.max(0, y));
+	return `${xp * 100}% ${yp * 100}%`;
+}
+
+/** Reads `hotspot` from a resolved image field (GROQ must project `hotspot`). */
+export function cssObjectPositionFromSanityImageField(
+	image: SanityImageField | null | undefined,
+): string | undefined {
+	if (!image?.hotspot) {
+		return undefined;
+	}
+	return cssObjectPositionFromSanityHotspot(image.hotspot);
+}
+
 export function getImageOrientation(image: SanityImageField): ImageOrientation {
 	const { width, height } = getImageDimensions(image);
 	if (!width || !height) {

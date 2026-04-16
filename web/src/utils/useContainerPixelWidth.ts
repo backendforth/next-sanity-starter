@@ -3,8 +3,9 @@
 import { type RefObject, useEffect, useRef, useState } from "react";
 
 /**
- * Tracks the container’s CSS pixel width so `sizes` on `next/image` matches the real slot
- * (browser then picks the closest `srcset` candidate; updates on resize).
+ * Tracks the container’s CSS pixel width (after mount via `useEffect`).
+ * For `next/image` `sizes`, combine with a client-only guard (see `MediaImage`) so SSR and
+ * the first client render stay identical and avoid hydration mismatches.
  */
 export function useContainerPixelWidth<T extends HTMLElement>(): [
 	RefObject<T | null>,

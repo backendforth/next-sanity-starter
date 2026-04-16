@@ -1,0 +1,74 @@
+/**
+ * Tailwind v4 theme extensions (replaces legacy `tailwind.config.ts` `theme.extend`).
+ * Merges with the default Tailwind theme and with `variables/breakpoints.css` (`@theme` breakpoints).
+ *
+ * Design tokens live in `variables/*.css`; here we only wire them to utility namespaces (`--color-*`, `--spacing-*`, …).
+ */
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme {
+	/* Default `rounded` — former `borderRadius.DEFAULT` */
+	--radius: 2rem;
+
+	/* `border` / `border-DEFAULT` and `border-0` */
+	--border-width-DEFAULT: 0.0625rem;
+	--border-width-0: 0;
+
+	/* Semantic font stacks (see `variables/typography.css` / `typography/fonts.css`) */
+	--font-sans: var(--font-family-sans), system-ui, sans-serif;
+	--font-serif: var(--font-family-serif), ui-serif, Georgia, serif;
+	--font-text: var(--font-family-text), system-ui, sans-serif;
+	--font-headline: var(--font-family-headline), ui-serif, Georgia, serif;
+	--font-mono: var(--font-family-mono), ui-monospace, monospace;
+
+	/* Primitives — same keys as former `theme.extend.colors` (resolve from `variables/colors.css`) */
+	--color-current: currentColor;
+	--color-transparent: transparent;
+	--color-white: var(--color-white);
+	--color-black: var(--color-black);
+	--color-grey: var(--color-grey);
+
+	--color-color-brand: var(--color-brand);
+	--color-color-accent: var(--color-accent);
+
+	--color-color-text: var(--color-text);
+	--color-color-text-muted: var(--color-text-muted);
+	--color-color-heading: var(--color-heading);
+	--color-color-link: var(--color-link);
+	--color-color-link-decoration: var(--color-link-decoration);
+	--color-color-link-decoration-hover: var(--color-link-decoration-hover);
+	--color-color-hover: var(--color-hover);
+	--color-color-active: var(--color-active);
+
+	--color-color-bg: var(--color-bg);
+	--color-color-surface-muted: var(--color-surface-muted);
+	--color-color-border-subtle: var(--color-border-subtle);
+	--color-color-code-bg: var(--color-code-bg);
+	--color-color-code-text: var(--color-code-text);
+
+	--color-error: var(--color-error);
+	--color-success: var(--color-success);
+	--color-danger: var(--color-danger);
+
+	/* Aspect ratios — class names `aspect-4/3`, `aspect-3/4`, `aspect-2/1` */
+	--aspect-4\/3: 4 / 3;
+	--aspect-3\/4: 3 / 4;
+	--aspect-2\/1: 2 / 1;
+
+	--brightness-70: 0.7;
+
+	--max-width-container: var(--content-max-width);
+
+	/* Spacing scale + layout tokens (former `theme.extend.spacing`) */
+	--spacing-min: var(--space-min);
+	--spacing-xs: var(--space-xs);
+	--spacing-sm: var(--space-sm);
+	--spacing-md: var(--space-md);
+	--spacing-lg: var(--space-lg);
+	--spacing-xl: var(--space-xl);
+	--spacing-max: var(--space-max);
+	--spacing-extra: var(--space-extra);
+	--spacing-nav-bar: var(--nav-bar-height);
+	--spacing-container-gutter: var(--container-gutter);
+}

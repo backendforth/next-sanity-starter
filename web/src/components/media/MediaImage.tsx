@@ -24,6 +24,17 @@ export type MediaImageProps = {
 	 * `object-fit` for the image. Hotspot from Sanity sets `object-position` when present.
 	 */
 	objectFit?: CSSProperties["objectFit"];
+	/**
+	 * LCP candidate — use for the first visible image above the fold (e.g. hero).
+	 *
+	 * Sets `loading="eager"` + `fetchpriority="high"` and skips the lazy fade-in.
+	 * Omit (default: false) for every image below the fold — those get lazy loading
+	 * and the 0.2 s fade-in automatically.
+	 *
+	 * Rule of thumb: one `priority` image per page, on the largest above-the-fold image.
+	 * Using it on multiple images defeats the purpose (browser can only prioritise one).
+	 */
+	priority?: boolean;
 };
 
 function imageAltFromField(
@@ -50,6 +61,7 @@ export function MediaImage({
 	className,
 	fillParent = false,
 	objectFit = "cover",
+	priority = false,
 }: MediaImageProps) {
 	void _sizesFallback;
 
@@ -85,9 +97,10 @@ export function MediaImage({
 			<img
 				src={src}
 				alt={imageAltFromField(image, alt, caption)}
-				loading="lazy"
-				decoding="async"
-				data-lazy=""
+				loading={priority ? "eager" : "lazy"}
+				fetchPriority={priority ? "high" : "auto"}
+				decoding={priority ? "sync" : "async"}
+				{...(!priority && { "data-lazy": "" })}
 				className="absolute inset-0 block h-full w-full max-w-none"
 				style={imgStyle}
 			/>

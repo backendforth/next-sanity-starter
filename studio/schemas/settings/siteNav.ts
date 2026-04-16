@@ -1,8 +1,6 @@
 import { MenuIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { modulesArrayField } from "../fields/modulesArrayField";
-
 /** Main/footer navigation. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteNav = defineType({
   name: "siteNav",

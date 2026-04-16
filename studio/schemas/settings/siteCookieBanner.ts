@@ -1,7 +1,6 @@
 import { CodeBlockIcon, StackIcon, ThLargeIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 import { defaultCookieSections } from "../../utils/defaultCookieSections";
-import { modulesArrayField } from "../fields/modulesArrayField";
 
 /** Cookie banner copy. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteCookieBanner = defineType({

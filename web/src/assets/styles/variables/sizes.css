@@ -1,16 +1,18 @@
 /* Layout + spacing — `--space-*`, content widths, `--container-spacing`; tiers via `theme(--breakpoint-*)`. */
 
 :root {
-	--nav-bar-height: rem(78);
 	--footer-height: rem(624);
 
-	--content-max-width: rem(1440);
-	--content-min-width: rem(976);
+	/* `max-w-container`: full width of parent up to this cap — only ever steps up with viewport (`w-full max-w-container mx-auto`). */
+	--content-max-width: theme(--breakpoint-wide);
 	--container-spacing: rem(24);
+	/* Optional: symmetric side inset when content is narrower than `--content-max-width`. Needs `--content-min-width` again. Uncomment + wire `theme.css` `--spacing-container-gutter` when needed.
+	--content-min-width: calc(var(--content-max-width) * theme(--content-inner-ratio));
 	--container-gutter: calc(
 		(var(--content-max-width) - var(--content-min-width)) /
 		2
 	);
+	*/
 
 	--space-min: rem(2);
 	--space-xs: rem(8);
@@ -26,11 +28,8 @@
 
 @media (width >= theme(--breakpoint-md)) {
 	:root {
-		--nav-bar-height: rem(114);
 		--footer-height: rem(283);
 		--container-spacing: rem(32);
-		--content-max-width: rem(1536);
-		--content-min-width: rem(1024);
 
 		--space-min: rem(2);
 		--space-xs: rem(9);
@@ -45,11 +44,8 @@
 
 @media (width >= theme(--breakpoint-2xl)) {
 	:root {
-		--nav-bar-height: rem(120);
 		--footer-height: rem(300);
 		--container-spacing: rem(40);
-		--content-max-width: rem(1680);
-		--content-min-width: rem(1120);
 
 		--space-min: rem(2);
 		--space-xs: rem(10);
@@ -64,11 +60,8 @@
 
 @media (width >= theme(--breakpoint-wide)) {
 	:root {
-		--nav-bar-height: rem(124);
 		--footer-height: rem(320);
 		--container-spacing: rem(48);
-		--content-max-width: rem(1800);
-		--content-min-width: rem(1200);
 
 		--space-min: rem(2);
 		--space-xs: rem(10);

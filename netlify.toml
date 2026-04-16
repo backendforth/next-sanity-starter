@@ -35,28 +35,49 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
-# Hashed static assets (Next.js)
+# ── CDN Edge Cache ────────────────────────────────────────────────────────────
+#
+# Two-header pattern for Netlify's edge network:
+#   Cache-Control          → browser: never cache HTML (always fresh from CDN)
+#   Netlify-CDN-Cache-Control → Netlify edge: cache 1 year, SWR 1 day
+#
+# @netlify/plugin-nextjs coordinates this with Next.js ISR automatically:
+# when revalidateTag() fires in a webhook, Netlify purges the matching
+# Netlify-Cache-Tag entries at the edge — so editors see changes immediately.
+#
+# Result: first request hits the Serverless Function, every subsequent request
+# is served from the nearest edge node in <20 ms.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Netlify-CDN-Cache-Control = "public, s-maxage=31536000, stale-while-revalidate=86400"
+
+# Hashed static assets — content-addressed, safe to cache forever at both layers
 [[headers]]
   for = "/_next/static/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+    Netlify-CDN-Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "*.woff2"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+    Netlify-CDN-Cache-Control = "public, max-age=31536000, immutable"
 
-# Optional: if you expose a sitemap at this path (e.g. `app/sitemap.ts`).
 [[headers]]
   for = "/sitemap.xml"
   [headers.values]
     Cache-Control = "public, max-age=3600"
+    Netlify-CDN-Cache-Control = "public, s-maxage=3600, stale-while-revalidate=600"
 
-# App Router Route Handlers (`app/api/...`)
+# App Router Route Handlers — never cache, override the /* rule above
 [[headers]]
   for = "/api/*"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
+    Netlify-CDN-Cache-Control = "no-store"
 
 # Minimal redirects
 [[redirects]]

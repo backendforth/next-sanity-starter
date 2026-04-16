@@ -109,7 +109,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 	if (!entries.length) {
 		return (
 			<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
-				<div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-6 py-4 sm:px-8">
+				<div className="mx-auto flex w-full max-w-container items-center justify-between gap-4 px-6 py-sm text-base sm:px-8">
 					<Link
 						href={homeHref}
 						className="shrink-0 font-medium text-color-heading underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent"
@@ -123,7 +123,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
-			<div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-6 py-4 sm:px-8">
+			<div className="mx-auto flex w-full max-w-container items-center justify-between gap-4 px-6 py-sm text-base sm:px-8">
 				<Link
 					href={homeHref}
 					className="shrink-0 font-medium text-color-heading underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent"
@@ -156,7 +156,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					className="border-t border-color-border-subtle bg-color-bg md:hidden"
 				>
 					<nav
-						className="mx-auto flex max-w-3xl flex-col gap-1 px-6 py-4 sm:px-8"
+						className="mx-auto flex max-w-container flex-col gap-1 px-6 py-sm text-base sm:px-8"
 						aria-label="Main"
 					>
 						<MainMenuItems

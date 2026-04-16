@@ -69,6 +69,7 @@
 	--spacing-xl: var(--space-xl);
 	--spacing-max: var(--space-max);
 	--spacing-extra: var(--space-extra);
-	--spacing-nav-bar: var(--nav-bar-height);
+	/* See `variables/sizes.css` `--container-gutter` — enable together for `p-container-gutter` / `gap-container-gutter` utilities.
 	--spacing-container-gutter: var(--container-gutter);
+	*/
 }

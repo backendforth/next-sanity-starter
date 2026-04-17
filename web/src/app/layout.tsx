@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { draftMode, headers } from "next/headers";
+import { VisualEditing } from "next-sanity/visual-editing";
 import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
+import { SanityLive } from "@/sanity/live";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
+import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import {
 	defaultLocale,
@@ -28,6 +31,7 @@ export default async function RootLayout({
 	const rawLocale = h.get(LOCALE_HEADER_NAME) ?? defaultLocale;
 	const locale = isAppLocale(rawLocale) ? rawLocale : defaultLocale;
 	const siteNav = await fetchSiteNavMenus();
+	const draft = await draftMode();
 
 	return (
 		<html lang={locale} className="h-full antialiased" suppressHydrationWarning>
@@ -37,6 +41,13 @@ export default async function RootLayout({
 					<div className="flex min-h-0 flex-1 flex-col">{children}</div>
 					<Footer locale={locale} footerMenu={siteNav?.footerMenu} />
 				</LanguageProvider>
+				<SanityLive />
+				{draft.isEnabled ? (
+					<>
+						<VisualEditing />
+						<DisableDraftMode />
+					</>
+				) : null}
 			</body>
 		</html>
 	);

@@ -16,7 +16,7 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { locale } = await params;
-	const home = await fetchHomeDocument();
+	const home = await fetchHomeDocument({ stega: false });
 	if (!home) {
 		return {
 			title: "Site",

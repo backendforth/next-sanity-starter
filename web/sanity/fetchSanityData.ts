@@ -1,6 +1,6 @@
 import { cache } from "react";
 
-import { client } from "./client";
+import { sanityFetch } from "./live";
 import { homeQuery, pageBySlugQuery, siteNavMenusQuery } from "./queries";
 import type { ContentModule } from "./types/modules";
 import type { SiteNavMenusDocument } from "./types/nav";
@@ -27,17 +27,36 @@ export type PageDocument = {
 	seo?: PageSeo;
 };
 
-/** Dedupes home fetches between `app/layout` metadata and `app/page`. */
-export const fetchHomeDocument = cache(() =>
-	client.fetch<HomeDocument | null>(homeQuery),
-);
+type LiveFetchOptions = {
+	stega?: boolean;
+	perspective?: "published" | "drafts" | "previewDrafts";
+};
 
-/** Dedupes page fetches between `generateMetadata` and the page component. */
-export const fetchPageBySlug = cache((slug: string) =>
-	client.fetch<PageDocument | null>(pageBySlugQuery, { slug }),
+/** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
+export const fetchHomeDocument = cache(async (options?: LiveFetchOptions) => {
+	const { data } = await sanityFetch({
+		query: homeQuery,
+		...options,
+	});
+	return data as HomeDocument | null;
+});
+
+/** Dedupes page fetches; pass `{ stega: false }` in `generateMetadata`. */
+export const fetchPageBySlug = cache(
+	async (slug: string, options?: LiveFetchOptions) => {
+		const { data } = await sanityFetch({
+			query: pageBySlugQuery,
+			params: { slug },
+			...options,
+		});
+		return data as PageDocument | null;
+	},
 );
 
 /** `siteNav` main/footer menus with resolved links; no embedded modules. */
-export const fetchSiteNavMenus = cache(() =>
-	client.fetch<SiteNavMenusDocument | null>(siteNavMenusQuery),
-);
+export const fetchSiteNavMenus = cache(async () => {
+	const { data } = await sanityFetch({
+		query: siteNavMenusQuery,
+	});
+	return data as SiteNavMenusDocument | null;
+});

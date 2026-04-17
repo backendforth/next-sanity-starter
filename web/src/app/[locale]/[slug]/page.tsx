@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { client } from "@/sanity/client";
 import { fetchPageBySlug } from "@/sanity/fetchSanityData";
+import { sanityFetch } from "@/sanity/live";
 import { pageSlugsQuery } from "@/sanity/queries";
 import { pickLocalizedString } from "@/sanity/utils";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
@@ -12,10 +12,18 @@ type PageProps = {
 };
 
 export async function generateStaticParams() {
-	const rows = await client.fetch<Array<{ slug: string }>>(pageSlugsQuery);
-	const slugs = rows
-		.map((row) => row.slug)
-		.filter((s): s is string => typeof s === "string" && s.length > 0);
+	const { data: rows } = await sanityFetch({
+		query: pageSlugsQuery,
+		perspective: "published",
+		stega: false,
+	});
+	const list = (rows ?? []) as Array<{ slug?: string }>;
+	const slugs = list
+		.map((row: { slug?: string }) => row.slug)
+		.filter(
+			(s: string | undefined): s is string =>
+				typeof s === "string" && s.length > 0,
+		);
 
 	const out: { locale: string; slug: string }[] = [];
 	for (const locale of locales) {
@@ -30,7 +38,7 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const doc = await fetchPageBySlug(slug);
+	const doc = await fetchPageBySlug(slug, { stega: false });
 	if (!doc) {
 		return { title: "Not found" };
 	}

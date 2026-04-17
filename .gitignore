@@ -17,3 +17,6 @@ out/
 
 # OS
 .DS\_Store
+
+# Claude
+.claude

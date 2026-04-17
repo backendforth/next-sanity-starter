@@ -1,7 +1,6 @@
 import { ImageIcon, PlayIcon } from "@sanity/icons";
-import { defineType } from "sanity";
+import { defineType, type PreviewProps } from "sanity";
 
-import { MediaPreview } from "../../../components/previews/MediaPreview";
 import { getDurationString } from "../../../utils/helpers";
 
 export const moduleMedia = defineType({
@@ -23,62 +22,67 @@ export const moduleMedia = defineType({
         layout: "radio",
         direction: "horizontal",
       },
-      // validation: (rule) => rule.required(),
+      validation: (rule) => rule.required(),
     },
     {
       name: "imageContent",
       title: "Image",
       type: "media.image",
       hidden: ({ parent }) => parent?.type !== "image",
-      // validation: (rule) =>
-      //   rule.custom((field, context) => {
-      //     const parent = context.parent as { type?: string } | undefined;
-      //     if (parent?.type === "image") {
-      //       const img = field as { image?: unknown } | undefined;
-      //       if (!img?.image) {
-      //         return "Image is required.";
-      //       }
-      //     }
-      //     return true;
-      //   }),
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const parent = context.parent as { type?: string } | undefined;
+          if (parent?.type !== "image") {
+            return true;
+          }
+          const row = value as { image?: { asset?: unknown } } | undefined;
+          if (!row?.image?.asset) {
+            return "Add an image.";
+          }
+          return true;
+        }),
     },
     {
       name: "videoContent",
       title: "Video",
       type: "media.video",
       hidden: ({ parent }) => parent?.type !== "video",
-      // validation: (rule) =>
-      //   rule.custom((field, context) => {
-      //     const parent = context.parent as { type?: string } | undefined;
-      //     if (parent?.type === "video") {
-      //       const vc = field as { video?: unknown } | undefined;
-      //       if (!vc?.video) {
-      //         return "Video is required.";
-      //       }
-      //     }
-      //     return true;
-      //   }),
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const parent = context.parent as { type?: string } | undefined;
+          if (parent?.type !== "video") {
+            return true;
+          }
+          const row = value as
+            | { video?: { asset?: unknown } | null }
+            | undefined;
+          const mux = row?.video;
+          const hasAsset =
+            mux != null &&
+            typeof mux === "object" &&
+            mux !== null &&
+            "asset" in mux &&
+            (mux as { asset?: unknown }).asset != null;
+          if (!hasAsset) {
+            return "Add a video.";
+          }
+          return true;
+        }),
     },
   ],
-  components: {
-    preview: MediaPreview,
-  },
   preview: {
     select: {
       type: "type",
       image: "imageContent.image",
       filename: "imageContent.image.asset.originalFilename",
       dimensions: "imageContent.image.asset.metadata.dimensions",
+      poster: "videoContent.poster",
       tracks: "videoContent.video.asset.data.tracks",
       duration: "videoContent.video.asset.data.duration",
     },
     prepare(selection) {
-      const { type, image, filename, dimensions, tracks, duration } = selection;
-
-      const title =
-        typeof type === "string"
-          ? type.charAt(0).toUpperCase() + type.slice(1)
-          : "Media";
+      const { type, image, filename, dimensions, poster, tracks, duration } =
+        selection;
 
       const isVideo = type === "video";
       const durationString = getDurationString(
@@ -95,23 +99,39 @@ export const moduleMedia = defineType({
         ? (videoTrack as { max_height?: number }).max_height
         : undefined;
 
-      let subtitle: string | undefined;
+      /** Main line: filename (image) or “Video”. Kicker “Media” is rendered in `MediaPreview`. */
+      let mainTitle: string;
+      if (isVideo) {
+        mainTitle = "Video";
+      } else if (filename && String(filename).trim()) {
+        mainTitle = String(filename);
+      } else {
+        mainTitle = "Image";
+      }
 
+      let subtitle: string | undefined;
       if (isVideo) {
         subtitle = videoTrack
-          ? `${durationString} (${videoWidth}px × ${videoHeight}px)`
+          ? `${durationString} · ${videoWidth}px × ${videoHeight}px`
           : durationString || undefined;
+      } else if (dimensions && filename) {
+        subtitle = `${dimensions.width}px × ${dimensions.height}px`;
       } else {
-        subtitle =
-          dimensions && filename
-            ? `${filename} (${dimensions.width}px × ${dimensions.height}px)`
-            : undefined;
+        subtitle = undefined;
+      }
+
+      type PreviewMedia = NonNullable<PreviewProps["media"]>;
+      let media: PreviewMedia = ImageIcon as PreviewMedia;
+      if (isVideo) {
+        media = (poster ?? PlayIcon) as PreviewMedia;
+      } else if (image) {
+        media = image as PreviewMedia;
       }
 
       return {
-        title,
+        title: mainTitle,
         subtitle,
-        media: isVideo ? PlayIcon : image ? image : ImageIcon,
+        media,
       };
     },
   },

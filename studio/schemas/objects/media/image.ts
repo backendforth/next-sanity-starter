@@ -14,7 +14,7 @@ export const mediaImage = defineType({
       title: "Image",
       type: "image",
       options: { hotspot: true },
-      validation: (rule) => rule.required(),
+      /** Requiredness is enforced by parents (e.g. `module.media` when `type === "image"`), not here — hidden nested fields would otherwise validate when the sibling mode is active. */
     },
     {
       name: "caption",

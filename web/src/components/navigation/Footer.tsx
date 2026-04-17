@@ -21,7 +21,7 @@ export function Footer({ locale, footerMenu }: Props) {
 
 	return (
 		<footer className="mt-auto border-t border-color-border-subtle bg-color-bg">
-			<div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-6 py-8 sm:px-8">
+			<div className="mx-auto flex w-full max-w-container flex-col gap-4 px-6 py-8 sm:px-8">
 				<nav
 					className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2"
 					aria-label="Footer"

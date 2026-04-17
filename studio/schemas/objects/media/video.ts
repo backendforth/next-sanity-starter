@@ -14,7 +14,7 @@ export const mediaVideo = defineType({
       title: "Video file",
       name: "video",
       type: "mux.video",
-      validation: (rule) => rule.required(),
+      /** Required when this object is used as the active video block; enforced on `module.media` / callers, not here (hidden field + `enforce-required-fields`). */
     },
     {
       name: "poster",

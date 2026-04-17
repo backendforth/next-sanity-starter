@@ -16,6 +16,9 @@
 	--breakpoint-xl: 1600px;
 	--breakpoint-2xl: 1800px;
 	--breakpoint-wide: 2000px;
+
+	/* Inner content floor as a fraction of `--content-max-width` (pairs with `--breakpoint-lg` = 1440px → 976px) */
+	--content-inner-ratio: 0.6777777777777778;
 }
 
 @custom-variant portrait (@media (orientation: portrait));

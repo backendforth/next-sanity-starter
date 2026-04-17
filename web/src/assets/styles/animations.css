@@ -1,0 +1,38 @@
+/*
+ * ── Lazy-image fade-in ──────────────────────────────────────────────────────
+ *
+ * Progressive enhancement — only activates when JS is available.
+ * The inline script in layout.tsx adds `.js-enabled` to <html> synchronously
+ * before the first paint, so there is no flash of invisible content.
+ *
+ * Without JS: `.js-enabled` is never set → images stay at opacity: 1 (default)
+ * → fully accessible, zero risk of invisible images.
+ *
+ * Flow:
+ *  1. `.js-enabled img[data-lazy]` → opacity: 0 (hidden until loaded)
+ *  2. Script adds `.img-loaded` when `img.onload` fires
+ *  3. CSS transition: opacity 0 → 1 in 0.2 s ease-in-out
+ *
+ * `data-lazy` is added by MediaImage (non-priority images only).
+ * Priority/LCP images use `loading="eager"` and carry no `data-lazy`.
+ */
+
+.js-enabled img[data-lazy] {
+	opacity: 0;
+	transition: opacity 0.2s ease-in-out;
+}
+
+.js-enabled img[data-lazy].img-loaded {
+	opacity: 1;
+}
+
+/*
+ * Respect user motion preference — skip the animation entirely.
+ * The image is already in the DOM at natural opacity when prefers-reduced-motion
+ * is set, so removing the transition is the right call (not just shortening it).
+ */
+@media (prefers-reduced-motion: reduce) {
+	.js-enabled img[data-lazy] {
+		transition: none;
+	}
+}

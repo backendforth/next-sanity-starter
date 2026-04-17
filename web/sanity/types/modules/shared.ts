@@ -6,6 +6,7 @@ export type SanityImageDimensions = {
 
 export type SanityImageAssetRef = {
 	_id?: string;
+	_ref?: string;
 	url?: string | null;
 	metadata?: {
 		dimensions?: SanityImageDimensions | null;

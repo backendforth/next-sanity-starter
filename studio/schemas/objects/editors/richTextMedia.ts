@@ -1,5 +1,7 @@
-import { defineType } from "sanity";
+import { defineArrayMember, defineType } from "sanity";
 
+import { CarouselRichTextPreview } from "../../../components/previews/CarouselRichTextPreview";
+import { MediaRichTextPreview } from "../../../components/previews/MediaRichTextPreview";
 import { portableTextAnnotations } from "./text/annotations";
 import { portableTextDecorators } from "./text/decorators";
 import { portableTextLists } from "./text/lists";
@@ -23,7 +25,13 @@ export const richTextMedia = defineType({
         annotations: portableTextAnnotations,
       },
     },
-    { type: "module.media" },
-    { type: "module.carousel" },
+    defineArrayMember({
+      type: "module.media",
+      components: { preview: MediaRichTextPreview },
+    }),
+    defineArrayMember({
+      type: "module.carousel",
+      components: { preview: CarouselRichTextPreview },
+    }),
   ],
 });

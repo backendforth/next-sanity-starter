@@ -49,10 +49,10 @@ function pickPreferredEntry(
 	entries: IntlTextEntry[],
 	localeCandidates: string[],
 ): IntlTextEntry | undefined {
-	for (const loc of localeCandidates) {
+	for (const candidateTag of localeCandidates) {
 		const matched = entries.find(
 			(entry) =>
-				(entry.language === loc || entry._key === loc) &&
+				(entry.language === candidateTag || entry._key === candidateTag) &&
 				hasUsableValue(entry.value),
 		);
 		if (matched) {
@@ -82,9 +82,9 @@ function getLocaleFallbackChain(locale: string): string[] {
 	if (!chain.includes(base)) {
 		chain.push(base);
 	}
-	for (const l of locales) {
-		if (l !== base && !chain.includes(l)) {
-			chain.push(l);
+	for (const siteLocale of locales) {
+		if (siteLocale !== base && !chain.includes(siteLocale)) {
+			chain.push(siteLocale);
 		}
 	}
 	return chain;
@@ -110,8 +110,8 @@ function resolveLocalizedEntries(
 		return undefined;
 	}
 
-	for (const step of getLocaleFallbackChain(locale)) {
-		const candidates = getLocaleCandidates(step);
+	for (const localeSegment of getLocaleFallbackChain(locale)) {
+		const candidates = getLocaleCandidates(localeSegment);
 		const preferred = pickPreferredEntry(entries, candidates);
 		if (preferred) {
 			return coerceResolvedValue(preferred.value);
@@ -169,8 +169,10 @@ function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
 
 	if (typeof value === "object") {
 		const out: Record<string, unknown> = {};
-		for (const [k, v] of Object.entries(value as object)) {
-			out[k] = deepResolveLocalizedTree(v, locale);
+		for (const [propertyKey, propertyValue] of Object.entries(
+			value as object,
+		)) {
+			out[propertyKey] = deepResolveLocalizedTree(propertyValue, locale);
 		}
 		return out;
 	}

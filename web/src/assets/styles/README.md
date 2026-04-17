@@ -23,6 +23,6 @@ It is **imported twice**: in **`tokens.css`** (before sizes/typography) and in *
 | `variables/sizes.css` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
 | `variables/typography.css` | type scale; same `theme(--breakpoint-*)` tiers |
 | `variables/typography-clamp.css` | optional fluid `clamp()` — import manually if needed |
-| `tailwind.config.ts` | `theme.extend` → CSS vars; **screens** from `breakpoints.css` `@theme` |
+| `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); **screens** from `breakpoints.css` `@theme` |
 
 Rename or add a token → update the **variable** and the matching **tailwind** key when you expose it as a utility.

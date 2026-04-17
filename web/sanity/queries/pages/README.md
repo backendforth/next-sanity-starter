@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_id == "home"][0]` or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, `seoQuery`).
+**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_id == "home"][0]` or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, **`seoQuery`** — local `seo` plus `settingsSeo` from `siteSettings` for metadata fallbacks).
 
 Import from `@/sanity/queries`.
 
@@ -95,12 +95,12 @@ Page queries return **JSON**. Persist that in your store, not the query string.
 
 **Option A — React `cache` (dedupe per request, no external store):**
 
-The app uses **`fetchPageBySlug`** from `@/sanity/fetchSanityData` (wraps `pageBySlugQuery` + `client.fetch`) so `generateMetadata` and the page component share one request per slug.
+Use **`cachedSanityQuery(homeQuery)`** for the home singleton, or **`cachedPageDocumentBySlug(slug)`** for slug routes — both dedupe `generateMetadata` + page. **`fetchPageBySlug`** / **`fetchHomeDocument`** in `@/sanity/fetchSanityData` return the same cached `data` without the `{ data }` wrapper.
 
 ```ts
-import { fetchPageBySlug } from "@/sanity/fetchSanityData";
+import { cachedPageDocumentBySlug } from "@/sanity/cachedSanityQuery";
 
-const doc = await fetchPageBySlug(slug);
+const { data } = await cachedPageDocumentBySlug(slug);
 ```
 
 **Option B — Zustand (client):** fetch via `/api/...` or Server Action, then `set({ page: data })`.
@@ -109,7 +109,7 @@ const doc = await fetchPageBySlug(slug);
 
 ## Metadata
 
-Use the same `client.fetch(pageBySlugQuery, { slug })` inside `generateMetadata` to read `seo` and title fields.
+Pass **`data.seo`** and **`data.settingsSeo`** (both from route **`seoQuery`**) into **`resolveSanityMetadata`** from `@/sanity/seo` so empty page-level SEO falls back to **site settings** in Sanity. Use a localized title or slug as **`titleFallback`**.
 
 ## Related
 

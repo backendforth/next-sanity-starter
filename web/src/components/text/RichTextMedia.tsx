@@ -3,6 +3,9 @@ import type { PortableTextBlock } from "@portabletext/types";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
+import type { ModuleMediaData } from "@/sanity/types/modules";
+import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
+
 /**
  * **Source of truth for body copy in the app** matches Studio schema **`richTextMedia`**
  * (`internationalizedArrayRichTextMedia` on `module.text`, etc.): blocks + embedded `module.*`.
@@ -89,49 +92,67 @@ function LinkMark({
 
 // ─── Portable Text configuration ─────────────────────────────────────────────
 
-const components: Partial<PortableTextComponents> = {
-	block: {
-		normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-		h2: ({ children }) => <h2 className="mb-3 mt-8 first:mt-0">{children}</h2>,
-		h3: ({ children }) => <h3 className="mb-2 mt-6 first:mt-0">{children}</h3>,
-		h4: ({ children }) => <h4 className="mb-2 mt-4 first:mt-0">{children}</h4>,
-	},
-	list: {
-		bullet: ({ children }) => (
-			<ul className="mb-4 space-y-1 pl-6">{children}</ul>
-		),
-		number: ({ children }) => (
-			<ol className="mb-4 space-y-1 pl-6">{children}</ol>
-		),
-	},
-	listItem: {
-		bullet: ({ children }) => <li>{children}</li>,
-		number: ({ children }) => <li>{children}</li>,
-	},
-	marks: {
-		strong: ({ children }) => <strong>{children}</strong>,
-		em: ({ children }) => <em className="italic">{children}</em>,
-		code: ({ children }) => <code className="px-1.5 py-0.5">{children}</code>,
-		link: ({ children, value }) => (
-			<LinkMark value={value as RichTextMediaLinkMark}>{children}</LinkMark>
-		),
-	},
-	types: {
-		"module.media": () => null,
-		"module.carousel": () => null,
-	},
-};
+function portableTextComponents(): Partial<PortableTextComponents> {
+	return {
+		block: {
+			normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+			h2: ({ children }) => (
+				<h2 className="mb-3 mt-8 first:mt-0">{children}</h2>
+			),
+			h3: ({ children }) => (
+				<h3 className="mb-2 mt-6 first:mt-0">{children}</h3>
+			),
+			h4: ({ children }) => (
+				<h4 className="mb-2 mt-4 first:mt-0">{children}</h4>
+			),
+		},
+		list: {
+			bullet: ({ children }) => (
+				<ul className="mb-4 space-y-1 pl-6">{children}</ul>
+			),
+			number: ({ children }) => (
+				<ol className="mb-4 space-y-1 pl-6">{children}</ol>
+			),
+		},
+		listItem: {
+			bullet: ({ children }) => <li>{children}</li>,
+			number: ({ children }) => <li>{children}</li>,
+		},
+		marks: {
+			strong: ({ children }) => <strong>{children}</strong>,
+			em: ({ children }) => <em className="italic">{children}</em>,
+			code: ({ children }) => <code className="px-1.5 py-0.5">{children}</code>,
+			link: ({ children, value }) => (
+				<LinkMark value={value as RichTextMediaLinkMark}>{children}</LinkMark>
+			),
+		},
+		types: {
+			"module.media": ({ value }) => (
+				<div className="rich-text-embed my-6 w-full min-w-0">
+					<ModuleMedia module={value as ModuleMediaData} />
+				</div>
+			),
+			"module.carousel": () => null,
+		},
+	};
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
- * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded modules).
+ * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.media`).
  * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields.
  */
 export function RichTextMedia({ value, className }: RichTextMediaProps) {
 	if (!value.length) return null;
+	const components = portableTextComponents();
 	return (
-		<div className={clsx("rich-text-media", className)}>
+		<div
+			className={clsx(
+				"rich-text-media w-full min-w-0 [&_.rich-text-embed]:max-w-none",
+				className,
+			)}
+		>
 			<PortableText
 				value={value}
 				components={components}

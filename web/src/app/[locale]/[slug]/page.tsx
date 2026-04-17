@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { fetchPageBySlug } from "@/sanity/fetchSanityData";
+import { cachedPageDocumentBySlug } from "@/sanity/cachedSanityQuery";
 import { sanityFetch } from "@/sanity/live";
 import { pageSlugsQuery } from "@/sanity/queries";
-import { pickLocalizedString } from "@/sanity/utils";
+import { metadataFromSanityPageData } from "@/sanity/seo";
+import type { PageDocument } from "@/sanity/types/pages";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { locales } from "@/src/i18n/config";
 
@@ -38,54 +39,36 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const doc = await fetchPageBySlug(slug, { stega: false });
-	if (!doc) {
-		return { title: "Not found" };
+	const { data }: { data: PageDocument | null } =
+		await cachedPageDocumentBySlug(slug);
+	if (!data) {
+		return {
+			title: "Not found",
+			description: undefined,
+		};
 	}
 
-	const heading = pickLocalizedString(doc.title, locale);
-	const metaTitle = doc.seo?.title?.trim() || heading || slug;
-	const description = doc.seo?.description?.trim() || undefined;
-	const ogImage = doc.seo?.imageUrl || undefined;
-
-	return {
-		title: metaTitle,
-		description,
-		openGraph: {
-			title: metaTitle,
-			description,
-			...(ogImage ? { images: [{ url: ogImage }] } : {}),
-		},
-	};
+	return metadataFromSanityPageData(data, locale, slug);
 }
 
 export default async function Page({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const doc = await fetchPageBySlug(slug);
+	const { data }: { data: PageDocument | null } =
+		await cachedPageDocumentBySlug(slug);
 
-	if (!doc) {
+	if (!data) {
 		notFound();
 	}
 
-	const heading = pickLocalizedString(doc.title, locale) ?? slug;
-	const modules = doc.modules ?? [];
-
 	return (
-		<div className="flex flex-col flex-1">
-			<main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-6 py-16 sm:px-8">
-				<header className="flex flex-col gap-2">
-					<h1>{heading}</h1>
-					<p>/{doc.slug?.current ?? slug}</p>
-				</header>
-
-				{modules.length > 0 ? (
+		<div className="flex flex-col flex-1 bg-color-bg">
+			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-10 px-6 py-16 sm:px-8">
+				{data.modules?.length ? (
 					<section className="flex flex-col gap-4">
 						<h2>Modules</h2>
-						<ModulesRenderer modules={modules} locale={locale} />
+						<ModulesRenderer modules={data.modules} locale={locale} />
 					</section>
-				) : (
-					<p>No modules on this page yet. Add modules in Sanity Studio.</p>
-				)}
+				) : null}
 			</main>
 		</div>
 	);

@@ -2,6 +2,44 @@
 const SANITY_API_VERSION = "2024-01-01";
 const SANITY_HTTP_API_PATH = `v${SANITY_API_VERSION}`;
 
+/**
+ * When `true`, resolution tries the **development** dataset before **production**
+ * (Management API, HTTP probe, or fallback order).
+ * When `false`, **production** is tried first.
+ *
+ * **Production deployments** (Vercel production, Netlify production context, or
+ * `SANITY_STUDIO_DEPLOYMENT_TARGET=production`) prefer the production dataset.
+ * **Everything else** — local `next dev` / `next start`, preview deploys — prefers
+ * development when it exists.
+ *
+ * `NODE_ENV` is intentionally not used: local `next start` runs with `NODE_ENV=production`
+ * but should still prefer `development` if present.
+ *
+ * Logic matches `studio/config/resolveStudioDataset.ts` (`preferDevelopmentDatasetFirst`).
+ */
+function preferDevelopmentDatasetFirst(env: NodeJS.ProcessEnv): boolean {
+	const target = env.SANITY_STUDIO_DEPLOYMENT_TARGET?.trim().toLowerCase();
+	if (target === "production") {
+		return false;
+	}
+	if (target === "development" || target === "preview") {
+		return true;
+	}
+
+	// Vercel: only the production deployment uses the production dataset first.
+	if (env.VERCEL === "1" && env.VERCEL_ENV === "production") {
+		return false;
+	}
+
+	// Netlify: `CONTEXT=production` is the live site; previews/branches behave like dev-first.
+	if (env.NETLIFY === "true" && env.CONTEXT === "production") {
+		return false;
+	}
+
+	// Local and preview-style deploys: development dataset first when it exists.
+	return true;
+}
+
 export function getSanityStudioProjectId(
 	env: NodeJS.ProcessEnv = process.env,
 ): string {
@@ -19,7 +57,9 @@ export type ResolveStudioDatasetOptions = {
 
 /**
  * `SANITY_STUDIO_DATASET` / `NEXT_PUBLIC_SANITY_DATASET` always win.
- * Otherwise: dev build prefers development dataset, production build prefers production.
+ * Otherwise: **production deployments** prefer the production dataset; **local and preview**
+ * prefer development when it exists (`preferDevelopmentDatasetFirst` in this file). Not based on `NODE_ENV`
+ * (so local `next start` still prefers `development`).
  * - With Management API token: first preferred name that exists on the project (same as Studio).
  * - Without token: HTTP probe on the Data API — first preferred name that returns not 404
  *   (so missing `development` falls back to `production` and vice versa).
@@ -42,8 +82,8 @@ export async function resolveStudioDatasetAsync(
 	const devName =
 		env.SANITY_STUDIO_DATASET_DEVELOPMENT?.trim() ?? "development";
 	const prodName = env.SANITY_STUDIO_DATASET_PRODUCTION?.trim() ?? "production";
-	const isDev = env.NODE_ENV === "development";
-	const preferred = isDev ? [devName, prodName] : [prodName, devName];
+	const preferDevFirst = preferDevelopmentDatasetFirst(env);
+	const preferred = preferDevFirst ? [devName, prodName] : [prodName, devName];
 
 	const token =
 		env.SANITY_STUDIO_DATASET_RESOLVER_TOKEN?.trim() ||
@@ -60,7 +100,7 @@ export async function resolveStudioDatasetAsync(
 			}
 			const fallbackName = names[0];
 			if (fallbackName !== undefined) {
-				if (env.NODE_ENV === "development") {
+				if (preferDevFirst) {
 					console.warn(
 						`[sanity] None of the preferred datasets (${preferred.join(", ")}) exist. Using "${fallbackName}". Create "${preferred[0]}" or set SANITY_STUDIO_DATASET.`,
 					);
@@ -76,10 +116,11 @@ export async function resolveStudioDatasetAsync(
 				return name;
 			}
 		}
-		if (env.NODE_ENV === "development") {
+		if (preferDevFirst) {
 			console.warn(
-				`[sanity] Neither "${preferred[0]}" nor "${preferred[1] ?? ""}" responded as existing datasets. Using "${preferred[0]}" — create a dataset or set SANITY_STUDIO_DATASET.`,
+				`[sanity] "${devName}" is not available or could not be verified. Using "${prodName}". Set SANITY_STUDIO_DATASET / NEXT_PUBLIC_SANITY_DATASET to override.`,
 			);
+			return prodName;
 		}
 	}
 

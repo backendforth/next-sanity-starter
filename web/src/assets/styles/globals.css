@@ -1,9 +1,9 @@
 /*
- * tokens.css loads sizes + typography variables + breakpoints first.
- * All `@import` rules here must come *before* `@import "tailwindcss"`.
- * After postcss-import expands `tailwindcss`, any later `@import` is invalid
- * (CSS requires @import at the top) and is dropped — so breakpoints, typography
- * utilities, and safelist never reached the Tailwind pipeline.
+ * Import order: design tokens and fonts first, then `tailwindcss`, then
+ * `tailwind/theme.css` (`@theme` extensions). All `@import` rules stay before any
+ * other rules (e.g. `body { }`).
+ *
+ * Font files: `@font-face` `url(...)` paths resolve relative to the file that defines them.
  */
 
 @import "./typography/fonts.css";
@@ -11,9 +11,10 @@
 @import "./variables/breakpoints.css";
 @import "./typography/typography.css";
 @import "./tailwind/safelist.css";
+@import "./animations.css";
 
 @import "tailwindcss";
-@config "../../../tailwind.config.ts";
+@import "./tailwind/theme.css";
 
 body {
 	@apply font-text;

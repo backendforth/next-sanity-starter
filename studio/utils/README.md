@@ -28,7 +28,7 @@ Adding a language is **not** automatic end-to-end: update `languages.ts`, then a
 
 Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/studioDataset.ts`** (via **`config/resolveStudioDataset.ts`**):
 
-- Without **`SANITY_STUDIO_DATASET`**, local dev (`NODE_ENV=development`) **prefers** a `development` dataset; production builds **prefer** `production`.
+- Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production deployments** (e.g. Vercel `VERCEL_ENV=production`, Netlify `CONTEXT=production`) **prefer** `production`. Implemented in **`config/resolveStudioDataset.ts`** (not `NODE_ENV`, so local `next start` still prefers `development`).
 - If the preferred name does not exist yet, resolution can **fall back** to the other name (or use the Management API when a token is set — see `studio/.env.example`).
 
 **Why keep both datasets?**

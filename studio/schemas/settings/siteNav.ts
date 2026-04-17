@@ -1,8 +1,6 @@
 import { MenuIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { modulesArrayField } from "../objects/modules/moduleDocumentArrayField";
-
 /** Main/footer navigation. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteNav = defineType({
   name: "siteNav",
@@ -21,7 +19,7 @@ export const siteNav = defineType({
       title: "Main Menu",
       name: "mainMenu",
       type: "array",
-      of: [{ type: "link" }],
+      of: [{ type: "link" }, { type: "nav.languageSwitch" }],
     },
     {
       title: "Footer Menu",
@@ -29,7 +27,6 @@ export const siteNav = defineType({
       type: "array",
       of: [{ type: "link" }],
     },
-    modulesArrayField(),
   ],
   preview: {
     select: { title: "title" },

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import { fetchPageBySlug } from "@/sanity/fetchSanityData";
 import { sanityFetch } from "@/sanity/live";
 import { pageSlugsQuery } from "@/sanity/queries";
@@ -10,6 +11,12 @@ import { locales } from "@/src/i18n/config";
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
+
+/**
+ * Next.js 16 segment config must be a numeric literal here (assigning an imported value breaks the check).
+ * The literal must match `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS` — enforced via `satisfies`.
+ */
+export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
 	const { data: rows } = await sanityFetch({

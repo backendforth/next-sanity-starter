@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import { fetchHomeDocument } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
@@ -7,6 +8,12 @@ import { locales } from "@/src/i18n/config";
 type PageProps = {
 	params: Promise<{ locale: string }>;
 };
+
+/**
+ * Next.js 16 segment config must be a numeric literal here (assigning an imported value breaks the check).
+ * The literal must match `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS` — enforced via `satisfies`.
+ */
+export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export function generateStaticParams() {
 	return locales.map((locale) => ({ locale }));

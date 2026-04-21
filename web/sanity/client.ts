@@ -8,11 +8,22 @@ if (!projectId || !dataset) {
 	);
 }
 
+/** Edge-cached API reads in production; set `SANITY_USE_CDN=false` for always-fresh data (e.g. debugging). */
+function sanityUseCdn(): boolean {
+	if (process.env.SANITY_USE_CDN === "false") {
+		return false;
+	}
+	if (process.env.SANITY_USE_CDN === "true") {
+		return true;
+	}
+	return process.env.NODE_ENV === "production";
+}
+
 export const client = createClient({
 	projectId,
 	dataset,
 	apiVersion: "2024-01-01",
-	useCdn: false,
+	useCdn: sanityUseCdn(),
 	stega: {
 		studioUrl:
 			process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ?? "http://localhost:3333",

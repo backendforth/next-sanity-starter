@@ -55,6 +55,28 @@ After changing `packages/languages`, restart **web** and **studio** dev servers.
 
 ---
 
+## Build / routing (reference)
+
+From `pnpm run build` (Next.js 16): routes are labeled **Static** (○), **SSG** (● `generateStaticParams`), or **Dynamic** (ƒ). Example output:
+
+| Route | Mode |
+|-------|------|
+| `/[locale]/[slug]` | SSG (●) |
+| `/[locale]` | Dynamic (ƒ) — home |
+| `/_not-found` | Static (○) after moving shell out of root `headers()` |
+| `/api/revalidate` | Dynamic |
+| `/robots.txt`, `/sitemap.xml` | Static |
+
+Re-run `pnpm run build` after changes; optional bundle analysis: `@next/bundle-analyzer` (one-off).
+
+**CDN caching:** Prefer your host’s defaults for `/_next/static` (e.g. Vercel sets long-lived cache for hashed assets). Custom `Cache-Control` in `next.config` is omitted here — Next warns it can interfere with dev/build tooling.
+
+**Next 16 (optional):** [`cacheComponents`](https://nextjs.org/blog/next-16) and `"use cache"` / `cacheLife` give more explicit server caching — larger migration than this boilerplate assumes.
+
+**Fonts:** `src/app/layout.tsx` contains commented `next/font/local` instructions — enable when `src/assets/fonts/` has `.woff2` files for better LCP/CLS.
+
+---
+
 ## Learn More
 
 - [Next.js Documentation](https://nextjs.org/docs)

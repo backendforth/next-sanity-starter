@@ -1,15 +1,6 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 // import localFont from "next/font/local";
-import { fetchSiteNavMenus } from "@/sanity/fetchSanityData";
-import { Footer } from "@/src/components/navigation/Footer";
-import { Header } from "@/src/components/navigation/Header";
-import { LanguageProvider } from "@/src/contexts/LanguageContext";
-import {
-	defaultLocale,
-	isAppLocale,
-	LOCALE_HEADER_NAME,
-} from "@/src/i18n/config";
+import { defaultLocale } from "@/src/i18n/config";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -90,19 +81,19 @@ const lazyFadeScript = `(function(){
   }).observe(document.documentElement,{childList:true,subtree:true});
 })();`;
 
-export default async function RootLayout({
+/**
+ * Root shell only — no `headers()` so the tree can stay static-friendly.
+ * Locale-specific chrome lives in `app/[locale]/layout.tsx` (`params.locale`).
+ * `lang` defaults to the site default; `LanguageProvider` syncs `<html lang>` on the client after navigation.
+ */
+export default function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const h = await headers();
-	const rawLocale = h.get(LOCALE_HEADER_NAME) ?? defaultLocale;
-	const locale = isAppLocale(rawLocale) ? rawLocale : defaultLocale;
-	const siteNav = await fetchSiteNavMenus();
-
 	return (
 		<html
-			lang={locale}
+			lang={defaultLocale}
 			// Add font variables here once next/font/local is wired up:
 			// className={`h-full antialiased ${sans.variable} ${serif.variable}`}
 			className="h-full antialiased"
@@ -126,11 +117,7 @@ export default async function RootLayout({
 				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<LanguageProvider locale={locale}>
-					<Header mainMenu={siteNav?.mainMenu} siteTitle={siteNav?.title} />
-					<div className="flex min-h-0 flex-1 flex-col">{children}</div>
-					<Footer locale={locale} footerMenu={siteNav?.footerMenu} />
-				</LanguageProvider>
+				{children}
 			</body>
 		</html>
 	);

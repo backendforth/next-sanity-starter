@@ -9,6 +9,11 @@ import {
 	urlForFetchedImage,
 } from "@/sanity/utils";
 
+/** Sanity CDN `w=` lower bound (not a layout breakpoint). */
+const SANITY_IMAGE_MIN_WIDTH = 320;
+/** Sanity CDN `w=` upper bound (not a layout breakpoint). */
+const SANITY_IMAGE_MAX_WIDTH = 2400;
+
 export type MediaImageProps = {
 	imagePayload: unknown;
 	alt?: string;
@@ -69,7 +74,10 @@ export function MediaImage({
 	if (!image) return null;
 
 	const cropped = getCroppedImageDisplayDimensions(image);
-	const requestWidth = Math.min(2400, Math.max(cropped.width, 320));
+	const requestWidth = Math.min(
+		SANITY_IMAGE_MAX_WIDTH,
+		Math.max(cropped.width, SANITY_IMAGE_MIN_WIDTH),
+	);
 	const src = urlForFetchedImage(image, requestWidth);
 	if (!src) return null;
 

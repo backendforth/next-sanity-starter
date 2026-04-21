@@ -26,9 +26,9 @@ Adding a language is **not** automatic end-to-end: update `languages.ts`, then a
 
 ## Development vs production datasets
 
-Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/studioDataset.ts`** (via **`config/resolveStudioDataset.ts`**):
+Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/studioDataset.ts`**, using **`@repo/sanity-dataset-resolve`**:
 
-- Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production deployments** (e.g. Vercel `VERCEL_ENV=production`, Netlify `CONTEXT=production`) **prefer** `production`. Implemented in **`config/resolveStudioDataset.ts`** (not `NODE_ENV`, so local `next start` still prefers `development`).
+- Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production deployments** (e.g. Vercel `VERCEL_ENV=production`, Netlify `CONTEXT=production`) **prefer** `production`. Same rules as the web app (not `NODE_ENV`, so local `next start` still prefers `development`).
 - If the preferred name does not exist yet, resolution can **fall back** to the other name (or use the Management API when a token is set — see `studio/.env.example`).
 
 **Why keep both datasets?**

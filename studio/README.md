@@ -7,7 +7,7 @@ This package is the Sanity Studio for the project: schemas, Desk structure, Visu
 | Feature | What it does | Where to learn more |
 |--------|----------------|---------------------|
 | **Presentation (Web Preview)** | Embeds the Next.js app in an iframe, Draft Mode, and maps documents to URLs so editors can preview content in context. | `config/README.md`, `config/presentation/` |
-| **Multi-dataset** | Resolves which Content Lake dataset the Studio uses (e.g. `development` vs `production`) from env and optional Management API, so local work does not have to hit production data. | `config/resolveStudioDataset.ts`, `utils/README.md`, `.env.example` |
+| **Multi-dataset** | Resolves which Content Lake dataset the Studio uses (e.g. `development` vs `production`) from env and optional Management API, so local work does not have to hit production data. | `@repo/sanity-dataset-resolve`, `config/studioDataset.ts`, `utils/README.md`, `.env.example` |
 | **Prod → dev sync** | Optional CLI script exports `production` to a local tarball and imports into `development` (`--replace`). Shown as a hint when you start `pnpm dev` in `studio/`. | `scripts/sync-prod-to-dev.mjs`, below |
 | **Multi-language** | Same language ids as the Next app: **`@repo/languages`** (`packages/languages/src/index.ts`). Re-exported as `studioLanguages` / `defaultLanguageIds` in `schemas/constants/languages.ts`. | `packages/languages/README.md`, `utils/README.md` |
 | **Slug validation** | Shared `validateSlug` helper enforces URL-safe slugs (lowercase, numbers, hyphens) on fields that power frontend routes. | `utils/validateSlug.ts`, used e.g. in `schemas/documents/page.ts` |

@@ -28,6 +28,10 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		tags.push("settings");
 	}
 
+	if (_type === "siteNav") {
+		tags.push("site-nav");
+	}
+
 	return tags;
 }
 

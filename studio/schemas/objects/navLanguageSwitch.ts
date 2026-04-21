@@ -8,10 +8,11 @@ export const navLanguageSwitch = defineType({
   type: "object",
   icon: TranslateIcon,
   fields: [
+    // Sanity requires ≥1 field; editors never see this (hidden + read-only).
     defineField({
-      name: "_marker",
-      type: "boolean",
-      initialValue: true,
+      name: "blockKind",
+      type: "string",
+      initialValue: "languageSwitch",
       hidden: true,
       readOnly: true,
     }),

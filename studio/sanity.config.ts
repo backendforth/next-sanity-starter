@@ -37,6 +37,11 @@ if (!projectId) {
 
 const isDev = process.env.NODE_ENV === "development";
 
+const webPreviewOrigins =
+  process.env.SANITY_STUDIO_WEB_PREVIEW_ORIGINS?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean) ?? [];
+
 export default defineConfig({
   name: "default",
   title: "Next Sanity Boilerplate",
@@ -57,7 +62,7 @@ export default defineConfig({
           disable: "/api/draft-mode/disable",
         },
       },
-      allowOrigins: ["http://localhost:*"],
+      allowOrigins: ["http://localhost:*", ...webPreviewOrigins],
       resolve: {
         locations: presentationLocationsResolver,
         mainDocuments: presentationMainDocuments,

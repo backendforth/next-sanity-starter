@@ -20,6 +20,8 @@ importers:
 
   packages/languages: {}
 
+  packages/sanity-dataset-resolve: {}
+
   packages/strip-readmes: {}
 
   studio:
@@ -27,6 +29,9 @@ importers:
       '@repo/languages':
         specifier: workspace:*
         version: link:../packages/languages
+      '@repo/sanity-dataset-resolve':
+        specifier: workspace:*
+        version: link:../packages/sanity-dataset-resolve
       '@sanity/code-input':
         specifier: ^7.0.12
         version: 7.0.12(@babel/runtime@7.29.2)(@codemirror/autocomplete@6.20.1)(@codemirror/lint@6.9.5)(@codemirror/search@6.6.0)(@codemirror/theme-one-dark@6.1.3)(@emotion/is-prop-valid@1.4.0)(codemirror@6.0.2)(react-dom@19.2.4(react@19.2.4))(react-is@19.2.4)(react@19.2.4)(sanity@5.20.0(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.0.1)(@oclif/core@4.10.5)(@sanity/cli-core@1.3.0(@noble/hashes@2.0.1)(@sanity/telemetry@0.9.0(react@19.2.4))(@types/node@20.19.39)(jiti@2.6.1)(lightningcss@1.32.0)(yaml@2.8.3))(@types/node@20.19.39)(@types/react@19.2.14)(immer@11.1.4)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(styled-components@6.3.12(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(ts-toolbelt@9.6.0)(typescript@5.9.3))(styled-components@6.3.12(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
@@ -88,6 +93,9 @@ importers:
       '@repo/languages':
         specifier: workspace:*
         version: link:../packages/languages
+      '@repo/sanity-dataset-resolve':
+        specifier: workspace:*
+        version: link:../packages/sanity-dataset-resolve
       '@sanity/image-url':
         specifier: ^2.1.1
         version: 2.1.1

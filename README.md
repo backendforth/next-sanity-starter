@@ -9,6 +9,7 @@ Boilerplate for a **localized** marketing/site on **Next.js (App Router)** with 
 | **Web** | `web/` | Next.js 16 app, Tailwind v4, Sanity client + GROQ, i18n routing |
 | **Studio** | `studio/` | Sanity Studio v5, schema, plugins, dataset sync script |
 | **Languages** | `packages/languages/` | **`@repo/languages`** — single source of truth for locales (Next + Studio) |
+| **Sanity datasets** | `packages/sanity-dataset-resolve/` | **`@repo/sanity-dataset-resolve`** — shared dev/prod dataset resolution for Studio + Web |
 
 Managed with **pnpm** workspaces (`pnpm-workspace.yaml`: `web`, `studio`, `packages/*`).
 
@@ -51,7 +52,7 @@ Other root scripts: `pnpm build` (all packages), `pnpm studio:build`, `pnpm stud
 - **`web/.env.local`** — Next.js: `SANITY_STUDIO_PROJECT_ID` required; optional `NEXT_PUBLIC_*`, dataset overrides, `SANITY_STUDIO_DATASET_RESOLVER_TOKEN` / `SANITY_AUTH_TOKEN` for Management API–based dataset discovery. Full comments in **`web/.env.example`**.
 - **`studio/.env`** — Studio: same project id; **`SANITY_STUDIO_PREVIEW_ORIGIN`** (e.g. `http://localhost:3000`) for presentation / preview; optional Mux tokens for **`sanity-plugin-mux-input`**. See **`studio/.env.example`**.
 
-**Dataset resolution (web)** — implemented in `web/sanity/resolveStudioDataset.ts` / `sanityEnv.ts`: explicit `SANITY_STUDIO_DATASET` or `NEXT_PUBLIC_SANITY_DATASET` wins; otherwise **production deployments** prefer the production dataset and **local/preview** prefer **development** when it exists (same logic as Studio’s `resolveStudioDataset.ts`, not `NODE_ENV`). Configurable dataset names via `SANITY_STUDIO_DATASET_DEVELOPMENT` / `SANITY_STUDIO_DATASET_PRODUCTION`, optional API-based checks.
+**Dataset resolution** — shared in **`@repo/sanity-dataset-resolve`**; Web uses `web/sanity/resolveStudioDataset.ts` / `sanityEnv.ts`, Studio uses `studio/config/studioDataset.ts`. Explicit `SANITY_STUDIO_DATASET` or `NEXT_PUBLIC_SANITY_DATASET` wins; otherwise **production deployments** prefer the production dataset and **local/preview** prefer **development** when it exists (not `NODE_ENV`). Configurable dataset names via `SANITY_STUDIO_DATASET_DEVELOPMENT` / `SANITY_STUDIO_DATASET_PRODUCTION`, optional Management API / HTTP probe.
 
 **Sync prod → dev dataset** — `pnpm studio:sync-prod-to-dev` (see `studio/scripts` and `.env.example` comments).
 

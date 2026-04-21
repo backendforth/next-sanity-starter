@@ -1,6 +1,6 @@
 # Next.js app (`web/`)
 
-Copy **`.env.example`** to **`.env.local`** and set at least `SANITY_STUDIO_PROJECT_ID` (same values as `studio/.env`). See `sanity/README.md` for the Sanity data layer.
+Copy **`.env.example`** to **`.env.local`** and set at least `SANITY_STUDIO_PROJECT_ID` (same values as `studio/.env`). For **Sanity Presentation / Visual Editing**, also set **`SANITY_API_READ_TOKEN`**, **`SANITY_STUDIO_PREVIEW_ORIGIN`**, and (Studio) **`SANITY_STUDIO_WEB_PREVIEW_ORIGINS`** when the iframe is not localhost — see **`sanity/README.md`** (*Presentation & Visual Editing*).
 
 From the monorepo root:
 

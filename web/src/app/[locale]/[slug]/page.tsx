@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cachedPageDocumentBySlug } from "@/sanity/cachedSanityQuery";
+import { fetchPageBySlug } from "@/sanity/fetchSanityData";
 import { sanityFetch } from "@/sanity/live";
 import { pageSlugsQuery } from "@/sanity/queries";
 import { metadataFromSanityPageData } from "@/sanity/seo";
-import type { PageDocument } from "@/sanity/types/pages";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { locales } from "@/src/i18n/config";
 
@@ -39,8 +38,7 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const { data }: { data: PageDocument | null } =
-		await cachedPageDocumentBySlug(slug);
+	const data = await fetchPageBySlug(slug, { stega: false });
 	if (!data) {
 		return {
 			title: "Not found",
@@ -53,8 +51,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const { data }: { data: PageDocument | null } =
-		await cachedPageDocumentBySlug(slug);
+	const data = await fetchPageBySlug(slug);
 
 	if (!data) {
 		notFound();

@@ -8,30 +8,10 @@ import {
 	siteNavMenusQuery,
 } from "./queries";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
-import type { ContentModule } from "./types/modules";
 import type { SiteNavMenusDocument } from "./types/nav";
-import type { IntlStringEntry } from "./utils";
+import type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
 
-export type PageSeo = {
-	title?: string | null;
-	description?: string | null;
-	imageUrl?: string | null;
-} | null;
-
-export type HomeDocument = {
-	_id: string;
-	title?: IntlStringEntry[] | null;
-	modules?: ContentModule[] | null;
-	seo?: PageSeo;
-};
-
-export type PageDocument = {
-	_id: string;
-	title?: IntlStringEntry[] | null;
-	slug?: { current?: string | null } | null;
-	modules?: ContentModule[] | null;
-	seo?: PageSeo;
-};
+export type { HomeDocument, PageDocument, PageSeo };
 
 type LiveFetchOptions = {
 	stega?: boolean;

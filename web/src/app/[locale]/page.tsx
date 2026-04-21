@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { cachedHomeDocument } from "@/sanity/cachedSanityQuery";
+import { fetchHomeDocument } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo";
-import type { HomeDocument } from "@/sanity/types/pages";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { locales } from "@/src/i18n/config";
 
@@ -17,7 +16,7 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { locale } = await params;
-	const { data }: { data: HomeDocument | null } = await cachedHomeDocument();
+	const data = await fetchHomeDocument({ stega: false });
 	if (!data) {
 		return {
 			title: "Site",
@@ -29,7 +28,7 @@ export async function generateMetadata({
 
 export default async function Home({ params }: PageProps) {
 	const { locale } = await params;
-	const { data }: { data: HomeDocument | null } = await cachedHomeDocument();
+	const data = await fetchHomeDocument();
 
 	if (!data) {
 		return (

@@ -16,7 +16,7 @@ type Props = {
 };
 
 /**
- * Locale from the URL path (not `headers()`): middleware may strip the default
+ * Locale from the URL path (not `headers()`): proxy may strip the default
  * locale prefix, so the first segment is only a locale when it matches `isAppLocale`.
  */
 function localeFromPathname(pathname: string | null): string {

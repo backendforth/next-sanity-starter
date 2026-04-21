@@ -45,7 +45,7 @@ export const SITE_DEFAULT_LOCALE: SiteLocaleCode = "de";
 - URLs: `/`, `/about` → German. English: `/en`, `/en/about`.
 - **Reserved path segment:** `en`.
 
-After changing `packages/languages`, restart **web** and **studio** dev servers. Routing uses [`src/middleware.ts`](./src/middleware.ts); helpers [`src/i18n/paths.ts`](./src/i18n/paths.ts) (`localePath`) for links.
+After changing `packages/languages`, restart **web** and **studio** dev servers. Routing uses [`src/proxy.ts`](./src/proxy.ts); helpers [`src/i18n/paths.ts`](./src/i18n/paths.ts) (`localePath`) for links.
 
 ### Add another language (e.g. French)
 

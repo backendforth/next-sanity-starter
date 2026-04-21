@@ -2,7 +2,7 @@
  * Single source of truth for site + Studio languages (committed with Git).
  *
  * Used by:
- * - Next.js (`web`) — URLs, middleware, `sanityLocalizedText` fallback order
+ * - Next.js (`web`) — URLs, `proxy.ts` (i18n), `sanityLocalizedText` fallback order
  * - Sanity Studio — `sanity-plugin-internationalized-array` (`languages` / `defaultLanguages`)
  *
  * When adding a locale: extend `SITE_LOCALES`, add a `SITE_LOCALE_LABELS` entry, set

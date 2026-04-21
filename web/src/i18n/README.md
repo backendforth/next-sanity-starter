@@ -9,11 +9,11 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 | **`site-locales.ts`** | Re-exports from **`@repo/languages`** — edit [`packages/languages/src/index.ts`](../../../packages/languages/src/index.ts) instead. |
 | **`config.ts`** | Re-exports for the app: `locales`, `defaultLocale`, `AppLocale`, `isAppLocale`, `LOCALE_HEADER_NAME`. |
 | **`paths.ts`** | `localePath(pathname, locale)` — build correct links for the current language (default = no prefix). |
-| **`middleware.ts`** | Rewrites unprefixed URLs to `/{defaultLocale}/…`, sets `LOCALE_HEADER_NAME` for `app/layout.tsx` (`<html lang>`). Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. |
+| **`proxy.ts`** | Rewrites unprefixed URLs to `/{defaultLocale}/…`, sets `LOCALE_HEADER_NAME` for `app/layout.tsx` (`<html lang>`). Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. |
 
 ## Flow
 
-1. User opens `/` or `/about` → middleware rewrites to `/en/…` (or whatever `SITE_DEFAULT_LOCALE` is).
+1. User opens `/` or `/about` → proxy rewrites to `/en/…` (or whatever `SITE_DEFAULT_LOCALE` is).
 2. User opens `/de/about` → no rewrite; header marks locale `de`.
 3. `app/[locale]/page.tsx` (and nested routes) read `params.locale` and pass it to **`pickLocalizedString`**, **`ModulesRenderer`**, etc.
 

@@ -37,7 +37,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 type LanguageProviderProps = {
 	children: ReactNode;
-	/** Server / middleware locale — used when the pathname does not imply a known locale. */
+	/** Server / proxy locale — used when the pathname does not imply a known locale. */
 	locale: AppLocale;
 };
 

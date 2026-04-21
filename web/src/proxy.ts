@@ -14,7 +14,7 @@ const defaultPrefix = `/${defaultLocale}`;
  * - **Other locales**: `/{locale}`, `/{locale}/foo` — no rewrite.
  * - `/{defaultLocale}` and `/{defaultLocale}/*` redirect to unprefixed URLs (canonical).
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
 	if (

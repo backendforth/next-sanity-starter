@@ -7,13 +7,14 @@
     "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
     "start": "sanity start",
     "build": "sanity build",
-    "deploy": "sanity deploy",
+    "deploy": "SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy",
     "generate": "sanity schema extract --enforce-required-fields && sanity typegen generate",
     "lint": "pnpm --workspace-root exec biome check studio",
     "format": "pnpm --workspace-root exec biome format --write studio"
   },
   "dependencies": {
     "@repo/languages": "workspace:*",
+    "@repo/sanity-dataset-resolve": "workspace:*",
     "@sanity/code-input": "^7.0.12",
     "@sanity/dashboard": "^5",
     "@sanity/icons": "^3.7.4",

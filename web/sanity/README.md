@@ -8,7 +8,7 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 |------|------|
 | `client.ts` | `createClient` — use for `fetch` in Server Components, Route Handlers, Server Actions |
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
-| `resolveStudioDataset.ts` | `getSanityStudioProjectId`, `resolveStudioDatasetAsync` — explicit env → Management API or HTTP probe → dev-first vs prod-first by deploy context |
+| `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
 | `cachedSanityQuery.ts` | `cachedSanityQuery(query)` (no params) and `cachedPageDocumentBySlug(slug)` — React `cache` dedupe for metadata + page |
 | `fetchSanityData.ts` | Thin wrappers: `fetchHomeDocument` / `fetchPageBySlug` / `fetchSiteNavMenus` (same cache as `cachedSanityQuery`) |
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
@@ -87,7 +87,7 @@ function HeroImage({ image }: { image: SanityImageField | null }) {
 }
 ```
 
-Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise **`resolveStudioDataset.ts`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`); missing `development` or `production` is detected and the other name is used when possible.
+Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`); missing `development` or `production` is detected and the other name is used when possible.
 
 ---
 

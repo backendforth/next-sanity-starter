@@ -9,8 +9,9 @@
 		"lint": "pnpm --workspace-root exec biome check web",
 		"format": "pnpm --workspace-root exec biome format --write web"
 	},
-	"dependencies": {
-		"@repo/languages": "workspace:*",
+  "dependencies": {
+    "@repo/languages": "workspace:*",
+    "@repo/sanity-dataset-resolve": "workspace:*",
 		"@portabletext/react": "^6.0.3",
 		"@portabletext/types": "^4.0.2",
 		"@sanity/image-url": "^2.1.1",

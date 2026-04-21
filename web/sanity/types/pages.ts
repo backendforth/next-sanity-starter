@@ -1,6 +1,6 @@
 /**
  * Document shapes for route-level GROQ (see queries/pages/).
- * Import in app route pages next to cachedHomeDocument / cachedPageDocumentBySlug —
+ * Import in app route pages next to fetchHomeDocument / fetchPageBySlug (`fetchSanityData`) —
  * types live here; fetches stay deduped per request via React cache.
  */
 import type { IntlStringEntry } from "../utils";

@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
+import { SanityLive } from "@/sanity/live";
+import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { defaultLocale } from "@/src/i18n/config";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
@@ -82,15 +86,17 @@ const lazyFadeScript = `(function(){
 })();`;
 
 /**
- * Root shell only — no `headers()` so the tree can stay static-friendly.
- * Locale-specific chrome lives in `app/[locale]/layout.tsx` (`params.locale`).
+ * Root shell only — avoid `headers()` here (keeps static routes static where possible).
+ * `draftMode()` only toggles Visual Editing UI; locale chrome lives in `app/[locale]/layout.tsx`.
  * `lang` defaults to the site default; `LanguageProvider` syncs `<html lang>` on the client after navigation.
  */
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const draft = await draftMode();
+
 	return (
 		<html
 			lang={defaultLocale}
@@ -118,6 +124,13 @@ export default function RootLayout({
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
 				{children}
+				<SanityLive />
+				{draft.isEnabled ? (
+					<>
+						<VisualEditing />
+						<DisableDraftMode />
+					</>
+				) : null}
 			</body>
 		</html>
 	);

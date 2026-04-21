@@ -9,6 +9,10 @@ import type { HomeDocument, PageDocument } from "./types/pages";
 export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 
 /**
+ * **Published-only** reads via `client.fetch` + `unstable_cache` (tags / time-based revalidate).
+ * App routes that need **Presentation / Draft Mode / Visual Editing** use
+ * `fetchHomeDocument` / `fetchPageBySlug` in `fetchSanityData.ts` (`sanityFetch` from `defineLive`) instead.
+ *
  * Static GROQ (no `$params`) — deduped within a request when the same `query`
  * string is reused (e.g. **`generateMetadata`** + page component).
  *

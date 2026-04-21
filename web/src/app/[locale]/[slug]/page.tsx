@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cachedPageDocumentBySlug } from "@/sanity/cachedSanityQuery";
-import { client } from "@/sanity/client";
+import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
+import { fetchPageBySlug } from "@/sanity/fetchSanityData";
+import { sanityFetch } from "@/sanity/live";
 import { pageSlugsQuery } from "@/sanity/queries";
 import { metadataFromSanityPageData } from "@/sanity/seo";
-import type { PageDocument } from "@/sanity/types/pages";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { locales } from "@/src/i18n/config";
 
@@ -12,11 +12,25 @@ type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
 
+/**
+ * Next.js 16 segment config must be a numeric literal here (assigning an imported value breaks the check).
+ * The literal must match `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS` — enforced via `satisfies`.
+ */
+export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
+
 export async function generateStaticParams() {
-	const rows = await client.fetch<Array<{ slug: string }>>(pageSlugsQuery);
-	const slugs = rows
-		.map((row) => row.slug)
-		.filter((s): s is string => typeof s === "string" && s.length > 0);
+	const { data: rows } = await sanityFetch({
+		query: pageSlugsQuery,
+		perspective: "published",
+		stega: false,
+	});
+	const list = (rows ?? []) as Array<{ slug?: string }>;
+	const slugs = list
+		.map((row: { slug?: string }) => row.slug)
+		.filter(
+			(s: string | undefined): s is string =>
+				typeof s === "string" && s.length > 0,
+		);
 
 	const out: { locale: string; slug: string }[] = [];
 	for (const locale of locales) {
@@ -31,8 +45,7 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const { data }: { data: PageDocument | null } =
-		await cachedPageDocumentBySlug(slug);
+	const data = await fetchPageBySlug(slug, { stega: false });
 	if (!data) {
 		return {
 			title: "Not found",
@@ -45,8 +58,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const { data }: { data: PageDocument | null } =
-		await cachedPageDocumentBySlug(slug);
+	const data = await fetchPageBySlug(slug);
 
 	if (!data) {
 		notFound();

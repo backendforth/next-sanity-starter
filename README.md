@@ -61,7 +61,7 @@ Other root scripts: `pnpm build` (all packages), `pnpm studio:build`, `pnpm stud
 - **Canonical config:** [`packages/languages/src/index.ts`](packages/languages/src/index.ts) — `SITE_LOCALES`, `SITE_DEFAULT_LOCALE`, `SITE_LOCALE_LABELS`, plus exports for **`sanity-plugin-internationalized-array`** (`studioLanguages`, `defaultLanguageIds`).
 - **Web** imports via [`web/src/i18n/site-locales.ts`](web/src/i18n/site-locales.ts); **`web/next.config.ts`** sets `transpilePackages: ["@repo/languages"]`.
 - **Studio** re-exports from [`studio/schemas/constants/languages.ts`](studio/schemas/constants/languages.ts) so `sanity.config.ts` stays stable.
-- **Routing / middleware / links:** [`web/src/i18n/README.md`](web/src/i18n/README.md); deeper examples in [`web/README.md`](web/README.md) (*Languages*).
+- **Routing / proxy (i18n) / links:** [`web/src/i18n/README.md`](web/src/i18n/README.md); deeper examples in [`web/README.md`](web/README.md) (*Languages*).
 
 **Add a locale:** edit `packages/languages/src/index.ts`, align Studio content / GROQ, restart web + studio. Do **not** use the default locale’s prefix segment as a page slug (e.g. if default is `en`, paths are unprefixed; other locales use `/de/...`, etc.).
 

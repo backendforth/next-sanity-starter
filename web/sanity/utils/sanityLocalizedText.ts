@@ -2,7 +2,7 @@
  * Resolves `sanity-plugin-internationalized-array` fields for a requested locale.
  * Fallback order: exact language tag → base tag → other configured locales (`locales` in
  * `@/src/i18n/site-locales.ts`) → any entry with content. Routing passes
- * `locale` from `params` (see `middleware.ts`); keep all of that here — no second i18n layer.
+ * `locale` from `params` (see `proxy.ts`); keep all of that here — no second i18n layer.
  */
 import type { PortableTextBlock } from "@portabletext/types";
 

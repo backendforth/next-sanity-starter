@@ -93,15 +93,18 @@ const data = await client.fetch(homeQuery);
 
 Page queries return **JSON**. Persist that in your store, not the query string.
 
-**Option A — React `cache` (dedupe per request, no external store):**
+**Option A — `sanityFetch` via `fetchSanityData` (recommended for App Router):**
 
-Use **`cachedSanityQuery(homeQuery)`** for the home singleton, or **`cachedPageDocumentBySlug(slug)`** for slug routes — both dedupe `generateMetadata` + page. **`fetchPageBySlug`** / **`fetchHomeDocument`** in `@/sanity/fetchSanityData` return the same cached `data` without the `{ data }` wrapper.
+Use **`fetchHomeDocument`** / **`fetchPageBySlug`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Pass **`{ stega: false }`** in **`generateMetadata`** so titles/descriptions are not Stega-encoded.
 
 ```ts
-import { cachedPageDocumentBySlug } from "@/sanity/cachedSanityQuery";
+import { fetchPageBySlug } from "@/sanity/fetchSanityData";
 
-const { data } = await cachedPageDocumentBySlug(slug);
+const data = await fetchPageBySlug(slug);
+const meta = await fetchPageBySlug(slug, { stega: false });
 ```
+
+**Option A2 — published-only + `unstable_cache`:** **`cachedSanityQuery`** / **`cachedPageDocumentBySlug`** in `@/sanity/cachedSanityQuery` use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
 
 **Option B — Zustand (client):** fetch via `/api/...` or Server Action, then `set({ page: data })`.
 

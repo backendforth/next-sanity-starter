@@ -4,6 +4,10 @@
  * Custom CSS at the same thresholds, pick one:
  * - `@media (width >= theme(--breakpoint-md)) { … }` — explicit media query (e.g. tokens/sizes/typography).
  * - `@variant md { … }` / `@variant 2xl { … }` — reuse the screen variant (needs a stylesheet processed after `@import "tailwindcss"`, e.g. `globals.css`).
+ *
+ * TS media helpers (keep in sync manually):
+ * - `MediaVideo` `sizes` fallback uses `--breakpoint-sm` (900px) as the max-width threshold in the string.
+ * - `MediaImage` Sanity URL `w=` min/max (320 / 2400) are delivery caps, not layout breakpoints.
  */
 
 @theme {

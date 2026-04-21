@@ -17,6 +17,11 @@ import {
 } from "@/src/utils/muxPlayback";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 
+/** Sync: `--breakpoint-sm` in `src/assets/styles/variables/breakpoints.css` (900px). */
+const BREAKPOINT_SM_PX = 900;
+/** Poster / thumbnail request cap (next/image + Sanity), not a layout token. */
+const POSTER_IMAGE_MAX_PX = 1920;
+
 export type MediaVideoProps = {
 	media: unknown;
 	caption?: string | null;
@@ -29,8 +34,7 @@ export type MediaVideoProps = {
 	className?: string;
 };
 
-const DEFAULT_SIZES_FALLBACK =
-	"(max-width: 900px) 100vw, min(100vw, var(--container-width, 1200px))";
+const DEFAULT_SIZES_FALLBACK = `(max-width: ${BREAKPOINT_SM_PX}px) 100vw, min(100vw, var(--container-width, 1200px))`;
 
 function muxThumbTimeSec(media: unknown): number {
 	if (!media || typeof media !== "object") return 0;
@@ -50,7 +54,10 @@ function resolvePosterUrl(
 	if (posterPayload) {
 		const img = resolveSanityImageFieldForUrl(posterPayload);
 		if (img) {
-			const u = urlForFetchedImage(img, Math.min(1920, maxWidth));
+			const u = urlForFetchedImage(
+				img,
+				Math.min(POSTER_IMAGE_MAX_PX, maxWidth),
+			);
 			if (u) return u;
 		}
 	}
@@ -95,7 +102,9 @@ export function MediaVideo({
 		? "16 / 9"
 		: `${dims.width} / ${dims.height}`;
 
-	const posterMaxW = dims.isFallback ? 1920 : Math.min(1920, dims.width);
+	const posterMaxW = dims.isFallback
+		? POSTER_IMAGE_MAX_PX
+		: Math.min(POSTER_IMAGE_MAX_PX, dims.width);
 	const posterUrl = resolvePosterUrl(
 		playbackId,
 		posterPayload,

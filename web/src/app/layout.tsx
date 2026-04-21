@@ -86,8 +86,8 @@ const lazyFadeScript = `(function(){
 })();`;
 
 /**
- * Root shell only — no `headers()` here (keeps static routes static).
- * Locale, nav, footer: `app/[locale]/layout.tsx`.
+ * Root shell only — avoid `headers()` here (keeps static routes static where possible).
+ * `draftMode()` only toggles Visual Editing UI; locale chrome lives in `app/[locale]/layout.tsx`.
  * `lang` defaults to the site default; `LanguageProvider` syncs `<html lang>` on the client after navigation.
  */
 export default async function RootLayout({

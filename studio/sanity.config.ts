@@ -62,7 +62,12 @@ export default defineConfig({
           disable: "/api/draft-mode/disable",
         },
       },
-      allowOrigins: ["http://localhost:*", ...webPreviewOrigins],
+      // Next dev often uses `localhost` or `127.0.0.1` — both must be allowed for postMessage.
+      allowOrigins: [
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        ...webPreviewOrigins,
+      ],
       resolve: {
         locations: presentationLocationsResolver,
         mainDocuments: presentationMainDocuments,

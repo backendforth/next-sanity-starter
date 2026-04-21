@@ -169,9 +169,18 @@ See **`web/.env.example`**: copy to **`.env.local`** for Next.js. Variables matc
 
 ### Presentation & Visual Editing (checklist)
 
+Official overview: [Introduction to Visual Editing](https://www.sanity.io/docs/visual-editing/introduction-to-visual-editing) and [Visual editing with Next.js App Router](https://www.sanity.io/docs/visual-editing/visual-editing-with-next-js-app-router) (draft mode, Presentation tool, Stega).
+
 1. **`SANITY_API_READ_TOKEN`** (viewer, read) in **`web/.env.local`** — draft-mode enable and `sanityFetch` need it.
 2. **`SANITY_STUDIO_PREVIEW_ORIGIN`** — exact Next.js origin loaded in the Presentation iframe (e.g. `http://localhost:3000` or your deploy URL).
 3. **`NEXT_PUBLIC_SANITY_STUDIO_URL`** — Studio URL for Stega / click-to-edit overlays (default `http://localhost:3333`).
 4. **Studio** — `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` (comma-separated) in `studio/.env` if Presentation runs against a **non-localhost** Next URL; `sanity.config.ts` merges these into `allowOrigins` beside `http://localhost:*`.
 
 Route pages use **`fetchHomeDocument` / `fetchPageBySlug`** so content goes through **`sanityFetch`** (draft + Stega). **`/api/draft-mode/enable`** and **`VisualEditing`** + **`SanityLive`** in the root layout complete the chain.
+
+### Presentation shows “Unable to connect”
+
+1. **`SANITY_API_READ_TOKEN`** must be set in **`web/.env.local`** (restart `pnpm web:dev`). Without it, `/api/draft-mode/enable` responds with **401** and the iframe cannot complete preview.
+2. **`SANITY_STUDIO_PREVIEW_ORIGIN`** in **`studio/.env`** must match how you open the site (**`http://localhost:3000`** vs **`http://127.0.0.1:3000`** — pick one and use it everywhere).
+3. **Hosted Studio** (HTTPS on sanity.io) cannot load **`http://localhost`** in an iframe (mixed content). Use a tunnel (ngrok, etc.) and set **`SANITY_STUDIO_PREVIEW_ORIGIN`** + **`SANITY_STUDIO_WEB_PREVIEW_ORIGINS`** to that HTTPS URL.
+4. In the browser, open **`/api/draft-mode/enable`** with the query string Presentation uses — if you see **Invalid secret**, the token or project id does not match the Studio project.

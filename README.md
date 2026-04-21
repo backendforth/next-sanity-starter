@@ -49,7 +49,7 @@ Other root scripts: `pnpm build` (all packages), `pnpm studio:build`, `pnpm stud
 ## Environment & datasets
 
 - **Root `.env`** — optional; see root `.env.example`. Locale lists are **not** in env — they live in **`packages/languages/src/index.ts`** (committed).
-- **`web/.env.local`** — Next.js: `SANITY_STUDIO_PROJECT_ID` required; optional `NEXT_PUBLIC_*`, dataset overrides, `SANITY_STUDIO_DATASET_RESOLVER_TOKEN` / `SANITY_AUTH_TOKEN` for Management API–based dataset discovery. Full comments in **`web/.env.example`**.
+- **`web/.env.local`** — Next.js: see **`web/.env.example`**. Use **`SANITY_STUDIO_DEPLOYMENT_TARGET`** on each host (e.g. `staging` for a staging dataset) so web and Studio stay aligned; optional **`SANITY_STUDIO_DATASET`** pins a dataset. Details in **`@repo/sanity-dataset-resolve`** and **`web/sanity/README.md`**.
 - **`studio/.env`** — Studio: same project id; **`SANITY_STUDIO_PREVIEW_ORIGIN`** (e.g. `http://localhost:3000`) for presentation / preview; optional Mux tokens for **`sanity-plugin-mux-input`**. See **`studio/.env.example`**.
 
 **Dataset resolution** — shared in **`@repo/sanity-dataset-resolve`**; Web uses `web/sanity/resolveStudioDataset.ts` / `sanityEnv.ts`, Studio uses `studio/config/studioDataset.ts`. Explicit `SANITY_STUDIO_DATASET` or `NEXT_PUBLIC_SANITY_DATASET` wins; otherwise **production deployments** prefer the production dataset and **local/preview** prefer **development** when it exists (not `NODE_ENV`). Configurable dataset names via `SANITY_STUDIO_DATASET_DEVELOPMENT` / `SANITY_STUDIO_DATASET_PRODUCTION`, optional Management API / HTTP probe.

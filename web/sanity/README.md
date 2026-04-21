@@ -165,7 +165,7 @@ For production, swap the `<pre>` block for your real module renderer that switch
 
 ## Environment
 
-See **`web/.env.example`**: copy to **`.env.local`** for Next.js. Variables match `studio/.env` for project id and dataset resolution (`sanityEnv.ts`, `client.ts`, image URL builder). Optional **`SANITY_STUDIO_DATASET_RESOLVER_TOKEN`** or **`SANITY_AUTH_TOKEN`** lists datasets via the Management API; without a token, resolution uses an HTTP probe (and treats **401** on private datasets as “exists”). Optional **`NEXT_PUBLIC_SANITY_*`** if the browser needs project id or dataset (e.g. client-side image URLs).
+See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. Further options (Management API tokens, `SANITY_USE_CDN`, site URL, revalidate) live in **`@repo/sanity-dataset-resolve`** and this README when needed.
 
 ### Presentation & Visual Editing (checklist)
 

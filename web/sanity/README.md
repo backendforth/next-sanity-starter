@@ -10,8 +10,8 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | `live.ts` | `defineLive` → **`sanityFetch`**, **`SanityLive`** — required for Presentation, Draft Mode, and Visual Editing (Stega) |
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
 | `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
-| `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published data only; tags/time revalidation. Not used for routes that need preview/VE |
-| `fetchSanityData.ts` | **`sanityFetch`** wrappers: `fetchHomeDocument`, `fetchPageBySlug`, `fetchSiteNavMenus`, `fetchErrorSettings` — use these for app routes (pass `{ stega: false }` in `generateMetadata` to keep meta clean) |
+| `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only; tags/time revalidation + React `cache` helpers (`cachedHomeDocument`, `cachedPageDocumentBySlug`). Not for routes that need Presentation / Draft Mode |
+| `fetchSanityData.ts` | **`sanityFetch`** wrappers: `fetchHomeDocument`, `fetchPageBySlug`, `fetchSiteNavMenus`, `fetchErrorSettings` — use for app routes with preview/VE (pass `{ stega: false }` in `generateMetadata`) |
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `types/pages.ts` | `HomeDocument`, `PageDocument`, `PageSeo` — import in **`app/**/page.tsx`** next to route fetches (barrel: `types/index.ts`) |

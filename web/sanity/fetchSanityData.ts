@@ -1,7 +1,13 @@
 import { cache } from "react";
 
 import { sanityFetch } from "./live";
-import { homeQuery, pageBySlugQuery, siteNavMenusQuery } from "./queries";
+import {
+	errorSettingsQuery,
+	homeQuery,
+	pageBySlugQuery,
+	siteNavMenusQuery,
+} from "./queries";
+import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { ContentModule } from "./types/modules";
 import type { SiteNavMenusDocument } from "./types/nav";
 import type { IntlStringEntry } from "./utils";
@@ -59,4 +65,13 @@ export const fetchSiteNavMenus = cache(async () => {
 		query: siteNavMenusQuery,
 	});
 	return data as SiteNavMenusDocument | null;
+});
+
+/** Document id: `errorSettings` — 404 / 500 copy from Studio. */
+export const fetchErrorSettings = cache(async (options?: LiveFetchOptions) => {
+	const { data } = await sanityFetch({
+		query: errorSettingsQuery,
+		...options,
+	});
+	return data as ErrorSettingsDocument | null;
 });

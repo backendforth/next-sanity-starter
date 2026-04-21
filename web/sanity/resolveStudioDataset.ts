@@ -10,10 +10,11 @@ const SANITY_HTTP_API_PATH = `v${SANITY_API_VERSION}`;
  * **Production deployments** (Vercel production, Netlify production context, or
  * `SANITY_STUDIO_DEPLOYMENT_TARGET=production`) prefer the production dataset.
  * **Everything else** — local `next dev` / `next start`, preview deploys — prefers
- * development when it exists.
+ * **production** first (typical single-dataset projects). Prefer **development**
+ * first only when `SANITY_STUDIO_DEPLOYMENT_TARGET` is `development` or `preview`.
  *
  * `NODE_ENV` is intentionally not used: local `next start` runs with `NODE_ENV=production`
- * but should still prefer `development` if present.
+ * but follows the same dataset preference as `next dev` (not tied to `NODE_ENV`).
  *
  * Logic matches `studio/config/resolveStudioDataset.ts` (`preferDevelopmentDatasetFirst`).
  */
@@ -31,13 +32,14 @@ function preferDevelopmentDatasetFirst(env: NodeJS.ProcessEnv): boolean {
 		return false;
 	}
 
-	// Netlify: `CONTEXT=production` is the live site; previews/branches behave like dev-first.
+	// Netlify: `CONTEXT=production` is the live site; other contexts follow the default order below.
 	if (env.NETLIFY === "true" && env.CONTEXT === "production") {
 		return false;
 	}
 
-	// Local and preview-style deploys: development dataset first when it exists.
-	return true;
+	// Local / generic hosts: production first (many projects only create `production`).
+	// Use SANITY_STUDIO_DEPLOYMENT_TARGET=development|preview to prefer `development` when you have both datasets.
+	return false;
 }
 
 export function getSanityStudioProjectId(
@@ -57,9 +59,9 @@ export type ResolveStudioDatasetOptions = {
 
 /**
  * `SANITY_STUDIO_DATASET` / `NEXT_PUBLIC_SANITY_DATASET` always win.
- * Otherwise: **production deployments** prefer the production dataset; **local and preview**
- * prefer development when it exists (`preferDevelopmentDatasetFirst` in this file). Not based on `NODE_ENV`
- * (so local `next start` still prefers `development`).
+ * Otherwise: **production deployments** prefer the production dataset; **local and generic hosts**
+ * prefer production first (`preferDevelopmentDatasetFirst` in this file). Not based on `NODE_ENV`
+ * (so local `next start` follows the same order as `next dev`).
  * - With Management API token: first preferred name that exists on the project (same as Studio).
  * - Without token: HTTP probe on the Data API — first preferred name that returns not 404
  *   (so missing `development` falls back to `production` and vice versa).

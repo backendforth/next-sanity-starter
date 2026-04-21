@@ -9,7 +9,7 @@ export const navLanguageSwitch = defineType({
   icon: TranslateIcon,
   fields: [
     defineField({
-      name: "_marker",
+      name: "marker",
       type: "boolean",
       initialValue: true,
       hidden: true,

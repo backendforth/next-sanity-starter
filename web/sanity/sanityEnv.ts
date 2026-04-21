@@ -7,8 +7,8 @@ export const projectId = getSanityStudioProjectId();
 export const dataset = await resolveStudioDatasetAsync(process.env);
 
 /**
- * True when the resolved dataset name matches the configured development dataset
- * (after async resolution, including fallback to production when `development` is missing).
+ * True when the resolved dataset name matches the configured development dataset name
+ * (after async resolution; see `resolveStudioDataset.ts` for how that name is chosen).
  */
 export function isSanityStudioDevContext(
 	env: NodeJS.ProcessEnv = process.env,

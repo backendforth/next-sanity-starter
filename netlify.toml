@@ -18,6 +18,9 @@
 [build]
   command = "pnpm install --frozen-lockfile && pnpm --filter web run build"
   publish = "web/.next"
+  # Skip the build when the diff between HEAD and HEAD^ only touches files outside the
+  # web app and its shared package. Saves Netlify minutes on Studio-only commits.
+  ignore = "git diff --quiet HEAD^ HEAD ./web ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -26,14 +29,29 @@
   # Raise if the Next.js build runs out of memory on Netlify.
   NODE_OPTIONS = "--max-old-space-size=8192"
 
-# Security headers (baseline)
+# ── Security headers (baseline) ──────────────────────────────────────────────
+#
+# `X-Frame-Options` is intentionally NOT set: Sanity Presentation embeds the
+# Next.js site inside an iframe (Studio domain → Next), and `DENY` would block
+# preview in production. `Content-Security-Policy: frame-ancestors` supersedes
+# `X-Frame-Options` in modern browsers and is the right place to allow Studio.
+#
+# Adjust the CSP `frame-ancestors` allow-list to match your hosted Studio URL
+# and any custom Studio origins (e.g. via `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`).
+# The default below covers `localhost:3333`, `*.sanity.studio`, and `'self'`.
+#
+# `script-src 'unsafe-inline'` is required for the tiny synchronous lazy-fade
+# script in `app/layout.tsx` (must run before first paint). To remove
+# `'unsafe-inline'`, either move the script into a static file under `/public/`
+# (one extra blocking roundtrip) or compute its SHA-256 and add `'sha256-…'`.
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; img-src 'self' data: blob: https://cdn.sanity.io https://image.mux.com; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.api.sanity.io https://*.apicdn.sanity.io https://stream.mux.com https://image.mux.com; frame-src 'self' https://stream.mux.com https://*.sanity.studio; frame-ancestors 'self' http://localhost:3333 https://*.sanity.studio; worker-src 'self' blob:;"
 
 # ── CDN Edge Cache ────────────────────────────────────────────────────────────
 #

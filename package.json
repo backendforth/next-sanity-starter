@@ -6,9 +6,11 @@
 	"scripts": {
 		"lint": "biome check .",
 		"format": "biome check --write .",
+		"typecheck": "pnpm --stream -r run typecheck",
 		"strip-readmes": "pnpm --filter @repo/strip-readmes run strip",
 		"strip-readmes:dry-run": "pnpm --filter @repo/strip-readmes run strip:dry-run",
 		"prepare": "husky",
+		"//dev": "Starts both web (3000) and studio (3333) in parallel — comment out one filter or use `web:dev`/`studio:dev` to run only one.",
 		"dev": "pnpm --stream -r run dev",
 		"web:dev": "pnpm --filter web run dev",
 		"studio:dev": "pnpm --filter studio run dev",
@@ -23,13 +25,20 @@
 	"author": "backendforth",
 	"license": "ISC",
 	"pnpm": {
+		"//overrides": "magicast pin avoids the older transitive 0.2.x version pulled in by some Sanity tooling, which lacks the `parseExpression` API used downstream. Re-evaluate when removing — drop the override and run `pnpm why magicast` to confirm only ^0.3 versions remain.",
 		"overrides": {
 			"magicast": "^0.3.5"
 		}
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.10",
-		"husky": "^9.1.7"
+		"husky": "^9.1.7",
+		"lint-staged": "^15.2.10"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css}": [
+			"biome check --write --no-errors-on-unmatched"
+		]
 	},
 	"packageManager": "pnpm@10.21.0"
 }

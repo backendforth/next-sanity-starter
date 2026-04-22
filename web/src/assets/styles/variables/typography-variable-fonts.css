@@ -24,9 +24,11 @@
 		"slnt" var(--font-variation-slnt), "ital" var(--font-variation-ital),
 		"opsz" var(--font-variation-opsz-text), "GRAD" var(--font-variation-GRAD);
 	--font-variation-settings-headline:
-		"wght" var(--font-variation-wght-headline), "wdth" var(--font-variation-wdth),
-		"slnt" var(--font-variation-slnt), "ital" var(--font-variation-ital),
-		"opsz" var(--font-variation-opsz-headline), "GRAD" var(--font-variation-GRAD);
+		"wght" var(--font-variation-wght-headline),
+		"wdth" var(--font-variation-wdth), "slnt" var(--font-variation-slnt),
+		"ital" var(--font-variation-ital),
+		"opsz" var(--font-variation-opsz-headline),
+		"GRAD" var(--font-variation-GRAD);
 
 	/* Optional `font-feature-settings` presets (same syntax as the property). */
 	--font-feature-settings-text: normal;

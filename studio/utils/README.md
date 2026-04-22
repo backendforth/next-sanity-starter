@@ -4,29 +4,21 @@ See the [Studio readme](../README.md) for a high-level feature list. Helpers and
 
 ## `constants.ts`
 
-This file **re-exports** two things from the schema layer so utilities and plugins can import a single place:
-
-- **`studioLanguages`** — list of `{ id, title }` objects for each locale (e.g. `en`, `de`). Drives the **`sanity-plugin-internationalized-array`** configuration in `sanity.config.ts` (`languages` and `defaultLanguages`).
-- **`defaultLanguageIds`** — which locales are pre-selected when creating localized fields (e.g. `["en"]`).
-- **`PAGE_REFERENCES`** — array of `{ type: "…" }` entries for **routable document types** that can be picked in internal links / references. Extend this when you add a new top-level page type that should appear in the link picker.
-
-Source of truth for languages and references remains under **`schemas/constants/`**; `constants.ts` is a convenience barrel.
+This file **re-exports** **`PAGE_REFERENCES`** from **`schemas/constants/references.ts`** — routable document types for internal links / references. Extend it when you add a new top-level page type that should appear in the link picker.
 
 ## Multi-language setup
 
-1. **Languages** — Edit **`schemas/constants/languages.ts`**:
-   - Add entries to **`studioLanguages`** (`id` must match what you use in the frontend and in localized fields).
-   - Adjust **`defaultLanguageIds`** if new locales should be enabled by default in the array plugin.
+1. **Languages** — Edit the **`siteLanguageSettings`** singleton (Settings → Site languages) in the Studio. The **`internationalizedArray`** plugin reads it live via **`config/sync/internationalizedArrayLanguages.ts`** (`sanity.config.ts`).
 
 2. **Plugin** — `internationalizedArray` in **`sanity.config.ts`** lists which **field types** get the language UI (`string`, `richText`, `richTextMedia`, …). Add new field type names there if you introduce another translatable custom type.
 
-3. **Frontend** — Ensure the Next.js app (or other consumers) uses the same locale ids for routing and content.
+3. **Frontend** — Ensure the Next.js app uses the same locale ids for routing and content.
 
-Adding a language is **not** automatic end-to-end: update `languages.ts`, then align any GROQ projections, routing, and static paths on the site.
+Optional: **`scripts/generate-locale-plugin.mjs`** can still write **`config/generated/localePluginConfig.ts`** for inspection; it is **not** required for Studio or the website.
 
 ## Development vs production datasets
 
-Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/studioDataset.ts`**, using **`@repo/sanity-dataset-resolve`**:
+Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/sync/studioDataset.ts`**, using **`@repo/sanity-dataset-resolve`**:
 
 - Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production deployments** (e.g. Vercel `VERCEL_ENV=production`, Netlify `CONTEXT=production`) **prefer** `production`. Same rules as the web app (not `NODE_ENV`, so local `next start` still prefers `development`).
 - If the preferred name does not exist yet, resolution can **fall back** to the other name (or use the Management API when a token is set — see `studio/.env.example`).

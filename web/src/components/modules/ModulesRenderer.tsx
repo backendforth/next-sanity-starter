@@ -4,8 +4,8 @@ import type {
 	ModuleMediaData,
 	ModuleTextData,
 } from "@/sanity/types/modules";
-import { getSanityModuleLabel } from "@/sanity/utils";
-import { defaultLocale } from "@/src/i18n/config";
+import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 const ModuleMedia = dynamic(() =>
 	import("./ModuleMedia").then((m) => m.ModuleMedia),
@@ -18,7 +18,8 @@ const ModuleText = dynamic(() =>
 
 type Props = {
 	modules: ContentModule[];
-	locale?: string;
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -35,7 +36,7 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /** Renders the document `modules[]` stack (one UI block per `module.*` type). */
-export function ModulesRenderer({ modules, locale = defaultLocale }: Props) {
+export function ModulesRenderer({ modules, locale, siteLocale }: Props) {
 	return (
 		<div className="flex flex-col gap-10">
 			{modules.map((mod, index) => {
@@ -46,6 +47,7 @@ export function ModulesRenderer({ modules, locale = defaultLocale }: Props) {
 							key={key}
 							module={mod as ModuleTextData}
 							locale={locale}
+							siteLocale={siteLocale}
 						/>
 					);
 				}

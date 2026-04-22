@@ -48,7 +48,7 @@ Singletons that should open Web Preview at `/` belong in **`SITE_ROOT_DOCUMENT_T
 
 ## 5. Multi-language fields
 
-If the document uses `internationalizedArray*` field types, ensure those string names are listed under **`internationalizedArray`** in **`sanity.config.ts`** (`fieldTypes`). Language lists live in **`schemas/constants/languages.ts`**; see **`utils/README.md`**.
+If the document uses `internationalizedArray*` field types, ensure those string names are listed under **`internationalizedArray`** in **`sanity.config.ts`** (`fieldTypes`). Language tabs come from **`siteLanguageSettings`** at runtime (`config/sync/internationalizedArrayLanguages.ts`); see **`utils/README.md`**.
 
 ## 6. Slugs
 
@@ -119,7 +119,7 @@ If you need “New document” templates with presets, register them in **`confi
 | Sidebar | `config/structure/items/...` + `config/structure/index.ts` |
 | Internal links | `schemas/constants/references.ts` |
 | Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
-| Languages | `schemas/constants/languages.ts`, `sanity.config.ts` (plugin) |
+| Languages | `config/sync/internationalizedArrayLanguages.ts`, `sanity.config.ts` (plugin) |
 | Slug rules | `validation: validateSlug` on slug fields |
 | New **module** | New file `objects/modules/module<Name>.ts`, `index.ts`, `richTextMedia.ts`, `fields/modulesArrayField.ts` (`moduleTypes`) |
 | New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |

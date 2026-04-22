@@ -2,22 +2,27 @@ import type { ModuleTextData } from "@/sanity/types/modules";
 import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
-} from "@/sanity/utils";
-import { defaultLocale } from "@/src/i18n/config";
+} from "@/sanity/utils/sanityLocalizedText";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { RichTextMedia } from "../text/RichTextMedia";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
 	module: ModuleTextData;
-	locale?: string;
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function ModuleText({ module, locale = defaultLocale }: Props) {
-	const title = pickLocalizedString(module.title, locale);
-	const blocks = pickLocalizedPortableTextBlocks(module.body, locale);
+export function ModuleText({ module, locale, siteLocale }: Props) {
+	const title = pickLocalizedString(module.title, locale, siteLocale);
+	const blocks = pickLocalizedPortableTextBlocks(
+		module.body,
+		locale,
+		siteLocale,
+	);
 
 	return (
 		<article className="flex flex-col gap-4 border-b border-color-border-subtle pb-10 last:border-b-0 last:pb-0">

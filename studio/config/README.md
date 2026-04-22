@@ -2,7 +2,7 @@
 
 For a **feature overview** (Presentation, datasets, i18n, slugs, Mux), see the [Studio readme](../README.md). For **adding and registering schema types** step by step, see [`schemas/README.md`](../schemas/README.md).
 
-This folder holds **structure** (sidebar), **presentation** (Visual Editing / Web Preview), **initial value templates**, and the **resolved dataset** module. `sanity.config.ts` at the studio root wires these into Sanity.
+This folder holds **structure** (sidebar), **presentation** (Visual Editing / Web Preview), **initial value templates**, and **`config/sync/`** (resolved dataset + Studio i18n plugin language fetch). `sanity.config.ts` at the studio root wires these into Sanity.
 
 ## Schemas vs structure (not automatic)
 
@@ -38,4 +38,4 @@ Nothing in this repo auto-registers new types in the sidebar or in Presentation;
 
 ## Dataset resolution
 
-`config/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, optional Management API, and dev-first vs prod-first order by deploy context). See `studio/utils/README.md` for editor-facing notes.
+`config/sync/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, optional Management API, and dev-first vs prod-first order by deploy context). `config/sync/internationalizedArrayLanguages.ts` supplies runtime languages for `sanity-plugin-internationalized-array`. See `studio/utils/README.md` for editor-facing notes.

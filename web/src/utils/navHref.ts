@@ -1,6 +1,5 @@
 import type { MainMenuItem, NavMenuLink } from "@/sanity/types/nav";
-import type { AppLocale } from "@/src/i18n/config";
-import { localePath } from "@/src/i18n/paths";
+import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
 export type ResolvedNavRow =
 	| {
@@ -42,7 +41,8 @@ function labelFor(link: NavMenuLink): string {
 
 function internalHref(
 	link: Extract<NavMenuLink, { type: "internal" }>,
-	locale: AppLocale,
+	locale: string,
+	localePath: LanguagePathUtils["localePath"],
 ): string | null {
 	const refType = link.resolvedReference?._type;
 	const route = link.route;
@@ -59,14 +59,15 @@ function internalHref(
 
 export function resolveNavMenuLink(
 	link: NavMenuLink,
-	locale: AppLocale,
+	locale: string,
 	index: number,
+	pathUtils: Pick<LanguagePathUtils, "localePath">,
 	idPrefix = "nav",
 ): ResolvedNavRow | null {
 	const label = labelFor(link);
 
 	if (link.type === "internal" && link.linkType === "linkInternal") {
-		const href = internalHref(link, locale);
+		const href = internalHref(link, locale, pathUtils.localePath);
 		if (!href) {
 			return null;
 		}
@@ -133,7 +134,8 @@ export function resolveNavMenuLink(
 
 export function resolveMenuRows(
 	menu: NavMenuLink[] | null | undefined,
-	locale: AppLocale,
+	locale: string,
+	pathUtils: Pick<LanguagePathUtils, "localePath">,
 	idPrefix: string,
 ): ResolvedNavRow[] {
 	if (!menu?.length) {
@@ -141,7 +143,7 @@ export function resolveMenuRows(
 	}
 	const out: ResolvedNavRow[] = [];
 	menu.forEach((link, index) => {
-		const row = resolveNavMenuLink(link, locale, index, idPrefix);
+		const row = resolveNavMenuLink(link, locale, index, pathUtils, idPrefix);
 		if (row) {
 			out.push(row);
 		}
@@ -151,9 +153,10 @@ export function resolveMenuRows(
 
 export function resolveMainMenuRows(
 	mainMenu: NavMenuLink[] | null | undefined,
-	locale: AppLocale,
+	locale: string,
+	pathUtils: Pick<LanguagePathUtils, "localePath">,
 ): ResolvedNavRow[] {
-	return resolveMenuRows(mainMenu, locale, "nav");
+	return resolveMenuRows(mainMenu, locale, pathUtils, "nav");
 }
 
 function mainMenuEntryId(item: MainMenuItem, index: number): string {
@@ -170,7 +173,8 @@ function mainMenuEntryId(item: MainMenuItem, index: number): string {
  */
 export function resolveMainMenuEntries(
 	mainMenu: MainMenuItem[] | null | undefined,
-	locale: AppLocale,
+	locale: string,
+	pathUtils: Pick<LanguagePathUtils, "localePath">,
 ): MainMenuEntry[] {
 	if (!mainMenu?.length) {
 		return [];
@@ -184,7 +188,7 @@ export function resolveMainMenuEntries(
 			});
 			return;
 		}
-		const row = resolveNavMenuLink(item, locale, index, "nav");
+		const row = resolveNavMenuLink(item, locale, index, pathUtils, "nav");
 		if (row) {
 			out.push(row);
 		}
@@ -194,7 +198,8 @@ export function resolveMainMenuEntries(
 
 export function resolveFooterMenuRows(
 	footerMenu: NavMenuLink[] | null | undefined,
-	locale: AppLocale,
+	locale: string,
+	pathUtils: Pick<LanguagePathUtils, "localePath">,
 ): ResolvedNavRow[] {
-	return resolveMenuRows(footerMenu, locale, "footer");
+	return resolveMenuRows(footerMenu, locale, pathUtils, "footer");
 }

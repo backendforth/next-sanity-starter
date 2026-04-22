@@ -7,7 +7,7 @@ import {
 	getCroppedImageDisplayDimensions,
 	resolveSanityImageFieldForUrl,
 	urlForFetchedImage,
-} from "@/sanity/utils";
+} from "@/sanity/utils/sanityImageBuilder";
 
 /** Sanity CDN `w=` lower bound (not a layout breakpoint). */
 const SANITY_IMAGE_MIN_WIDTH = 320;

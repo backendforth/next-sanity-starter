@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
-import { fetchPageBySlug } from "@/sanity/fetchSanityData";
+import {
+	fetchPageBySlug,
+	fetchSiteLanguageSettings,
+} from "@/sanity/fetchSanityData";
 import { sanityFetch } from "@/sanity/live";
 import { pageSlugsQuery } from "@/sanity/queries";
-import { metadataFromSanityPageData } from "@/sanity/seo";
+import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
-import { locales } from "@/src/i18n/config";
 
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
@@ -19,11 +21,14 @@ type PageProps = {
 export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
-	const { data: rows } = await sanityFetch({
-		query: pageSlugsQuery,
-		perspective: "published",
-		stega: false,
-	});
+	const [{ data: rows }, siteLocale] = await Promise.all([
+		sanityFetch({
+			query: pageSlugsQuery,
+			perspective: "published",
+			stega: false,
+		}),
+		fetchSiteLanguageSettings({ stega: false }),
+	]);
 	const list = (rows ?? []) as Array<{ slug?: string }>;
 	const slugs = list
 		.map((row: { slug?: string }) => row.slug)
@@ -33,7 +38,7 @@ export async function generateStaticParams() {
 		);
 
 	const out: { locale: string; slug: string }[] = [];
-	for (const locale of locales) {
+	for (const locale of siteLocale.localeIds) {
 		for (const slug of slugs) {
 			out.push({ locale, slug });
 		}
@@ -45,7 +50,10 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const data = await fetchPageBySlug(slug, { stega: false });
+	const [data, siteLocale] = await Promise.all([
+		fetchPageBySlug(slug, { stega: false }),
+		fetchSiteLanguageSettings({ stega: false }),
+	]);
 	if (!data) {
 		return {
 			title: "Not found",
@@ -53,12 +61,15 @@ export async function generateMetadata({
 		};
 	}
 
-	return metadataFromSanityPageData(data, locale, slug);
+	return metadataFromSanityPageData(data, locale, slug, siteLocale);
 }
 
 export default async function Page({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const data = await fetchPageBySlug(slug);
+	const [data, siteLocale] = await Promise.all([
+		fetchPageBySlug(slug),
+		fetchSiteLanguageSettings(),
+	]);
 
 	if (!data) {
 		notFound();
@@ -70,7 +81,11 @@ export default async function Page({ params }: PageProps) {
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-4">
 						<h2>Modules</h2>
-						<ModulesRenderer modules={data.modules} locale={locale} />
+						<ModulesRenderer
+							modules={data.modules}
+							locale={locale}
+							siteLocale={siteLocale}
+						/>
 					</section>
 				) : null}
 			</main>

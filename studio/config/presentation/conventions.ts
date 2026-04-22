@@ -17,6 +17,7 @@ export const SITE_ROOT_DOCUMENT_TYPES = new Set(["home"]);
  */
 export const DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW = new Set([
   "siteSettings",
+  "siteLanguageSettings",
   "siteNav",
   "siteCookieBanner",
 ]);

@@ -18,17 +18,12 @@ importers:
         specifier: ^9.1.7
         version: 9.1.7
 
-  packages/languages: {}
-
   packages/sanity-dataset-resolve: {}
 
   packages/strip-readmes: {}
 
   studio:
     dependencies:
-      '@repo/languages':
-        specifier: workspace:*
-        version: link:../packages/languages
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
@@ -90,9 +85,6 @@ importers:
       '@portabletext/types':
         specifier: ^4.0.2
         version: 4.0.2
-      '@repo/languages':
-        specifier: workspace:*
-        version: link:../packages/languages
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve

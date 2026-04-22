@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
 	resolveSanityImageFieldForUrl,
 	urlForFetchedImage,
-} from "@/sanity/utils";
+} from "@/sanity/utils/sanityImageBuilder";
 
 import {
 	extractMuxPlaybackId,

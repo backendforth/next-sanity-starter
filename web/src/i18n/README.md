@@ -1,23 +1,27 @@
 # `src/i18n` — routing and locale config
 
-This folder wires **URL language** to **`[locale]` routes** and shared helpers. **Sanity field resolution** (which translation to show, fallback order) lives in **`sanity/utils/sanityLocalizedText.ts`** — it imports locale lists from here.
+This folder wires **URL language** to **`[locale]` routes** and shared helpers. **Sanity field resolution** (which translation to show, fallback order) lives in **`sanity/utils/sanityLocalizedText.ts`** — it takes optional **`siteLocale`** from **`fetchSiteLanguageSettings()`** (same source as URLs).
 
 ## Files
 
 | File | Role |
 |------|------|
-| **`site-locales.ts`** | Re-exports from **`@repo/languages`** — edit [`packages/languages/src/index.ts`](../../../packages/languages/src/index.ts) instead. |
-| **`config.ts`** | Re-exports for the app: `locales`, `defaultLocale`, `AppLocale`, `isAppLocale`, `LOCALE_HEADER_NAME`. |
-| **`paths.ts`** | `localePath(pathname, locale)` — build correct links for the current language (default = no prefix). |
-| **`proxy.ts`** | Rewrites unprefixed URLs to `/{defaultLocale}/…`, sets `LOCALE_HEADER_NAME` for `app/layout.tsx` (`<html lang>`). Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. |
+| **`fallbackSiteLocales.ts`** | Fallback **en/de** when `siteLanguageSettings` is missing or invalid. |
+| **`siteLocalePathUtils.ts`** | `createLanguagePathUtils({ defaultLocale, localeIds })` — `localePath`, prefixes, `isAppLocale`. |
+| **`proxyLocaleFetch.ts`** | CDN fetch + short cache for **`proxy.ts`**. |
+| **`config.ts`** | `AppLocale` (string), `LOCALE_HEADER_NAME`. |
+| **`site-locales.ts`** | `LOCALE_HEADER_NAME` for `proxy.ts` / headers. |
+| **`paths.ts`** | `isCurrentNavHref`, path normalization (no locale coupling). |
+| **`proxy.ts`** | Rewrites unprefixed URLs to `/{defaultLocale}/…`, sets `LOCALE_HEADER_NAME`. Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. |
 
 ## Flow
 
-1. User opens `/` or `/about` → proxy rewrites to `/en/…` (or whatever `SITE_DEFAULT_LOCALE` is).
-2. User opens `/de/about` → no rewrite; header marks locale `de`.
-3. `app/[locale]/page.tsx` (and nested routes) read `params.locale` and pass it to **`pickLocalizedString`**, **`ModulesRenderer`**, etc.
+1. **Sanity** — editors maintain **`siteLanguageSettings`** (ids, labels, default).
+2. **Next** — `fetchSiteLanguageSettings()` (cached) supplies **`[locale]/layout.tsx`** → **`LanguageProvider`**, **`Footer`** path utils, **`generateStaticParams`**, **`ModulesRenderer`**, and **`pickLocalizedString`** / Portable Text helpers.
+3. User opens `/` or `/about` → **`proxy`** rewrites internally to `/{defaultLocale}/…` using the CDN-backed locale list.
+4. User opens `/de/about` → no rewrite; header marks locale `de`.
+5. `app/[locale]/page.tsx` (and nested routes) read `params.locale` and pass **`siteLocale`** into resolution helpers.
 
-## Quick reference
+## Studio note
 
-- **Change default language or add languages:** `packages/languages/src/index.ts` — restart `pnpm web:dev` and `pnpm studio:dev`.
-- **Full examples** (EN vs DE default, adding `fr`): [../../README.md](../../README.md) (section *Languages*).
+Changing **Site languages** updates the website on the next fetch. **Studio** loads `internationalizedArray*` tabs from the same document on each load (no rebuild).

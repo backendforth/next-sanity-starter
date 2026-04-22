@@ -3,7 +3,10 @@ import {
 	type SanityImageSource,
 } from "@sanity/image-url";
 
-import { dataset, projectId } from "@/sanity/sanityEnv";
+import {
+	syncSanityDataset,
+	syncSanityProjectId,
+} from "@/sanity/sanitySyncConfig";
 import type {
 	SanityImageAssetRef,
 	SanityImageField,
@@ -22,7 +25,10 @@ type BuildImageUrlOptions = {
 	dpr?: 1 | 2 | 3;
 };
 
-const builder = createImageUrlBuilder({ projectId, dataset });
+const builder = createImageUrlBuilder({
+	projectId: syncSanityProjectId,
+	dataset: syncSanityDataset,
+});
 
 function assetRefForBuilder(
 	asset: SanityImageAssetRef | null | undefined,
@@ -195,7 +201,7 @@ export function buildFetchedImageUrl(
 	options: BuildImageUrlOptions = {},
 ): string | null {
 	/** Client bundles only see `NEXT_PUBLIC_*`; without it `projectId` can be empty and `@sanity/image-url` emits broken URLs. Prefer expanded `asset.url` from GROQ. */
-	if (!projectId?.trim()) {
+	if (!syncSanityProjectId?.trim()) {
 		const direct = image?.asset?.url;
 		return typeof direct === "string" && direct.length > 0 ? direct : null;
 	}

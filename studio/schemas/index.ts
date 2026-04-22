@@ -13,6 +13,7 @@ import { navLanguageSwitch } from "./objects/navLanguageSwitch";
 import { seoFallback, seoPage } from "./objects/seo/page";
 import { errorSettings } from "./settings/error";
 import { siteCookieBanner } from "./settings/siteCookieBanner";
+import { siteLanguageSettings } from "./settings/siteLanguageSettings";
 import { siteNav } from "./settings/siteNav";
 import { siteSettings } from "./settings/siteSettings";
 import { home } from "./singletons/home";
@@ -32,6 +33,7 @@ export const schemaTypes = [
   richText,
   richTextMedia,
   siteSettings,
+  siteLanguageSettings,
   siteNav,
   errorSettings,
   siteCookieBanner,

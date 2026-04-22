@@ -1,6 +1,5 @@
 "use client";
 
-import { studioLanguages } from "@repo/languages";
 import { usePathname, useRouter } from "next/navigation";
 import {
 	createContext,
@@ -11,64 +10,85 @@ import {
 	useMemo,
 } from "react";
 
-import type { AppLocale } from "@/src/i18n/config";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import {
-	localeFromPathname,
-	localePath,
-	pathWithoutLocalePrefix,
-} from "@/src/i18n/paths";
+	createLanguagePathUtils,
+	type LanguagePathUtils,
+} from "@/src/i18n/siteLocalePathUtils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type StudioLanguageOption = (typeof studioLanguages)[number];
+export type StudioLanguageOption = SiteLocaleConfig["languages"][number];
 
-type LanguageContextValue = {
+type LanguageContextValue = LanguagePathUtils & {
 	/** Locale implied by the URL (when valid), otherwise the server-provided fallback. */
-	currentLocale: AppLocale;
+	currentLocale: string;
 	/** Options for the language `<select>` (ids + labels). */
 	languages: readonly StudioLanguageOption[];
+	/** Ids + default for `pickLocalizedString` / Portable Text resolution on the client. */
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/** Navigate to the same logical path in another locale. */
-	setLocale: (next: AppLocale) => void;
+	setLocale: (next: string) => void;
 };
-
-// ─── Context ─────────────────────────────────────────────────────────────────
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 type LanguageProviderProps = {
 	children: ReactNode;
 	/** Server / proxy locale — used when the pathname does not imply a known locale. */
-	locale: AppLocale;
+	locale: string;
+	siteLocaleConfig: SiteLocaleConfig;
 };
 
-export function LanguageProvider({ children, locale }: LanguageProviderProps) {
+export function LanguageProvider({
+	children,
+	locale,
+	siteLocaleConfig,
+}: LanguageProviderProps) {
 	const pathname = usePathname() ?? "/";
 	const router = useRouter();
 
+	const pathUtils = useMemo(
+		() =>
+			createLanguagePathUtils({
+				defaultLocale: siteLocaleConfig.defaultLocale,
+				localeIds: siteLocaleConfig.localeIds,
+			}),
+		[siteLocaleConfig.defaultLocale, siteLocaleConfig.localeIds],
+	);
+
 	const currentLocale = useMemo(() => {
-		const fromPath = localeFromPathname(pathname);
-		return studioLanguages.some((l) => l.id === fromPath) ? fromPath : locale;
-	}, [pathname, locale]);
+		const fromPath = pathUtils.localeFromPathname(pathname);
+		return pathUtils.isAppLocale(fromPath) ? fromPath : locale;
+	}, [pathname, locale, pathUtils]);
 
 	const pathWithoutLocale = useMemo(
-		() => pathWithoutLocalePrefix(pathname),
-		[pathname],
+		() => pathUtils.pathWithoutLocalePrefix(pathname),
+		[pathname, pathUtils],
 	);
 
 	const setLocale = useCallback(
-		(next: AppLocale) => {
-			router.push(localePath(pathWithoutLocale, next));
+		(next: string) => {
+			if (!pathUtils.isAppLocale(next)) {
+				return;
+			}
+			router.push(pathUtils.localePath(pathWithoutLocale, next));
 		},
-		[pathWithoutLocale, router],
+		[pathWithoutLocale, pathUtils, router],
 	);
 
 	const value = useMemo<LanguageContextValue>(
 		() => ({
+			...pathUtils,
 			currentLocale,
-			languages: studioLanguages,
+			languages: siteLocaleConfig.languages,
+			siteLocale: {
+				localeIds: siteLocaleConfig.localeIds,
+				defaultLocale: siteLocaleConfig.defaultLocale,
+			},
 			setLocale,
 		}),
-		[currentLocale, setLocale],
+		[currentLocale, pathUtils, setLocale, siteLocaleConfig],
 	);
 
 	useEffect(() => {

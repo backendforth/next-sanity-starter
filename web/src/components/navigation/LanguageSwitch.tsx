@@ -1,7 +1,6 @@
 "use client";
 
 import { useLanguage } from "@/src/contexts/LanguageContext";
-import type { AppLocale } from "@/src/i18n/config";
 import { cn } from "@/src/utils/cn";
 
 export type LanguageSwitchProps = {
@@ -25,7 +24,7 @@ export function LanguageSwitch({
 			)}
 			value={currentLocale}
 			onChange={(e) => {
-				const next = e.target.value as AppLocale;
+				const next = e.target.value;
 				setLocale(next);
 				onAfterLocaleChange?.();
 			}}

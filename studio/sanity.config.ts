@@ -17,12 +17,9 @@ import {
   presentationMainDocuments,
 } from "./config/presentation/resolve";
 import { structure } from "./config/structure";
-import { studioDataset } from "./config/studioDataset";
+import { internationalizedArrayLanguagesFromClient } from "./config/sync/internationalizedArrayLanguages";
+import { studioDataset } from "./config/sync/studioDataset";
 import { schemaTypes } from "./schemas";
-import {
-  defaultLanguageIds,
-  studioLanguages,
-} from "./schemas/constants/languages";
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = studioDataset;
@@ -79,9 +76,11 @@ export default defineConfig({
     muxInput(),
     netlifyTool(),
     internationalizedArray({
-      languages: [...studioLanguages],
-      defaultLanguages: [...defaultLanguageIds],
+      languages: internationalizedArrayLanguagesFromClient,
+      /** Plugin only accepts a static list; runtime default comes from `siteLanguageSettings` in the fetch above. */
+      defaultLanguages: [],
       fieldTypes: ["string", "richText", "richTextMedia"],
+      /** Hide bulk “Add missing languages”; languages come only from Site languages (`siteLanguageSettings`). */
       buttonAddAll: false,
     }),
   ],

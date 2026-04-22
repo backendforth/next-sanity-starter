@@ -1,12 +1,32 @@
 /**
  * Resolves `sanity-plugin-internationalized-array` fields for a requested locale.
- * Fallback order: exact language tag → base tag → other configured locales (`locales` in
- * `@/src/i18n/site-locales.ts`) → any entry with content. Routing passes
- * `locale` from `params` (see `proxy.ts`); keep all of that here — no second i18n layer.
+ * Fallback order: exact language tag → base tag → other configured site locales → any entry with content.
+ * Pass `siteLocale` from `fetchSiteLanguageSettings()` when resolving; otherwise built-in fallback (en/de) is used.
  */
 import type { PortableTextBlock } from "@portabletext/types";
 
-import { defaultLocale, locales } from "@/src/i18n/config";
+import {
+	FALLBACK_SITE_LOCALE_CONFIG,
+	type SiteLocaleConfig,
+} from "@/src/i18n/fallbackSiteLocales";
+
+type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+
+function effectiveSiteLocale(
+	siteLocale?: SiteLocaleSlice | null,
+): SiteLocaleSlice {
+	if (
+		siteLocale &&
+		siteLocale.localeIds.length > 0 &&
+		siteLocale.defaultLocale.trim()
+	) {
+		return siteLocale;
+	}
+	return {
+		localeIds: FALLBACK_SITE_LOCALE_CONFIG.localeIds,
+		defaultLocale: FALLBACK_SITE_LOCALE_CONFIG.defaultLocale,
+	};
+}
 
 type LocalizedEntryValue = string | PortableTextBlock[] | null | undefined;
 
@@ -62,19 +82,19 @@ function pickPreferredEntry(
 	return undefined;
 }
 
-/** Any entry with content (last resort if no `locales` match). */
+/** Any entry with content (last resort if no configured locales match). */
 function pickFallbackEntry(
 	entries: IntlTextEntry[],
 ): IntlTextEntry | undefined {
 	return entries.find((entry) => hasUsableValue(entry.value));
 }
 
-/**
- * Order: exact tag (e.g. `de-DE`), base language, then other entries in `locales` (from `site-locales.ts`), then any remaining entry.
- */
-function getLocaleFallbackChain(locale: string): string[] {
+function getLocaleFallbackChain(
+	locale: string,
+	site: SiteLocaleSlice,
+): string[] {
 	const normalized = locale.trim();
-	const base = normalized.split("-")[0] || defaultLocale;
+	const base = normalized.split("-")[0] || site.defaultLocale;
 	const chain: string[] = [];
 	if (normalized && normalized !== base) {
 		chain.push(normalized);
@@ -82,9 +102,9 @@ function getLocaleFallbackChain(locale: string): string[] {
 	if (!chain.includes(base)) {
 		chain.push(base);
 	}
-	for (const siteLocale of locales) {
-		if (siteLocale !== base && !chain.includes(siteLocale)) {
-			chain.push(siteLocale);
+	for (const siteLocaleId of site.localeIds) {
+		if (siteLocaleId !== base && !chain.includes(siteLocaleId)) {
+			chain.push(siteLocaleId);
 		}
 	}
 	return chain;
@@ -105,12 +125,13 @@ function coerceResolvedValue(
 function resolveLocalizedEntries(
 	entries: IntlTextEntry[] | null | undefined,
 	locale: string,
+	site: SiteLocaleSlice,
 ): string | PortableTextBlock[] | undefined {
 	if (!Array.isArray(entries) || entries.length === 0) {
 		return undefined;
 	}
 
-	for (const localeSegment of getLocaleFallbackChain(locale)) {
+	for (const localeSegment of getLocaleFallbackChain(locale, site)) {
 		const candidates = getLocaleCandidates(localeSegment);
 		const preferred = pickPreferredEntry(entries, candidates);
 		if (preferred) {
@@ -139,18 +160,17 @@ function looksLikeIntlEntryArray(value: unknown): value is IntlTextEntry[] {
 	);
 }
 
-/**
- * Walks objects and arrays recursively and resolves nested `internationalizedArray*` fields
- * (e.g. `module.text` in rich text, links with localized objects) so the result matches
- * the single-locale chain `rich text → blocks → …`.
- */
-function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
+function deepResolveLocalizedTree(
+	value: unknown,
+	locale: string,
+	site: SiteLocaleSlice,
+): unknown {
 	if (value == null) {
 		return value;
 	}
 
 	if (looksLikeIntlEntryArray(value)) {
-		const resolved = resolveLocalizedEntries(value, locale);
+		const resolved = resolveLocalizedEntries(value, locale, site);
 		if (resolved === undefined) {
 			return undefined;
 		}
@@ -158,13 +178,15 @@ function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
 			return resolved;
 		}
 		if (Array.isArray(resolved)) {
-			return resolved.map((item) => deepResolveLocalizedTree(item, locale));
+			return resolved.map((item) =>
+				deepResolveLocalizedTree(item, locale, site),
+			);
 		}
 		return resolved;
 	}
 
 	if (Array.isArray(value)) {
-		return value.map((item) => deepResolveLocalizedTree(item, locale));
+		return value.map((item) => deepResolveLocalizedTree(item, locale, site));
 	}
 
 	if (typeof value === "object") {
@@ -172,7 +194,7 @@ function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
 		for (const [propertyKey, propertyValue] of Object.entries(
 			value as object,
 		)) {
-			out[propertyKey] = deepResolveLocalizedTree(propertyValue, locale);
+			out[propertyKey] = deepResolveLocalizedTree(propertyValue, locale, site);
 		}
 		return out;
 	}
@@ -187,12 +209,14 @@ function deepResolveLocalizedTree(value: unknown, locale: string): unknown {
 export function resolveLocalizedPortableTextDeep(
 	entries: IntlRichTextEntry[] | null | undefined,
 	locale: string,
+	siteLocale?: SiteLocaleSlice | null,
 ): PortableTextBlock[] {
-	const raw = resolveLocalizedEntries(entries, locale);
+	const site = effectiveSiteLocale(siteLocale);
+	const raw = resolveLocalizedEntries(entries, locale, site);
 	if (!Array.isArray(raw) || raw.length === 0) {
 		return [];
 	}
-	return deepResolveLocalizedTree(raw, locale) as PortableTextBlock[];
+	return deepResolveLocalizedTree(raw, locale, site) as PortableTextBlock[];
 }
 
 export type ParseLocalizedTextOptions = {
@@ -205,6 +229,8 @@ export type ParseLocalizedTextOptions = {
 	 * - `blocks`: only blocks (plain string resolves to `[]`)
 	 */
 	as?: "auto" | "string" | "blocks";
+	/** From `fetchSiteLanguageSettings()` — drives fallback order. */
+	siteLocale?: SiteLocaleSlice | null;
 };
 
 export function parseLocalizedText(
@@ -218,14 +244,20 @@ export function parseLocalizedText(
 ): PortableTextBlock[];
 export function parseLocalizedText({
 	entries,
-	locale = "en",
+	locale,
 	as = "auto",
+	siteLocale,
 }: ParseLocalizedTextOptions):
 	| string
 	| PortableTextBlock[]
 	| undefined
 	| PortableTextBlock[] {
-	const raw = resolveLocalizedEntries(entries, locale);
+	const site = effectiveSiteLocale(siteLocale);
+	const resolvedLocale =
+		locale?.trim() ||
+		site.defaultLocale ||
+		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
+	const raw = resolveLocalizedEntries(entries, resolvedLocale, site);
 
 	if (as === "string") {
 		return typeof raw === "string" ? raw : undefined;
@@ -235,14 +267,22 @@ export function parseLocalizedText({
 		if (!Array.isArray(raw) || raw.length === 0) {
 			return [];
 		}
-		return deepResolveLocalizedTree(raw, locale) as PortableTextBlock[];
+		return deepResolveLocalizedTree(
+			raw,
+			resolvedLocale,
+			site,
+		) as PortableTextBlock[];
 	}
 
 	if (typeof raw === "string") {
 		return raw;
 	}
 	if (Array.isArray(raw) && raw.length > 0) {
-		return deepResolveLocalizedTree(raw, locale) as PortableTextBlock[];
+		return deepResolveLocalizedTree(
+			raw,
+			resolvedLocale,
+			site,
+		) as PortableTextBlock[];
 	}
 	return raw;
 }
@@ -250,15 +290,22 @@ export function parseLocalizedText({
 /** Convenience for i18n string fields (`internationalizedArrayString`). */
 export function pickLocalizedString(
 	entries: IntlStringEntry[] | null | undefined,
-	locale: string = defaultLocale,
+	locale?: string,
+	siteLocale?: SiteLocaleSlice | null,
 ): string | undefined {
-	return parseLocalizedText({ entries, locale, as: "string" });
+	const site = effectiveSiteLocale(siteLocale);
+	const loc =
+		locale?.trim() ||
+		site.defaultLocale ||
+		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
+	return parseLocalizedText({ entries, locale: loc, as: "string", siteLocale });
 }
 
 /** Convenience for `internationalizedArrayRichText*` / `richTextMedia` bodies. */
 export function pickLocalizedPortableTextBlocks(
 	entries: IntlRichTextEntry[] | null | undefined,
 	locale: string,
+	siteLocale?: SiteLocaleSlice | null,
 ): PortableTextBlock[] {
-	return resolveLocalizedPortableTextDeep(entries, locale);
+	return resolveLocalizedPortableTextDeep(entries, locale, siteLocale);
 }

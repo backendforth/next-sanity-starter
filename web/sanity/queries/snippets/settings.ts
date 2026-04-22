@@ -67,6 +67,13 @@ export const siteNavMenusQuery = `*[_id == "siteNav"][0]{
   ${navMenusQuery}
 }`;
 
+/** Document id: `siteLanguageSettings` — drives Next routes + `internationalizedArray` codegen in Studio. */
+export const siteLanguageSettingsQuery = `*[_id == "siteLanguageSettings"][0]{
+  _id,
+  availableLanguages[]{id, title},
+  defaultLanguageId
+}`;
+
 /** Document id: `siteSettings`. */
 export const siteSettingsQuery = `*[_id == "siteSettings"][0]{
   _id,

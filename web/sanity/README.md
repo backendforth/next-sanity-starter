@@ -24,7 +24,7 @@ Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/ut
 
 ## Translations (`utils/sanityLocalizedText.ts`)
 
-**Which locale the page uses** comes from the URL (`[locale]` route segment). Language ids and order match **`@repo/languages`** (`packages/languages/src/index.ts`), re-exported as **`src/i18n/site-locales.ts`**. See **`web/README.md`** (*Languages*) and **`packages/languages/README.md`**.
+**Which locale the page uses** comes from the URL (`[locale]` route segment). Language ids and order match the Sanity singleton **`siteLanguageSettings`** (`fetchSiteLanguageSettings` in **`fetchSanityData.ts`**). See **`web/README.md`** (*Languages*) and **`web/src/i18n/README.md`**.
 
 Sanity uses **`internationalizedArray*`** fields: arrays of `{ language | _key, value }`.
 
@@ -59,6 +59,8 @@ import { pickLocalizedString, pickLocalizedPortableTextBlocks } from "@/sanity/u
 const heading = pickLocalizedString(doc.title, "de");
 const blocks = pickLocalizedPortableTextBlocks(module.body, "de");
 ```
+
+Pass an optional third argument **`siteLocale`** (`{ localeIds, defaultLocale }` from **`fetchSiteLanguageSettings()`**) so fallback order matches **Site languages** in Sanity. **`parseLocalizedText`** accepts **`siteLocale`** in its options object.
 
 ---
 

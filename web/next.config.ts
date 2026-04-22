@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
-// App Router: no `next.config` i18n (unsupported; can redirect to `/de` etc.). Default language is English.
+// App Router: no `next.config` i18n. Site locales come from Sanity (`siteLanguageSettings`), not from here.
+// Use the same `SANITY_STUDIO_PROJECT_ID` / dataset env as `studio/.env` so web + Studio hit one dataset.
 const nextConfig: NextConfig = {
-	transpilePackages: ["@repo/languages", "@repo/sanity-dataset-resolve"],
+	transpilePackages: ["@repo/sanity-dataset-resolve"],
 
 	/**
 	 * Tree-shake heavy packages at build time.

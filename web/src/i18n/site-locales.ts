@@ -1,9 +1,5 @@
 /**
- * Re-exports shared language config from `@repo/languages` (monorepo package).
- * Edit languages in **`packages/languages/src/index.ts`** — used by Next.js and Sanity Studio.
+ * @deprecated Locale lists come from Sanity (`fetchSiteLanguageSettings`). This file only
+ * exports the proxy header name used with `proxy.ts`.
  */
-export {
-	SITE_DEFAULT_LOCALE,
-	SITE_LOCALES,
-	type SiteLocaleCode,
-} from "@repo/languages";
+export const LOCALE_HEADER_NAME = "x-next-locale" as const;

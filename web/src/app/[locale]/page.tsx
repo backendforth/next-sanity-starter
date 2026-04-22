@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
-import { fetchHomeDocument } from "@/sanity/fetchSanityData";
-import { metadataFromSanityPageData } from "@/sanity/seo";
+import {
+	fetchHomeDocument,
+	fetchSiteLanguageSettings,
+} from "@/sanity/fetchSanityData";
+import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
-import { locales } from "@/src/i18n/config";
 
 type PageProps = {
 	params: Promise<{ locale: string }>;
@@ -15,27 +17,34 @@ type PageProps = {
  */
 export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
-export function generateStaticParams() {
-	return locales.map((locale) => ({ locale }));
+export async function generateStaticParams() {
+	const siteLocale = await fetchSiteLanguageSettings({ stega: false });
+	return siteLocale.localeIds.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { locale } = await params;
-	const data = await fetchHomeDocument({ stega: false });
+	const [data, siteLocale] = await Promise.all([
+		fetchHomeDocument({ stega: false }),
+		fetchSiteLanguageSettings({ stega: false }),
+	]);
 	if (!data) {
 		return {
 			title: "Site",
 			description: undefined,
 		};
 	}
-	return metadataFromSanityPageData(data, locale, "Home");
+	return metadataFromSanityPageData(data, locale, "Home", siteLocale);
 }
 
 export default async function Home({ params }: PageProps) {
 	const { locale } = await params;
-	const data = await fetchHomeDocument();
+	const [data, siteLocale] = await Promise.all([
+		fetchHomeDocument(),
+		fetchSiteLanguageSettings(),
+	]);
 
 	if (!data) {
 		return (
@@ -57,7 +66,11 @@ export default async function Home({ params }: PageProps) {
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-4">
 						<h2>Modules</h2>
-						<ModulesRenderer modules={data.modules} locale={locale} />
+						<ModulesRenderer
+							modules={data.modules}
+							locale={locale}
+							siteLocale={siteLocale}
+						/>
 					</section>
 				) : null}
 			</main>

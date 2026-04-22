@@ -1,6 +1,6 @@
 # Next.js + Sanity monorepo
 
-Boilerplate for a **localized** marketing/site on **Next.js (App Router)** with **Sanity CMS**, shared **locale config**, and optional **Mux** / **Netlify** integrations in Studio.
+Boilerplate for a **localized** marketing/site on **Next.js (App Router)** with **Sanity CMS** (site languages configured in Studio), and optional **Mux** / **Netlify** integrations in Studio.
 
 ## Monorepo layout
 
@@ -8,7 +8,6 @@ Boilerplate for a **localized** marketing/site on **Next.js (App Router)** with 
 |--------|------|------|
 | **Web** | `web/` | Next.js 16 app, Tailwind v4, Sanity client + GROQ, i18n routing |
 | **Studio** | `studio/` | Sanity Studio v5, schema, plugins, dataset sync script |
-| **Languages** | `packages/languages/` | **`@repo/languages`** — single source of truth for locales (Next + Studio) |
 | **Sanity datasets** | `packages/sanity-dataset-resolve/` | **`@repo/sanity-dataset-resolve`** — shared dev/prod dataset resolution for Studio + Web |
 
 Managed with **pnpm** workspaces (`pnpm-workspace.yaml`: `web`, `studio`, `packages/*`).
@@ -48,30 +47,30 @@ Other root scripts: `pnpm build` (all packages), `pnpm studio:build`, `pnpm stud
 
 ## Environment & datasets
 
-- **Root `.env`** — optional; see root `.env.example`. Locale lists are **not** in env — they live in **`packages/languages/src/index.ts`** (committed).
+- **Root `.env`** — optional; see root `.env.example`. Site locale lists live in Sanity (**Settings → Site languages**), not in root env.
 - **`web/.env.local`** — Next.js: see **`web/.env.example`**. Use **`SANITY_STUDIO_DEPLOYMENT_TARGET`** on each host (e.g. `staging` for a staging dataset) so web and Studio stay aligned; optional **`SANITY_STUDIO_DATASET`** pins a dataset. Details in **`@repo/sanity-dataset-resolve`** and **`web/sanity/README.md`**.
 - **`studio/.env`** — Studio: same project id; **`SANITY_STUDIO_PREVIEW_ORIGIN`** (e.g. `http://localhost:3000`) for presentation / preview; optional Mux tokens for **`sanity-plugin-mux-input`**. See **`studio/.env.example`**.
 
-**Dataset resolution** — shared in **`@repo/sanity-dataset-resolve`**; Web uses `web/sanity/resolveStudioDataset.ts` / `sanityEnv.ts`, Studio uses `studio/config/studioDataset.ts`. Explicit `SANITY_STUDIO_DATASET` or `NEXT_PUBLIC_SANITY_DATASET` wins; otherwise **production deployments** prefer the production dataset and **local/preview** prefer **development** when it exists (not `NODE_ENV`). Configurable dataset names via `SANITY_STUDIO_DATASET_DEVELOPMENT` / `SANITY_STUDIO_DATASET_PRODUCTION`, optional Management API / HTTP probe.
+**Dataset resolution** — shared in **`@repo/sanity-dataset-resolve`**; Web uses `web/sanity/resolveStudioDataset.ts` / `sanityEnv.ts`, Studio uses `studio/config/sync/studioDataset.ts`. Explicit `SANITY_STUDIO_DATASET` or `NEXT_PUBLIC_SANITY_DATASET` wins; otherwise **production deployments** prefer the production dataset and **local/preview** prefer **development** when it exists (not `NODE_ENV`). Configurable dataset names via `SANITY_STUDIO_DATASET_DEVELOPMENT` / `SANITY_STUDIO_DATASET_PRODUCTION`, optional Management API / HTTP probe.
 
 **Sync prod → dev dataset** — `pnpm studio:sync-prod-to-dev` (see `studio/scripts` and `.env.example` comments).
 
 ## Multilanguage setup
 
-- **Canonical config:** [`packages/languages/src/index.ts`](packages/languages/src/index.ts) — `SITE_LOCALES`, `SITE_DEFAULT_LOCALE`, `SITE_LOCALE_LABELS`, plus exports for **`sanity-plugin-internationalized-array`** (`studioLanguages`, `defaultLanguageIds`).
-- **Web** imports via [`web/src/i18n/site-locales.ts`](web/src/i18n/site-locales.ts); **`web/next.config.ts`** sets `transpilePackages: ["@repo/languages"]`.
-- **Studio** re-exports from [`studio/schemas/constants/languages.ts`](studio/schemas/constants/languages.ts) so `sanity.config.ts` stays stable.
-- **Routing / proxy (i18n) / links:** [`web/src/i18n/README.md`](web/src/i18n/README.md); deeper examples in [`web/README.md`](web/README.md) (*Languages*).
+- **Canonical config:** Sanity singleton **`siteLanguageSettings`** (Studio **Settings → Site languages**): ordered `availableLanguages` (`id` + `title`) and **`defaultLanguageId`**.
+- **Web** reads it with [`fetchSiteLanguageSettings`](web/sanity/fetchSanityData.ts) (GROQ); routing and `sanityLocalizedText` fallback order follow that document. [`web/src/i18n/README.md`](web/src/i18n/README.md) describes the flow.
+- **Studio `internationalized-array`:** [`studio/sanity.config.ts`](studio/sanity.config.ts) loads language tabs from **`siteLanguageSettings`** at runtime (see [`studio/config/sync/internationalizedArrayLanguages.ts`](studio/config/sync/internationalizedArrayLanguages.ts)). Optional file output: [`studio/scripts/generate-locale-plugin.mjs`](studio/scripts/generate-locale-plugin.mjs).
+- **Routing / proxy:** [`web/src/proxy.ts`](web/src/proxy.ts) loads the same document from the Sanity CDN (short cache).
 
-**Add a locale:** edit `packages/languages/src/index.ts`, align Studio content / GROQ, restart web + studio. Do **not** use the default locale’s prefix segment as a page slug (e.g. if default is `en`, paths are unprefixed; other locales use `/de/...`, etc.).
+**Add a locale:** edit **Site languages** in Studio, run codegen (automatic before `pnpm studio:dev` / `pnpm studio:build`), fill translations, restart Studio if needed. Do **not** use a non-default locale’s URL segment as a page slug for the default locale’s tree.
 
 ## Stack & feature highlights (packages)
 
 **Web (`web/package.json`)**  
-Next.js 16, React 19, **Tailwind CSS v4** (+ PostCSS: import, functions/`rem()`, calc, nested-ancestors), **next-sanity**, **Portable Text** (`@portabletext/react`), **@sanity/image-url**, **clsx** / **tailwind-merge**, **`@repo/languages`**.
+Next.js 16, React 19, **Tailwind CSS v4** (+ PostCSS: import, functions/`rem()`, calc, nested-ancestors), **next-sanity**, **Portable Text** (`@portabletext/react`), **@sanity/image-url**, **clsx** / **tailwind-merge**.
 
 **Studio (`studio/package.json`)**  
-**Sanity v5**, **Vision**, **Dashboard**, **internationalized-array**, **Media**, **Mux input**, **Netlify plugin**, **Code input**, **`@repo/languages`**. Lint/format via root **Biome** (`pnpm --filter studio run lint`).
+**Sanity v5**, **Vision**, **Dashboard**, **internationalized-array**, **Media**, **Mux input**, **Netlify plugin**, **Code input**. Lint/format via root **Biome** (`pnpm --filter studio run lint`).
 
 **Tooling (Biome)**  
 **Root [`biome.json`](biome.json)** is the only Biome config file — there is **no `web/biome.json`** and **no `studio/biome.json`**. **`web/`** and **`studio/`** are linted/formatted via **`pnpm --workspace-root exec biome …`** from each package’s `lint` / `format` scripts, using the root-installed **`@biomejs/biome`**. Studio keeps **2-space indentation** through a root **`overrides`** entry for `studio/**` (the rest of the repo uses **tabs** from the base config).
@@ -94,4 +93,4 @@ From the **repository root**, after `pnpm install` (Biome is a root `devDependen
 
 ---
 
-More detail: [`web/README.md`](web/README.md), [`web/sanity/README.md`](web/sanity/README.md), [`studio/README.md`](studio/README.md), [`packages/languages/README.md`](packages/languages/README.md).
+More detail: [`web/README.md`](web/README.md), [`web/sanity/README.md`](web/sanity/README.md), [`studio/README.md`](studio/README.md).

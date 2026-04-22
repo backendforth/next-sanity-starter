@@ -1,20 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import {
-	defaultLocale,
-	isAppLocale,
-	LOCALE_HEADER_NAME,
-} from "@/src/i18n/config";
-
-const defaultPrefix = `/${defaultLocale}`;
+import { LOCALE_HEADER_NAME } from "@/src/i18n/config";
+import { fetchSiteLocaleConfigForProxy } from "@/src/i18n/proxyLocaleFetch";
 
 /**
- * - **Default locale** (`defaultLocale` in `src/i18n/site-locales.ts`): `/`, `/foo` — rewritten internally to `/{defaultLocale}`, `/{defaultLocale}/foo`.
+ * - **Default locale** (from Sanity `siteLanguageSettings`): `/`, `/foo` — rewritten internally to `/{defaultLocale}`, `/{defaultLocale}/foo`.
  * - **Other locales**: `/{locale}`, `/{locale}/foo` — no rewrite.
  * - `/{defaultLocale}` and `/{defaultLocale}/*` redirect to unprefixed URLs (canonical).
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
 	if (
@@ -25,6 +20,11 @@ export function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
+	const { defaultLocale, localeIds } = await fetchSiteLocaleConfigForProxy();
+	const localeSet = new Set(localeIds);
+	const isKnownLocale = (v: string) => localeSet.has(v);
+	const defaultPrefix = `/${defaultLocale}`;
+
 	if (pathname === defaultPrefix || pathname.startsWith(`${defaultPrefix}/`)) {
 		const stripped =
 			pathname === defaultPrefix
@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
 	}
 
 	const first = pathname.split("/")[1];
-	if (first && isAppLocale(first) && first !== defaultLocale) {
+	if (first && isKnownLocale(first) && first !== defaultLocale) {
 		const requestHeaders = new Headers(request.headers);
 		requestHeaders.set(LOCALE_HEADER_NAME, first);
 		return NextResponse.next({

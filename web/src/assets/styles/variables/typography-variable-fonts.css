@@ -1,0 +1,54 @@
+/*
+ * Variable-font axis tokens (`font-variation-settings` / `font-feature-settings`).
+ * Optional — not imported by default. Import in `globals.css` after `typography/fonts.css`
+ * when using a variable font; map `--font-variation-settings-*` on selectors or utilities.
+ *
+ * Axis tags follow OpenType four-character tags (CSS uses quoted lowercase forms).
+ * Adjust defaults to match your font’s supported axes and ranges (see the font’s docs).
+ */
+
+:root {
+	/* Registered axes — numeric defaults; swap per font (min/max differ by family). */
+	--font-variation-wght-text: 400;
+	--font-variation-wght-headline: 600;
+	--font-variation-wdth: 100;
+	--font-variation-slnt: 0;
+	--font-variation-ital: 0;
+	--font-variation-opsz-text: 16;
+	--font-variation-opsz-headline: 24;
+	--font-variation-GRAD: 0;
+
+	/* Composed `font-variation-settings` — extend or trim axes your face does not expose. */
+	--font-variation-settings-text:
+		"wght" var(--font-variation-wght-text), "wdth" var(--font-variation-wdth),
+		"slnt" var(--font-variation-slnt), "ital" var(--font-variation-ital),
+		"opsz" var(--font-variation-opsz-text), "GRAD" var(--font-variation-GRAD);
+	--font-variation-settings-headline:
+		"wght" var(--font-variation-wght-headline),
+		"wdth" var(--font-variation-wdth), "slnt" var(--font-variation-slnt),
+		"ital" var(--font-variation-ital),
+		"opsz" var(--font-variation-opsz-headline),
+		"GRAD" var(--font-variation-GRAD);
+
+	/* Optional `font-feature-settings` presets (same syntax as the property). */
+	--font-feature-settings-text: normal;
+	--font-feature-settings-headline: normal;
+}
+
+@media (width >= theme(--breakpoint-md)) {
+	:root {
+		--font-variation-opsz-headline: 28;
+	}
+}
+
+@media (width >= theme(--breakpoint-2xl)) {
+	:root {
+		--font-variation-opsz-headline: 32;
+	}
+}
+
+@media (width >= theme(--breakpoint-wide)) {
+	:root {
+		--font-variation-opsz-headline: 36;
+	}
+}

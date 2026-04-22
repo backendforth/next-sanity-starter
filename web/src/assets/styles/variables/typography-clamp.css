@@ -1,6 +1,7 @@
 /*
  * Optional fluid `--font-size-*-clamp` — not imported by default.
  * Import in globals.css after typography.css; wire utilities to `*-clamp` vars.
+ * Tiered caps align with `typography.css` fixed scale at `theme(--breakpoint-*)`.
  * svw = stable with mobile UI chrome; use dvw instead if you prefer dynamic viewport width.
  */
 
@@ -14,4 +15,31 @@
 	--font-size-3xl-clamp: clamp(rem(28), calc(rem(28) + 0.125svw), rem(30));
 	--font-size-4xl-clamp: clamp(rem(30), calc(rem(30) + 0.875svw), rem(44));
 	--font-size-9xl-clamp: clamp(rem(132), calc(rem(132) + 4svw), rem(196));
+}
+
+@media (width >= theme(--breakpoint-md)) {
+	:root {
+		--font-size-xs-clamp: clamp(rem(13), calc(rem(13) + 0.12svw), rem(15));
+		--font-size-xl-clamp: clamp(rem(21), calc(rem(21) + 0.1svw), rem(23));
+		--font-size-4xl-clamp: clamp(rem(30), calc(rem(30) + 0.65svw), rem(37));
+		--font-size-9xl-clamp: clamp(rem(132), calc(rem(132) + 3svw), rem(164));
+	}
+}
+
+@media (width >= theme(--breakpoint-2xl)) {
+	:root {
+		--font-size-xs-clamp: clamp(rem(13), calc(rem(13) + 0.12svw), rem(15));
+		--font-size-xl-clamp: clamp(rem(21), calc(rem(21) + 0.1svw), rem(23));
+		--font-size-4xl-clamp: clamp(rem(30), calc(rem(30) + 0.72svw), rem(40));
+		--font-size-9xl-clamp: clamp(rem(132), calc(rem(132) + 3.5svw), rem(180));
+	}
+}
+
+@media (width >= theme(--breakpoint-wide)) {
+	:root {
+		--font-size-xs-clamp: clamp(rem(14), calc(rem(14) + 0.1svw), rem(16));
+		--font-size-xl-clamp: clamp(rem(22), calc(rem(22) + 0.1svw), rem(24));
+		--font-size-4xl-clamp: clamp(rem(30), calc(rem(30) + 0.875svw), rem(44));
+		--font-size-9xl-clamp: clamp(rem(132), calc(rem(132) + 4svw), rem(196));
+	}
 }

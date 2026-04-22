@@ -8,5 +8,8 @@ sanity.types.gen.ts
 .env.local
 .env.*.local
 
+# TypeScript incremental build cache
+*.tsbuildinfo
+
 # Local prod→dev dataset export tarball (sync-prod-to-dev script)
 .sync-tmp/

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "codegen:locales": "node scripts/generate-locale-plugin.mjs",
     "dev": "node scripts/dev-with-hint.mjs",
     "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
     "start": "sanity start",
@@ -11,7 +10,8 @@
     "deploy": "SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy",
     "generate": "sanity schema extract --enforce-required-fields && sanity typegen generate",
     "lint": "pnpm --workspace-root exec biome check studio",
-    "format": "pnpm --workspace-root exec biome format --write studio"
+    "format": "pnpm --workspace-root exec biome format --write studio",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@repo/sanity-dataset-resolve": "workspace:*",

@@ -14,8 +14,6 @@ This file **re-exports** **`PAGE_REFERENCES`** from **`schemas/constants/referen
 
 3. **Frontend** — Ensure the Next.js app uses the same locale ids for routing and content.
 
-Optional: **`scripts/generate-locale-plugin.mjs`** can still write **`config/generated/localePluginConfig.ts`** for inspection; it is **not** required for Studio or the website.
-
 ## Development vs production datasets
 
 Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/sync/studioDataset.ts`**, using **`@repo/sanity-dataset-resolve`**:

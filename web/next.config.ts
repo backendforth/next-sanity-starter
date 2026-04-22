@@ -5,6 +5,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 	transpilePackages: ["@repo/sanity-dataset-resolve"],
 
+	/** Drop the `X-Powered-By: Next.js` header — small fingerprinting reduction. */
+	poweredByHeader: false,
+
+	/** Default in Next 16; pinned explicitly to make the boilerplate's choice obvious. */
+	reactStrictMode: true,
+
 	/**
 	 * Tree-shake heavy packages at build time.
 	 * Next.js rewrites barrel-file imports (e.g. `import { X } from "@portabletext/react"`)

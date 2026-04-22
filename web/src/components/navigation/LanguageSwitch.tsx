@@ -30,7 +30,11 @@ export function LanguageSwitch({
 			}}
 		>
 			{languages.map((languageOption) => (
-				<option key={languageOption.id} value={languageOption.id}>
+				<option
+					key={languageOption.id}
+					value={languageOption.id}
+					lang={languageOption.id}
+				>
 					{languageOption.title}
 				</option>
 			))}

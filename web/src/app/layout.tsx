@@ -96,6 +96,9 @@ export default async function RootLayout({
 	children: React.ReactNode;
 }>) {
 	const draft = await draftMode();
+	const isDraft = draft.isEnabled;
+	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
+	const shouldMountSanityLive = hasReadToken || isDraft;
 
 	return (
 		<html
@@ -118,14 +121,15 @@ export default async function RootLayout({
 				{/* Mux video player & thumbnails */}
 				<link rel="preconnect" href="https://stream.mux.com" />
 				<link rel="dns-prefetch" href="https://stream.mux.com" />
+				<link rel="preconnect" href="https://image.mux.com" />
 				<link rel="dns-prefetch" href="https://image.mux.com" />
 
 				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
 				{children}
-				<SanityLive />
-				{draft.isEnabled ? (
+				{shouldMountSanityLive ? <SanityLive /> : null}
+				{isDraft ? (
 					<>
 						<VisualEditing />
 						<DisableDraftMode />

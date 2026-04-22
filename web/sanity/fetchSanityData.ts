@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { cachedSiteLanguageSettingsPublished } from "./cachedSanityQuery";
-import { client } from "./client";
+import { client, isSanityConfigured } from "./client";
 import { sanityFetch } from "./live";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
@@ -25,6 +25,7 @@ type LiveFetchOptions = {
 
 /** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
 export const fetchHomeDocument = cache(async (options?: LiveFetchOptions) => {
+	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: homeQuery,
 		...options,
@@ -35,6 +36,7 @@ export const fetchHomeDocument = cache(async (options?: LiveFetchOptions) => {
 /** Dedupes page fetches; pass `{ stega: false }` in `generateMetadata`. */
 export const fetchPageBySlug = cache(
 	async (slug: string, options?: LiveFetchOptions) => {
+		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: pageBySlugQuery,
 			params: { slug },
@@ -46,6 +48,7 @@ export const fetchPageBySlug = cache(
 
 /** `siteNav` main/footer menus with resolved links; no embedded modules. */
 export const fetchSiteNavMenus = cache(async () => {
+	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: siteNavMenusQuery,
 	});
@@ -73,6 +76,7 @@ function draftClientForSiteLanguageSettings(token: string) {
  */
 export const fetchSiteLanguageSettings = cache(
 	async (_options?: LiveFetchOptions): Promise<SiteLocaleConfig> => {
+		if (!isSanityConfigured) return cachedSiteLanguageSettingsPublished();
 		const token = process.env.SANITY_API_READ_TOKEN?.trim();
 		if (!token) {
 			return cachedSiteLanguageSettingsPublished();
@@ -86,6 +90,7 @@ export const fetchSiteLanguageSettings = cache(
 
 /** Document id: `errorSettings` — 404 / 500 copy from Studio. */
 export const fetchErrorSettings = cache(async (options?: LiveFetchOptions) => {
+	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: errorSettingsQuery,
 		...options,

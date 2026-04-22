@@ -1,7 +1,10 @@
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import { client } from "./client";
+import {
+	FALLBACK_SITE_LOCALE_CONFIG,
+	type SiteLocaleConfig,
+} from "@/src/i18n/fallbackSiteLocales";
+import { client, isSanityConfigured } from "./client";
 import { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
@@ -34,6 +37,7 @@ export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalid
  * object params break React `cache` deduplication.
  */
 export const cachedSanityQuery = cache(async <T>(query: string) => {
+	if (!isSanityConfigured) return { data: null as T | null };
 	const data = await client.fetch<T>(query);
 	return { data };
 });
@@ -57,6 +61,7 @@ export const SANITY_CACHE_TAGS = {
  * Revalidates via tag `page-{slug}` or time-based after `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS`.
  */
 export const cachedPageDocumentBySlug = cache(async (slug: string) => {
+	if (!isSanityConfigured) return { data: null as PageDocument | null };
 	const fetchPage = unstable_cache(
 		async () =>
 			client.fetch<PageDocument | null>(pageBySlugQuery, {
@@ -88,6 +93,7 @@ const fetchHomeDocumentCached = unstable_cache(
  * Call from `generateMetadata` and the page: one Sanity request per request (React `cache` dedupe).
  */
 export const cachedHomeDocument = cache(async () => {
+	if (!isSanityConfigured) return { data: null as HomeDocument | null };
 	const data = await fetchHomeDocumentCached();
 	return { data };
 });
@@ -117,7 +123,10 @@ const fetchSitemapPagesCached = unstable_cache(
 
 export type CachedSitemapRow = SitemapRow;
 
-export const cachedSitemapPages = cache(async () => fetchSitemapPagesCached());
+export const cachedSitemapPages = cache(async (): Promise<SitemapRow[]> => {
+	if (!isSanityConfigured) return [];
+	return fetchSitemapPagesCached();
+});
 
 // ── `generateStaticParams` slug list ────────────────────────────────────────
 
@@ -130,7 +139,10 @@ const fetchPageSlugsCached = unstable_cache(
 	},
 );
 
-export const cachedPageSlugs = cache(async () => fetchPageSlugsCached());
+export const cachedPageSlugs = cache(async () => {
+	if (!isSanityConfigured) return [] as { slug?: string }[];
+	return (await fetchPageSlugsCached()) ?? [];
+});
 
 // ── Site language settings (no-token path only) ─────────────────────────────
 //
@@ -150,6 +162,9 @@ const fetchSiteLanguageSettingsPublishedCached = unstable_cache(
 	},
 );
 
-export const cachedSiteLanguageSettingsPublished = cache(async () =>
-	fetchSiteLanguageSettingsPublishedCached(),
+export const cachedSiteLanguageSettingsPublished = cache(
+	async (): Promise<SiteLocaleConfig> => {
+		if (!isSanityConfigured) return FALLBACK_SITE_LOCALE_CONFIG;
+		return fetchSiteLanguageSettingsPublishedCached();
+	},
 );

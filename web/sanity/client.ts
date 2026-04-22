@@ -2,9 +2,24 @@ import { createClient } from "next-sanity";
 
 import { dataset, projectId } from "./sanityEnv";
 
-if (!projectId || !dataset) {
-	throw new Error(
-		"Missing SANITY_STUDIO_PROJECT_ID (or NEXT_PUBLIC_SANITY_PROJECT_ID) and/or could not resolve dataset — set SANITY_STUDIO_DATASET or SANITY_STUDIO_DATASET_DEVELOPMENT / SANITY_STUDIO_DATASET_PRODUCTION like in studio/.env.example",
+/**
+ * When Sanity env vars are missing (e.g. a fresh clone, CI smoke build, Netlify deploy preview
+ * without secrets), we must **not** throw at module load — that would break the default
+ * `/_not-found` page collection during `next build`, even for pages that never fetch from
+ * Sanity. Instead we warn loudly and construct a placeholder client; any real `.fetch()` call
+ * will then surface a clear error at runtime. Routes that touch Sanity must provide the real env.
+ */
+const hasSanityConfig = Boolean(projectId && dataset);
+
+if (!hasSanityConfig) {
+	const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+	const missing: string[] = [];
+	if (!projectId) missing.push("SANITY_STUDIO_PROJECT_ID");
+	if (!dataset) missing.push("SANITY_STUDIO_DATASET (or dataset resolution)");
+	console.warn(
+		`[sanity] Missing ${missing.join(" and ")} — using a placeholder Sanity client so the ${
+			isBuild ? "build" : "process"
+		} can proceed. Actual queries will fail until env is configured. See studio/.env.example.`,
 	);
 }
 
@@ -20,8 +35,9 @@ function sanityUseCdn(): boolean {
 }
 
 export const client = createClient({
-	projectId,
-	dataset,
+	/** Placeholder keeps `createClient` from throwing; real fetches fail loudly at runtime. */
+	projectId: projectId || "placeholder",
+	dataset: dataset || "production",
 	apiVersion: "2024-01-01",
 	useCdn: sanityUseCdn(),
 	stega: {
@@ -29,3 +45,6 @@ export const client = createClient({
 			process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ?? "http://localhost:3333",
 	},
 });
+
+/** True when a real Sanity project id + dataset are configured. Data-fetching helpers can short-circuit. */
+export const isSanityConfigured = hasSanityConfig;

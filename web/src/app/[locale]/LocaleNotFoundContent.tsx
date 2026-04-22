@@ -7,35 +7,26 @@ import type { ErrorSettingsDocument } from "@/sanity/types/errorSettings";
 import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
-} from "@/sanity/utils";
+} from "@/sanity/utils/sanityLocalizedText";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
-import { defaultLocale, isAppLocale } from "@/src/i18n/config";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 
 type Props = {
 	errorSettings: ErrorSettingsDocument | null;
 };
 
-/**
- * Locale from the URL path (not `headers()`): proxy may strip the default
- * locale prefix, so the first segment is only a locale when it matches `isAppLocale`.
- */
-function localeFromPathname(pathname: string | null): string {
-	if (!pathname || pathname === "/") {
-		return defaultLocale;
-	}
-	const first = pathname.split("/").filter(Boolean)[0];
-	return first && isAppLocale(first) ? first : defaultLocale;
-}
-
 export function LocaleNotFoundContent({ errorSettings }: Props) {
-	const locale = localeFromPathname(usePathname());
+	const pathname = usePathname() ?? "/";
+	const { localeFromPathname, siteLocale, localePath } = useLanguage();
+	const locale = localeFromPathname(pathname);
 
 	const title =
-		pickLocalizedString(errorSettings?.notFoundTitle, locale) ??
+		pickLocalizedString(errorSettings?.notFoundTitle, locale, siteLocale) ??
 		"Page not found";
 	const body = pickLocalizedPortableTextBlocks(
 		errorSettings?.notFoundBody,
 		locale,
+		siteLocale,
 	);
 
 	return (
@@ -50,7 +41,7 @@ export function LocaleNotFoundContent({ errorSettings }: Props) {
 					</p>
 				)}
 				<Link
-					href={`/${locale}`}
+					href={localePath("/", locale)}
 					className="inline-flex items-center gap-2 text-color-link hover:underline"
 				>
 					Back to home

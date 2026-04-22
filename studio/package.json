@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "codegen:locales": "node scripts/generate-locale-plugin.mjs",
     "dev": "node scripts/dev-with-hint.mjs",
     "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
     "start": "sanity start",
@@ -13,7 +14,6 @@
     "format": "pnpm --workspace-root exec biome format --write studio"
   },
   "dependencies": {
-    "@repo/languages": "workspace:*",
     "@repo/sanity-dataset-resolve": "workspace:*",
     "@sanity/code-input": "^7.0.12",
     "@sanity/dashboard": "^5",

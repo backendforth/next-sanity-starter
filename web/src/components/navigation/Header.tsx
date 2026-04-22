@@ -7,7 +7,6 @@ import type { MainMenuItem } from "@/sanity/types/nav";
 import { CloseIcon } from "@/src/components/icons/CloseIcon";
 import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
 import { useLanguage } from "@/src/contexts/LanguageContext";
-import { localePath } from "@/src/i18n/paths";
 import {
 	type MainMenuEntry,
 	resolveMainMenuEntries,
@@ -87,9 +86,11 @@ function MobileMenuButton({
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Header({ mainMenu, siteTitle }: Props) {
-	const { currentLocale } = useLanguage();
+	const { currentLocale, localePath } = useLanguage();
 
-	const entries = resolveMainMenuEntries(mainMenu, currentLocale);
+	const entries = resolveMainMenuEntries(mainMenu, currentLocale, {
+		localePath,
+	});
 	const homeHref = localePath("/", currentLocale);
 	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
 	const brandLabel =

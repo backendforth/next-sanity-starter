@@ -71,7 +71,7 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
   );
 
   return context.documentStore
-    .listenQuery(SLUG_QUERY, { ids }, { perspective: "previewDrafts" })
+    .listenQuery(SLUG_QUERY, { ids }, { perspective: "drafts" })
     .pipe(
       map((doc: { slug?: string } | null) => {
         const raw = doc?.slug;

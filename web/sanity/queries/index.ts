@@ -21,6 +21,7 @@ export {
 	navMenusQuery,
 	settingsBundleQuery,
 	siteCookieBannerQuery,
+	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
 	siteNavQuery,
 	siteSettingsQuery,

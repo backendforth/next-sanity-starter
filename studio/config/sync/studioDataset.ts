@@ -4,6 +4,9 @@ import {
 } from "@repo/sanity-dataset-resolve";
 
 /**
+ * Node scripts (locale codegen) must mirror deployment + dataset **env wiring** in
+ * `studio/scripts/studioCodegenResolveEnv.mjs` — keep both in sync when this block changes.
+ *
  * `SANITY_STUDIO_DEPLOYMENT_TARGET` from env (Shell / .env at build time), else inferred:
  * - `sanity dev`: unset → resolver prefers **development** first (mutual fallback with production).
  * - Production **bundle** (hosted Studio): env is often empty in the browser → if Vite

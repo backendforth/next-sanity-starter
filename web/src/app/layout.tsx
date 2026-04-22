@@ -4,7 +4,7 @@ import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
-import { defaultLocale } from "@/src/i18n/config";
+import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -99,7 +99,7 @@ export default async function RootLayout({
 
 	return (
 		<html
-			lang={defaultLocale}
+			lang={FALLBACK_SITE_LOCALE_CONFIG.defaultLocale}
 			// Add font variables here once next/font/local is wired up:
 			// className={`h-full antialiased ${sans.variable} ${serif.variable}`}
 			className="h-full antialiased"

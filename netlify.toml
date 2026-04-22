@@ -1,6 +1,6 @@
 # Netlify — Next.js app in `web/` (pnpm monorepo).
 #
-# Build runs from the repository root so pnpm can resolve workspace packages (e.g. `@repo/languages`).
+# Build runs from the repository root so pnpm can resolve workspace packages.
 # In the Netlify UI, keep the base directory at the repo root unless you mirror this layout elsewhere.
 #
 # Set in Site settings → Environment variables (Build + Runtime as needed):

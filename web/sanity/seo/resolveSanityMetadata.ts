@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+
 import type { HomeDocument, PageDocument, PageSeo } from "../types/pages";
-import { pickLocalizedString } from "../utils";
+import { pickLocalizedString } from "../utils/sanityLocalizedText";
 
 function firstNonEmpty(
 	...values: (string | null | undefined)[]
@@ -89,8 +91,9 @@ export function metadataFromSanityPageData(
 	data: HomeDocument | PageDocument,
 	locale: string,
 	segmentFallback: string,
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null,
 ): Metadata {
-	const heading = pickLocalizedString(data.title, locale);
+	const heading = pickLocalizedString(data.title, locale, siteLocale);
 	return resolveSanityMetadata({
 		seo: data.seo,
 		settingsSeo: data.settingsSeo,

@@ -1,19 +1,20 @@
 import type { NavMenuLink } from "@/sanity/types/nav";
-import type { AppLocale } from "@/src/i18n/config";
+import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { resolveFooterMenuRows } from "../../utils/navHref";
 import { NavItem } from "./NavItem";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	locale: AppLocale;
+	locale: string;
 	footerMenu?: NavMenuLink[] | null;
+	pathUtils: Pick<LanguagePathUtils, "localePath">;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Footer({ locale, footerMenu }: Props) {
-	const rows = resolveFooterMenuRows(footerMenu, locale);
+export function Footer({ locale, footerMenu, pathUtils }: Props) {
+	const rows = resolveFooterMenuRows(footerMenu, locale, pathUtils);
 
 	if (rows.length === 0) {
 		return null;

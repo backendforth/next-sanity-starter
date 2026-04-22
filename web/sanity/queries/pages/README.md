@@ -112,7 +112,7 @@ const meta = await fetchPageBySlug(slug, { stega: false });
 
 ## Metadata
 
-Pass **`data.seo`** and **`data.settingsSeo`** (both from route **`seoQuery`**) into **`resolveSanityMetadata`** from `@/sanity/seo` so empty page-level SEO falls back to **site settings** in Sanity. Use a localized title or slug as **`titleFallback`**.
+Pass **`data.seo`** and **`data.settingsSeo`** (both from route **`seoQuery`**) into **`resolveSanityMetadata`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`) so empty page-level SEO falls back to **site settings** in Sanity. Use a localized title or slug as **`titleFallback`**.
 
 ## Related
 

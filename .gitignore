@@ -1,5 +1,5 @@
 # Dependencies
-node\_modules/
+node_modules/
 
 # Build outputs (Next, bundlers, etc.)
 .next/
@@ -7,16 +7,23 @@ dist/
 build/
 out/
 
+# TypeScript incremental build cache
+**/*.tsbuildinfo
+
 # Environment (never commit secrets)
 .env
 .env.local
-.env.\*.local
+.env.*.local
 
 # Logs
-\*.log
+*.log
 
 # OS
-.DS\_Store
+**/.DS_Store
 
-# Claude
+# Editors / agents
 .claude
+.cursor
+
+# Coverage / test artefacts
+coverage/

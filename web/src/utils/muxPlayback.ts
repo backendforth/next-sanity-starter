@@ -26,8 +26,42 @@ export function extractMuxPlaybackId(media: unknown): string | null {
 	return null;
 }
 
-export function muxThumbnailUrl(playbackId: string, timeSec = 0): string {
-	return `https://image.mux.com/${playbackId}/thumbnail.jpg?time=${timeSec}`;
+export type MuxThumbnailOptions = {
+	/** CSS-pixel width; Mux downscales from source. Callers should cap to retina × container. */
+	width?: number;
+};
+
+export function muxThumbnailUrl(
+	playbackId: string,
+	timeSec = 0,
+	opts?: MuxThumbnailOptions,
+): string {
+	const u = new URL(`https://image.mux.com/${playbackId}/thumbnail.jpg`);
+	u.searchParams.set("time", String(timeSec));
+	if (opts?.width !== undefined && opts.width > 0) {
+		u.searchParams.set("width", String(Math.round(opts.width)));
+	}
+	return u.toString();
+}
+
+/**
+ * Pixel width for `image.mux.com` thumbnails: ~2× layout width, capped by the source asset and
+ * the Mux practical upper bound (3840). Falls back to 1280 when the container width is unknown.
+ */
+export function muxThumbnailRequestWidthPx(args: {
+	containerWidthPx: number | undefined;
+	assetMaxWidthPx: number | undefined;
+}): number {
+	const assetCap =
+		args.assetMaxWidthPx && args.assetMaxWidthPx > 0
+			? args.assetMaxWidthPx
+			: 3840;
+	const base =
+		typeof args.containerWidthPx === "number" && args.containerWidthPx > 0
+			? args.containerWidthPx
+			: 1280;
+	const retina = Math.ceil(base * 2);
+	return Math.min(3840, assetCap, retina);
 }
 
 /**
@@ -75,6 +109,30 @@ export function getMuxDisplayDimensions(media: unknown): {
 	return fallback;
 }
 
+/**
+ * HLS URL for `stream.mux.com` (native `<video>` or hls.js).
+ *
+ * **`rendition_order=desc`** (default): Mux lists highest renditions first. Many native players
+ * pick the first variant for the first segment — without this, playback often starts at a mid/low
+ * rung even on fast connections.
+ *
+ * @see https://docs.mux.com/guides/control-playback-resolution
+ */
+export function muxHlsSrc(
+	playbackId: string,
+	opts: { renditionOrderDesc?: boolean } = {},
+): string {
+	const u = new URL(`https://stream.mux.com/${playbackId}.m3u8`);
+	if (opts.renditionOrderDesc !== false) {
+		u.searchParams.set("rendition_order", "desc");
+	}
+	return u.toString();
+}
+
+/**
+ * `player.mux.com` iframe URL — retained for fallback / debugging. Production `MediaVideo` uses
+ * the React component `<MuxPlayer/>` directly.
+ */
 export function muxPlayerSrc(
 	playbackId: string,
 	opts: { autoplay?: boolean | null; muted?: boolean } = {},
@@ -85,4 +143,15 @@ export function muxPlayerSrc(
 		url.searchParams.set("muted", String(opts.muted !== false));
 	}
 	return url.toString();
+}
+
+/**
+ * Mux `asset.thumbTime` — the time (in seconds) selected in Studio for the poster frame.
+ */
+export function muxThumbnailTimeSec(media: unknown): number {
+	if (!media || typeof media !== "object") return 0;
+	const asset = (media as Record<string, unknown>).asset;
+	if (!asset || typeof asset !== "object") return 0;
+	const t = (asset as Record<string, unknown>).thumbTime;
+	return typeof t === "number" ? t : 0;
 }

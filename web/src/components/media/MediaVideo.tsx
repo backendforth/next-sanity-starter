@@ -1,8 +1,15 @@
 "use client";
 
+/**
+ * User-facing Mux video with full controls — backed by the official `<MuxPlayer/>` React
+ * component (web component + Media Chrome). Imported from `@mux/mux-player-react/lazy` so the
+ * player JS is only fetched when the element scrolls near the viewport.
+ *
+ * Use {@link MediaVideoLoop} for silent, looping background clips where controls are unwanted.
+ */
+
+import MuxPlayer from "@mux/mux-player-react/lazy";
 import clsx from "clsx";
-import Image from "next/image";
-import { useEffect, useState } from "react";
 
 import {
 	resolveSanityImageFieldForUrl,
@@ -12,15 +19,11 @@ import {
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
-	muxPlayerSrc,
+	muxThumbnailRequestWidthPx,
+	muxThumbnailTimeSec,
 	muxThumbnailUrl,
 } from "@/src/utils/muxPlayback";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
-
-/** Sync: `--breakpoint-sm` in `src/assets/styles/variables/breakpoints.css` (900px). */
-const BREAKPOINT_SM_PX = 900;
-/** Poster / thumbnail request cap (next/image + Sanity), not a layout token. */
-const POSTER_IMAGE_MAX_PX = 1920;
 
 export type MediaVideoProps = {
 	media: unknown;
@@ -30,70 +33,40 @@ export type MediaVideoProps = {
 		autoplay?: boolean | null;
 		controls?: boolean | null;
 	} | null;
-	sizesFallback?: string;
 	className?: string;
+	/**
+	 * Optional accent color for Mux Player chrome (progress bar / buttons). Matches the
+	 * `--accent-color` CSS variable on `<mux-player>`.
+	 */
+	accentColor?: string;
 };
-
-const DEFAULT_SIZES_FALLBACK = `(max-width: ${BREAKPOINT_SM_PX}px) 100vw, min(100vw, var(--container-width, 1200px))`;
-
-function muxThumbTimeSec(media: unknown): number {
-	if (!media || typeof media !== "object") return 0;
-	const asset = (media as Record<string, unknown>).asset;
-	if (!asset || typeof asset !== "object") return 0;
-	const t = (asset as Record<string, unknown>).thumbTime;
-	return typeof t === "number" ? t : 0;
-}
 
 function resolvePosterUrl(
 	playbackId: string,
-	posterPayload: unknown | undefined,
+	posterPayload: unknown,
 	media: unknown,
-	maxWidth: number,
+	thumbWidthPx: number,
 ): string {
-	const time = muxThumbTimeSec(media);
-	if (posterPayload) {
-		const img = resolveSanityImageFieldForUrl(posterPayload);
-		if (img) {
-			const u = urlForFetchedImage(
-				img,
-				Math.min(POSTER_IMAGE_MAX_PX, maxWidth),
-			);
-			if (u) return u;
-		}
+	const img = resolveSanityImageFieldForUrl(posterPayload);
+	if (img) {
+		const u = urlForFetchedImage(img, Math.min(thumbWidthPx, 1920));
+		if (u) return u;
 	}
-	return muxThumbnailUrl(playbackId, time);
+	return muxThumbnailUrl(playbackId, muxThumbnailTimeSec(media), {
+		width: thumbWidthPx,
+	});
 }
 
-/**
- * Mux embed: aspect ratio from `tracks` metadata when present, poster (Sanity or Mux thumbnail),
- * deferred iframe until near-viewport, and `sizes` tied to the container width for the poster image.
- */
 export function MediaVideo({
 	media,
 	caption,
 	posterPayload,
 	videoSettings,
-	sizesFallback = DEFAULT_SIZES_FALLBACK,
 	className,
+	accentColor,
 }: MediaVideoProps) {
 	const playbackId = extractMuxPlaybackId(media);
 	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
-	const [loadIframe, setLoadIframe] = useState(false);
-	const [iframeReady, setIframeReady] = useState(false);
-
-	useEffect(() => {
-		const el = containerRef.current;
-		if (!el || !playbackId) return;
-
-		const io = new IntersectionObserver(
-			([e]) => {
-				if (e.isIntersecting) setLoadIframe(true);
-			},
-			{ rootMargin: "280px", threshold: 0.01 },
-		);
-		io.observe(el);
-		return () => io.disconnect();
-	}, [playbackId, containerRef]);
 
 	if (!playbackId) return null;
 
@@ -102,27 +75,18 @@ export function MediaVideo({
 		? "16 / 9"
 		: `${dims.width} / ${dims.height}`;
 
-	const posterMaxW = dims.isFallback
-		? POSTER_IMAGE_MAX_PX
-		: Math.min(POSTER_IMAGE_MAX_PX, dims.width);
+	const thumbWidthPx = muxThumbnailRequestWidthPx({
+		containerWidthPx: slotWidthPx,
+		assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
+	});
 	const posterUrl = resolvePosterUrl(
 		playbackId,
 		posterPayload,
 		media,
-		posterMaxW,
+		thumbWidthPx,
 	);
 
-	const sizes =
-		typeof slotWidthPx === "number" && slotWidthPx > 0
-			? `${slotWidthPx}px`
-			: sizesFallback;
-
-	const iframeSrc = muxPlayerSrc(playbackId, {
-		autoplay: !!videoSettings?.autoplay,
-		muted: true,
-	});
-
-	const showPoster = !(loadIframe && iframeReady);
+	const autoPlay = !!videoSettings?.autoplay;
 
 	return (
 		<div
@@ -130,27 +94,24 @@ export function MediaVideo({
 			className={clsx("relative w-full overflow-hidden", className)}
 			style={{ aspectRatio: aspectCss }}
 		>
-			{showPoster ? (
-				<Image
-					src={posterUrl}
-					alt={caption || "Video"}
-					fill
-					sizes={sizes}
-					loading="lazy"
-					quality={85}
-					className="object-cover"
-				/>
-			) : null}
-			{loadIframe ? (
-				<iframe
-					title={caption || "Video"}
-					src={iframeSrc}
-					allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-					allowFullScreen
-					onLoad={() => setIframeReady(true)}
-					className="absolute inset-0 z-10 h-full w-full border-0"
-				/>
-			) : null}
+			<MuxPlayer
+				/* Defer player JS + poster request until the element scrolls near the viewport. */
+				loading="viewport"
+				playbackId={playbackId}
+				streamType="on-demand"
+				poster={posterUrl}
+				autoPlay={autoPlay ? "muted" : false}
+				muted={autoPlay || undefined}
+				title={caption || undefined}
+				style={{
+					position: "absolute",
+					inset: 0,
+					width: "100%",
+					height: "100%",
+					aspectRatio: aspectCss,
+					...(accentColor ? { "--accent-color": accentColor } : {}),
+				}}
+			/>
 		</div>
 	);
 }

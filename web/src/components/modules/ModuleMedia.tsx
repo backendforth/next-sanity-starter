@@ -1,6 +1,19 @@
 import type { ModuleMediaData } from "@/sanity/types/modules";
 
-import { MediaImage, MediaVideo } from "@/src/components/media";
+import { MediaImage, MediaVideo, MediaVideoLoop } from "@/src/components/media";
+
+/**
+ * `autoplay && !controls` is the Studio signal for a silent background loop — render the
+ * lightweight native `<video>` loop instead of the full MuxPlayer chrome.
+ */
+function isLoopIntent(
+	settings:
+		| { autoplay?: boolean | null; controls?: boolean | null }
+		| null
+		| undefined,
+): boolean {
+	return Boolean(settings?.autoplay) && settings?.controls === false;
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -29,12 +42,20 @@ export function ModuleMedia({ module }: { module: ModuleMediaData }) {
 	if (rm?.kind === "video" && rm.media) {
 		return (
 			<figure className="w-full min-w-0">
-				<MediaVideo
-					media={rm.media}
-					caption={rm.caption}
-					posterPayload={rm.poster}
-					videoSettings={rm.videoSettings}
-				/>
+				{isLoopIntent(rm.videoSettings) ? (
+					<MediaVideoLoop
+						media={rm.media}
+						caption={rm.caption}
+						posterPayload={rm.poster}
+					/>
+				) : (
+					<MediaVideo
+						media={rm.media}
+						caption={rm.caption}
+						posterPayload={rm.poster}
+						videoSettings={rm.videoSettings}
+					/>
+				)}
 				{rm.caption ? (
 					<figcaption className="mt-2 text-color-text-muted paragraph-small">
 						{rm.caption}
@@ -66,12 +87,20 @@ export function ModuleMedia({ module }: { module: ModuleMediaData }) {
 		const muxField = module.videoContent.video ?? module.videoContent.media;
 		return (
 			<figure className="w-full min-w-0">
-				<MediaVideo
-					media={muxField}
-					caption={module.videoContent.caption}
-					posterPayload={module.videoContent.poster}
-					videoSettings={module.videoContent.videoSettings}
-				/>
+				{isLoopIntent(module.videoContent.videoSettings) ? (
+					<MediaVideoLoop
+						media={muxField}
+						caption={module.videoContent.caption}
+						posterPayload={module.videoContent.poster}
+					/>
+				) : (
+					<MediaVideo
+						media={muxField}
+						caption={module.videoContent.caption}
+						posterPayload={module.videoContent.poster}
+						videoSettings={module.videoContent.videoSettings}
+					/>
+				)}
 				{module.videoContent.caption ? (
 					<figcaption className="mt-2 text-color-text-muted paragraph-small">
 						{module.videoContent.caption}

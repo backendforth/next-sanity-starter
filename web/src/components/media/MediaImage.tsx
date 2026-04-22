@@ -3,25 +3,22 @@ import type { CSSProperties } from "react";
 
 import type { SanityImageField } from "@/sanity/types/modules";
 import {
+	buildFetchedImageUrl,
 	cssObjectPositionFromSanityImageField,
 	getCroppedImageDisplayDimensions,
 	resolveSanityImageFieldForUrl,
-	urlForFetchedImage,
 } from "@/sanity/utils/sanityImageBuilder";
 
-/** Sanity CDN `w=` lower bound (not a layout breakpoint). */
+/** Sanity CDN `w=` bounds — not layout breakpoints. */
 const SANITY_IMAGE_MIN_WIDTH = 320;
-/** Sanity CDN `w=` upper bound (not a layout breakpoint). */
 const SANITY_IMAGE_MAX_WIDTH = 2400;
+/** `srcset` candidates — mobile → 2× retina desktop. Caller caps by asset width. */
+const SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2400] as const;
 
 export type MediaImageProps = {
 	imagePayload: unknown;
 	alt?: string;
 	caption?: string | null;
-	/**
-	 * Hint for layout / docs when using responsive images later; single `src` uses Sanity `w=`.
-	 */
-	sizesFallback?: string;
 	className?: string;
 	/** Full-bleed in parent (no fixed aspect ratio) — e.g. intro background. */
 	fillParent?: boolean;
@@ -40,6 +37,13 @@ export type MediaImageProps = {
 	 * Using it on multiple images defeats the purpose (browser can only prioritise one).
 	 */
 	priority?: boolean;
+	/**
+	 * `sizes` attribute hint. Tells the browser which viewport-relative width the image will
+	 * occupy so it can pick the right `srcset` candidate.
+	 * Defaults to `"100vw"`.
+	 * @example "(max-width: 900px) 100vw, 50vw"
+	 */
+	sizes?: string;
 };
 
 function imageAltFromField(
@@ -54,32 +58,54 @@ function imageAltFromField(
 	return "";
 }
 
+function buildSrcSet(image: SanityImageField, maxWidth: number): string {
+	return SRCSET_WIDTHS.filter((w) => w <= maxWidth)
+		.map((w) => {
+			const url = buildFetchedImageUrl(image, {
+				width: w,
+				auto: "format",
+				quality: 85,
+			});
+			return url ? `${url} ${w}w` : null;
+		})
+		.filter(Boolean)
+		.join(", ");
+}
+
 /**
- * Sanity-driven image: **native `<img>`** with a deterministic Sanity CDN `src` (same on SSR and client).
+ * Sanity-driven image: **native `<img>`** with deterministic Sanity CDN URLs (same SSR / client),
+ * responsive `srcset` + `sizes` so the browser picks the right variant per container / viewport.
+ *
  * Avoids `next/image` optimizer `src` / `srcSet` hydration drift.
  */
 export function MediaImage({
 	imagePayload,
 	alt,
 	caption,
-	sizesFallback: _sizesFallback,
 	className,
 	fillParent = false,
 	objectFit = "cover",
 	priority = false,
+	sizes = "100vw",
 }: MediaImageProps) {
-	void _sizesFallback;
-
 	const image = resolveSanityImageFieldForUrl(imagePayload);
 	if (!image) return null;
 
 	const cropped = getCroppedImageDisplayDimensions(image);
-	const requestWidth = Math.min(
+	/** Source image width caps the largest srcset candidate we request. */
+	const maxSrcWidth = Math.min(
 		SANITY_IMAGE_MAX_WIDTH,
 		Math.max(cropped.width, SANITY_IMAGE_MIN_WIDTH),
 	);
-	const src = urlForFetchedImage(image, requestWidth);
+
+	const src = buildFetchedImageUrl(image, {
+		width: maxSrcWidth,
+		auto: "format",
+		quality: 85,
+	});
 	if (!src) return null;
+
+	const srcSet = buildSrcSet(image, maxSrcWidth);
 
 	const objectPosition = cssObjectPositionFromSanityImageField(image);
 	const imgStyle: CSSProperties = {
@@ -104,7 +130,11 @@ export function MediaImage({
 			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
 			<img
 				src={src}
+				srcSet={srcSet || undefined}
+				sizes={srcSet ? sizes : undefined}
 				alt={imageAltFromField(image, alt, caption)}
+				width={cropped.width}
+				height={cropped.height}
 				loading={priority ? "eager" : "lazy"}
 				fetchPriority={priority ? "high" : "auto"}
 				decoding={priority ? "sync" : "async"}

@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { cachedSiteLanguageSettingsPublished } from "./cachedSanityQuery";
 import { client } from "./client";
 import { sanityFetch } from "./live";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
@@ -51,11 +52,7 @@ export const fetchSiteNavMenus = cache(async () => {
 	return data as SiteNavMenusDocument | null;
 });
 
-function clientForSiteLanguageSettings() {
-	const token = process.env.SANITY_API_READ_TOKEN?.trim();
-	if (!token) {
-		return client;
-	}
+function draftClientForSiteLanguageSettings(token: string) {
 	return client.withConfig({
 		token,
 		useCdn: false,
@@ -65,15 +62,24 @@ function clientForSiteLanguageSettings() {
 
 /**
  * Document id: `siteLanguageSettings` — locales, default, labels for routing + i18n resolution.
- * Uses `client.fetch` (not `sanityFetch`) so `generateStaticParams` can run at build time without `draftMode()`.
- * With `SANITY_API_READ_TOKEN`, uses **drafts** perspective so unpublished language changes show in dev.
+ *
+ * Uses `client.fetch` (not `sanityFetch`) so `generateStaticParams` can run at build time
+ * without `draftMode()`. The published path is wrapped in `unstable_cache` (tag
+ * `site-language-settings`) so cross-request reads are deduped — Sanity webhooks for
+ * `siteLanguageSettings` invalidate the tag through `/api/revalidate`.
+ *
+ * With `SANITY_API_READ_TOKEN`, uses **drafts** perspective so unpublished language changes
+ * show in dev. Token-mode skips `unstable_cache` (drafts must always be fresh).
  */
 export const fetchSiteLanguageSettings = cache(
 	async (_options?: LiveFetchOptions): Promise<SiteLocaleConfig> => {
-		const data =
-			await clientForSiteLanguageSettings().fetch<SiteLanguageSettingsDocument | null>(
-				siteLanguageSettingsQuery,
-			);
+		const token = process.env.SANITY_API_READ_TOKEN?.trim();
+		if (!token) {
+			return cachedSiteLanguageSettingsPublished();
+		}
+		const data = await draftClientForSiteLanguageSettings(
+			token,
+		).fetch<SiteLanguageSettingsDocument | null>(siteLanguageSettingsQuery);
 		return normalizeSiteLocaleConfig(data);
 	},
 );

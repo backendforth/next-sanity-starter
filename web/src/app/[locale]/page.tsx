@@ -36,7 +36,7 @@ export async function generateMetadata({
 			description: undefined,
 		};
 	}
-	return metadataFromSanityPageData(data, locale, "Home", siteLocale);
+	return metadataFromSanityPageData(data, locale, "Home", siteLocale, "/");
 }
 
 export default async function Home({ params }: PageProps) {

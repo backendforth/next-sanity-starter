@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cachedPageSlugs } from "@/sanity/cachedSanityQuery";
 import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchPageBySlug,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
-import { sanityFetch } from "@/sanity/live";
-import { pageSlugsQuery } from "@/sanity/queries";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 
@@ -21,17 +20,13 @@ type PageProps = {
 export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
-	const [{ data: rows }, siteLocale] = await Promise.all([
-		sanityFetch({
-			query: pageSlugsQuery,
-			perspective: "published",
-			stega: false,
-		}),
+	const [rows, siteLocale] = await Promise.all([
+		cachedPageSlugs(),
 		fetchSiteLanguageSettings({ stega: false }),
 	]);
-	const list = (rows ?? []) as Array<{ slug?: string }>;
+	const list = rows ?? [];
 	const slugs = list
-		.map((row: { slug?: string }) => row.slug)
+		.map((row) => row.slug)
 		.filter(
 			(s: string | undefined): s is string =>
 				typeof s === "string" && s.length > 0,
@@ -61,7 +56,7 @@ export async function generateMetadata({
 		};
 	}
 
-	return metadataFromSanityPageData(data, locale, slug, siteLocale);
+	return metadataFromSanityPageData(data, locale, slug, siteLocale, `/${slug}`);
 }
 
 export default async function Page({ params }: PageProps) {

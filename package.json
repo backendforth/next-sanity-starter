@@ -32,13 +32,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.10",
-		"husky": "^9.1.7",
-		"lint-staged": "^15.2.10"
-	},
-	"lint-staged": {
-		"*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc,css}": [
-			"biome check --write --no-errors-on-unmatched"
-		]
+		"husky": "^9.1.7"
 	},
 	"packageManager": "pnpm@10.21.0"
 }

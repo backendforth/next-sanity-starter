@@ -65,7 +65,7 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 ### Developer experience
 - **Biome** for lint + format (tabs, organized imports, Tailwind-aware CSS).
 - **TypeScript** strict across the monorepo, `target: ES2022`.
-- **Husky** pre-commit (`lint-staged` — Biome `--write` on staged files) and pre-push (`lint` + `typecheck`).
+- **Husky** pre-commit and pre-push run **`pnpm run format`** (Biome `check --write` on the repo) plus **`pnpm run typecheck`** on push.
 - **GitHub Actions CI** (`.github/workflows/ci.yml`) — lint, typecheck, build-web, build-studio matrix on Node 20 + 22.
 - **Published-only caching** via `web/sanity/cachedSanityQuery.ts` with `unstable_cache` + cache tags (`page`, `sitemap`, `page-slug`, `site-language-settings`) that the revalidate webhook targets.
 
@@ -232,7 +232,7 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 ## Tooling
 
 - **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`. Studio uses a 2-space override; the rest of the repo is tabs.
-- **Husky + lint-staged** — `.husky/pre-commit` runs `lint-staged` (Biome on staged files); `.husky/pre-push` runs `pnpm lint && pnpm typecheck`.
+- **Husky** — `.husky/pre-commit` runs `pnpm run format`; `.husky/pre-push` runs `pnpm run format && pnpm run typecheck`.
 - **GitHub Actions** — `.github/workflows/ci.yml` runs lint + typecheck on Node 20 & 22, plus a `next build` smoke and `sanity build` smoke.
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
 - **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, `.cursor/` are ignored; see root `.gitignore`.

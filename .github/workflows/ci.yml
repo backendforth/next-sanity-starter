@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   verify:
-    name: lint • typecheck (Node ${{ matrix.node }})
+    name: format • typecheck (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -28,7 +28,13 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run lint
+      # Organization convention: run `biome check --write` (via `pnpm run format`)
+      # rather than a read-only lint. Any unfixable issue fails the command; the
+      # diff check below additionally catches auto-fixable changes that weren't
+      # committed, so contributors know to run `pnpm run format` locally.
+      - run: pnpm run format
+      - name: Ensure formatter produced no changes
+        run: git diff --exit-code
       - run: pnpm run typecheck
 
   build-web:

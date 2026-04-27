@@ -8,10 +8,11 @@ type SiteLanguageSettingsDoc = {
   defaultLanguageId?: string | null;
 } | null;
 
-const FALLBACK_LANGUAGES = [
-  { id: "en", title: "English" },
-  { id: "de", title: "Deutsch" },
-] as const;
+/**
+ * Minimal fallback when `siteLanguageSettings` is missing or invalid.
+ * **Keep in sync** with `FALLBACK_SITE_LOCALE_CONFIG` in `web/src/i18n/fallbackSiteLocales.ts`.
+ */
+const FALLBACK_LANGUAGES = [{ id: "en", title: "English" }] as const;
 
 function normalizeFromDoc(doc: SiteLanguageSettingsDoc): Array<{
   id: string;

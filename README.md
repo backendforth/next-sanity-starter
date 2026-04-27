@@ -36,7 +36,7 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 
 ### Next.js web app
 - **App Router** with nested `[locale]/[slug]` routing, static generation (`generateStaticParams`) and ISR-style revalidation via cache tags.
-- **Localization** driven by a Sanity singleton (`siteLanguageSettings`) — no hard-coded locale list. Routing, `<html lang>`, `hreflang` alternates and content fallbacks all derive from Studio.
+- **Localization** driven by a Sanity singleton (`siteLanguageSettings`). The schema seeds **English + German** on first create (`initialValue`); editors own the list afterward. Routing, `<html lang>`, `hreflang` alternates, and Portable Text fallbacks read from Studio; a **minimal code fallback** (`en` only) applies only when the document is missing or invalid (CI, first deploy).
 - **Draft Mode + Visual Editing** wired through `next-sanity` (`SanityLive`, Presentation overlays, stega). `<SanityLive />` only mounts when a read token is present or draft mode is active.
 - **Webhook-hardened revalidation** at `POST /api/revalidate` — HMAC-SHA256 signature check (Sanity signed webhooks), payload validation, document-type allowlist, in-memory rate limiter, fail-closed in production.
 - **SEO out of the box** — `sitemap.ts` with per-locale `alternates` + `x-default`, staging-aware `robots.ts`, `resolveSanityMetadata` → canonical + `hreflang` metadata for every page.
@@ -58,7 +58,7 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 - **Dataset sync**: `pnpm studio:sync-prod-to-dev` clones production content into your development dataset safely.
 
 ### Internationalization (`web/src/i18n`)
-- Config loaded from Sanity at build and request time; a `FALLBACK_SITE_LOCALE_CONFIG` keeps the root layout renderable even before Studio responds.
+- Config loaded from Sanity at build and request time. `FALLBACK_SITE_LOCALE_CONFIG` (`web/src/i18n/fallbackSiteLocales.ts`) is a **minimal** `en`-only escape hatch so the root layout and proxy stay valid when `siteLanguageSettings` is absent or broken — not the product locale list. See [`web/src/i18n/README.md`](web/src/i18n/README.md).
 - Helpers: `createLanguagePathUtils`, `normalizeComparablePathname`, `isCurrentNavHref`, `sanityLocalizedText`.
 - Locale-aware navigation (`LanguageSwitch`) with `<option lang="…">` for assistive tech.
 
@@ -66,7 +66,7 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 - **Biome** for lint + format (tabs, organized imports, Tailwind-aware CSS).
 - **TypeScript** strict across the monorepo, `target: ES2022`.
 - **Husky** pre-commit and pre-push run **`pnpm run format`** (Biome `check --write` on the repo) plus **`pnpm run typecheck`** on push.
-- **GitHub Actions CI** (`.github/workflows/ci.yml`) — lint, typecheck, build-web, build-studio matrix on Node 20 + 22.
+- **GitHub Actions CI** (`.github/workflows/ci.yml`) — `pnpm run format` + diff guard, typecheck, build-web, build-studio matrix on Node 20 + 22.
 - **Published-only caching** via `web/sanity/cachedSanityQuery.ts` with `unstable_cache` + cache tags (`page`, `sitemap`, `page-slug`, `site-language-settings`) that the revalidate webhook targets.
 
 ---
@@ -100,8 +100,8 @@ cp studio/.env.example  studio/.env
 #    recommended so you never edit production while building.
 #    Or: pin `SANITY_STUDIO_DATASET=production` to skip dataset splitting.
 
-# 5. Seed Studio — start it and create the `siteLanguageSettings` singleton,
-#    add at least one language, mark one as default.
+# 5. Start Studio — open Settings → Site languages (`siteLanguageSettings`).
+#    On first create, the form is pre-filled (en + de, default en); adjust or publish as needed.
 pnpm studio:dev                     # http://localhost:3333
 
 # 6. Run the web app in another terminal
@@ -113,7 +113,7 @@ pnpm dev
 
 ### First content
 
-1. In Studio → **Settings → Site languages**, add languages (`id` like `en`, `de`), set `defaultLanguageId`.
+1. In Studio → **Settings → Site languages**, confirm or edit languages and **Default language** (defaults are filled on first create).
 2. Create a `page` document with a unique slug per locale.
 3. Visit `http://localhost:3000/<locale>/<slug>` — done.
 

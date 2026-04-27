@@ -28,14 +28,14 @@ import "../assets/styles/globals.css";
 //     { path: "../../assets/fonts/YourSans-Bold.woff2",    weight: "700", style: "normal" },
 //   ],
 //   variable: "--font-family-sans",
-//   display: "swap",  // or "optional" for guaranteed-zero CLS (text hidden until loaded)
+//   display: "optional",  // or "optional" for guaranteed-zero CLS (text hidden until loaded)
 //   preload: true,    // emits <link rel="preload"> for the first weight in `src`
 // });
 //
 // const serif = localFont({
 //   src: "../../assets/fonts/YourSerif-Regular.woff2",
 //   variable: "--font-family-serif",
-//   display: "swap",
+//   display: "optional",
 //   preload: true,
 // });
 //

@@ -25,5 +25,6 @@ export {
 	siteNavMenusQuery,
 	siteNavQuery,
 	siteSettingsQuery,
+	siteSettingsTitleQuery,
 } from "./snippets/settings";
 export { pageSlugsQuery, sitemapPagesQuery } from "./snippets/sitemap";

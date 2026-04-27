@@ -10,6 +10,7 @@ import {
 	pageBySlugQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
+	siteSettingsTitleQuery,
 } from "./queries";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { SiteNavMenusDocument } from "./types/nav";
@@ -43,6 +44,25 @@ export const fetchPageBySlug = cache(
 			...options,
 		});
 		return data as PageDocument | null;
+	},
+);
+
+type SiteSettingsTitleRow = { title?: string | null } | null;
+
+/**
+ * `siteSettings.title` — brand string for `<title>` template (`%s | …`) and Open Graph `siteName`.
+ * Falls back to `"Site"` when Sanity is off or the document/title is missing.
+ */
+export const fetchSiteSettingsTitle = cache(
+	async (options?: LiveFetchOptions): Promise<string> => {
+		if (!isSanityConfigured) return "Site";
+		const { data } = await sanityFetch({
+			query: siteSettingsTitleQuery,
+			...options,
+		});
+		const row = data as SiteSettingsTitleRow;
+		const t = typeof row?.title === "string" ? row.title.trim() : "";
+		return t || "Site";
 	},
 );
 

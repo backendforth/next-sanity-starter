@@ -136,8 +136,11 @@ export function metadataFromSanityPageData(
 	segmentFallback: string,
 	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null,
 	path?: string,
+	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */
+	siteBrandTitle?: string | null,
 ): Metadata {
 	const heading = pickLocalizedString(data.title, locale, siteLocale);
+	const brand = typeof siteBrandTitle === "string" ? siteBrandTitle.trim() : "";
 	return resolveSanityMetadata({
 		seo: data.seo,
 		settingsSeo: data.settingsSeo,
@@ -145,5 +148,6 @@ export function metadataFromSanityPageData(
 		path,
 		currentLocale: locale,
 		siteLocale: siteLocale ?? null,
+		...(brand ? { siteTitleFallback: brand, siteName: brand } : {}),
 	});
 }

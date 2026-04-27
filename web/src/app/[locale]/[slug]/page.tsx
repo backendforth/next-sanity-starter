@@ -5,6 +5,7 @@ import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCach
 import {
 	fetchPageBySlug,
 	fetchSiteLanguageSettings,
+	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
@@ -45,9 +46,10 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const [data, siteLocale] = await Promise.all([
+	const [data, siteLocale, siteBrand] = await Promise.all([
 		fetchPageBySlug(slug, { stega: false }),
 		fetchSiteLanguageSettings({ stega: false }),
+		fetchSiteSettingsTitle({ stega: false }),
 	]);
 	if (!data) {
 		return {
@@ -56,7 +58,14 @@ export async function generateMetadata({
 		};
 	}
 
-	return metadataFromSanityPageData(data, locale, slug, siteLocale, `/${slug}`);
+	return metadataFromSanityPageData(
+		data,
+		locale,
+		slug,
+		siteLocale,
+		`/${slug}`,
+		siteBrand,
+	);
 }
 
 export default async function Page({ params }: PageProps) {

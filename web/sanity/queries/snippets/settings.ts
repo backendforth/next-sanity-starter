@@ -74,6 +74,9 @@ export const siteLanguageSettingsQuery = `*[_id == "siteLanguageSettings"][0]{
   defaultLanguageId
 }`;
 
+/** Minimal fetch for `app/[locale]/layout.tsx` `generateMetadata` (tab title template). */
+export const siteSettingsTitleQuery = `*[_id == "siteSettings"][0]{title}`;
+
 /** Document id: `siteSettings`. */
 export const siteSettingsQuery = `*[_id == "siteSettings"][0]{
   _id,

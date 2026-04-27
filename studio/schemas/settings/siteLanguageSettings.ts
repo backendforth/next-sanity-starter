@@ -10,15 +10,17 @@ export const siteLanguageSettings = defineType({
   title: "Site languages",
   type: "document",
   icon: TranslateIcon,
-  /** First-time create of the singleton — editors can add/remove/reorder languages after. */
-  initialValue: () => ({
-    title: "Site languages",
+  /**
+   * First-time create of the singleton — editors can add/remove/reorder languages after.
+   * `title` keeps its field-level `initialValue` below.
+   */
+  initialValue: {
     availableLanguages: [
       { _key: "lang-en", id: "en", title: "English" },
       { _key: "lang-de", id: "de", title: "Deutsch" },
     ],
     defaultLanguageId: "en",
-  }),
+  },
   fields: [
     {
       name: "title",

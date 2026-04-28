@@ -10,7 +10,7 @@ import "../assets/styles/globals.css";
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
 //
-// next/font/local handles subsetting, preload, and zero-CLS font-face injection
+// next/font/local handles subsetting, preload, and font-face injection
 // automatically — no manual @font-face or <link rel="preload"> needed.
 //
 // Setup (once real woff2 files are placed in `web/src/assets/fonts/`):
@@ -22,21 +22,48 @@ import "../assets/styles/globals.css";
 //   3. Add the .variable classes to <html> (see below).
 //   4. Remove @font-face rules from fonts.css — next/font replaces them.
 //
+// `display` trade-offs (CSS Fonts spec):
+//   - "block"    → up to ~3 s invisible text (FOIT), then fallback, swap to
+//                  custom font when it arrives. No FOUT, no fallback flash.
+//                  With preload + same-origin WOFF2 the invisible window is
+//                  typically <200 ms and not perceivable. Recommended default.
+//   - "auto"     → browser decides; Chrome / Firefox / Safari currently behave
+//                  like "block" but the spec leaves room. Use "block" for
+//                  deterministic behavior.
+//   - "swap"     → ~100 ms block, then fallback, swap to custom font when ready.
+//                  Always shows the custom font on the first visit but causes a
+//                  visible fallback → custom font flash (FOUT) and CLS.
+//   - "optional" → ~100 ms block, then fallback for the WHOLE page session if
+//                  the font is not ready. Font is fetched in the background and
+//                  cached for subsequent visits. Zero CLS, but on a cold cache
+//                  the custom font typically only shows starting from the
+//                  second page load — even with preload.
+//   - "fallback" → 100 ms block + 3 s swap window, then locks fallback for the
+//                  rest of the session. Middle ground.
+//
+// To keep the FOIT window short with "block":
+//   - Subset the font to the glyphs you actually use (Latin / Latin-Ext).
+//   - Prefer a variable font (1 file covers all weights → 1 preload).
+//   - Only set `preload: true` for above-the-fold weights; italic / display
+//     cuts that are not in the first viewport should use `preload: false`.
+//   - `adjustFontFallback` (default true for next/font) auto-generates a
+//     metrics-matched fallback to minimize the swap CLS if the 3 s elapse.
+//
 // const sans = localFont({
 //   src: [
 //     { path: "../../assets/fonts/YourSans-Regular.woff2", weight: "400", style: "normal" },
 //     { path: "../../assets/fonts/YourSans-Bold.woff2",    weight: "700", style: "normal" },
 //   ],
 //   variable: "--font-family-sans",
-//   display: "optional",  // or "optional" for guaranteed-zero CLS (text hidden until loaded)
+//   display: "block",
 //   preload: true,    // emits <link rel="preload"> for the first weight in `src`
 // });
 //
 // const serif = localFont({
 //   src: "../../assets/fonts/YourSerif-Regular.woff2",
 //   variable: "--font-family-serif",
-//   display: "optional",
-//   preload: true,
+//   display: "block",
+//   preload: false,   // serif headlines are usually not above-the-fold
 // });
 //
 // Usage on <html>: className={`... ${sans.variable} ${serif.variable}`}

@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * User-facing Mux video with full controls — backed by the official `<MuxPlayer/>` React
- * component (web component + Media Chrome). Imported from `@mux/mux-player-react/lazy` so the
- * player JS is only fetched when the element scrolls near the viewport.
+ * Mux playback via **`@mux/mux-player-react/lazy`**: poster until play (unless autoplay).
+ * Wrapper class `mux-player` scopes look-and-feel (`components/mux-player.css`).
  *
- * Use {@link MediaVideoLoop} for silent, looping background clips where controls are unwanted.
+ * Use {@link MediaVideoLoop} for silent, looping background clips (`autoplay` + no controls).
  */
 
 import MuxPlayer from "@mux/mux-player-react/lazy";
 import clsx from "clsx";
+import type { CSSProperties } from "react";
 
 import {
 	resolveSanityImageFieldForUrl,
@@ -34,12 +34,22 @@ export type MediaVideoProps = {
 		controls?: boolean | null;
 	} | null;
 	className?: string;
+	/** Fill the parent (no fixed aspect ratio) — e.g. fullscreen background video. */
+	fillParent?: boolean;
+	/** Optional fixed aspect ratio override (e.g. `"3 / 2"`). */
+	aspectRatioOverride?: string;
 	/**
-	 * Optional accent color for Mux Player chrome (progress bar / buttons). Matches the
-	 * `--accent-color` CSS variable on `<mux-player>`.
+	 * Optional override for Mux `accentColor` (progress / scrubber). Default `#262626`.
 	 */
 	accentColor?: string;
 };
+
+/** Progress / scrubber accent — dark grey (Mux default is pink). */
+const MUX_ACCENT = "#262626";
+/** Icons on the control bar. */
+const MUX_PRIMARY = "#e3e3e3";
+/** Control bar surface — transparent so controls have no chip/backplate. */
+const MUX_SECONDARY = "transparent";
 
 function resolvePosterUrl(
 	playbackId: string,
@@ -63,7 +73,9 @@ export function MediaVideo({
 	posterPayload,
 	videoSettings,
 	className,
-	accentColor,
+	fillParent = false,
+	aspectRatioOverride,
+	accentColor: accentColorProp,
 }: MediaVideoProps) {
 	const playbackId = extractMuxPlaybackId(media);
 	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
@@ -74,6 +86,7 @@ export function MediaVideo({
 	const aspectCss = dims.isFallback
 		? "16 / 9"
 		: `${dims.width} / ${dims.height}`;
+	const resolvedAspectRatio = aspectRatioOverride ?? aspectCss;
 
 	const thumbWidthPx = muxThumbnailRequestWidthPx({
 		containerWidthPx: slotWidthPx,
@@ -86,31 +99,50 @@ export function MediaVideo({
 		thumbWidthPx,
 	);
 
-	const autoPlay = !!videoSettings?.autoplay;
+	const autoplay = !!videoSettings?.autoplay;
+	const chromeless = videoSettings?.controls === false;
+
+	const muxSurfaceStyle = {
+		...(fillParent
+			? { height: "100%", width: "100%", minHeight: "100%" as const }
+			: { height: "100%", width: "100%" }),
+		...(chromeless
+			? ({
+					["--media-control-display" as string]: "none",
+				} as CSSProperties)
+			: {}),
+	} satisfies CSSProperties;
+
+	const videoTitle =
+		typeof caption === "string" && caption.length > 0 ? caption : "Video";
 
 	return (
 		<div
 			ref={containerRef}
-			className={clsx("relative w-full overflow-hidden", className)}
-			style={{ aspectRatio: aspectCss }}
+			className={clsx(
+				"mux-player relative w-full min-w-0 overflow-hidden bg-black",
+				fillParent &&
+					"h-full min-h-[100dvh] w-full [&_mux-player]:!block [&_mux-player]:!h-full [&_mux-player]:!min-h-full [&_mux-player]:!w-full",
+				className,
+			)}
+			style={fillParent ? undefined : { aspectRatio: resolvedAspectRatio }}
 		>
 			<MuxPlayer
-				/* Defer player JS + poster request until the element scrolls near the viewport. */
 				loading="viewport"
-				playbackId={playbackId}
 				streamType="on-demand"
+				playbackId={playbackId}
 				poster={posterUrl}
-				autoPlay={autoPlay ? "muted" : false}
-				muted={autoPlay || undefined}
-				title={caption || undefined}
-				style={{
-					position: "absolute",
-					inset: 0,
-					width: "100%",
-					height: "100%",
-					aspectRatio: aspectCss,
-					...(accentColor ? { "--accent-color": accentColor } : {}),
-				}}
+				thumbnailTime={muxThumbnailTimeSec(media)}
+				autoPlay={autoplay}
+				muted={autoplay}
+				playsInline
+				renditionOrder="desc"
+				metadataVideoTitle={videoTitle}
+				accentColor={accentColorProp ?? MUX_ACCENT}
+				primaryColor={MUX_PRIMARY}
+				secondaryColor={MUX_SECONDARY}
+				className="absolute inset-0 block h-full w-full max-w-none"
+				style={muxSurfaceStyle}
 			/>
 		</div>
 	);

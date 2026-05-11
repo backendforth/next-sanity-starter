@@ -1,0 +1,56 @@
+/*
+ * Mux `<mux-player />`: fewer controls + tighter bottom bar.
+ * Put a wrapper with class `mux-player` around the player (see `MediaVideo`).
+ * @see https://docs.mux.com/docs/guides/player-customize-look-and-feel
+ */
+
+.mux-player mux-player {
+	/* Reduce default filled/hover backplates on control widgets (Media Chrome). */
+	--media-control-hover-background: transparent;
+
+	/* ±10s skip */
+	--seek-backward-button: none;
+	--seek-forward-button: none;
+	--center-seek-backward-button: none;
+	--center-seek-forward-button: none;
+	--bottom-seek-backward-button: none;
+	--bottom-seek-forward-button: none;
+	--top-seek-backward-button: none;
+	--top-seek-forward-button: none;
+
+	/* Playback speed */
+	--playback-rate-button: none;
+	--bottom-playback-rate-button: none;
+	--top-playback-rate-button: none;
+
+	/* PiP + AirPlay */
+	--pip-button: none;
+	--bottom-pip-button: none;
+	--top-pip-button: none;
+	--airplay-button: none;
+	--bottom-airplay-button: none;
+	--top-airplay-button: none;
+}
+
+.mux-player mux-player::part(bottom) {
+	/* Uses `--space-*` from `variables/sizes.css` (via `tokens.css`). */
+	padding-block: var(--space-min);
+	padding-inline: calc(var(--space-min) + var(--space-xs) / 2);
+}
+
+/*
+ * Icon-only controls: no filled chips behind play, mute, volume, fullscreen, etc.
+ * `::part(button)` targets shared control buttons in Media Chrome / Mux Player.
+ */
+.mux-player mux-player::part(button) {
+	background: none;
+	background-color: transparent;
+	box-shadow: none;
+}
+
+.mux-player mux-player::part(center play button),
+.mux-player mux-player::part(bottom play button) {
+	background: none;
+	background-color: transparent;
+	box-shadow: none;
+}

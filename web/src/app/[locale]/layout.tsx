@@ -9,8 +9,8 @@ import {
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
-import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
 
 type Props = {
 	children: React.ReactNode;

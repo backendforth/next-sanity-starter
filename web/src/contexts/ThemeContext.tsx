@@ -34,16 +34,18 @@ function readStoredTheme(): Theme {
 	return "system";
 }
 
-function isDark(theme: Theme): boolean {
-	if (theme === "dark") return true;
-	if (theme === "light") return false;
-	return window.matchMedia("(prefers-color-scheme: dark)").matches;
-}
-
+/**
+ * Spiegelt die Wahl als `data-theme="light" | "dark"` auf `<html>`; bei `"system"`
+ * wird das Attribut entfernt — dadurch greift `@media (prefers-color-scheme: dark)`
+ * in `variables/colors.css` ohne weiteres Markup.
+ */
 function applyThemeToDocument(theme: Theme) {
-	const dark = isDark(theme);
-	document.documentElement.classList.toggle("dark", dark);
-	document.documentElement.style.colorScheme = dark ? "dark" : "light";
+	const el = document.documentElement;
+	if (theme === "system") {
+		el.removeAttribute("data-theme");
+	} else {
+		el.setAttribute("data-theme", theme);
+	}
 }
 
 type ThemeProviderProps = {
@@ -59,15 +61,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 		setThemeState(initial);
 		applyThemeToDocument(initial);
 		setMounted(true);
-
-		const mq = window.matchMedia("(prefers-color-scheme: dark)");
-		const onSystemChange = () => {
-			if (readStoredTheme() === "system") {
-				applyThemeToDocument("system");
-			}
-		};
-		mq.addEventListener("change", onSystemChange);
-		return () => mq.removeEventListener("change", onSystemChange);
 	}, []);
 
 	const setTheme = useCallback((value: Theme) => {

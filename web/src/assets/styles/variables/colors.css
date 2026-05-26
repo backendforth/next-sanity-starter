@@ -1,4 +1,13 @@
-/* Semantic `--color-*` → Tailwind `theme.extend.colors`. Dark: `.dark` on `<html>` (set by theme script / ThemeProvider). */
+/**
+ * Semantic `--color-*` tokens → Tailwind `theme.extend.colors`.
+ *
+ * Dark-Mode-Strategie (kein Klassen-Hack):
+ *  - Default: `:root` → Light-Tokens.
+ *  - System-Dark: `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])`
+ *    greift automatisch — funktioniert auch ohne JavaScript.
+ *  - Manuelle Wahl via Toggle: `:root[data-theme="light"]` / `[data-theme="dark"]`
+ *    sticht die Media-Query aus. "System" entfernt das Attribut wieder.
+ */
 
 :root {
 	color-scheme: light;
@@ -49,7 +58,46 @@
 	--foreground: var(--color-text);
 }
 
-:root.dark {
+/* Dark-Tokens — geteilt von OS-Präferenz und manuellem `data-theme="dark"`-Override. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+
+		--color-grey: #71717a;
+
+		--color-brand: #fafafa;
+		--color-accent: #60a5fa;
+
+		--color-text: #fafafa;
+		--color-text-muted: #a1a1aa;
+		--color-heading: #fafafa;
+
+		--color-link: #60a5fa;
+		--color-hover: #93c5fd;
+		--color-blue-pressed: #3b82f6;
+		--color-active: var(--color-blue-pressed);
+
+		--color-bg: #0a0a0a;
+		--color-surface-muted: #171717;
+		--color-border-subtle: #27272a;
+
+		--color-link-decoration: #71717a;
+		--color-link-decoration-hover: #a1a1aa;
+
+		--color-code-bg: #27272a;
+		--color-code-text: #e4e4e7;
+
+		--color-error: #f87171;
+		--color-success: #4ade80;
+		--color-danger: #fca5a5;
+
+		--background: var(--color-bg);
+		--foreground: var(--color-text);
+	}
+}
+
+/* Manueller Dark-Override (Toggle), greift unabhängig vom OS. */
+:root[data-theme="dark"] {
 	color-scheme: dark;
 
 	--color-grey: #71717a;

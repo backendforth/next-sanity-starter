@@ -83,21 +83,24 @@ export const metadata: Metadata = {
 /**
  * Tiny blocking inline script — runs synchronously before hydration.
  *
- * 1. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
- * 2. Wires up the lazy-image fade-in: when an img[data-lazy] finishes loading,
+ * 1. Wendet den gespeicherten Theme-Override (`localStorage["color-scheme"]`) als
+ *    `data-theme="light" | "dark"` auf <html> an, **bevor** der erste Paint
+ *    stattfindet. Bei `"system"` oder fehlendem Wert bleibt das Attribut weg,
+ *    sodass `@media (prefers-color-scheme: dark)` in `variables/colors.css`
+ *    von alleine greift — funktioniert deshalb auch ohne JavaScript.
+ * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
+ * 3. Wires up the lazy-image fade-in: when an img[data-lazy] finishes loading,
  *    adds `.img-loaded` → CSS transition kicks in (0.2 s ease-in-out).
- * 3. MutationObserver covers images injected after initial paint (client nav).
+ * 4. MutationObserver covers images injected after initial paint (client nav).
  *
  * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
  */
 const bootScript = `(function(){
   try{
-    var k='color-scheme';
-    var t=localStorage.getItem(k);
-    var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
-    var el=document.documentElement;
-    if(d){el.classList.add('dark');el.style.colorScheme='dark';}
-    else{el.classList.remove('dark');el.style.colorScheme='light';}
+    var t=localStorage.getItem('color-scheme');
+    if(t==='light'||t==='dark'){
+      document.documentElement.setAttribute('data-theme',t);
+    }
   }catch(e){}
   document.documentElement.classList.add('js-enabled');
   function handle(img){

@@ -26,6 +26,15 @@ export const schemaTypes = [
 
 Order can matter for UI in rare cases; keep related types together. Anything omitted here is **invisible** to Studio and APIs.
 
+After schema changes, regenerate and commit Studio typegen artifacts:
+
+```bash
+pnpm studio:generate
+git add studio/schema.json studio/sanity.types.gen.ts
+```
+
+CI fails if `studio:generate` produces a diff. `web/sanity/types/*` remain hand-maintained for now; keep them aligned when fields change.
+
 ## 3. Desk structure (not automatic)
 
 The sidebar does **not** read `schemaTypes`. Add an entry under **`config/structure/`**:

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import type { MainMenuItem } from "@/sanity/types/nav";
 import { CloseIcon } from "@/src/components/icons/CloseIcon";
 import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
+import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import {
 	type MainMenuEntry,
@@ -117,6 +118,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					>
 						{brandLabel}
 					</Link>
+					<ThemeToggle />
 				</div>
 			</header>
 		);
@@ -134,6 +136,9 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				</Link>
 
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
+					<div className="hidden md:block">
+						<ThemeToggle />
+					</div>
 					<nav
 						className="hidden flex-wrap items-center justify-end gap-1 md:flex"
 						aria-label="Main"
@@ -157,9 +162,12 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					className="border-t border-color-border-subtle bg-color-bg md:hidden"
 				>
 					<nav
-						className="mx-auto flex max-w-container flex-col gap-1 px-6 py-sm text-base sm:px-8"
+						className="mx-auto flex max-w-container flex-col gap-3 px-6 py-sm text-base sm:px-8"
 						aria-label="Main"
 					>
+						<div className="md:hidden">
+							<ThemeToggle />
+						</div>
 						<MainMenuItems
 							entries={entries}
 							onNavigate={close}

@@ -10,6 +10,7 @@ import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
 
 type Props = {
 	children: React.ReactNode;
@@ -51,8 +52,20 @@ export default async function LocaleLayout({ children, params }: Props) {
 
 	return (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
+			<a
+				href="#main-content"
+				className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-color-bg focus:px-3 focus:py-2 focus:text-color-text focus:shadow-md focus:outline-2 focus:outline-offset-2 focus:outline-color-accent"
+			>
+				{skipLinkLabel(locale)}
+			</a>
 			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteNav?.title} />
-			<div className="flex min-h-0 flex-1 flex-col">{children}</div>
+			<main
+				id="main-content"
+				className="flex min-h-0 flex-1 flex-col"
+				tabIndex={-1}
+			>
+				{children}
+			</main>
 			<Footer
 				locale={locale}
 				footerMenu={siteNav?.footerMenu}

@@ -16,7 +16,6 @@ const ALLOWED_DOCUMENT_TYPES = new Set([
 	"page",
 	"siteSettings",
 	"errorSettings",
-	"siteNav",
 	"siteLanguageSettings",
 ] as const);
 
@@ -132,9 +131,7 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		tags.push("settings");
 	}
 
-	if (_type === "siteNav") {
-		tags.push("site-nav");
-	}
+	// siteNav is read via sanityFetch (live) — no unstable_cache tag to invalidate.
 
 	if (_type === "siteLanguageSettings") {
 		tags.push("site-language-settings");
@@ -154,7 +151,7 @@ export async function POST(request: NextRequest) {
 				{ status: 500 },
 			);
 		}
-		console.warn(
+		console.error(
 			"[api/revalidate] SANITY_REVALIDATE_SECRET is not set — accepting unsigned requests in non-production only.",
 		);
 	}

@@ -5,6 +5,12 @@
  * Design tokens live in `variables/*.css`; here we only wire them to utility namespaces (`--color-*`, `--spacing-*`, …).
  */
 
+/**
+ * `dark:`-Utilities folgen primär `prefers-color-scheme: dark`. Token-getriebenes
+ * Theming (siehe `variables/colors.css`) übernimmt den manuellen Override —
+ * rohe `dark:`-Utilities reagieren bewusst nicht auf den `data-theme`-Toggle,
+ * um Klassen-/Markup-Komplexität zu vermeiden.
+ */
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
 @theme {

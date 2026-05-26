@@ -16,6 +16,7 @@ import {
   presentationLocationsResolver,
   presentationMainDocuments,
 } from "./config/presentation/resolve";
+import { filterSingletonDocumentActions } from "./config/singletons";
 import { structure } from "./config/structure";
 import { internationalizedArrayLanguagesFromClient } from "./config/sync/internationalizedArrayLanguages";
 import { studioDataset } from "./config/sync/studioDataset";
@@ -86,6 +87,10 @@ export default defineConfig({
   ],
   schema: {
     types: schemaTypes,
+  },
+  document: {
+    actions: (prev, { schemaType }) =>
+      filterSingletonDocumentActions(prev, schemaType),
   },
   initialValueTemplates,
 });

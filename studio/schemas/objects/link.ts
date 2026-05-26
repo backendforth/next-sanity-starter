@@ -1,7 +1,10 @@
 import { LinkIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { PAGE_REFERENCES } from "../constants/references";
+import {
+  PAGE_REFERENCE_FILTER,
+  PAGE_REFERENCES,
+} from "../constants/references";
 
 export const link = defineType({
   title: "Link",
@@ -47,6 +50,9 @@ export const link = defineType({
       type: "reference",
       weak: true,
       to: [...PAGE_REFERENCES],
+      options: {
+        filter: PAGE_REFERENCE_FILTER,
+      },
       hidden: ({ parent }) => parent?.type !== "internal",
       validation: (rule) =>
         rule.custom((value, context) => {

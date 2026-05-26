@@ -1,7 +1,10 @@
 import { DocumentsIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { PAGE_REFERENCES } from "../../constants/references";
+import {
+  PAGE_REFERENCE_FILTER,
+  PAGE_REFERENCES,
+} from "../../constants/references";
 
 function headingLabel(heading: unknown, fallback: string): string {
   if (!Array.isArray(heading)) {
@@ -40,6 +43,9 @@ export const moduleContentRefs = defineType({
       type: "reference",
       weak: true,
       to: [...PAGE_REFERENCES],
+      options: {
+        filter: PAGE_REFERENCE_FILTER,
+      },
       hidden: ({ parent }) => parent?.allowMultiple === true,
       validation: (rule) =>
         rule.custom((value, context) => {
@@ -61,6 +67,9 @@ export const moduleContentRefs = defineType({
           type: "reference",
           weak: true,
           to: [...PAGE_REFERENCES],
+          options: {
+            filter: PAGE_REFERENCE_FILTER,
+          },
         },
       ],
       hidden: ({ parent }) => !parent?.allowMultiple,

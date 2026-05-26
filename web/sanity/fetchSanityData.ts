@@ -10,6 +10,7 @@ import {
 	pageBySlugQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
+	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 } from "./queries";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
@@ -63,6 +64,21 @@ export const fetchSiteSettingsTitle = cache(
 		const row = data as SiteSettingsTitleRow;
 		const t = typeof row?.title === "string" ? row.title.trim() : "";
 		return t || "Site";
+	},
+);
+
+/**
+ * `siteSettings.seo` projection for route metadata fallbacks — fetched once per request
+ * (React `cache`) instead of joining on every home/page GROQ query.
+ */
+export const fetchSettingsSeoFallback = cache(
+	async (options?: LiveFetchOptions): Promise<PageSeo> => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: siteSettingsSeoFallbackQuery,
+			...options,
+		});
+		return data as PageSeo;
 	},
 );
 

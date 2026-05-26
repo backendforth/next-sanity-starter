@@ -42,7 +42,7 @@ export function mergePageAndSettingsSeo(
 export type ResolveSanityMetadataInput = {
 	/** Local `data.seo` from the page / singleton query. */
 	seo?: PageSeo;
-	/** `data.settingsSeo` (included in route `seoQuery`) — site-wide fallback. */
+	/** Site-wide fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
 	settingsSeo?: PageSeo;
 	/** When meta title is not set on page or settings (e.g. localized H1 or slug). */
 	titleFallback: string;
@@ -126,7 +126,7 @@ export function resolveSanityMetadata({
 
 /**
  * `pickLocalizedString` + `resolveSanityMetadata` for route documents that include
- * `seo`, `settingsSeo`, and localized `title` (home singleton or `page` by slug).
+ * `seo`, site-wide `settingsSeo`, and localized `title` (home singleton or `page` by slug).
  *
  * Pass `path` ("/" for home, `/{slug}` for pages) to emit canonical + `hreflang` alternates.
  */
@@ -134,6 +134,7 @@ export function metadataFromSanityPageData(
 	data: HomeDocument | PageDocument,
 	locale: string,
 	segmentFallback: string,
+	settingsSeo: PageSeo,
 	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null,
 	path?: string,
 	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */
@@ -143,7 +144,7 @@ export function metadataFromSanityPageData(
 	const brand = typeof siteBrandTitle === "string" ? siteBrandTitle.trim() : "";
 	return resolveSanityMetadata({
 		seo: data.seo,
-		settingsSeo: data.settingsSeo,
+		settingsSeo,
 		titleFallback: heading || segmentFallback,
 		path,
 		currentLocale: locale,

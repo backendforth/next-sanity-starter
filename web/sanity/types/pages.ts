@@ -18,8 +18,6 @@ export type HomeDocument = {
 	title?: IntlStringEntry[] | null;
 	modules?: ContentModule[] | null;
 	seo?: PageSeo;
-	/** From siteSettings — merge with resolveSanityMetadata for fallback SEO. */
-	settingsSeo?: PageSeo;
 };
 
 export type PageDocument = {
@@ -28,5 +26,4 @@ export type PageDocument = {
 	slug?: { current?: string | null } | null;
 	modules?: ContentModule[] | null;
 	seo?: PageSeo;
-	settingsSeo?: PageSeo;
 };

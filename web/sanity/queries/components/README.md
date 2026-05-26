@@ -23,7 +23,7 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 ## Usage
 
 - **Ready-made page queries:** `queries/pages/` — `homeQuery`, `pageBySlugQuery` embed `modulesQuery`.
-- **Snippets:** `queries/snippets/` — `linkQuery`, `seoQuery`, settings, …
+- **Snippets:** `queries/snippets/` — `linkQuery`, `pageSeoQuery`, settings, …
 
 ## Adding a new module in Studio
 

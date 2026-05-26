@@ -124,22 +124,37 @@ export function resolveSanityMetadata({
 	};
 }
 
-/**
- * `pickLocalizedString` + `resolveSanityMetadata` for route documents that include
- * `seo`, site-wide `settingsSeo`, and localized `title` (home singleton or `page` by slug).
- *
- * Pass `path` ("/" for home, `/{slug}` for pages) to emit canonical + `hreflang` alternates.
- */
-export function metadataFromSanityPageData(
-	data: HomeDocument | PageDocument,
-	locale: string,
-	segmentFallback: string,
-	settingsSeo: PageSeo,
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null,
-	path?: string,
+export type MetadataFromSanityPageDataInput = {
+	/** Route document (home singleton or `page` by slug). */
+	data: HomeDocument | PageDocument;
+	/** Active route locale id. */
+	locale: string;
+	/** Last-resort meta title (e.g. localized heading or slug) when SEO fields are empty. */
+	segmentFallback: string;
+	/** Site-wide SEO fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
+	settingsSeo?: PageSeo;
+	/** Locale config for `hreflang` alternates. */
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+	/** Locale-agnostic path (`/` for home, `/{slug}` for pages) — required for canonical + alternates. */
+	path?: string;
 	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */
-	siteBrandTitle?: string | null,
-): Metadata {
+	siteBrandTitle?: string | null;
+};
+
+/**
+ * `pickLocalizedString` + `resolveSanityMetadata` for route documents (home singleton or
+ * `page` by slug). Pass `settingsSeo` from `fetchSettingsSeoFallback` so empty page-level
+ * SEO falls back to site settings.
+ */
+export function metadataFromSanityPageData({
+	data,
+	locale,
+	segmentFallback,
+	settingsSeo,
+	siteLocale,
+	path,
+	siteBrandTitle,
+}: MetadataFromSanityPageDataInput): Metadata {
 	const heading = pickLocalizedString(data.title, locale, siteLocale);
 	const brand = typeof siteBrandTitle === "string" ? siteBrandTitle.trim() : "";
 	return resolveSanityMetadata({

@@ -60,15 +60,15 @@ export async function generateMetadata({
 		};
 	}
 
-	return metadataFromSanityPageData(
+	return metadataFromSanityPageData({
 		data,
 		locale,
-		slug,
+		segmentFallback: slug,
 		settingsSeo,
 		siteLocale,
-		`/${slug}`,
-		siteBrand,
-	);
+		path: `/${slug}`,
+		siteBrandTitle: siteBrand,
+	});
 }
 
 export default async function Page({ params }: PageProps) {

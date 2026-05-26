@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_id == "home"][0]` or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, **`seoQuery`** — local `seo` plus `settingsSeo` from `siteSettings` for metadata fallbacks).
+**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_id == "home"][0]` or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). Site-wide SEO fallbacks are fetched separately via **`fetchSettingsSeoFallback`** (deduped per request) and passed into `metadataFromSanityPageData`.
 
 Import from `@/sanity/queries`.
 
@@ -112,7 +112,7 @@ const meta = await fetchPageBySlug(slug, { stega: false });
 
 ## Metadata
 
-Pass **`data.seo`** and **`data.settingsSeo`** (both from route **`seoQuery`**) into **`resolveSanityMetadata`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`) so empty page-level SEO falls back to **site settings** in Sanity. Use a localized title or slug as **`titleFallback`**.
+Call **`fetchSettingsSeoFallback`** alongside the route fetch (in the same `Promise.all` as `fetchHomeDocument` / `fetchPageBySlug`) and pass `data` plus the resolved `settingsSeo` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so empty fields fall back to **`siteSettings.seo`** in Sanity. Use a localized title or slug as **`segmentFallback`**.
 
 ## Related
 

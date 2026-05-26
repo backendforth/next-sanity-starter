@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare module "*.css";
+
 /**
  * Sanity Studio uses Vite — `SANITY_STUDIO_*` and `VITE_*` env vars are inlined at build time.
  * Mirror the documented variables here so editors get autocomplete and type checking.

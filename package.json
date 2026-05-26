@@ -24,6 +24,9 @@
 	},
 	"author": "backendforth",
 	"license": "ISC",
+	"engines": {
+		"node": ">=20.0.0"
+	},
 	"pnpm": {
 		"//overrides": "magicast pin avoids the older transitive 0.2.x version pulled in by some Sanity tooling, which lacks the `parseExpression` API used downstream. Re-evaluate when removing — drop the override and run `pnpm why magicast` to confirm only ^0.3 versions remain.",
 		"overrides": {

@@ -16,7 +16,7 @@ if (!hasSanityConfig) {
 	const missing: string[] = [];
 	if (!projectId) missing.push("SANITY_STUDIO_PROJECT_ID");
 	if (!dataset) missing.push("SANITY_STUDIO_DATASET (or dataset resolution)");
-	console.warn(
+	console.error(
 		`[sanity] Missing ${missing.join(" and ")} — using a placeholder Sanity client so the ${
 			isBuild ? "build" : "process"
 		} can proceed. Actual queries will fail until env is configured. See studio/.env.example.`,

@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 				{ status: 500 },
 			);
 		}
-		console.warn(
+		console.error(
 			"[api/revalidate] SANITY_REVALIDATE_SECRET is not set — accepting unsigned requests in non-production only.",
 		);
 	}

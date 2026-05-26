@@ -14,7 +14,7 @@ This folder holds **GROQ** strings for the Next.js app: reusable **snippets**, *
 | Path | Role |
 |------|------|
 | [`index.ts`](./index.ts) | Barrel: re-exports all public query constants. |
-| [`snippets/`](./snippets/README.md) | Small fragments: `linkQuery`, `seoQuery`, `imageQuery`, settings singletons, sitemap helpers. Composed into larger strings, not usually run alone. |
+| [`snippets/`](./snippets/README.md) | Small fragments: `linkQuery`, `pageSeoQuery`, `imageQuery`, settings singletons (incl. `siteSettingsSeoFallbackQuery`), sitemap helpers. Composed into larger strings, not usually run alone. |
 | [`components/`](./components/README.md) | `components/modules/` — `modulesQuery` and per-`module.*` projections; `components/text/richTextMedia.ts` — `richTextMediaQuery` for portable text bodies. |
 | [`pages/`](./pages/README.md) | Full document queries: `homeQuery`, `pageBySlugQuery`. |
 
@@ -35,7 +35,7 @@ These match the Desk structure / initial templates:
 | ID | Purpose |
 |----|--------|
 | `home` | Home singleton |
-| `siteSettings` | Site metadata, favicon, SEO fallback, optional modules |
+| `siteSettings` | Site metadata, favicon, SEO fallback (fetched via `fetchSettingsSeoFallback`), optional modules |
 | `siteNav` | Main + footer menus, optional modules |
 | `errorSettings` | 404 / 500 copy |
 | `siteCookieBanner` | Cookie UI |
@@ -54,7 +54,7 @@ Paste into **Vision** (adjust dataset in Studio if needed). For queries using `$
 *[_id == "home"][0]{ _id, title }
 ```
 
-**App route queries** interpolate **`seoQuery`** from [`snippets/seo.ts`](./snippets/seo.ts) (local `seo` plus `settingsSeo` from `siteSettings`). Minimal Vision check without the join:
+**App route queries** interpolate **`pageSeoQuery`** from [`snippets/seo.ts`](./snippets/seo.ts) (local `seo` only). The site-wide `siteSettings.seo` fallback is fetched separately via **`fetchSettingsSeoFallback`** (one Sanity hit per request) and merged in `metadataFromSanityPageData`. Minimal Vision check:
 
 ```groq
 *[_id == "home"][0]{
@@ -73,7 +73,7 @@ Paste into **Vision** (adjust dataset in Studio if needed). For queries using `$
 
 **Params (Vision):** `{ "slug": "<slug>" }` — slug only, no leading slash.
 
-Aligned with [`pages/page.ts`](./pages/page.ts) (`seoQuery` + raw `modules`; Vision example below omits the `settingsSeo` join):
+Aligned with [`pages/page.ts`](./pages/page.ts) (`pageSeoQuery` + raw `modules`):
 
 ```groq
 *[_type == "page" && slug.current == $slug][0]{

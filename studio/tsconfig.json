@@ -13,7 +13,7 @@
     "jsx": "react-jsx",
     "incremental": true,
     "noEmit": true,
-    "types": ["react"]
+    "types": ["node", "react"]
   },
   "include": ["**/*.ts", "**/*.tsx", "env.d.ts"]
 }

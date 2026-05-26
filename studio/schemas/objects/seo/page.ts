@@ -10,12 +10,14 @@ export const seoPage = defineType({
       title: "Meta title",
       type: "string",
       description: "Override for <title> and Open Graph title.",
+      validation: (rule) => rule.warning().max(60),
     },
     {
       name: "description",
       title: "Meta description",
       type: "text",
       rows: 3,
+      validation: (rule) => rule.warning().max(160),
     },
     {
       name: "image",
@@ -38,12 +40,14 @@ export const seoFallback = defineType({
       title: "Meta title",
       type: "string",
       description: "Default <title> and Open Graph title.",
+      validation: (rule) => rule.warning().max(60),
     },
     {
       name: "description",
       title: "Meta description",
       type: "text",
       rows: 3,
+      validation: (rule) => rule.warning().max(160),
     },
     {
       name: "image",

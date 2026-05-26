@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchHomeDocument,
+	fetchSettingsSeoFallback,
 	fetchSiteLanguageSettings,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
@@ -27,10 +28,11 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { locale } = await params;
-	const [data, siteLocale, siteBrand] = await Promise.all([
+	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
 		fetchHomeDocument({ stega: false }),
 		fetchSiteLanguageSettings({ stega: false }),
 		fetchSiteSettingsTitle({ stega: false }),
+		fetchSettingsSeoFallback({ stega: false }),
 	]);
 	if (!data) {
 		return {
@@ -38,14 +40,15 @@ export async function generateMetadata({
 			description: undefined,
 		};
 	}
-	return metadataFromSanityPageData(
+	return metadataFromSanityPageData({
 		data,
 		locale,
-		"Home",
+		segmentFallback: "Home",
+		settingsSeo,
 		siteLocale,
-		"/",
-		siteBrand,
-	);
+		path: "/",
+		siteBrandTitle: siteBrand,
+	});
 }
 
 export default async function Home({ params }: PageProps) {

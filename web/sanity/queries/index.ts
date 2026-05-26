@@ -15,7 +15,7 @@ export {
 	mediaQuerySpread,
 	videoQuery,
 } from "./snippets/media";
-export { pageSeoQuery, seoQuery } from "./snippets/seo";
+export { pageSeoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
 	navMenusQuery,
@@ -25,6 +25,7 @@ export {
 	siteNavMenusQuery,
 	siteNavQuery,
 	siteSettingsQuery,
+	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 } from "./snippets/settings";
 export { pageSlugsQuery, sitemapPagesQuery } from "./snippets/sitemap";

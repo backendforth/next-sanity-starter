@@ -77,6 +77,13 @@ export const siteLanguageSettingsQuery = `*[_id == "siteLanguageSettings"][0]{
 /** Minimal fetch for `app/[locale]/layout.tsx` `generateMetadata` (tab title template). */
 export const siteSettingsTitleQuery = `*[_id == "siteSettings"][0]{title}`;
 
+/** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
+export const siteSettingsSeoFallbackQuery = `*[_id == "siteSettings"][0]{
+  "title": seo.title,
+  "description": seo.description,
+  "imageUrl": seo.image.asset->url
+}`;
+
 /** Document id: `siteSettings`. */
 export const siteSettingsQuery = `*[_id == "siteSettings"][0]{
   _id,

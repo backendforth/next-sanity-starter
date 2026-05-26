@@ -4,6 +4,7 @@ import { cachedPageSlugs } from "@/sanity/cachedSanityQuery";
 import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchPageBySlug,
+	fetchSettingsSeoFallback,
 	fetchSiteLanguageSettings,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
@@ -46,10 +47,11 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const [data, siteLocale, siteBrand] = await Promise.all([
+	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
 		fetchPageBySlug(slug, { stega: false }),
 		fetchSiteLanguageSettings({ stega: false }),
 		fetchSiteSettingsTitle({ stega: false }),
+		fetchSettingsSeoFallback({ stega: false }),
 	]);
 	if (!data) {
 		return {
@@ -58,14 +60,15 @@ export async function generateMetadata({
 		};
 	}
 
-	return metadataFromSanityPageData(
+	return metadataFromSanityPageData({
 		data,
 		locale,
-		slug,
+		segmentFallback: slug,
+		settingsSeo,
 		siteLocale,
-		`/${slug}`,
-		siteBrand,
-	);
+		path: `/${slug}`,
+		siteBrandTitle: siteBrand,
+	});
 }
 
 export default async function Page({ params }: PageProps) {

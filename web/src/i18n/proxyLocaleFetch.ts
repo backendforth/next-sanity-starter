@@ -1,6 +1,7 @@
 import { resolveStudioDatasetAsync } from "@repo/sanity-dataset-resolve";
 
 import { normalizeSiteLocaleConfig } from "@/sanity/normalizeSiteLocaleConfig";
+import { siteLanguageSettingsQuery } from "@/sanity/queries";
 import { getSanityStudioProjectId } from "@/sanity/resolveStudioDataset";
 import type { SiteLanguageSettingsDocument } from "@/sanity/types/siteLanguageSettings";
 
@@ -23,9 +24,16 @@ async function resolveDatasetName(): Promise<string> {
 }
 
 /**
- * Fetches `siteLanguageSettings` from Sanity (CDN if no token; API + drafts when
- * `SANITY_API_READ_TOKEN` is set). Used by `proxy.ts` with short in-memory caching.
- * Resolves the dataset the same way as `web/sanity/sanityEnv.ts` when env is not pinned.
+ * Edge/middleware path for `siteLanguageSettings` — manual `fetch()` + 60s in-memory cache.
+ *
+ * Render paths use `fetchSiteLanguageSettings` in `web/sanity/fetchSanityData.ts`, which
+ * delegates to `cachedSiteLanguageSettingsPublished` (`unstable_cache`, tag
+ * `site-language-settings`) when no read token is set, or a drafts `client.fetch` when
+ * `SANITY_API_READ_TOKEN` is present. Keep those two paths; only the GROQ string is shared
+ * via `siteLanguageSettingsQuery` from `web/sanity/queries`.
+ *
+ * CDN when no token; API + drafts perspective when `SANITY_API_READ_TOKEN` is set.
+ * Dataset resolution matches `web/sanity/sanityEnv.ts` when env is not pinned.
  */
 export async function fetchSiteLocaleConfigForProxy(): Promise<SiteLocaleConfig> {
 	const now = Date.now();
@@ -49,7 +57,7 @@ export async function fetchSiteLocaleConfigForProxy(): Promise<SiteLocaleConfig>
 		return config;
 	}
 
-	const query = `*[_id == "siteLanguageSettings"][0]{availableLanguages[]{id,title},defaultLanguageId}`;
+	const query = siteLanguageSettingsQuery;
 	const token = process.env.SANITY_API_READ_TOKEN?.trim();
 
 	let config = normalizeSiteLocaleConfig(null);

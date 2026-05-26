@@ -4,6 +4,7 @@ import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
@@ -89,7 +90,15 @@ export const metadata: Metadata = {
  *
  * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
  */
-const lazyFadeScript = `(function(){
+const bootScript = `(function(){
+  try{
+    var k='color-scheme';
+    var t=localStorage.getItem(k);
+    var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var el=document.documentElement;
+    if(d){el.classList.add('dark');el.style.colorScheme='dark';}
+    else{el.classList.remove('dark');el.style.colorScheme='light';}
+  }catch(e){}
   document.documentElement.classList.add('js-enabled');
   function handle(img){
     if(img.complete&&img.naturalWidth>0){img.classList.add('img-loaded');}
@@ -136,9 +145,9 @@ export default async function RootLayout({
 			suppressHydrationWarning
 		>
 			<head>
-				{/* Lazy-image fade-in + js-enabled flag — must run before first paint */}
+				{/* Theme class + lazy-image fade-in — must run before first paint */}
 				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: controlled inline script, no user input */}
-				<script dangerouslySetInnerHTML={{ __html: lazyFadeScript }} />
+				<script dangerouslySetInnerHTML={{ __html: bootScript }} />
 
 				{/* ── Resource Hints ─────────────────────────────────────────────────── */}
 				{/* Sanity image CDN — used by every MediaImage */}
@@ -154,7 +163,7 @@ export default async function RootLayout({
 				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				{children}
+				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? <SanityLive /> : null}
 				{isDraft ? (
 					<>

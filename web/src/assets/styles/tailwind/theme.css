@@ -5,7 +5,7 @@
  * Design tokens live in `variables/*.css`; here we only wire them to utility namespaces (`--color-*`, `--spacing-*`, …).
  */
 
-@custom-variant dark (@media (prefers-color-scheme: dark));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
 	/* Default `rounded` — former `borderRadius.DEFAULT` */

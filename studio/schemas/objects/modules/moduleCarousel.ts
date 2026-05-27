@@ -1,5 +1,5 @@
 import { ImagesIcon, PlayIcon } from "@sanity/icons";
-import { defineType, type PreviewProps } from "sanity";
+import { defineType, type PreviewValue } from "sanity";
 
 export const moduleCarousel = defineType({
   name: "module.carousel",
@@ -79,7 +79,7 @@ export const moduleCarousel = defineType({
             ? slideCount
             : 0;
 
-      type PreviewMedia = NonNullable<PreviewProps["media"]>;
+      type PreviewMedia = NonNullable<PreviewValue["media"]>;
       let media: PreviewMedia = ImagesIcon as PreviewMedia;
       if (imagesOnly !== false) {
         if (firstPlainSlide) {

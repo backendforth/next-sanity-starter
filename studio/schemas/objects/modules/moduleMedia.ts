@@ -1,5 +1,5 @@
 import { ImageIcon, PlayIcon } from "@sanity/icons";
-import { defineType, type PreviewProps } from "sanity";
+import { defineType, type PreviewValue } from "sanity";
 
 import { getDurationString } from "../../../utils/helpers";
 
@@ -120,7 +120,7 @@ export const moduleMedia = defineType({
         subtitle = undefined;
       }
 
-      type PreviewMedia = NonNullable<PreviewProps["media"]>;
+      type PreviewMedia = NonNullable<PreviewValue["media"]>;
       let media: PreviewMedia = ImageIcon as PreviewMedia;
       if (isVideo) {
         media = (poster ?? PlayIcon) as PreviewMedia;

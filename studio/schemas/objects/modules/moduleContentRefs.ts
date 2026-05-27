@@ -1,24 +1,11 @@
 import { DocumentsIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
 import {
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
 } from "../../constants/references";
-
-function headingLabel(heading: unknown, fallback: string): string {
-  if (!Array.isArray(heading)) {
-    return fallback;
-  }
-  const first = heading.find(
-    (t: { value?: unknown }) =>
-      typeof t?.value === "string" && t.value.trim().length > 0,
-  );
-  if (first && typeof first.value === "string") {
-    return first.value.trim();
-  }
-  return fallback;
-}
 
 export const moduleContentRefs = defineType({
   name: "module.contentRefs",
@@ -93,7 +80,7 @@ export const moduleContentRefs = defineType({
       allowMultiple: "allowMultiple",
     },
     prepare({ heading, allowMultiple }) {
-      const title = headingLabel(heading, "Content references");
+      const title = firstLocalizedLabel(heading, "Content references");
       const mode =
         allowMultiple === true ? "Multiple references" : "Single reference";
       return {

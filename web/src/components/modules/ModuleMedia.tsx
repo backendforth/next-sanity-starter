@@ -15,6 +15,12 @@ function isLoopIntent(
 	return Boolean(settings?.autoplay) && settings?.controls === false;
 }
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Props = {
+	module: ModuleMediaData;
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
@@ -23,7 +29,7 @@ function isLoopIntent(
  *
  * Prefer `resolvedMedia` from GROQ; falls back to `imageContent` / `videoContent` when needed.
  */
-export function ModuleMedia({ module }: { module: ModuleMediaData }) {
+export function ModuleMedia({ module }: Props) {
 	const rm = module.resolvedMedia;
 
 	if (rm?.kind === "image" && rm.media) {

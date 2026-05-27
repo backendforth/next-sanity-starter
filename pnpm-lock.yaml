@@ -132,8 +132,8 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.15)
       groq-js:
-        specifier: ^1.30.1
-        version: 1.30.1
+        specifier: ^1.30.2
+        version: 1.30.2
       postcss-calc:
         specifier: ^10.1.1
         version: 10.1.1(postcss@8.5.15)
@@ -3766,6 +3766,10 @@ packages:
 
   groq-js@1.30.1:
     resolution: {integrity: sha512-l9U2cAN2CHF8o9+ApOWuyntnmaRa2mzSWnnDjDuJlaB48Yjc9FA16/gPEIZ5V9k4ug0l1EZYRiWeSztngeP5sQ==}
+    engines: {node: '>= 14'}
+
+  groq-js@1.30.2:
+    resolution: {integrity: sha512-FqF7NNzBxya6Oq4VkTl9lg3W5Gjd3Cjwc6Et2OeAcTdmHOClwcYeAZkWR6wIm+KPtvESSYtzP59aj/+9egOKZQ==}
     engines: {node: '>= 14'}
 
   groq@3.88.1-typegen-experimental.0:
@@ -8089,7 +8093,7 @@ snapshots:
       execa: 9.6.1
       form-data: 4.0.5
       get-latest-version: 6.0.1
-      groq-js: 1.30.1
+      groq-js: 1.30.2
       gunzip-maybe: 1.4.2
       import-meta-resolve: 4.2.0
       is-installed-globally: 1.0.0
@@ -8208,7 +8212,7 @@ snapshots:
       debug: 4.4.3(supports-color@8.1.1)
       globby: 11.1.0
       groq: 5.27.0
-      groq-js: 1.30.1
+      groq-js: 1.30.2
       json5: 2.2.3
       lodash-es: 4.18.1
       prettier: 3.8.3
@@ -8382,7 +8386,7 @@ snapshots:
       console-table-printer: 2.15.0
       debug: 4.4.3(supports-color@8.1.1)
       fast-fifo: 1.3.2
-      groq-js: 1.30.1
+      groq-js: 1.30.2
       p-map: 7.0.4
     transitivePeerDependencies:
       - '@types/react'
@@ -8446,7 +8450,7 @@ snapshots:
       cardinal: 2.1.1
       empathic: 2.0.1
       eventsource: 4.1.0
-      groq-js: 1.30.1
+      groq-js: 1.30.2
       jiti: 2.7.0
       mime-types: 3.0.2
       ora: 9.4.0
@@ -8480,7 +8484,7 @@ snapshots:
       '@sanity/generate-help-url': 4.0.0
       '@sanity/types': 5.26.0(@types/react@19.2.15)
       arrify: 2.0.1
-      groq-js: 1.30.1
+      groq-js: 1.30.2
       humanize-list: 1.0.1
       leven: 3.1.0
       lodash-es: 4.18.1
@@ -8504,7 +8508,7 @@ snapshots:
       '@sanity/telemetry': 1.1.0(react@19.2.6)
       '@sanity/types': 5.26.0(@types/react@19.2.15)
       groq: 3.88.1-typegen-experimental.0
-      groq-js: 1.30.1
+      groq-js: 1.30.2
       reselect: 5.2.0
       rxjs: 7.8.2
       zustand: 5.0.13(@types/react@19.2.15)(immer@11.1.8)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6))
@@ -9828,6 +9832,12 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   groq-js@1.30.1:
+    dependencies:
+      debug: 4.4.3(supports-color@8.1.1)
+    transitivePeerDependencies:
+      - supports-color
+
+  groq-js@1.30.2:
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:

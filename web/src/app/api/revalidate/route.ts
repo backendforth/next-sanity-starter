@@ -127,11 +127,9 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		}
 	}
 
-	if (_type === "siteSettings" || _type === "errorSettings") {
-		tags.push("settings");
-	}
-
-	// siteNav is read via sanityFetch (live) — no unstable_cache tag to invalidate.
+	// siteSettings, errorSettings and siteNav are read via `sanityFetch` (live).
+	// next-sanity handles their invalidation through its own sync tags, so there
+	// is no manual `unstable_cache` tag to invalidate here.
 
 	if (_type === "siteLanguageSettings") {
 		tags.push("site-language-settings");

@@ -1,6 +1,8 @@
 import { ImagesIcon, PlayIcon } from "@sanity/icons";
 import { defineType, type PreviewValue } from "sanity";
 
+import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
+
 export const moduleCarousel = defineType({
   name: "module.carousel",
   title: "Carousel",
@@ -53,6 +55,7 @@ export const moduleCarousel = defineType({
   ],
   preview: {
     select: {
+      heading: "heading",
       imagesOnly: "imagesOnly",
       slideCount: "slides.length",
       slidesMediaCount: "slidesMedia.length",
@@ -62,6 +65,7 @@ export const moduleCarousel = defineType({
       mediaSlidePoster: "slidesMedia.0.videoContent.poster",
     },
     prepare({
+      heading,
       imagesOnly,
       slideCount,
       slidesMediaCount,
@@ -92,7 +96,7 @@ export const moduleCarousel = defineType({
       }
 
       return {
-        title: "Carousel",
+        title: firstLocalizedLabel(heading, "Carousel"),
         subtitle: `${count} slide${count === 1 ? "" : "s"}`,
         media,
       };

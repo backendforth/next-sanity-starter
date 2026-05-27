@@ -116,6 +116,11 @@ export const siteCookieBannerQuery = `*[_id == "siteCookieBanner"][0]{
 /**
  * Single fetch for app shell: settings, nav, errors, cookie banner.
  * Document ids match Studio Documents: siteSettings, siteNav, errorSettings, siteCookieBanner.
+ *
+ * NOTE: not consumed by any current route — provided as a convenience aggregate
+ * (and the reason `siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`
+ * exist) for apps that prefer one combined app-shell fetch over the per-document
+ * `fetch*` helpers in `fetchSanityData.ts`. Safe to delete if unused.
  */
 export const settingsBundleQuery = `{
   "siteSettings": ${siteSettingsQuery},

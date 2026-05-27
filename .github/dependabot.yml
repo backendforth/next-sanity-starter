@@ -12,5 +12,10 @@ updates:
           - "sanity"
           - "@sanity/*"
           - "sanity-plugin-*"
+    ignore:
+      # @types/node must track the runtime (Node 22 LTS), not the latest major.
+      # Allow minor/patch within v22; block major bumps (e.g. 25.x).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"

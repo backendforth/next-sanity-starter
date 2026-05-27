@@ -12,7 +12,8 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["node", "react"]
   },
   "include": ["**/*.ts", "**/*.tsx", "env.d.ts"]
 }

@@ -4,6 +4,7 @@ import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
@@ -82,14 +83,25 @@ export const metadata: Metadata = {
 /**
  * Tiny blocking inline script — runs synchronously before hydration.
  *
- * 1. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
- * 2. Wires up the lazy-image fade-in: when an img[data-lazy] finishes loading,
+ * 1. Wendet den gespeicherten Theme-Override (`localStorage["color-scheme"]`) als
+ *    `data-theme="light" | "dark"` auf <html> an, **bevor** der erste Paint
+ *    stattfindet. Bei `"system"` oder fehlendem Wert bleibt das Attribut weg,
+ *    sodass `@media (prefers-color-scheme: dark)` in `variables/colors.css`
+ *    von alleine greift — funktioniert deshalb auch ohne JavaScript.
+ * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
+ * 3. Wires up the lazy-image fade-in: when an img[data-lazy] finishes loading,
  *    adds `.img-loaded` → CSS transition kicks in (0.2 s ease-in-out).
- * 3. MutationObserver covers images injected after initial paint (client nav).
+ * 4. MutationObserver covers images injected after initial paint (client nav).
  *
  * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
  */
-const lazyFadeScript = `(function(){
+const bootScript = `(function(){
+  try{
+    var t=localStorage.getItem('color-scheme');
+    if(t==='light'||t==='dark'){
+      document.documentElement.setAttribute('data-theme',t);
+    }
+  }catch(e){}
   document.documentElement.classList.add('js-enabled');
   function handle(img){
     if(img.complete&&img.naturalWidth>0){img.classList.add('img-loaded');}
@@ -136,9 +148,9 @@ export default async function RootLayout({
 			suppressHydrationWarning
 		>
 			<head>
-				{/* Lazy-image fade-in + js-enabled flag — must run before first paint */}
+				{/* Theme class + lazy-image fade-in — must run before first paint */}
 				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: controlled inline script, no user input */}
-				<script dangerouslySetInnerHTML={{ __html: lazyFadeScript }} />
+				<script dangerouslySetInnerHTML={{ __html: bootScript }} />
 
 				{/* ── Resource Hints ─────────────────────────────────────────────────── */}
 				{/* Sanity image CDN — used by every MediaImage */}
@@ -154,7 +166,7 @@ export default async function RootLayout({
 				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				{children}
+				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? <SanityLive /> : null}
 				{isDraft ? (
 					<>

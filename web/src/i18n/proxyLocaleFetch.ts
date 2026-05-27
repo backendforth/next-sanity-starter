@@ -51,7 +51,8 @@ export async function fetchSiteLocaleConfigForProxy(): Promise<SiteLocaleConfig>
 	let dataset: string;
 	try {
 		dataset = await resolveDatasetName();
-	} catch {
+	} catch (err) {
+		console.error("[proxyLocaleFetch] dataset resolution failed", err);
 		const config = normalizeSiteLocaleConfig(null);
 		cache = { config, expires: now + TTL_MS };
 		return config;
@@ -97,8 +98,8 @@ export async function fetchSiteLocaleConfigForProxy(): Promise<SiteLocaleConfig>
 				);
 			}
 		}
-	} catch {
-		// keep fallback
+	} catch (err) {
+		console.error("[proxyLocaleFetch] fetch or parse failed", err);
 	}
 
 	cache = { config, expires: now + TTL_MS };

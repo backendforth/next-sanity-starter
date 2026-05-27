@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      sanity-ecosystem:
+        patterns:
+          - "sanity"
+          - "@sanity/*"
+          - "sanity-plugin-*"
+    labels:
+      - "dependencies"

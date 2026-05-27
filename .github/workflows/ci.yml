@@ -37,10 +37,34 @@ jobs:
         run: git diff --exit-code
       - run: pnpm run typecheck
 
+  schema-typegen:
+    name: schema typegen
+    runs-on: ubuntu-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+      # `sanity schema extract` loads sanity.config.ts, which throws without a
+      # project id. The extracted schema is static (no API call), so a placeholder
+      # is enough to let the config module load — same pattern as the build jobs.
+      - run: pnpm --filter studio run generate
+        env:
+          SANITY_STUDIO_PROJECT_ID: ci-placeholder
+      - name: Ensure schema typegen produced no changes
+        run: git diff --exit-code
+
   build-web:
     name: build (web)
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [verify, schema-typegen]
     steps:
       - uses: actions/checkout@v4
 
@@ -61,7 +85,7 @@ jobs:
   build-studio:
     name: build (studio)
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [verify, schema-typegen]
     steps:
       - uses: actions/checkout@v4
 

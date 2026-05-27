@@ -233,7 +233,7 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 
 - **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`. Studio uses a 2-space override; the rest of the repo is tabs.
 - **Husky** — `.husky/pre-commit` runs `pnpm run format`; `.husky/pre-push` runs `pnpm run format && pnpm run typecheck`.
-- **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 20 & 22, plus a `next build` smoke and `sanity build` smoke.
+- **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 20 & 22, `pnpm studio:generate` with a diff guard on committed `studio/schema.json` and `studio/sanity.types.gen.ts`, plus `next build` and `sanity build` smokes.
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
 - **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, `.cursor/` are ignored; see root `.gitignore`.
 

@@ -2,8 +2,6 @@
 node_modules/
 dist/
 .sanity/
-schema.json
-sanity.types.gen.ts
 .env
 .env.local
 .env.*.local

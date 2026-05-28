@@ -1,12 +1,12 @@
-/**
+/*
  * Semantic `--color-*` tokens → Tailwind `theme.extend.colors`.
  *
- * Dark-Mode-Strategie (kein Klassen-Hack):
- *  - Default: `:root` → Light-Tokens.
- *  - System-Dark: `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])`
- *    greift automatisch — funktioniert auch ohne JavaScript.
- *  - Manuelle Wahl via Toggle: `:root[data-theme="light"]` / `[data-theme="dark"]`
- *    sticht die Media-Query aus. "System" entfernt das Attribut wieder.
+ * Dark-mode strategy (no class hack):
+ *  - Default: `:root` → light tokens.
+ *  - System dark: `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])`
+ *    kicks in automatically — works without JavaScript.
+ *  - Manual choice via toggle: `:root[data-theme="light"]` / `[data-theme="dark"]`
+ *    overrides the media query. "System" removes the attribute.
  */
 
 :root {
@@ -96,7 +96,7 @@
 	}
 }
 
-/* Manueller Dark-Override (Toggle), greift unabhängig vom OS. */
+/* Manual dark override (toggle), independent of the OS preference. */
 :root[data-theme="dark"] {
 	color-scheme: dark;
 

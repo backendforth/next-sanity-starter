@@ -87,15 +87,11 @@ function MobileMenuButton({
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Header({ mainMenu, siteTitle }: Props) {
-	const { currentLocale, localePath, languages } = useLanguage();
+	const { currentLocale, localePath } = useLanguage();
 
 	const entries = resolveMainMenuEntries(mainMenu, currentLocale, {
 		localePath,
 	});
-	const showLanguageSwitcher = languages.length > 1;
-	const menuEntries = showLanguageSwitcher
-		? entries.filter((entry) => entry.kind !== "languageSwitch")
-		: entries;
 	const homeHref = localePath("/", currentLocale);
 	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
 	const brandLabel =
@@ -112,7 +108,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 
 	useEscapeKey(open, close);
 
-	if (!menuEntries.length) {
+	if (!entries.length) {
 		return (
 			<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
 				<div className="mx-auto flex w-full max-w-container items-center justify-between gap-4 px-6 py-sm text-base sm:px-8">
@@ -122,12 +118,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					>
 						{brandLabel}
 					</Link>
-					<div className="flex items-center gap-2 sm:gap-3">
-						{showLanguageSwitcher ? (
-							<LanguageSwitch onAfterLocaleChange={closeMenuAfterLocaleChange} />
-						) : null}
-						<ThemeToggle />
-					</div>
+					<ThemeToggle />
 				</div>
 			</header>
 		);
@@ -145,10 +136,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				</Link>
 
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
-					<div className="hidden items-center gap-2 md:flex">
-						{showLanguageSwitcher ? (
-							<LanguageSwitch onAfterLocaleChange={closeMenuAfterLocaleChange} />
-						) : null}
+					<div className="hidden md:block">
 						<ThemeToggle />
 					</div>
 					<nav
@@ -156,7 +144,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 						aria-label="Main"
 					>
 						<MainMenuItems
-							entries={menuEntries}
+							entries={entries}
 							onNavigate={close}
 							onAfterLocaleChange={closeMenuAfterLocaleChange}
 						/>
@@ -177,14 +165,11 @@ export function Header({ mainMenu, siteTitle }: Props) {
 						className="mx-auto flex max-w-container flex-col gap-3 px-6 py-sm text-base sm:px-8"
 						aria-label="Main"
 					>
-						<div className="flex flex-col gap-3 md:hidden">
-							{showLanguageSwitcher ? (
-								<LanguageSwitch onAfterLocaleChange={closeMenuAfterLocaleChange} />
-							) : null}
+						<div className="md:hidden">
 							<ThemeToggle />
 						</div>
 						<MainMenuItems
-							entries={menuEntries}
+							entries={entries}
 							onNavigate={close}
 							onAfterLocaleChange={closeMenuAfterLocaleChange}
 						/>

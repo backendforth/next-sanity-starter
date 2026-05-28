@@ -4,6 +4,7 @@ import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
@@ -152,15 +153,7 @@ export default async function RootLayout({
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
 				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? (
-					<SanityLive
-						onError={(error, context) => {
-							console.error("[SanityLive] live connection error", {
-								error,
-								includeDrafts: context.includeDrafts,
-								waitFor: context.waitFor,
-							});
-						}}
-					/>
+					<SanityLive onError={handleSanityLiveError} />
 				) : null}
 				{isDraft ? (
 					<>

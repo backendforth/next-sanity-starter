@@ -1,8 +1,8 @@
-import type { IntlRichTextEntry, IntlStringEntry } from "@/sanity/utils";
+import type { PortableTextBlock } from "@portabletext/types";
 
 export type ModuleTextData = {
 	_type: "module.text";
 	_key?: string;
-	title?: IntlStringEntry[] | null;
-	body?: IntlRichTextEntry[] | null;
+	title?: string | null;
+	body?: PortableTextBlock[] | null;
 };

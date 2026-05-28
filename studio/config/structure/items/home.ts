@@ -6,5 +6,5 @@ export function homeStructureItem(S: StructureBuilder) {
     .title("Home")
     .icon(HomeIcon)
     .id("home")
-    .child(S.document().schemaType("home").documentId("home"));
+    .child(S.documentTypeList("home").title("Home"));
 }

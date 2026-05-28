@@ -21,6 +21,12 @@ export const siteSettings = defineType({
   ],
   fields: [
     {
+      name: "language",
+      type: "string",
+      readOnly: true,
+      hidden: true,
+    },
+    {
       title: "Site Title",
       name: "title",
       type: "string",
@@ -41,10 +47,11 @@ export const siteSettings = defineType({
     },
   ],
   preview: {
-    select: { title: "title" },
-    prepare({ title }) {
+    select: { title: "title", language: "language" },
+    prepare({ title, language }) {
       return {
         title: title || "Settings",
+        subtitle: language || undefined,
       };
     },
   },

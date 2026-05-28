@@ -1,3 +1,5 @@
+"use client";
+
 import clsx from "clsx";
 import type { CSSProperties } from "react";
 
@@ -76,7 +78,8 @@ function buildSrcSet(image: SanityImageField, maxWidth: number): string {
  * Sanity-driven image: **native `<img>`** with deterministic Sanity CDN URLs (same SSR / client),
  * responsive `srcset` + `sizes` so the browser picks the right variant per container / viewport.
  *
- * Avoids `next/image` optimizer `src` / `srcSet` hydration drift.
+ * Server Component (no `"use client"`) so URLs are built once on the server and the
+ * layout boot script may add `.img-loaded` without React hydration conflicts.
  */
 export function MediaImage({
 	imagePayload,

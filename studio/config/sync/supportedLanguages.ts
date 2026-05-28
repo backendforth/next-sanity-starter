@@ -1,7 +1,7 @@
 import type { SanityClient } from "sanity";
 
-/** Same projection as `web/sanity/queries/snippets/settings.ts` / locale codegen. */
-export const siteLanguageSettingsInternationalizedQuery = `*[_id == "siteLanguageSettings"][0]{availableLanguages[]{id,title},defaultLanguageId}`;
+/** Same projection as `web/sanity/queries/snippets/settings.ts` (siteLanguageSettings). */
+export const siteLanguageSettingsLanguagesQuery = `*[_id == "siteLanguageSettings"][0]{availableLanguages[]{id,title},defaultLanguageId}`;
 
 type SiteLanguageSettingsDoc = {
   availableLanguages?: Array<{ id?: string; title?: string }> | null;
@@ -44,14 +44,20 @@ function normalizeFromDoc(doc: SiteLanguageSettingsDoc): Array<{
 }
 
 /**
- * Languages for `sanity-plugin-internationalized-array`, loaded on each Studio session
- * from the `siteLanguageSettings` singleton (drafts when the Studio client uses preview).
+ * Languages for `@sanity/document-internationalization`, loaded on each Studio session
+ * from the `siteLanguageSettings` singleton. Falls back to the minimal `en` list when
+ * the singleton is missing or malformed (Studio still boots).
  */
-export async function internationalizedArrayLanguagesFromClient(
+export async function supportedLanguagesFromClient(
   client: SanityClient,
 ): Promise<Array<{ id: string; title: string }>> {
-  const doc = await client.fetch<SiteLanguageSettingsDoc>(
-    siteLanguageSettingsInternationalizedQuery,
-  );
-  return normalizeFromDoc(doc);
+  try {
+    const doc = await client.fetch<SiteLanguageSettingsDoc>(
+      siteLanguageSettingsLanguagesQuery,
+    );
+    return normalizeFromDoc(doc);
+  } catch (err) {
+    console.error("[supportedLanguages] fetch failed:", err);
+    return [...FALLBACK_LANGUAGES];
+  }
 }

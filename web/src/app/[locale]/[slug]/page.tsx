@@ -22,25 +22,16 @@ type PageProps = {
 export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
-	const [rows, siteLocale] = await Promise.all([
-		cachedPageSlugs(),
-		fetchSiteLanguageSettings({ stega: false }),
-	]);
-	const list = rows ?? [];
-	const slugs = list
-		.map((row) => row.slug)
+	const rows = await cachedPageSlugs();
+	return (rows ?? [])
 		.filter(
-			(s: string | undefined): s is string =>
-				typeof s === "string" && s.length > 0,
-		);
-
-	const out: { locale: string; slug: string }[] = [];
-	for (const locale of siteLocale.localeIds) {
-		for (const slug of slugs) {
-			out.push({ locale, slug });
-		}
-	}
-	return out;
+			(row): row is { slug: string; language: string } =>
+				typeof row.slug === "string" &&
+				row.slug.length > 0 &&
+				typeof row.language === "string" &&
+				row.language.length > 0,
+		)
+		.map((row) => ({ locale: row.language, slug: row.slug }));
 }
 
 export async function generateMetadata({
@@ -48,10 +39,10 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
 	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
-		fetchPageBySlug(slug, { stega: false }),
+		fetchPageBySlug(slug, locale, { stega: false }),
 		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle({ stega: false }),
-		fetchSettingsSeoFallback({ stega: false }),
+		fetchSiteSettingsTitle(locale, { stega: false }),
+		fetchSettingsSeoFallback(locale, { stega: false }),
 	]);
 	if (!data) {
 		return {
@@ -73,10 +64,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const [data, siteLocale] = await Promise.all([
-		fetchPageBySlug(slug),
-		fetchSiteLanguageSettings(),
-	]);
+	const data = await fetchPageBySlug(slug, locale);
 
 	if (!data) {
 		notFound();
@@ -88,11 +76,7 @@ export default async function Page({ params }: PageProps) {
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-4">
 						<h2>Modules</h2>
-						<ModulesRenderer
-							modules={data.modules}
-							locale={locale}
-							siteLocale={siteLocale}
-						/>
+						<ModulesRenderer modules={data.modules} />
 					</section>
 				) : null}
 			</main>

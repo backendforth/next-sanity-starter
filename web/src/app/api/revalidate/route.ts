@@ -23,6 +23,7 @@ type SanityWebhookPayload = {
 	_id?: string;
 	_type?: string;
 	slug?: { current?: string } | null;
+	language?: string | null;
 };
 
 // ── Defense-in-depth: simple in-memory token bucket per IP ───────────────────
@@ -65,6 +66,13 @@ function isValidPayload(value: unknown): value is SanityWebhookPayload {
 		if (slugCurrent !== undefined && typeof slugCurrent !== "string") {
 			return false;
 		}
+	}
+	if (
+		v.language !== undefined &&
+		v.language !== null &&
+		typeof v.language !== "string"
+	) {
+		return false;
 	}
 	return true;
 }
@@ -110,20 +118,23 @@ function verifySignature(
 
 function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 	const tags: string[] = [];
-	const { _type, slug } = payload;
+	const { _type, slug, language } = payload;
+	const lang =
+		typeof language === "string" && language.trim() ? language.trim() : null;
 
 	if (_type && !ALLOWED_DOCUMENT_TYPES.has(_type as never)) {
 		return tags;
 	}
 
 	if (_type === "home") {
-		tags.push("home", "site-pages");
+		if (lang) tags.push(`home-${lang}`);
+		tags.push("site-pages");
 	}
 
 	if (_type === "page") {
 		tags.push("pages", "site-pages");
-		if (slug?.current) {
-			tags.push(`page-${slug.current}`);
+		if (slug?.current && lang) {
+			tags.push(`page-${slug.current}-${lang}`);
 		}
 	}
 

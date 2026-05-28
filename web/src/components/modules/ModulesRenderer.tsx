@@ -5,40 +5,24 @@ import type {
 	ModuleMediaData,
 	ModuleTextData,
 } from "@/sanity/types/modules";
-import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModuleText } from "./ModuleText";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type Props = {
 	modules: ContentModule[];
-	locale: string;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 const IS_DEV = process.env.NODE_ENV === "development";
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
 
 /**
  * Carousel placeholder — schema + GROQ exist, no production renderer yet.
  * Renders a labeled placeholder in dev only; nothing in production so empty
  * Studio modules don't surface visible warnings to end users.
  */
-function ModuleCarouselPlaceholder({
-	module,
-	locale,
-	siteLocale,
-}: {
-	module: ModuleCarouselData;
-	locale: string;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-}) {
+function ModuleCarouselPlaceholder({ module }: { module: ModuleCarouselData }) {
 	if (!IS_DEV) return null;
-	const heading = pickLocalizedString(module.heading, locale, siteLocale);
+	const heading = module.heading?.trim() ?? "";
 	const slideCount =
 		module.resolvedSlides?.length ??
 		module.slidesMedia?.length ??
@@ -57,15 +41,11 @@ function ModuleCarouselPlaceholder({
 
 function ModuleContentRefsPlaceholder({
 	module,
-	locale,
-	siteLocale,
 }: {
 	module: ModuleContentRefsData;
-	locale: string;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 }) {
 	if (!IS_DEV) return null;
-	const heading = pickLocalizedString(module.heading, locale, siteLocale);
+	const heading = module.heading?.trim() ?? "";
 	const refCount = module.allowMultiple
 		? (module.references?.length ?? 0)
 		: module.reference
@@ -100,23 +80,14 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	);
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
-
 /** Renders the document `modules[]` stack (one UI block per `module.*` type). */
-export function ModulesRenderer({ modules, locale, siteLocale }: Props) {
+export function ModulesRenderer({ modules }: Props) {
 	return (
 		<div className="flex flex-col gap-10">
 			{modules.map((mod, index) => {
 				const key = mod._key ?? `${mod._type ?? "module"}-${index}`;
 				if (mod._type === "module.text") {
-					return (
-						<ModuleText
-							key={key}
-							module={mod as ModuleTextData}
-							locale={locale}
-							siteLocale={siteLocale}
-						/>
-					);
+					return <ModuleText key={key} module={mod as ModuleTextData} />;
 				}
 				if (mod._type === "module.media") {
 					return <ModuleMedia key={key} module={mod as ModuleMediaData} />;
@@ -126,8 +97,6 @@ export function ModulesRenderer({ modules, locale, siteLocale }: Props) {
 						<ModuleCarouselPlaceholder
 							key={key}
 							module={mod as ModuleCarouselData}
-							locale={locale}
-							siteLocale={siteLocale}
 						/>
 					);
 				}
@@ -136,8 +105,6 @@ export function ModulesRenderer({ modules, locale, siteLocale }: Props) {
 						<ModuleContentRefsPlaceholder
 							key={key}
 							module={mod as ModuleContentRefsData}
-							locale={locale}
-							siteLocale={siteLocale}
 						/>
 					);
 				}

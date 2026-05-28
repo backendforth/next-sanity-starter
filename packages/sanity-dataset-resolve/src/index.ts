@@ -131,9 +131,7 @@ export async function resolveStudioDatasetAsync(
 		return explicit;
 	}
 
-	const projectId =
-		env.SANITY_STUDIO_PROJECT_ID?.trim() ||
-		env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
+	const projectId = env.SANITY_STUDIO_PROJECT_ID?.trim();
 	const devName =
 		env.SANITY_STUDIO_DATASET_DEVELOPMENT?.trim() ?? "development";
 	const prodName = env.SANITY_STUDIO_DATASET_PRODUCTION?.trim() ?? "production";

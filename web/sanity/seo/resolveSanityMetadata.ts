@@ -4,7 +4,6 @@ import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
 import type { HomeDocument, PageDocument, PageSeo } from "../types/pages";
-import { pickLocalizedString } from "../utils/sanityLocalizedText";
 
 const SITE_BASE_URL = (
 	process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
@@ -142,9 +141,10 @@ export type MetadataFromSanityPageDataInput = {
 };
 
 /**
- * `pickLocalizedString` + `resolveSanityMetadata` for route documents (home singleton or
- * `page` by slug). Pass `settingsSeo` from `fetchSettingsSeoFallback` so empty page-level
- * SEO falls back to site settings.
+ * `resolveSanityMetadata` for route documents (home singleton or `page` by slug).
+ * Pass `settingsSeo` from `fetchSettingsSeoFallback` so empty page-level SEO
+ * falls back to site settings. Under document-level translation `data.title` is
+ * already in the active locale (no resolver needed).
  */
 export function metadataFromSanityPageData({
 	data,
@@ -155,7 +155,7 @@ export function metadataFromSanityPageData({
 	path,
 	siteBrandTitle,
 }: MetadataFromSanityPageDataInput): Metadata {
-	const heading = pickLocalizedString(data.title, locale, siteLocale);
+	const heading = data.title?.trim() ?? "";
 	const brand = typeof siteBrandTitle === "string" ? siteBrandTitle.trim() : "";
 	return resolveSanityMetadata({
 		seo: data.seo,

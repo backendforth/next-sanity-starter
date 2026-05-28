@@ -22,14 +22,12 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale: raw } = await params;
-	const [siteLocale, siteTitle] = await Promise.all([
-		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle({ stega: false }),
-	]);
+	const siteLocale = await fetchSiteLanguageSettings({ stega: false });
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	if (!pathUtils.isAppLocale(raw)) {
 		notFound();
 	}
+	const siteTitle = await fetchSiteSettingsTitle(raw, { stega: false });
 	const suffix = siteTitle.trim() || "Site";
 	return {
 		title: {
@@ -48,7 +46,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 		notFound();
 	}
 	const locale = raw;
-	const siteNav = await fetchSiteNavMenus();
+	const siteNav = await fetchSiteNavMenus(locale);
 
 	return (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>

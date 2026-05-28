@@ -1,6 +1,6 @@
 import { DocumentTextIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
-import { validateSlug } from "../../utils/validateSlug";
+import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
 export const page = defineType({
@@ -22,9 +22,15 @@ export const page = defineType({
   ],
   fields: [
     {
+      name: "language",
+      type: "string",
+      readOnly: true,
+      hidden: true,
+    },
+    {
       name: "title",
       title: "Title",
-      type: "internationalizedArrayString",
+      type: "string",
       group: "editorial",
       validation: (rule) => rule.required(),
     },
@@ -32,10 +38,11 @@ export const page = defineType({
       name: "slug",
       title: "Path",
       description:
-        "URL path for this page (e.g. yoursite.com/my-path). Use lowercase letters, numbers, and hyphens.",
+        "URL path for this page (e.g. yoursite.com/my-path). Use lowercase letters, numbers, and hyphens. The same slug may be reused on different language variants.",
       type: "slug",
       options: {
         maxLength: 96,
+        isUnique: isUniqueLocaleAgnostic,
       },
       validation: validateSlug,
       group: "editorial",
@@ -50,12 +57,15 @@ export const page = defineType({
   ],
   preview: {
     select: {
+      title: "title",
       slug: "slug",
+      language: "language",
     },
-    prepare(selection) {
-      const { slug } = selection;
+    prepare({ title, slug, language }) {
+      const path = slug?.current?.trim() ? `/${slug.current}` : "Page";
       return {
-        title: slug?.current?.trim() ? `/${slug.current}` : "Page",
+        title: typeof title === "string" && title.trim() ? title : path,
+        subtitle: language ? `${path} · ${language}` : path,
       };
     },
   },

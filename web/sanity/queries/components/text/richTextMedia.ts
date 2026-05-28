@@ -3,14 +3,8 @@ import { moduleCarouselInnerFields } from "../modules/carousel";
 import { moduleContentRefsInnerFields } from "../modules/contentRefs";
 import { moduleMediaInnerFields } from "../modules/media";
 
-/**
- * Portable Text `value[]` for `internationalizedArrayRichTextMedia` / `richTextMedia`
- * (`objects/editors/richTextMedia.ts`): blocks, `module.media`, `module.carousel`,
- * `module.contentRefs`, `module.text` (nested `body` up to `depth` levels).
- */
-function buildRichTextMediaQuery(depth: number): string {
-	if (depth <= 0) {
-		return `
+/** Base case: plain blocks with resolved `link` marks (no embedded modules). */
+const blockAndLinks = `
     ...,
     _type == "block" => {
       ...,
@@ -22,19 +16,15 @@ function buildRichTextMediaQuery(depth: number): string {
       }
     }
   `;
-	}
 
-	return `
-    ...,
-    _type == "block" => {
-      ...,
-      markDefs[]{
-        ...,
-        _type == "link" => {
-          ${linkQuery}
-        }
-      }
-    },
+/**
+ * Portable Text `value[]` for schema `richTextMedia` (`objects/editors/richTextMedia.ts`):
+ * blocks, `module.media`, `module.carousel`, `module.contentRefs`, and `module.text`
+ * with one level of nesting (`module.text` inside `module.text`); deeper nestings fall
+ * back to blocks + links only. The flat shape keeps Sanity Typegen happy.
+ */
+export const richTextMediaQuery = `
+    ${blockAndLinks},
     _type == "module.media" => {
       ${moduleMediaInnerFields}
     },
@@ -47,16 +37,22 @@ function buildRichTextMediaQuery(depth: number): string {
     _type == "module.text" => {
       title,
       body[]{
-        _key,
-        _type,
-        language,
-        value[]{
-          ${buildRichTextMediaQuery(depth - 1)}
+        ${blockAndLinks},
+        _type == "module.media" => {
+          ${moduleMediaInnerFields}
+        },
+        _type == "module.carousel" => {
+          ${moduleCarouselInnerFields}
+        },
+        _type == "module.contentRefs" => {
+          ${moduleContentRefsInnerFields}
+        },
+        _type == "module.text" => {
+          title,
+          body[]{
+            ${blockAndLinks}
+          }
         }
       }
     }
   `;
-}
-
-/** Default nesting depth for `module.text` inside rich text (each level adds one `body[]` → `value[]`). */
-export const richTextMediaQuery = buildRichTextMediaQuery(3);

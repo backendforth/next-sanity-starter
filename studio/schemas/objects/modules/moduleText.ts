@@ -1,8 +1,6 @@
 import { TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
-
 export const moduleText = defineType({
   name: "module.text",
   title: "Text",
@@ -12,22 +10,22 @@ export const moduleText = defineType({
     {
       name: "title",
       title: "Title",
-      type: "internationalizedArrayString",
+      type: "string",
       validation: (rule) => rule.required(),
     },
     {
       name: "body",
       title: "Body",
-      type: "internationalizedArrayRichTextMedia",
+      type: "richTextMedia",
     },
   ],
   preview: {
     select: {
-      titleEntries: "title",
+      title: "title",
     },
-    prepare({ titleEntries }) {
+    prepare({ title }) {
       return {
-        title: firstLocalizedLabel(titleEntries, "Text"),
+        title: typeof title === "string" && title.trim() ? title : "Text",
         subtitle: "Text module",
       };
     },

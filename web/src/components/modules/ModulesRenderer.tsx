@@ -5,6 +5,7 @@ import type {
 	ModuleMediaData,
 	ModuleTextData,
 } from "@/sanity/types/modules";
+import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import { ModuleCarousel } from "@/src/components/carousel";
 import { ModuleMedia } from "./ModuleMedia";
@@ -12,6 +13,11 @@ import { ModuleText } from "./ModuleText";
 
 type Props = {
 	modules: ContentModule[];
+	/** Document `_id` of the page rendering these modules. Used to mark each
+	 * module as Presentation-tool clickable via `data-sanity`. */
+	documentId: string;
+	/** Document `_type` of the page rendering these modules. */
+	documentType: string;
 };
 
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -58,31 +64,45 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 }
 
 /** Renders the document `modules[]` stack (one UI block per `module.*` type). */
-export function ModulesRenderer({ modules }: Props) {
+export function ModulesRenderer({ modules, documentId, documentType }: Props) {
 	return (
 		<div className="flex flex-col gap-10">
 			{modules.map((mod, index) => {
 				const key = mod._key ?? `${mod._type ?? "module"}-${index}`;
-				if (mod._type === "module.text") {
-					return <ModuleText key={key} module={mod as ModuleTextData} />;
-				}
-				if (mod._type === "module.media") {
-					return <ModuleMedia key={key} module={mod as ModuleMediaData} />;
-				}
-				if (mod._type === "module.carousel") {
-					return (
-						<ModuleCarousel key={key} module={mod as ModuleCarouselData} />
-					);
-				}
-				if (mod._type === "module.contentRefs") {
-					return (
-						<ModuleContentRefsPlaceholder
-							key={key}
-							module={mod as ModuleContentRefsData}
-						/>
-					);
-				}
-				return <UnknownModule key={key} moduleType={mod._type} />;
+				// Only modules with a stable `_key` can be reverse-mapped to a
+				// GROQ path. Without `_key` (legacy data) the Presentation
+				// overlay would target the wrong array slot, so we skip it.
+				const sanityAttr = mod._key
+					? dataAttr({
+							id: documentId,
+							type: documentType,
+							path: `modules[_key=="${mod._key}"]`,
+						})
+					: undefined;
+				const child = (() => {
+					if (mod._type === "module.text") {
+						return <ModuleText module={mod as ModuleTextData} />;
+					}
+					if (mod._type === "module.media") {
+						return <ModuleMedia module={mod as ModuleMediaData} />;
+					}
+					if (mod._type === "module.carousel") {
+						return <ModuleCarousel module={mod as ModuleCarouselData} />;
+					}
+					if (mod._type === "module.contentRefs") {
+						return (
+							<ModuleContentRefsPlaceholder
+								module={mod as ModuleContentRefsData}
+							/>
+						);
+					}
+					return <UnknownModule moduleType={mod._type} />;
+				})();
+				return (
+					<div key={key} data-sanity={sanityAttr}>
+						{child}
+					</div>
+				);
 			})}
 		</div>
 	);

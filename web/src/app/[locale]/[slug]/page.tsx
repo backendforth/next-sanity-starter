@@ -76,7 +76,11 @@ export default async function Page({ params }: PageProps) {
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-4">
 						<h2>Modules</h2>
-						<ModulesRenderer modules={data.modules} />
+						<ModulesRenderer
+							modules={data.modules}
+							documentId={data._id}
+							documentType="page"
+						/>
 					</section>
 				) : null}
 			</main>

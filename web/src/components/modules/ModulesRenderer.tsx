@@ -9,6 +9,7 @@ import type {
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import { ModuleMedia } from "./ModuleMedia";
+import { ModulesRendererClient } from "./ModulesRendererClient";
 import { ModuleText } from "./ModuleText";
 
 /**

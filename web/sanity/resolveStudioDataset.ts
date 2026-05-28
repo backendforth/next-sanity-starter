@@ -15,7 +15,6 @@ export function getSanityStudioProjectId(
 ): string {
 	return (
 		env.SANITY_STUDIO_PROJECT_ID?.trim() ||
-		env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim() ||
 		""
 	);
 }

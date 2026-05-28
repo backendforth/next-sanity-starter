@@ -1,5 +1,3 @@
-"use client";
-
 import clsx from "clsx";
 import type { CSSProperties } from "react";
 
@@ -78,7 +76,8 @@ function buildSrcSet(image: SanityImageField, maxWidth: number): string {
  * Sanity-driven image: **native `<img>`** with deterministic Sanity CDN URLs (same SSR / client),
  * responsive `srcset` + `sizes` so the browser picks the right variant per container / viewport.
  *
- * Avoids `next/image` optimizer `src` / `srcSet` hydration drift.
+ * Server Component (no `"use client"`) so URLs are built once on the server and the
+ * layout boot script may add `.img-loaded` without React hydration conflicts.
  */
 export function MediaImage({
 	imagePayload,
@@ -129,21 +128,22 @@ export function MediaImage({
 					: { aspectRatio: `${cropped.width} / ${cropped.height}` }
 			}
 		>
-			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
-			<img
-				src={src}
-				srcSet={srcSet || undefined}
-				sizes={srcSet ? sizes : undefined}
-				alt={imageAltFromField(image, alt, caption)}
-				width={cropped.width}
-				height={cropped.height}
-				loading={priority ? "eager" : "lazy"}
-				fetchPriority={priority ? "high" : "auto"}
-				decoding={priority ? "sync" : "async"}
-				{...(!priority && { "data-lazy": "" })}
-				className="absolute inset-0 block h-full w-full max-w-none"
-				style={imgStyle}
-			/>
+		{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
+		<img
+			src={src}
+			srcSet={srcSet || undefined}
+			sizes={srcSet ? sizes : undefined}
+			alt={imageAltFromField(image, alt, caption)}
+			width={cropped.width}
+			height={cropped.height}
+			loading={priority ? "eager" : "lazy"}
+			fetchPriority={priority ? "high" : "auto"}
+			decoding={priority ? "sync" : "async"}
+			{...(!priority && { "data-lazy": "" })}
+			className="absolute inset-0 block h-full w-full max-w-none"
+			style={imgStyle}
+			suppressHydrationWarning
+		/>
 		</div>
 	);
 }

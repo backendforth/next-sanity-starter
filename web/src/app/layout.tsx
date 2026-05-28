@@ -89,9 +89,12 @@ export const metadata: Metadata = {
  *    `@media (prefers-color-scheme: dark)` rule in `variables/colors.css`
  *    takes over — works without JavaScript.
  * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
- * 3. Wires up the lazy-image fade-in: when an img[data-lazy] finishes loading,
- *    adds `.img-loaded` → CSS transition kicks in (0.2 s ease-in-out).
- * 4. MutationObserver covers images injected after initial paint (client nav).
+ *
+ * The lazy-image `img-loaded` class is added by `MediaImage` itself via
+ * `useEffect` — managing it from this inline script raced React 19 streaming
+ * hydration on cached images and produced "tree hydrated but attributes didn't
+ * match" warnings. Doing it through React's render flow keeps SSR and the
+ * first client paint identical.
  *
  * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
  */
@@ -103,30 +106,6 @@ const bootScript = `(function(){
     }
   }catch(e){}
   document.documentElement.classList.add('js-enabled');
-  function handle(img){
-    function add(){img.classList.add('img-loaded');}
-    /* Defer the className mutation past the current task so React 19 streaming
-       hydration reconciles the SSR markup before we touch it — otherwise images
-       served from cache produce a "tree hydrated but attributes didn't match"
-       warning (className diff: 'img-loaded' was added by this script). */
-    if(img.complete&&img.naturalWidth>0){requestAnimationFrame(add);}
-    else{
-      img.addEventListener('load',add,{once:true});
-      img.addEventListener('error',add,{once:true});
-    }
-  }
-  function scan(){document.querySelectorAll('img[data-lazy]').forEach(handle);}
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',scan);}
-  else{scan();}
-  new MutationObserver(function(recs){
-    recs.forEach(function(r){
-      r.addedNodes.forEach(function(n){
-        if(n.nodeType!==1)return;
-        if(n.matches&&n.matches('img[data-lazy]'))handle(n);
-        n.querySelectorAll&&n.querySelectorAll('img[data-lazy]').forEach(handle);
-      });
-    });
-  }).observe(document.documentElement,{childList:true,subtree:true});
 })();`;
 
 /**

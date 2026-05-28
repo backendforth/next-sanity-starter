@@ -11,6 +11,7 @@ import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { ModuleMedia } from "./ModuleMedia";
+import { ModulesRendererClient } from "./ModulesRendererClient";
 import { ModuleText } from "./ModuleText";
 
 /**
@@ -88,7 +89,58 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-/** Renders the document `modules[]` stack (one UI block per `module.*` type). */
+function renderModuleChild(
+	mod: ContentModule,
+	locale: string,
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
+) {
+	if (mod._type === "module.text") {
+		return (
+			<ModuleText
+				module={mod as ModuleTextData}
+				locale={locale}
+				siteLocale={siteLocale}
+			/>
+		);
+	}
+	if (mod._type === "module.media") {
+		return <ModuleMedia module={mod as ModuleMediaData} />;
+	}
+	if (mod._type === "module.carousel") {
+		return (
+			<ModuleCarousel
+				module={mod as ModuleCarouselData}
+				locale={locale}
+				siteLocale={siteLocale}
+			/>
+		);
+	}
+	if (mod._type === "module.contentRefs") {
+		return (
+			<ModuleContentRefsPlaceholder
+				module={mod as ModuleContentRefsData}
+				locale={locale}
+				siteLocale={siteLocale}
+			/>
+		);
+	}
+	return <UnknownModule moduleType={mod._type} />;
+}
+
+/**
+ * Renders the document `modules[]` stack. Each module is rendered server-side
+ * with the active locale baked in (so module bundles stay out of the page's
+ * client chunk and translations are resolved before crossing the RSC seam),
+ * then handed to a thin client wrapper that orchestrates optimistic reordering
+ * when Visual Editing dispatches a document update.
+ *
+ * Each module wrapper carries a field-level `data-sanity` path
+ * (`modules[_key=="..."]`) so Presentation jumps directly to the right slot.
+ * Modules without `_key` are kept in the initial order but cannot participate
+ * in optimistic reordering — they'd lose their slot on the next Sanity update.
+ * Production data from Sanity always carries `_key`s; this branch is only for
+ * legacy edge cases.
+ */
 export function ModulesRenderer({
 	modules,
 	locale,
@@ -96,59 +148,29 @@ export function ModulesRenderer({
 	documentId,
 	documentType,
 }: Props) {
+	const initialModules = modules.map((mod, index) => {
+		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
+		const sanityAttr = mod._key
+			? dataAttr({
+					id: documentId,
+					type: documentType,
+					path: `modules[_key=="${mod._key}"]`,
+				})
+			: undefined;
+		return {
+			_key: key,
+			rendered: (
+				<div data-sanity={sanityAttr}>
+					{renderModuleChild(mod, locale, siteLocale)}
+				</div>
+			),
+		};
+	});
+
 	return (
-		<div className="flex flex-col gap-10">
-			{modules.map((mod, index) => {
-				const key = mod._key ?? `${mod._type ?? "module"}-${index}`;
-				// Only modules with a stable `_key` can be reverse-mapped to a
-				// GROQ path. Without `_key` (legacy data) the Presentation
-				// overlay would target the wrong array slot, so we skip it.
-				const sanityAttr = mod._key
-					? dataAttr({
-							id: documentId,
-							type: documentType,
-							path: `modules[_key=="${mod._key}"]`,
-						})
-					: undefined;
-				const child = (() => {
-					if (mod._type === "module.text") {
-						return (
-							<ModuleText
-								module={mod as ModuleTextData}
-								locale={locale}
-								siteLocale={siteLocale}
-							/>
-						);
-					}
-					if (mod._type === "module.media") {
-						return <ModuleMedia module={mod as ModuleMediaData} />;
-					}
-					if (mod._type === "module.carousel") {
-						return (
-							<ModuleCarousel
-								module={mod as ModuleCarouselData}
-								locale={locale}
-								siteLocale={siteLocale}
-							/>
-						);
-					}
-					if (mod._type === "module.contentRefs") {
-						return (
-							<ModuleContentRefsPlaceholder
-								module={mod as ModuleContentRefsData}
-								locale={locale}
-								siteLocale={siteLocale}
-							/>
-						);
-					}
-					return <UnknownModule moduleType={mod._type} />;
-				})();
-				return (
-					<div key={key} data-sanity={sanityAttr}>
-						{child}
-					</div>
-				);
-			})}
-		</div>
+		<ModulesRendererClient
+			documentId={documentId}
+			initialModules={initialModules}
+		/>
 	);
 }

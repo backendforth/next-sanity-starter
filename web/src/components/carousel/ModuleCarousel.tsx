@@ -1,0 +1,126 @@
+"use client";
+
+import type {
+	ModuleCarouselData,
+	ModuleMediaData,
+	ResolvedMediaPayload,
+} from "@/sanity/types/modules";
+
+import type { NormalizedSlide } from "./CarouselSlide";
+import { CarouselViewport } from "./CarouselViewport";
+
+type Props = {
+	module: ModuleCarouselData;
+};
+
+const DEFAULT_AUTOPLAY_DELAY_MS = 5000;
+
+function payloadKind(
+	payload: ResolvedMediaPayload | null | undefined,
+): "image" | "video" | null {
+	if (!payload) return null;
+	if (payload.kind === "image" || payload.kind === "video") return payload.kind;
+	return null;
+}
+
+/** Normalize the GROQ `resolvedSlides` into a single shape `CarouselSlide` understands. */
+function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
+	const imagesOnly = module.imagesOnly !== false;
+
+	if (imagesOnly) {
+		const source = module.resolvedSlides ?? module.slides ?? [];
+		return source
+			.map((slide, index): NormalizedSlide | null => {
+				const media = slide.media ?? null;
+				const kind = payloadKind(media) ?? "image";
+				if (!media) return null;
+				return {
+					key: slide._key ?? `slide-${index}`,
+					kind,
+					media,
+				};
+			})
+			.filter((s): s is NormalizedSlide => s !== null);
+	}
+
+	const source = module.resolvedSlides;
+	if (source && source.length > 0) {
+		return source
+			.map((slide, index): NormalizedSlide | null => {
+				const resolved = slide.resolvedMedia;
+				if (!resolved) return null;
+				const kind = payloadKind(resolved.media) ?? resolved.kind ?? null;
+				if (!kind || !resolved.media) return null;
+				return {
+					key: slide._key ?? `slide-${index}`,
+					kind,
+					media: resolved.media,
+					poster: resolved.poster ?? undefined,
+					caption: resolved.caption ?? null,
+					videoSettings: resolved.videoSettings ?? null,
+				};
+			})
+			.filter((s): s is NormalizedSlide => s !== null);
+	}
+
+	const fallback = module.slidesMedia ?? [];
+	return fallback
+		.map((slide: ModuleMediaData, index): NormalizedSlide | null => {
+			if (slide.type === "image") {
+				const imagePayload =
+					slide.imageContent?.media ?? slide.imageContent?.image ?? null;
+				if (!imagePayload) return null;
+				return {
+					key: slide._key ?? `slide-${index}`,
+					kind: "image",
+					media: imagePayload,
+					caption: slide.imageContent?.caption ?? null,
+				};
+			}
+			if (slide.type === "video" && slide.videoContent) {
+				const muxField =
+					slide.videoContent.media ?? slide.videoContent.video ?? null;
+				if (!muxField) return null;
+				return {
+					key: slide._key ?? `slide-${index}`,
+					kind: "video",
+					media: muxField,
+					poster: slide.videoContent.poster ?? undefined,
+					caption: slide.videoContent.caption ?? null,
+					videoSettings: slide.videoContent.videoSettings ?? null,
+				};
+			}
+			return null;
+		})
+		.filter((s): s is NormalizedSlide => s !== null);
+}
+
+/**
+ * `module.carousel` renderer. Behavior fields (`loop`, `showThumbnails`, `showNavDots`,
+ * `autoplay`, `autoplayDelayMs`) come from Sanity and drive the embla viewport.
+ */
+export function ModuleCarousel({ module }: Props) {
+	const slides = normalizeSlides(module);
+	if (slides.length === 0) return null;
+
+	const heading = module.heading?.trim() ?? "";
+
+	return (
+		<section className="flex flex-col gap-4">
+			{heading ? <h2>{heading}</h2> : null}
+			<CarouselViewport
+				slides={slides}
+				options={{
+					loop: module.loop === true,
+					showThumbnails: module.showThumbnails === true,
+					showNavDots: module.showNavDots !== false,
+					autoplay: module.autoplay === true,
+					autoplayDelayMs:
+						typeof module.autoplayDelayMs === "number"
+							? module.autoplayDelayMs
+							: DEFAULT_AUTOPLAY_DELAY_MS,
+				}}
+			/>
+		</section>
+	);
+}

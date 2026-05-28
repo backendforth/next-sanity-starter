@@ -6,6 +6,7 @@ import type {
 	ModuleTextData,
 } from "@/sanity/types/modules";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
+import { ModuleCarousel } from "@/src/components/carousel";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModuleText } from "./ModuleText";
 
@@ -14,30 +15,6 @@ type Props = {
 };
 
 const IS_DEV = process.env.NODE_ENV === "development";
-
-/**
- * Carousel placeholder — schema + GROQ exist, no production renderer yet.
- * Renders a labeled placeholder in dev only; nothing in production so empty
- * Studio modules don't surface visible warnings to end users.
- */
-function ModuleCarouselPlaceholder({ module }: { module: ModuleCarouselData }) {
-	if (!IS_DEV) return null;
-	const heading = module.heading?.trim() ?? "";
-	const slideCount =
-		module.resolvedSlides?.length ??
-		module.slidesMedia?.length ??
-		module.slides?.length ??
-		0;
-	return (
-		<div className="rounded-md border border-dashed border-color-border-subtle p-4 text-sm text-color-text-muted">
-			<strong className="block">module.carousel</strong>
-			{heading ? <span className="block">heading: {heading}</span> : null}
-			<span className="block">
-				slides: {slideCount} (no frontend renderer yet)
-			</span>
-		</div>
-	);
-}
 
 function ModuleContentRefsPlaceholder({
 	module,
@@ -94,10 +71,7 @@ export function ModulesRenderer({ modules }: Props) {
 				}
 				if (mod._type === "module.carousel") {
 					return (
-						<ModuleCarouselPlaceholder
-							key={key}
-							module={mod as ModuleCarouselData}
-						/>
+						<ModuleCarousel key={key} module={mod as ModuleCarouselData} />
 					);
 				}
 				if (mod._type === "module.contentRefs") {

@@ -5,6 +5,11 @@ export type ModuleCarouselData = {
 	_key?: string;
 	heading?: string | null;
 	imagesOnly?: boolean | null;
+	loop?: boolean | null;
+	showThumbnails?: boolean | null;
+	showNavDots?: boolean | null;
+	autoplay?: boolean | null;
+	autoplayDelayMs?: number | null;
 	/** Image slides: each slide has `media` from `mediaQuery` (kind + payload). */
 	slides?: Array<{
 		_key?: string;

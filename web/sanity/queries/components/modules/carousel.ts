@@ -8,6 +8,11 @@ import { moduleMediaInnerFields, moduleMediaResolvedMediaQuery } from "./media";
 export const moduleCarouselInnerFields = `
   heading,
   imagesOnly,
+  loop,
+  showThumbnails,
+  showNavDots,
+  autoplay,
+  autoplayDelayMs,
   "slides": slides[]{
     _key,
     _type,

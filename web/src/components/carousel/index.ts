@@ -1,0 +1,1 @@
+export { ModuleCarousel } from "./ModuleCarousel";

@@ -3,7 +3,11 @@ import type { PortableTextBlock } from "@portabletext/types";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
-import type { ModuleMediaData } from "@/sanity/types/modules";
+import type {
+	ModuleCarouselData,
+	ModuleMediaData,
+} from "@/sanity/types/modules";
+import { ModuleCarousel } from "@/src/components/carousel";
 import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
 
 /**
@@ -132,7 +136,11 @@ function portableTextComponents(): Partial<PortableTextComponents> {
 					<ModuleMedia module={value as ModuleMediaData} />
 				</div>
 			),
-			"module.carousel": () => null,
+			"module.carousel": ({ value }) => (
+				<div className="rich-text-embed my-6 w-full min-w-0">
+					<ModuleCarousel module={value as ModuleCarouselData} />
+				</div>
+			),
 		},
 	};
 }

@@ -4,6 +4,7 @@ import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { DocumentBootScript } from "@/src/components/theme/DocumentBootScript";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
@@ -81,34 +82,6 @@ export const metadata: Metadata = {
 };
 
 /**
- * Tiny blocking inline script — runs synchronously before hydration.
- *
- * 1. Applies the stored theme override (`localStorage["color-scheme"]`) as
- *    `data-theme="light" | "dark"` on <html> **before** the first paint. For
- *    `"system"` or a missing value the attribute stays unset, so the
- *    `@media (prefers-color-scheme: dark)` rule in `variables/colors.css`
- *    takes over — works without JavaScript.
- * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
- *
- * The lazy-image `img-loaded` class is added by `MediaImage` itself via
- * `useEffect` — managing it from this inline script raced React 19 streaming
- * hydration on cached images and produced "tree hydrated but attributes didn't
- * match" warnings. Doing it through React's render flow keeps SSR and the
- * first client paint identical.
- *
- * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
- */
-const bootScript = `(function(){
-  try{
-    var t=localStorage.getItem('color-scheme');
-    if(t==='light'||t==='dark'){
-      document.documentElement.setAttribute('data-theme',t);
-    }
-  }catch(e){}
-  document.documentElement.classList.add('js-enabled');
-})();`;
-
-/**
  * Root shell only — avoid `headers()` here (keeps static routes static where possible).
  * `draftMode()` only toggles Visual Editing UI; locale chrome lives in `app/[locale]/layout.tsx`.
  * `lang` defaults to the site default; `LanguageProvider` syncs `<html lang>` on the client after navigation.
@@ -132,10 +105,6 @@ export default async function RootLayout({
 			suppressHydrationWarning
 		>
 			<head>
-				{/* Theme class + lazy-image fade-in — must run before first paint */}
-				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: controlled inline script, no user input */}
-				<script dangerouslySetInnerHTML={{ __html: bootScript }} />
-
 				{/* ── Resource Hints ─────────────────────────────────────────────────── */}
 				{/* Sanity image CDN — used by every MediaImage */}
 				<link rel="preconnect" href="https://cdn.sanity.io" />
@@ -150,6 +119,8 @@ export default async function RootLayout({
 				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
+				{/* Theme + js-enabled — injected in <head> via useServerInsertedHTML */}
+				<DocumentBootScript />
 				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? (
 					<SanityLive

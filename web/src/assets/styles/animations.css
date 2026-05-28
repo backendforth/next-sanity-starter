@@ -2,7 +2,7 @@
  * ── Lazy-image fade-in ──────────────────────────────────────────────────────
  *
  * Progressive enhancement — only activates when JS is available.
- * The inline script in layout.tsx adds `.js-enabled` to <html> synchronously
+ * DocumentBootScript adds `.js-enabled` to <html> synchronously
  * before the first paint, so there is no flash of invisible content.
  *
  * Without JS: `.js-enabled` is never set → images stay at opacity: 1 (default)

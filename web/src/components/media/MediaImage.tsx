@@ -130,21 +130,21 @@ export function MediaImage({
 					: { aspectRatio: `${cropped.width} / ${cropped.height}` }
 			}
 		>
-		{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
-		<img
-			src={src}
-			srcSet={srcSet || undefined}
-			sizes={srcSet ? sizes : undefined}
-			alt={imageAltFromField(image, alt, caption)}
-			width={cropped.width}
-			height={cropped.height}
-			loading={priority ? "eager" : "lazy"}
-			fetchPriority={priority ? "high" : "auto"}
-			decoding={priority ? "sync" : "async"}
-			{...(!priority && { "data-lazy": "" })}
-			className="absolute inset-0 block h-full w-full max-w-none"
-			style={imgStyle}
-		/>
+			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
+			<img
+				src={src}
+				srcSet={srcSet || undefined}
+				sizes={srcSet ? sizes : undefined}
+				alt={imageAltFromField(image, alt, caption)}
+				width={cropped.width}
+				height={cropped.height}
+				loading={priority ? "eager" : "lazy"}
+				fetchPriority={priority ? "high" : "auto"}
+				decoding={priority ? "sync" : "async"}
+				{...(!priority && { "data-lazy": "" })}
+				className="absolute inset-0 block h-full w-full max-w-none"
+				style={imgStyle}
+			/>
 		</div>
 	);
 }

@@ -8,13 +8,15 @@
 		"start": "next start",
 		"lint": "pnpm --workspace-root exec biome check web",
 		"format": "pnpm --workspace-root exec biome format --write web",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"generate": "sanity typegen generate"
 	},
 	"dependencies": {
 		"@mux/mux-player-react": "^3.13.0",
 		"@portabletext/react": "^6.2.0",
 		"@portabletext/types": "^4.0.2",
 		"@repo/sanity-dataset-resolve": "workspace:*",
+		"@sanity/client": "^7.22.0",
 		"@sanity/image-url": "^2.1.1",
 		"clsx": "^2.1.1",
 		"hls.js": "^1.6.16",
@@ -34,6 +36,7 @@
 		"postcss-functions": "^4.0.2",
 		"postcss-import": "^16.1.1",
 		"postcss-nested-ancestors": "^3.0.0",
+		"sanity": "^5.27.0",
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.3"
 	}

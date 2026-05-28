@@ -14,6 +14,10 @@ import {
 	siteLanguageSettingsQuery,
 	sitemapPagesQuery,
 } from "./queries";
+import type {
+	PageSlugsQueryResult,
+	SitemapPagesQueryResult,
+} from "./sanity.types.gen";
 import type { HomeDocument, PageDocument } from "./types/pages";
 import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
@@ -100,13 +104,7 @@ export const cachedHomeDocument = cache(async () => {
 
 // ── Sitemap snapshot ────────────────────────────────────────────────────────
 
-type SitemapRow = {
-	_id: string;
-	_type: string;
-	_updatedAt: string;
-	slug: string | null;
-	path: string;
-};
+type SitemapRow = SitemapPagesQueryResult[number];
 
 const fetchSitemapPagesCached = unstable_cache(
 	async () => client.fetch<SitemapRow[]>(sitemapPagesQuery),
@@ -131,7 +129,7 @@ export const cachedSitemapPages = cache(async (): Promise<SitemapRow[]> => {
 // ── `generateStaticParams` slug list ────────────────────────────────────────
 
 const fetchPageSlugsCached = unstable_cache(
-	async () => client.fetch<{ slug?: string }[] | null>(pageSlugsQuery),
+	async () => client.fetch<PageSlugsQueryResult | null>(pageSlugsQuery),
 	["page-slugs"],
 	{
 		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
@@ -139,10 +137,12 @@ const fetchPageSlugsCached = unstable_cache(
 	},
 );
 
-export const cachedPageSlugs = cache(async () => {
-	if (!isSanityConfigured) return [] as { slug?: string }[];
-	return (await fetchPageSlugsCached()) ?? [];
-});
+export const cachedPageSlugs = cache(
+	async (): Promise<PageSlugsQueryResult> => {
+		if (!isSanityConfigured) return [];
+		return (await fetchPageSlugsCached()) ?? [];
+	},
+);
 
 // ── Site language settings (no-token path only) ─────────────────────────────
 //

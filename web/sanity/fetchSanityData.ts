@@ -13,6 +13,7 @@ import {
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 } from "./queries";
+import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { SiteNavMenusDocument } from "./types/nav";
 import type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
@@ -48,8 +49,6 @@ export const fetchPageBySlug = cache(
 	},
 );
 
-type SiteSettingsTitleRow = { title?: string | null } | null;
-
 /**
  * `siteSettings.title` — brand string for `<title>` template (`%s | …`) and Open Graph `siteName`.
  * Falls back to `"Site"` when Sanity is off or the document/title is missing.
@@ -61,7 +60,7 @@ export const fetchSiteSettingsTitle = cache(
 			query: siteSettingsTitleQuery,
 			...options,
 		});
-		const row = data as SiteSettingsTitleRow;
+		const row = data as SiteSettingsTitleQueryResult;
 		const t = typeof row?.title === "string" ? row.title.trim() : "";
 		return t || "Site";
 	},

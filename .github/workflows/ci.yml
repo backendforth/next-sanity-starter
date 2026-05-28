@@ -58,6 +58,12 @@ jobs:
       - run: pnpm --filter studio run generate
         env:
           SANITY_STUDIO_PROJECT_ID: ci-placeholder
+      # Web typegen reads the (just-regenerated) `studio/schema.json` and the
+      # `defineQuery` usages in `web/sanity/queries/**`. A placeholder project id
+      # is enough — typegen never calls the Sanity API.
+      - run: pnpm --filter web run generate
+        env:
+          SANITY_STUDIO_PROJECT_ID: ci-placeholder
       - name: Ensure schema typegen produced no changes
         run: git diff --exit-code
 

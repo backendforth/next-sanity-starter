@@ -1,3 +1,5 @@
+import { defineQuery } from "next-sanity";
+
 import { modulesQuery } from "../components/modules";
 import { linkQuery } from "./link";
 import { imageQuery } from "./media";
@@ -61,6 +63,11 @@ export const siteNavQuery = `*[_id == "siteNav"][0]{
 }`;
 
 /** Same resolved menus as `siteNavQuery` without `modules[]` (lighter layout fetch). */
+/**
+ * Not wrapped in `defineQuery`: Sanity Typegen cannot resolve the `link`
+ * projection here and mis-types `mainMenu`/`footerMenu` as `null`. The
+ * hand-written `SiteNavMenusDocument` (sanity/types/nav.ts) is authoritative.
+ */
 export const siteNavMenusQuery = `*[_id == "siteNav"][0]{
   _id,
   title,
@@ -68,21 +75,25 @@ export const siteNavMenusQuery = `*[_id == "siteNav"][0]{
 }`;
 
 /** Document id: `siteLanguageSettings` — drives Next routes + `internationalizedArray` codegen in Studio. */
-export const siteLanguageSettingsQuery = `*[_id == "siteLanguageSettings"][0]{
+export const siteLanguageSettingsQuery =
+	defineQuery(`*[_id == "siteLanguageSettings"][0]{
   _id,
   availableLanguages[]{id, title},
   defaultLanguageId
-}`;
+}`);
 
 /** Minimal fetch for `app/[locale]/layout.tsx` `generateMetadata` (tab title template). */
-export const siteSettingsTitleQuery = `*[_id == "siteSettings"][0]{title}`;
+export const siteSettingsTitleQuery = defineQuery(
+	`*[_id == "siteSettings"][0]{title}`,
+);
 
 /** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
-export const siteSettingsSeoFallbackQuery = `*[_id == "siteSettings"][0]{
+export const siteSettingsSeoFallbackQuery =
+	defineQuery(`*[_id == "siteSettings"][0]{
   "title": seo.title,
   "description": seo.description,
   "imageUrl": seo.image.asset->url
-}`;
+}`);
 
 /** Document id: `siteSettings`. */
 export const siteSettingsQuery = `*[_id == "siteSettings"][0]{

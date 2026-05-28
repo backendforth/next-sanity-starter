@@ -104,10 +104,15 @@ const bootScript = `(function(){
   }catch(e){}
   document.documentElement.classList.add('js-enabled');
   function handle(img){
-    if(img.complete&&img.naturalWidth>0){img.classList.add('img-loaded');}
+    function add(){img.classList.add('img-loaded');}
+    /* Defer the className mutation past the current task so React 19 streaming
+       hydration reconciles the SSR markup before we touch it — otherwise images
+       served from cache produce a "tree hydrated but attributes didn't match"
+       warning (className diff: 'img-loaded' was added by this script). */
+    if(img.complete&&img.naturalWidth>0){requestAnimationFrame(add);}
     else{
-      img.addEventListener('load',function(){img.classList.add('img-loaded');},{once:true});
-      img.addEventListener('error',function(){img.classList.add('img-loaded');},{once:true});
+      img.addEventListener('load',add,{once:true});
+      img.addEventListener('error',add,{once:true});
     }
   }
   function scan(){document.querySelectorAll('img[data-lazy]').forEach(handle);}

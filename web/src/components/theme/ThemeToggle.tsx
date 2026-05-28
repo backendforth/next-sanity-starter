@@ -13,7 +13,7 @@ export function ThemeToggle() {
 	const { theme, setTheme } = useTheme();
 
 	return (
-		<fieldset className="inline-flex shrink-0 rounded-sm border border-color-border-subtle p-0.5 text-sm">
+		<fieldset className="inline-flex w-fit shrink-0 rounded-sm border border-color-border-subtle p-0.5 text-sm">
 			<legend className="sr-only">Color scheme</legend>
 			{OPTIONS.map((option) => {
 				const selected = theme === option.value;

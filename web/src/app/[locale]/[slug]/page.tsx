@@ -92,6 +92,8 @@ export default async function Page({ params }: PageProps) {
 							modules={data.modules}
 							locale={locale}
 							siteLocale={siteLocale}
+							documentId={data._id}
+							documentType="page"
 						/>
 					</section>
 				) : null}

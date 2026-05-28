@@ -82,6 +82,8 @@ export default async function Home({ params }: PageProps) {
 							modules={data.modules}
 							locale={locale}
 							siteLocale={siteLocale}
+							documentId={data._id}
+							documentType="home"
 						/>
 					</section>
 				) : null}

@@ -1,3 +1,4 @@
+export { dataAttr } from "./dataAttr";
 export * from "./sanityImageBuilder";
 export {
 	type IntlRichTextEntry,

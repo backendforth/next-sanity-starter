@@ -4,7 +4,7 @@
 
 Import from `@/sanity/queries`.
 
-## Exports
+## Contents
 
 | File | Export | Description |
 |------|--------|-------------|

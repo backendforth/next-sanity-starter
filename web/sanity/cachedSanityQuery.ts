@@ -40,9 +40,9 @@ export const cachedSanityQuery = cache(async <T>(query: string) => {
 // ── Tag constants (kept in sync with `/api/revalidate`) ─────────────────────
 
 export const SANITY_CACHE_TAGS = {
-	home: "home",
+	home: (locale: string) => `home-${locale}`,
 	pages: "pages",
-	pageSlug: (slug: string) => `page-${slug}`,
+	pageSlug: (slug: string, locale: string) => `page-${slug}-${locale}`,
 	sitemap: "site-pages",
 	siteLanguageSettings: "site-language-settings",
 } as const;
@@ -50,46 +50,52 @@ export const SANITY_CACHE_TAGS = {
 // ── Page-by-slug ────────────────────────────────────────────────────────────
 
 /**
- * `pageBySlugQuery` with `$slug` — one fetch per slug per request.
+ * `pageBySlugQuery` with `$slug` and `$locale` — one fetch per slug+locale per request.
  *
  * Combines React `cache()` (per-request) with `unstable_cache` (cross-request).
- * Revalidates via tag `page-{slug}` or time-based after `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS`.
+ * Revalidates via tag `page-{slug}-{locale}` or time-based after
+ * `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS`.
  */
-export const cachedPageDocumentBySlug = cache(async (slug: string) => {
-	if (!isSanityConfigured) return { data: null as PageDocument | null };
-	const fetchPage = unstable_cache(
-		async () =>
-			client.fetch<PageDocument | null>(pageBySlugQuery, {
-				slug,
-			}),
-		[`page-${slug}`],
-		{
-			revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-			tags: [`page-${slug}`, SANITY_CACHE_TAGS.pages],
-		},
-	);
-	const data = await fetchPage();
-	return { data };
-});
-
-// ── Home singleton ──────────────────────────────────────────────────────────
-
-const fetchHomeDocumentCached = unstable_cache(
-	async () => client.fetch<HomeDocument | null>(homeQuery),
-	["home-document"],
-	{
-		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-		tags: [SANITY_CACHE_TAGS.home],
+export const cachedPageDocumentBySlug = cache(
+	async (slug: string, locale: string) => {
+		if (!isSanityConfigured) return { data: null as PageDocument | null };
+		const tag = SANITY_CACHE_TAGS.pageSlug(slug, locale);
+		const fetchPage = unstable_cache(
+			async () =>
+				client.fetch<PageDocument | null>(pageBySlugQuery, {
+					slug,
+					locale,
+				}),
+			[tag],
+			{
+				revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
+				tags: [tag, SANITY_CACHE_TAGS.pages],
+			},
+		);
+		const data = await fetchPage();
+		return { data };
 	},
 );
 
+// ── Home singleton (per language) ──────────────────────────────────────────
+
 /**
- * Home singleton — cross-request cached with tag `home`.
- * Call from `generateMetadata` and the page: one Sanity request per request (React `cache` dedupe).
+ * Home singleton — one document per language. Cross-request cached with tag
+ * `home-{locale}`. React `cache` dedupes within a request when `generateMetadata`
+ * and the page component both request the same locale.
  */
-export const cachedHomeDocument = cache(async () => {
+export const cachedHomeDocument = cache(async (locale: string) => {
 	if (!isSanityConfigured) return { data: null as HomeDocument | null };
-	const data = await fetchHomeDocumentCached();
+	const tag = SANITY_CACHE_TAGS.home(locale);
+	const fetchHome = unstable_cache(
+		async () => client.fetch<HomeDocument | null>(homeQuery, { locale }),
+		[tag],
+		{
+			revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
+			tags: [tag],
+		},
+	);
+	const data = await fetchHome();
 	return { data };
 });
 
@@ -102,11 +108,7 @@ const fetchSitemapPagesCached = unstable_cache(
 	["sitemap-pages"],
 	{
 		revalidate: 3600,
-		tags: [
-			SANITY_CACHE_TAGS.sitemap,
-			SANITY_CACHE_TAGS.pages,
-			SANITY_CACHE_TAGS.home,
-		],
+		tags: [SANITY_CACHE_TAGS.sitemap, SANITY_CACHE_TAGS.pages],
 	},
 );
 
@@ -117,7 +119,7 @@ export const cachedSitemapPages = cache(async (): Promise<SitemapRow[]> => {
 	return fetchSitemapPagesCached();
 });
 
-// ── `generateStaticParams` slug list ────────────────────────────────────────
+// ── `generateStaticParams` slug list (all languages) ───────────────────────
 
 const fetchPageSlugsCached = unstable_cache(
 	async () => client.fetch<PageSlugsQueryResult | null>(pageSlugsQuery),

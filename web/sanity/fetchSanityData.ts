@@ -27,22 +27,25 @@ type LiveFetchOptions = {
 };
 
 /** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
-export const fetchHomeDocument = cache(async (options?: LiveFetchOptions) => {
-	if (!isSanityConfigured) return null;
-	const { data } = await sanityFetch({
-		query: homeQuery,
-		...options,
-	});
-	return data as HomeDocument | null;
-});
+export const fetchHomeDocument = cache(
+	async (locale: string, options?: LiveFetchOptions) => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: homeQuery,
+			params: { locale },
+			...options,
+		});
+		return data as HomeDocument | null;
+	},
+);
 
 /** Dedupes page fetches; pass `{ stega: false }` in `generateMetadata`. */
 export const fetchPageBySlug = cache(
-	async (slug: string, options?: LiveFetchOptions) => {
+	async (slug: string, locale: string, options?: LiveFetchOptions) => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: pageBySlugQuery,
-			params: { slug },
+			params: { slug, locale },
 			...options,
 		});
 		return data as PageDocument | null;
@@ -54,10 +57,11 @@ export const fetchPageBySlug = cache(
  * Falls back to `"Site"` when Sanity is off or the document/title is missing.
  */
 export const fetchSiteSettingsTitle = cache(
-	async (options?: LiveFetchOptions): Promise<string> => {
+	async (locale: string, options?: LiveFetchOptions): Promise<string> => {
 		if (!isSanityConfigured) return "Site";
 		const { data } = await sanityFetch({
 			query: siteSettingsTitleQuery,
+			params: { locale },
 			...options,
 		});
 		const row = data as SiteSettingsTitleQueryResult;
@@ -71,10 +75,11 @@ export const fetchSiteSettingsTitle = cache(
  * (React `cache`) instead of joining on every home/page GROQ query.
  */
 export const fetchSettingsSeoFallback = cache(
-	async (options?: LiveFetchOptions): Promise<PageSeo> => {
+	async (locale: string, options?: LiveFetchOptions): Promise<PageSeo> => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: siteSettingsSeoFallbackQuery,
+			params: { locale },
 			...options,
 		});
 		return data as PageSeo;
@@ -82,10 +87,11 @@ export const fetchSettingsSeoFallback = cache(
 );
 
 /** `siteNav` main/footer menus with resolved links; no embedded modules. */
-export const fetchSiteNavMenus = cache(async () => {
+export const fetchSiteNavMenus = cache(async (locale: string) => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: siteNavMenusQuery,
+		params: { locale },
 	});
 	return data as SiteNavMenusDocument | null;
 });
@@ -99,15 +105,16 @@ function draftClientForSiteLanguageSettings(token: string) {
 }
 
 /**
- * Document id: `siteLanguageSettings` — locales, default, labels for routing + i18n resolution.
+ * Document id: `siteLanguageSettings` — the global locale registry. Drives routing
+ * (default + available locales) and is NOT itself per-language.
  *
- * Uses `client.fetch` (not `sanityFetch`) so `generateStaticParams` can run at build time
- * without `draftMode()`. The published path is wrapped in `unstable_cache` (tag
+ * Uses `client.fetch` (not `sanityFetch`) so `generateStaticParams` can run at build
+ * time without `draftMode()`. The published path is wrapped in `unstable_cache` (tag
  * `site-language-settings`) so cross-request reads are deduped — Sanity webhooks for
  * `siteLanguageSettings` invalidate the tag through `/api/revalidate`.
  *
- * With `SANITY_API_READ_TOKEN`, uses **drafts** perspective so unpublished language changes
- * show in dev. Token-mode skips `unstable_cache` (drafts must always be fresh).
+ * With `SANITY_API_READ_TOKEN`, uses **drafts** perspective so unpublished language
+ * changes show in dev. Token-mode skips `unstable_cache` (drafts must always be fresh).
  */
 export const fetchSiteLanguageSettings = cache(
 	async (_options?: LiveFetchOptions): Promise<SiteLocaleConfig> => {
@@ -123,12 +130,15 @@ export const fetchSiteLanguageSettings = cache(
 	},
 );
 
-/** Document id: `errorSettings` — 404 / 500 copy from Studio. */
-export const fetchErrorSettings = cache(async (options?: LiveFetchOptions) => {
-	if (!isSanityConfigured) return null;
-	const { data } = await sanityFetch({
-		query: errorSettingsQuery,
-		...options,
-	});
-	return data as ErrorSettingsDocument | null;
-});
+/** Document type: `errorSettings` — 404 / 500 copy from Studio (one per language). */
+export const fetchErrorSettings = cache(
+	async (locale: string, options?: LiveFetchOptions) => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: errorSettingsQuery,
+			params: { locale },
+			...options,
+		});
+		return data as ErrorSettingsDocument | null;
+	},
+);

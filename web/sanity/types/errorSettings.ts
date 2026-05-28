@@ -1,11 +1,13 @@
-import type { IntlRichTextEntry, IntlStringEntry } from "../utils";
+import type { PortableTextBlock } from "@portabletext/types";
+
 import type { ContentModule } from "./modules";
 
 export type ErrorSettingsDocument = {
 	_id: string;
-	notFoundTitle?: IntlStringEntry[] | null;
-	notFoundBody?: IntlRichTextEntry[] | null;
-	serverErrorTitle?: IntlStringEntry[] | null;
-	serverErrorBody?: IntlRichTextEntry[] | null;
+	language?: string | null;
+	notFoundTitle?: string | null;
+	notFoundBody?: PortableTextBlock[] | null;
+	serverErrorTitle?: string | null;
+	serverErrorBody?: PortableTextBlock[] | null;
 	modules?: ContentModule[] | null;
 };

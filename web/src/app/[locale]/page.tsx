@@ -29,10 +29,10 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
 	const { locale } = await params;
 	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
-		fetchHomeDocument({ stega: false }),
+		fetchHomeDocument(locale, { stega: false }),
 		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle({ stega: false }),
-		fetchSettingsSeoFallback({ stega: false }),
+		fetchSiteSettingsTitle(locale, { stega: false }),
+		fetchSettingsSeoFallback(locale, { stega: false }),
 	]);
 	if (!data) {
 		return {
@@ -53,19 +53,15 @@ export async function generateMetadata({
 
 export default async function Home({ params }: PageProps) {
 	const { locale } = await params;
-	const [data, siteLocale] = await Promise.all([
-		fetchHomeDocument(),
-		fetchSiteLanguageSettings(),
-	]);
+	const data = await fetchHomeDocument(locale);
 
 	if (!data) {
 		return (
 			<div className="flex flex-col flex-1 bg-color-bg">
 				<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-6 px-6 py-16 sm:px-8">
 					<p>
-						Home singleton is not in the dataset yet. Create it in Sanity Studio
-						(document id <code>home</code>
-						).
+						No <code>home</code> document for <code>{locale}</code> yet. Create
+						one in Sanity Studio.
 					</p>
 				</main>
 			</div>
@@ -78,11 +74,7 @@ export default async function Home({ params }: PageProps) {
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-4">
 						<h2>Modules</h2>
-						<ModulesRenderer
-							modules={data.modules}
-							locale={locale}
-							siteLocale={siteLocale}
-						/>
+						<ModulesRenderer modules={data.modules} />
 					</section>
 				) : null}
 			</main>

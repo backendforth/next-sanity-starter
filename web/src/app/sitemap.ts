@@ -8,12 +8,19 @@ const BASE_URL = (
 ).replace(/\/$/, "");
 
 /**
- * Refresh on tag invalidation (`pages`, `home`, `site-language-settings`, `site-pages`)
- * via `/api/revalidate`. The 1 h fail-safe revalidate ensures editors who skip the
- * webhook still get fresh sitemaps within reasonable time.
+ * Refresh on tag invalidation (`pages`, `site-pages`, `site-language-settings`)
+ * via `/api/revalidate`. The 1 h fail-safe revalidate ensures editors who skip
+ * the webhook still get fresh sitemaps within reasonable time.
  */
 export const revalidate = 3600;
 
+/**
+ * One sitemap entry per language variant of a routable document. With
+ * document-level translation each language is its own document — slugs may
+ * differ between languages, and the cross-locale relationship lives in
+ * `translation.metadata` (not queried here). Hreflang alternates are
+ * therefore omitted; add them in a follow-up if you need them.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const [pages, siteLocale] = await Promise.all([
 		cachedSitemapPages(),
@@ -24,31 +31,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const entries: MetadataRoute.Sitemap = [];
 
 	for (const page of pages) {
-		for (const locale of siteLocale.localeIds) {
-			const pathname = pathUtils.localePath(page.path, locale);
-			const url = `${BASE_URL}${pathname === "/" ? "" : pathname}` || BASE_URL;
+		const language =
+			typeof page.language === "string" && page.language.trim()
+				? page.language.trim()
+				: siteLocale.defaultLocale;
+		const pathname = pathUtils.localePath(page.path, language);
+		const url = `${BASE_URL}${pathname === "/" ? "" : pathname}` || BASE_URL;
 
-			const languages: Record<string, string> = {};
-			for (const altLocale of siteLocale.localeIds) {
-				const altPath = pathUtils.localePath(page.path, altLocale);
-				languages[altLocale] =
-					`${BASE_URL}${altPath === "/" ? "" : altPath}` || BASE_URL;
-			}
-			const xDefaultPath = pathUtils.localePath(
-				page.path,
-				siteLocale.defaultLocale,
-			);
-			languages["x-default"] =
-				`${BASE_URL}${xDefaultPath === "/" ? "" : xDefaultPath}` || BASE_URL;
-
-			entries.push({
-				url,
-				lastModified: page._updatedAt,
-				changeFrequency: page._type === "home" ? "daily" : "weekly",
-				priority: page._type === "home" ? 1.0 : 0.8,
-				alternates: { languages },
-			});
-		}
+		entries.push({
+			url,
+			lastModified: page._updatedAt,
+			changeFrequency: page._type === "home" ? "daily" : "weekly",
+			priority: page._type === "home" ? 1.0 : 0.8,
+		});
 	}
 
 	return entries;

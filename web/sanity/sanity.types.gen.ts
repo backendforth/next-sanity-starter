@@ -26,83 +26,6 @@ export type VideoSettings = {
   controls?: boolean;
 };
 
-export type SiteCookieBanner = {
-  _id: string;
-  _type: "siteCookieBanner";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title?: string;
-  useCookieBanner?: boolean;
-  consentModal?: {
-    description?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
-    showPreferencesBtn?: string;
-  };
-  preferencesModal?: {
-    title?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
-    savePreferencesBtn?: string;
-    sections?: Code;
-  };
-};
-
-export type Code = {
-  _type: "code";
-  language?: string;
-  filename?: string;
-  code?: string;
-  highlightedLines?: Array<number>;
-};
-
-export type ErrorSettings = {
-  _id: string;
-  _type: "errorSettings";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  notFoundTitle: InternationalizedArrayString;
-  notFoundBody?: InternationalizedArrayRichText;
-  serverErrorTitle: InternationalizedArrayString;
-  serverErrorBody?: InternationalizedArrayRichText;
-};
-
-export type InternationalizedArrayRichText = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayRichTextValue
->;
-
-export type InternationalizedArrayString = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayStringValue
->;
-
-export type SiteNav = {
-  _id: string;
-  _type: "siteNav";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title?: string;
-  mainMenu?: Array<
-    | ({
-        _key: string;
-      } & Link)
-    | ({
-        _key: string;
-      } & NavLanguageSwitch)
-  >;
-  footerMenu?: Array<
-    {
-      _key: string;
-    } & Link
-  >;
-};
-
 export type SiteLanguageSettings = {
   _id: string;
   _type: "siteLanguageSettings";
@@ -117,59 +40,6 @@ export type SiteLanguageSettings = {
     _key: string;
   }>;
   defaultLanguageId: string;
-};
-
-export type SanityImageAssetReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-};
-
-export type SiteSettings = {
-  _id: string;
-  _type: "siteSettings";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title: string;
-  favicon?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  seo?: SeoFallback;
-};
-
-export type SeoFallback = {
-  _type: "seo.fallback";
-  title?: string;
-  description?: string;
-  image?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
 };
 
 export type RichTextMedia = Array<
@@ -220,8 +90,8 @@ export type RichText = Array<{
 
 export type ModuleText = {
   _type: "module.text";
-  title: InternationalizedArrayString;
-  body?: InternationalizedArrayRichTextMedia;
+  title: string;
+  body?: RichTextMedia;
 };
 
 export type HomeReference = {
@@ -240,7 +110,7 @@ export type PageReference = {
 
 export type ModuleContentRefs = {
   _type: "module.contentRefs";
-  heading?: InternationalizedArrayString;
+  heading?: string;
   allowMultiple?: boolean;
   reference?: HomeReference | PageReference;
   references?: ArrayOf<HomeReference | PageReference>;
@@ -253,9 +123,16 @@ export type ModuleMedia = {
   videoContent?: MediaVideo;
 };
 
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
 export type ModuleCarousel = {
   _type: "module.carousel";
-  heading?: InternationalizedArrayString;
+  heading?: string;
   imagesOnly?: boolean;
   slides?: Array<{
     asset?: SanityImageAssetReference;
@@ -313,13 +190,204 @@ export type Link = {
   func?: LinkFunctions;
 };
 
+export type SeoFallback = {
+  _type: "seo.fallback";
+  title?: string;
+  description?: string;
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
+export type SeoPage = {
+  _type: "seo.page";
+  title?: string;
+  description?: string;
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
+export type LinkFunctions = {
+  _type: "linkFunctions";
+  key: "scroll-to" | "open-modal";
+  params?: string;
+};
+
+export type TranslationMetadata = {
+  _id: string;
+  _type: "translation.metadata";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  translations?: InternationalizedArrayReference;
+  schemaTypes?: Array<string>;
+};
+
+export type InternationalizedArrayReference = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayReferenceValue
+>;
+
+export type ErrorSettingsReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "errorSettings";
+};
+
+export type SiteNavReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "siteNav";
+};
+
+export type SiteSettingsReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "siteSettings";
+};
+
+export type SiteCookieBannerReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "siteCookieBanner";
+};
+
+export type InternationalizedArrayReferenceValue = {
+  _type: "internationalizedArrayReferenceValue";
+  value?:
+    | HomeReference
+    | PageReference
+    | ErrorSettingsReference
+    | SiteNavReference
+    | SiteSettingsReference
+    | SiteCookieBannerReference;
+  language: string;
+};
+
+export type SiteCookieBanner = {
+  _id: string;
+  _type: "siteCookieBanner";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title?: string;
+  useCookieBanner?: boolean;
+  consentModal?: {
+    description?: string;
+    acceptAllBtn?: string;
+    acceptNecessaryBtn?: string;
+    showPreferencesBtn?: string;
+  };
+  preferencesModal?: {
+    title?: string;
+    acceptAllBtn?: string;
+    acceptNecessaryBtn?: string;
+    savePreferencesBtn?: string;
+    sections?: Code;
+  };
+};
+
+export type Code = {
+  _type: "code";
+  language?: string;
+  filename?: string;
+  code?: string;
+  highlightedLines?: Array<number>;
+};
+
+export type SiteSettings = {
+  _id: string;
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title: string;
+  favicon?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  seo?: SeoFallback;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
+export type SiteNav = {
+  _id: string;
+  _type: "siteNav";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title?: string;
+  mainMenu?: Array<
+    | ({
+        _key: string;
+      } & Link)
+    | ({
+        _key: string;
+      } & NavLanguageSwitch)
+  >;
+  footerMenu?: Array<
+    {
+      _key: string;
+    } & Link
+  >;
+};
+
+export type ErrorSettings = {
+  _id: string;
+  _type: "errorSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  notFoundTitle: string;
+  notFoundBody?: RichText;
+  serverErrorTitle: string;
+  serverErrorBody?: RichText;
+};
+
 export type Page = {
   _id: string;
   _type: "page";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title: InternationalizedArrayString;
+  language?: string;
+  title: string;
   slug: Slug;
   modules?: Array<
     | ({
@@ -338,19 +406,6 @@ export type Page = {
   seo?: SeoPage;
 };
 
-export type SeoPage = {
-  _type: "seo.page";
-  title?: string;
-  description?: string;
-  image?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-};
-
 export type Slug = {
   _type: "slug";
   current: string;
@@ -363,7 +418,8 @@ export type Home = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title: InternationalizedArrayString;
+  language?: string;
+  title: string;
   modules?: Array<
     | ({
         _key: string;
@@ -379,36 +435,6 @@ export type Home = {
       } & ModuleText)
   >;
   seo?: SeoPage;
-};
-
-export type InternationalizedArrayRichTextMedia = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayRichTextMediaValue
->;
-
-export type LinkFunctions = {
-  _type: "linkFunctions";
-  key: "scroll-to" | "open-modal";
-  params?: string;
-};
-
-export type InternationalizedArrayRichTextMediaValue = {
-  _type: "internationalizedArrayRichTextMediaValue";
-  value?: RichTextMedia;
-  language: string;
-};
-
-export type InternationalizedArrayRichTextValue = {
-  _type: "internationalizedArrayRichTextValue";
-  value?: RichText;
-  language: string;
-};
-
-export type InternationalizedArrayStringValue = {
-  _type: "internationalizedArrayStringValue";
-  value?: string;
-  language: string;
 };
 
 export type MuxVideoAssetReference = {
@@ -622,18 +648,7 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | VideoSettings
-  | SiteCookieBanner
-  | Code
-  | ErrorSettings
-  | InternationalizedArrayRichText
-  | InternationalizedArrayString
-  | SiteNav
   | SiteLanguageSettings
-  | SanityImageAssetReference
-  | SiteSettings
-  | SeoFallback
-  | SanityImageCrop
-  | SanityImageHotspot
   | RichTextMedia
   | RichText
   | ModuleText
@@ -641,20 +656,32 @@ export type AllSanitySchemaTypes =
   | PageReference
   | ModuleContentRefs
   | ModuleMedia
+  | SanityImageAssetReference
   | ModuleCarousel
   | MediaVideo
   | MediaImage
   | NavLanguageSwitch
   | Link
-  | Page
+  | SeoFallback
   | SeoPage
+  | LinkFunctions
+  | TranslationMetadata
+  | InternationalizedArrayReference
+  | ErrorSettingsReference
+  | SiteNavReference
+  | SiteSettingsReference
+  | SiteCookieBannerReference
+  | InternationalizedArrayReferenceValue
+  | SiteCookieBanner
+  | Code
+  | SiteSettings
+  | SanityImageCrop
+  | SanityImageHotspot
+  | SiteNav
+  | ErrorSettings
+  | Page
   | Slug
   | Home
-  | InternationalizedArrayRichTextMedia
-  | LinkFunctions
-  | InternationalizedArrayRichTextMediaValue
-  | InternationalizedArrayRichTextValue
-  | InternationalizedArrayStringValue
   | MuxVideoAssetReference
   | MuxVideo
   | MuxVideoAsset
@@ -672,6 +699,2073 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint;
+
+// Source: sanity/queries/pages/home.ts
+// Variable: homeQuery
+// Query: *[_type == "home" && language == $locale][0]{  _id,  title,  language,  modules[]{  _key,  _type,  _type == "module.text" => {  title,  body[]{            ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            ...,  type == "internal" => {    "linkType": "linkInternal",    "title": coalesce(title, reference->title),    "route": select(      reference->_type == "home" => "page",      reference->_type == "page" => "slug",      "page"    ),    "slug": reference->slug.current,    "resolvedReference": reference->{      _id,      _type,      title,      "slug": slug.current    }  },  type == "external" => {    ...,    "linkType": "linkExternal",    "href": url,    "title": coalesce(title, url),    blank  },  type == "function" => {    ...,    "linkType": "linkFunction",    "func": func {      key,      params    }  }        }      }    }  ,    _type == "module.media" => {        type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    },    _type == "module.carousel" => {        heading,  imagesOnly,  "slides": slides[]{    _key,    _type,    "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })  },  "slidesMedia": slidesMedia[]{    _key,    _type,      type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )  },  "resolvedSlides": select(    imagesOnly == true => slides[]{      _key,      _type,      "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })    },    slidesMedia[]{      _key,      _type,      "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    }  )    },    _type == "module.contentRefs" => {        heading,  allowMultiple,  "reference": reference->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  },  "references": references[]->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  }    },    _type == "module.text" => {      title,      body[]{            ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            ...,  type == "internal" => {    "linkType": "linkInternal",    "title": coalesce(title, reference->title),    "route": select(      reference->_type == "home" => "page",      reference->_type == "page" => "slug",      "page"    ),    "slug": reference->slug.current,    "resolvedReference": reference->{      _id,      _type,      title,      "slug": slug.current    }  },  type == "external" => {    ...,    "linkType": "linkExternal",    "href": url,    "title": coalesce(title, url),    blank  },  type == "function" => {    ...,    "linkType": "linkFunction",    "func": func {      key,      params    }  }        }      }    }  ,        _type == "module.media" => {            type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )        },        _type == "module.carousel" => {            heading,  imagesOnly,  "slides": slides[]{    _key,    _type,    "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })  },  "slidesMedia": slidesMedia[]{    _key,    _type,      type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )  },  "resolvedSlides": select(    imagesOnly == true => slides[]{      _key,      _type,      "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })    },    slidesMedia[]{      _key,      _type,      "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    }  )        },        _type == "module.contentRefs" => {            heading,  allowMultiple,  "reference": reference->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  },  "references": references[]->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  }        },        _type == "module.text" => {          title,          body[]{                ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            ...,  type == "internal" => {    "linkType": "linkInternal",    "title": coalesce(title, reference->title),    "route": select(      reference->_type == "home" => "page",      reference->_type == "page" => "slug",      "page"    ),    "slug": reference->slug.current,    "resolvedReference": reference->{      _id,      _type,      title,      "slug": slug.current    }  },  type == "external" => {    ...,    "linkType": "linkExternal",    "href": url,    "title": coalesce(title, url),    blank  },  type == "function" => {    ...,    "linkType": "linkFunction",    "func": func {      key,      params    }  }        }      }    }            }        }      }    }    }},  _type == "module.media" => {    type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )},  _type == "module.carousel" => {    heading,  imagesOnly,  "slides": slides[]{    _key,    _type,    "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })  },  "slidesMedia": slidesMedia[]{    _key,    _type,      type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )  },  "resolvedSlides": select(    imagesOnly == true => slides[]{      _key,      _type,      "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })    },    slidesMedia[]{      _key,      _type,      "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    }  )},  _type == "module.contentRefs" => {    heading,  allowMultiple,  "reference": reference->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  },  "references": references[]->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  }}},  seo {  title,  description,  "imageUrl": image.asset->url}}
+export type HomeQueryResult = {
+  _id: string;
+  title: string;
+  language: string | null;
+  modules: Array<
+    | {
+        _key: string;
+        _type: "module.carousel";
+        heading: string | null;
+        imagesOnly: boolean | null;
+        slides: Array<{
+          _key: string;
+          _type: "image";
+          media: {
+            kind: "image";
+            crop: SanityImageCrop | null;
+            hotspot: SanityImageHotspot | null;
+            alt: string | null;
+            asset: {
+              _id: string;
+              url: string;
+              metadata: {
+                dimensions: {
+                  width: number;
+                  height: number;
+                  aspectRatio: number;
+                } | null;
+                lqip: string | null;
+              } | null;
+            } | null;
+          };
+        }> | null;
+        slidesMedia: Array<{
+          _key: string;
+          _type: "module.media";
+          type: "image" | "video";
+          imageContent: {
+            caption: string | null;
+            media: {
+              kind: "image";
+              crop: SanityImageCrop | null;
+              hotspot: SanityImageHotspot | null;
+              alt: string | null;
+              asset: {
+                _id: string;
+                url: string;
+                metadata: {
+                  dimensions: {
+                    width: number;
+                    height: number;
+                    aspectRatio: number;
+                  } | null;
+                  lqip: string | null;
+                } | null;
+              } | null;
+            } | null;
+          } | null;
+          videoContent: {
+            caption: string | null;
+            videoSettings: VideoSettings | null;
+            media:
+              | {
+                  kind: "image";
+                  crop: null;
+                  hotspot: null;
+                  alt: null;
+                  asset: {
+                    _id: string;
+                    url: null;
+                    metadata: null;
+                  } | null;
+                }
+              | {
+                  kind: "video";
+                  playbackId: string | null;
+                  duration: number | null;
+                  asset: {
+                    playbackId: string | null;
+                    data: MuxAssetData | null;
+                  } | null;
+                }
+              | null;
+            poster: {
+              crop: SanityImageCrop | null;
+              hotspot: SanityImageHotspot | null;
+              alt: string | null;
+              asset: {
+                _id: string;
+                url: string;
+                metadata: {
+                  dimensions: {
+                    width: number;
+                    height: number;
+                    aspectRatio: number;
+                  } | null;
+                  lqip: string | null;
+                } | null;
+              } | null;
+            } | null;
+          } | null;
+          resolvedMedia:
+            | {
+                kind: "image";
+                caption: string | null;
+                media: {
+                  kind: "image";
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              }
+            | {
+                kind: "video";
+                caption: string | null;
+                videoSettings: VideoSettings | null;
+                media:
+                  | {
+                      kind: "image";
+                      crop: null;
+                      hotspot: null;
+                      alt: null;
+                      asset: {
+                        _id: string;
+                        url: null;
+                        metadata: null;
+                      } | null;
+                    }
+                  | {
+                      kind: "video";
+                      playbackId: string | null;
+                      duration: number | null;
+                      asset: {
+                        playbackId: string | null;
+                        data: MuxAssetData | null;
+                      } | null;
+                    }
+                  | null;
+                poster: {
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              };
+        }> | null;
+        resolvedSlides:
+          | Array<{
+              _key: string;
+              _type: "image";
+              media: {
+                kind: "image";
+                crop: SanityImageCrop | null;
+                hotspot: SanityImageHotspot | null;
+                alt: string | null;
+                asset: {
+                  _id: string;
+                  url: string;
+                  metadata: {
+                    dimensions: {
+                      width: number;
+                      height: number;
+                      aspectRatio: number;
+                    } | null;
+                    lqip: string | null;
+                  } | null;
+                } | null;
+              };
+            }>
+          | Array<{
+              _key: string;
+              _type: "module.media";
+              resolvedMedia:
+                | {
+                    kind: "image";
+                    caption: string | null;
+                    media: {
+                      kind: "image";
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  }
+                | {
+                    kind: "video";
+                    caption: string | null;
+                    videoSettings: VideoSettings | null;
+                    media:
+                      | {
+                          kind: "image";
+                          crop: null;
+                          hotspot: null;
+                          alt: null;
+                          asset: {
+                            _id: string;
+                            url: null;
+                            metadata: null;
+                          } | null;
+                        }
+                      | {
+                          kind: "video";
+                          playbackId: string | null;
+                          duration: number | null;
+                          asset: {
+                            playbackId: string | null;
+                            data: MuxAssetData | null;
+                          } | null;
+                        }
+                      | null;
+                    poster: {
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  };
+            }>
+          | null;
+      }
+    | {
+        _key: string;
+        _type: "module.contentRefs";
+        heading: string | null;
+        allowMultiple: boolean | null;
+        reference:
+          | {
+              _id: string;
+              _type: "home";
+              title: string;
+              slug: null;
+              route: "index";
+            }
+          | {
+              _id: string;
+              _type: "page";
+              title: string;
+              slug: string;
+              route: "slug";
+            }
+          | null;
+        references: Array<
+          | {
+              _id: string;
+              _type: "home";
+              title: string;
+              slug: null;
+              route: "index";
+            }
+          | {
+              _id: string;
+              _type: "page";
+              title: string;
+              slug: string;
+              route: "slug";
+            }
+        > | null;
+      }
+    | {
+        _key: string;
+        _type: "module.media";
+        type: "image" | "video";
+        imageContent: {
+          caption: string | null;
+          media: {
+            kind: "image";
+            crop: SanityImageCrop | null;
+            hotspot: SanityImageHotspot | null;
+            alt: string | null;
+            asset: {
+              _id: string;
+              url: string;
+              metadata: {
+                dimensions: {
+                  width: number;
+                  height: number;
+                  aspectRatio: number;
+                } | null;
+                lqip: string | null;
+              } | null;
+            } | null;
+          } | null;
+        } | null;
+        videoContent: {
+          caption: string | null;
+          videoSettings: VideoSettings | null;
+          media:
+            | {
+                kind: "image";
+                crop: null;
+                hotspot: null;
+                alt: null;
+                asset: {
+                  _id: string;
+                  url: null;
+                  metadata: null;
+                } | null;
+              }
+            | {
+                kind: "video";
+                playbackId: string | null;
+                duration: number | null;
+                asset: {
+                  playbackId: string | null;
+                  data: MuxAssetData | null;
+                } | null;
+              }
+            | null;
+          poster: {
+            crop: SanityImageCrop | null;
+            hotspot: SanityImageHotspot | null;
+            alt: string | null;
+            asset: {
+              _id: string;
+              url: string;
+              metadata: {
+                dimensions: {
+                  width: number;
+                  height: number;
+                  aspectRatio: number;
+                } | null;
+                lqip: string | null;
+              } | null;
+            } | null;
+          } | null;
+        } | null;
+        resolvedMedia:
+          | {
+              kind: "image";
+              caption: string | null;
+              media: {
+                kind: "image";
+                crop: SanityImageCrop | null;
+                hotspot: SanityImageHotspot | null;
+                alt: string | null;
+                asset: {
+                  _id: string;
+                  url: string;
+                  metadata: {
+                    dimensions: {
+                      width: number;
+                      height: number;
+                      aspectRatio: number;
+                    } | null;
+                    lqip: string | null;
+                  } | null;
+                } | null;
+              } | null;
+            }
+          | {
+              kind: "video";
+              caption: string | null;
+              videoSettings: VideoSettings | null;
+              media:
+                | {
+                    kind: "image";
+                    crop: null;
+                    hotspot: null;
+                    alt: null;
+                    asset: {
+                      _id: string;
+                      url: null;
+                      metadata: null;
+                    } | null;
+                  }
+                | {
+                    kind: "video";
+                    playbackId: string | null;
+                    duration: number | null;
+                    asset: {
+                      playbackId: string | null;
+                      data: MuxAssetData | null;
+                    } | null;
+                  }
+                | null;
+              poster: {
+                crop: SanityImageCrop | null;
+                hotspot: SanityImageHotspot | null;
+                alt: string | null;
+                asset: {
+                  _id: string;
+                  url: string;
+                  metadata: {
+                    dimensions: {
+                      width: number;
+                      height: number;
+                      aspectRatio: number;
+                    } | null;
+                    lqip: string | null;
+                  } | null;
+                } | null;
+              } | null;
+            };
+      }
+    | {
+        _key: string;
+        _type: "module.text";
+        title: string;
+        body: Array<
+          | {
+              children?: Array<{
+                marks?: Array<string>;
+                text?: string;
+                _type: "span";
+                _key: string;
+              }>;
+              style?: "h2" | "h3" | "h4" | "normal";
+              listItem?: "bullet" | "number";
+              markDefs: Array<
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title: string | null;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func?: LinkFunctions;
+                    linkType: "linkInternal";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func?: LinkFunctions;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                    href: string | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                    href: string | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title: string | null;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank: boolean | null;
+                    func?: LinkFunctions;
+                    linkType: "linkExternal";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                    href: string | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title: string | null;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank: boolean | null;
+                    func?: LinkFunctions;
+                    linkType: "linkExternal";
+                    href: string | null;
+                  }
+              > | null;
+              level?: number;
+              _type: "block";
+              _key: string;
+            }
+          | {
+              _key: string;
+              _type: "module.carousel";
+              heading: string | null;
+              imagesOnly: boolean | null;
+              slides: Array<{
+                _key: string;
+                _type: "image";
+                media: {
+                  kind: "image";
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                };
+              }> | null;
+              slidesMedia: Array<{
+                _key: string;
+                _type: "module.media";
+                type: "image" | "video";
+                imageContent: {
+                  caption: string | null;
+                  media: {
+                    kind: "image";
+                    crop: SanityImageCrop | null;
+                    hotspot: SanityImageHotspot | null;
+                    alt: string | null;
+                    asset: {
+                      _id: string;
+                      url: string;
+                      metadata: {
+                        dimensions: {
+                          width: number;
+                          height: number;
+                          aspectRatio: number;
+                        } | null;
+                        lqip: string | null;
+                      } | null;
+                    } | null;
+                  } | null;
+                } | null;
+                videoContent: {
+                  caption: string | null;
+                  videoSettings: VideoSettings | null;
+                  media:
+                    | {
+                        kind: "image";
+                        crop: null;
+                        hotspot: null;
+                        alt: null;
+                        asset: {
+                          _id: string;
+                          url: null;
+                          metadata: null;
+                        } | null;
+                      }
+                    | {
+                        kind: "video";
+                        playbackId: string | null;
+                        duration: number | null;
+                        asset: {
+                          playbackId: string | null;
+                          data: MuxAssetData | null;
+                        } | null;
+                      }
+                    | null;
+                  poster: {
+                    crop: SanityImageCrop | null;
+                    hotspot: SanityImageHotspot | null;
+                    alt: string | null;
+                    asset: {
+                      _id: string;
+                      url: string;
+                      metadata: {
+                        dimensions: {
+                          width: number;
+                          height: number;
+                          aspectRatio: number;
+                        } | null;
+                        lqip: string | null;
+                      } | null;
+                    } | null;
+                  } | null;
+                } | null;
+                resolvedMedia:
+                  | {
+                      kind: "image";
+                      caption: string | null;
+                      media: {
+                        kind: "image";
+                        crop: SanityImageCrop | null;
+                        hotspot: SanityImageHotspot | null;
+                        alt: string | null;
+                        asset: {
+                          _id: string;
+                          url: string;
+                          metadata: {
+                            dimensions: {
+                              width: number;
+                              height: number;
+                              aspectRatio: number;
+                            } | null;
+                            lqip: string | null;
+                          } | null;
+                        } | null;
+                      } | null;
+                    }
+                  | {
+                      kind: "video";
+                      caption: string | null;
+                      videoSettings: VideoSettings | null;
+                      media:
+                        | {
+                            kind: "image";
+                            crop: null;
+                            hotspot: null;
+                            alt: null;
+                            asset: {
+                              _id: string;
+                              url: null;
+                              metadata: null;
+                            } | null;
+                          }
+                        | {
+                            kind: "video";
+                            playbackId: string | null;
+                            duration: number | null;
+                            asset: {
+                              playbackId: string | null;
+                              data: MuxAssetData | null;
+                            } | null;
+                          }
+                        | null;
+                      poster: {
+                        crop: SanityImageCrop | null;
+                        hotspot: SanityImageHotspot | null;
+                        alt: string | null;
+                        asset: {
+                          _id: string;
+                          url: string;
+                          metadata: {
+                            dimensions: {
+                              width: number;
+                              height: number;
+                              aspectRatio: number;
+                            } | null;
+                            lqip: string | null;
+                          } | null;
+                        } | null;
+                      } | null;
+                    };
+              }> | null;
+              resolvedSlides:
+                | Array<{
+                    _key: string;
+                    _type: "image";
+                    media: {
+                      kind: "image";
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    };
+                  }>
+                | Array<{
+                    _key: string;
+                    _type: "module.media";
+                    resolvedMedia:
+                      | {
+                          kind: "image";
+                          caption: string | null;
+                          media: {
+                            kind: "image";
+                            crop: SanityImageCrop | null;
+                            hotspot: SanityImageHotspot | null;
+                            alt: string | null;
+                            asset: {
+                              _id: string;
+                              url: string;
+                              metadata: {
+                                dimensions: {
+                                  width: number;
+                                  height: number;
+                                  aspectRatio: number;
+                                } | null;
+                                lqip: string | null;
+                              } | null;
+                            } | null;
+                          } | null;
+                        }
+                      | {
+                          kind: "video";
+                          caption: string | null;
+                          videoSettings: VideoSettings | null;
+                          media:
+                            | {
+                                kind: "image";
+                                crop: null;
+                                hotspot: null;
+                                alt: null;
+                                asset: {
+                                  _id: string;
+                                  url: null;
+                                  metadata: null;
+                                } | null;
+                              }
+                            | {
+                                kind: "video";
+                                playbackId: string | null;
+                                duration: number | null;
+                                asset: {
+                                  playbackId: string | null;
+                                  data: MuxAssetData | null;
+                                } | null;
+                              }
+                            | null;
+                          poster: {
+                            crop: SanityImageCrop | null;
+                            hotspot: SanityImageHotspot | null;
+                            alt: string | null;
+                            asset: {
+                              _id: string;
+                              url: string;
+                              metadata: {
+                                dimensions: {
+                                  width: number;
+                                  height: number;
+                                  aspectRatio: number;
+                                } | null;
+                                lqip: string | null;
+                              } | null;
+                            } | null;
+                          } | null;
+                        };
+                  }>
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "module.media";
+              type: "image" | "video";
+              imageContent: {
+                caption: string | null;
+                media: {
+                  kind: "image";
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              } | null;
+              videoContent: {
+                caption: string | null;
+                videoSettings: VideoSettings | null;
+                media:
+                  | {
+                      kind: "image";
+                      crop: null;
+                      hotspot: null;
+                      alt: null;
+                      asset: {
+                        _id: string;
+                        url: null;
+                        metadata: null;
+                      } | null;
+                    }
+                  | {
+                      kind: "video";
+                      playbackId: string | null;
+                      duration: number | null;
+                      asset: {
+                        playbackId: string | null;
+                        data: MuxAssetData | null;
+                      } | null;
+                    }
+                  | null;
+                poster: {
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              } | null;
+              resolvedMedia:
+                | {
+                    kind: "image";
+                    caption: string | null;
+                    media: {
+                      kind: "image";
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  }
+                | {
+                    kind: "video";
+                    caption: string | null;
+                    videoSettings: VideoSettings | null;
+                    media:
+                      | {
+                          kind: "image";
+                          crop: null;
+                          hotspot: null;
+                          alt: null;
+                          asset: {
+                            _id: string;
+                            url: null;
+                            metadata: null;
+                          } | null;
+                        }
+                      | {
+                          kind: "video";
+                          playbackId: string | null;
+                          duration: number | null;
+                          asset: {
+                            playbackId: string | null;
+                            data: MuxAssetData | null;
+                          } | null;
+                        }
+                      | null;
+                    poster: {
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  };
+            }
+        > | null;
+      }
+  > | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+    imageUrl: string | null;
+  } | null;
+} | null;
+
+// Source: sanity/queries/pages/page.ts
+// Variable: pageBySlugQuery
+// Query: *[_type == "page" && slug.current == $slug && language == $locale][0]{  _id,  title,  slug,  language,  modules[]{  _key,  _type,  _type == "module.text" => {  title,  body[]{            ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            ...,  type == "internal" => {    "linkType": "linkInternal",    "title": coalesce(title, reference->title),    "route": select(      reference->_type == "home" => "page",      reference->_type == "page" => "slug",      "page"    ),    "slug": reference->slug.current,    "resolvedReference": reference->{      _id,      _type,      title,      "slug": slug.current    }  },  type == "external" => {    ...,    "linkType": "linkExternal",    "href": url,    "title": coalesce(title, url),    blank  },  type == "function" => {    ...,    "linkType": "linkFunction",    "func": func {      key,      params    }  }        }      }    }  ,    _type == "module.media" => {        type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    },    _type == "module.carousel" => {        heading,  imagesOnly,  "slides": slides[]{    _key,    _type,    "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })  },  "slidesMedia": slidesMedia[]{    _key,    _type,      type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )  },  "resolvedSlides": select(    imagesOnly == true => slides[]{      _key,      _type,      "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })    },    slidesMedia[]{      _key,      _type,      "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    }  )    },    _type == "module.contentRefs" => {        heading,  allowMultiple,  "reference": reference->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  },  "references": references[]->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  }    },    _type == "module.text" => {      title,      body[]{            ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            ...,  type == "internal" => {    "linkType": "linkInternal",    "title": coalesce(title, reference->title),    "route": select(      reference->_type == "home" => "page",      reference->_type == "page" => "slug",      "page"    ),    "slug": reference->slug.current,    "resolvedReference": reference->{      _id,      _type,      title,      "slug": slug.current    }  },  type == "external" => {    ...,    "linkType": "linkExternal",    "href": url,    "title": coalesce(title, url),    blank  },  type == "function" => {    ...,    "linkType": "linkFunction",    "func": func {      key,      params    }  }        }      }    }  ,        _type == "module.media" => {            type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )        },        _type == "module.carousel" => {            heading,  imagesOnly,  "slides": slides[]{    _key,    _type,    "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })  },  "slidesMedia": slidesMedia[]{    _key,    _type,      type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )  },  "resolvedSlides": select(    imagesOnly == true => slides[]{      _key,      _type,      "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })    },    slidesMedia[]{      _key,      _type,      "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    }  )        },        _type == "module.contentRefs" => {            heading,  allowMultiple,  "reference": reference->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  },  "references": references[]->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  }        },        _type == "module.text" => {          title,          body[]{                ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            ...,  type == "internal" => {    "linkType": "linkInternal",    "title": coalesce(title, reference->title),    "route": select(      reference->_type == "home" => "page",      reference->_type == "page" => "slug",      "page"    ),    "slug": reference->slug.current,    "resolvedReference": reference->{      _id,      _type,      title,      "slug": slug.current    }  },  type == "external" => {    ...,    "linkType": "linkExternal",    "href": url,    "title": coalesce(title, url),    blank  },  type == "function" => {    ...,    "linkType": "linkFunction",    "func": func {      key,      params    }  }        }      }    }            }        }      }    }    }},  _type == "module.media" => {    type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )},  _type == "module.carousel" => {    heading,  imagesOnly,  "slides": slides[]{    _key,    _type,    "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })  },  "slidesMedia": slidesMedia[]{    _key,    _type,      type,  imageContent{    caption,    "media": image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }  },  videoContent{    caption,    videoSettings,    "media": video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },    "poster": poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  },  "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )  },  "resolvedSlides": select(    imagesOnly == true => slides[]{      _key,      _type,      "media": select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  })    },    slidesMedia[]{      _key,      _type,      "resolvedMedia":   select(    type == "video" => {      "kind": "video",      "caption": videoContent.caption,      "videoSettings": videoContent.videoSettings,      "media": videoContent.video{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) },      "poster": videoContent.poster{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}    },    {      "kind": "image",      "caption": imageContent.caption,      "media": imageContent.image{ ...select(  defined(asset->playbackId) || defined(asset->data.playbackId) => {    "kind": "video",    ...{  "playbackId": coalesce(    asset->playbackId,    asset->data.playbackId,    asset->data.playback_ids[0].id  ),  "duration": asset->data.duration,  "asset": asset->{    playbackId,    data  }}  },  {    "kind": "image",    ...{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio },      lqip    }  }}  }) }    }  )    }  )},  _type == "module.contentRefs" => {    heading,  allowMultiple,  "reference": reference->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  },  "references": references[]->{    _id,    _type,    title,    "slug": slug.current,    "route": select(      _type == "home" => "index",      _type == "page" => "slug",      "index"    )  }}},  seo {  title,  description,  "imageUrl": image.asset->url}}
+export type PageBySlugQueryResult = {
+  _id: string;
+  title: string;
+  slug: Slug;
+  language: string | null;
+  modules: Array<
+    | {
+        _key: string;
+        _type: "module.carousel";
+        heading: string | null;
+        imagesOnly: boolean | null;
+        slides: Array<{
+          _key: string;
+          _type: "image";
+          media: {
+            kind: "image";
+            crop: SanityImageCrop | null;
+            hotspot: SanityImageHotspot | null;
+            alt: string | null;
+            asset: {
+              _id: string;
+              url: string;
+              metadata: {
+                dimensions: {
+                  width: number;
+                  height: number;
+                  aspectRatio: number;
+                } | null;
+                lqip: string | null;
+              } | null;
+            } | null;
+          };
+        }> | null;
+        slidesMedia: Array<{
+          _key: string;
+          _type: "module.media";
+          type: "image" | "video";
+          imageContent: {
+            caption: string | null;
+            media: {
+              kind: "image";
+              crop: SanityImageCrop | null;
+              hotspot: SanityImageHotspot | null;
+              alt: string | null;
+              asset: {
+                _id: string;
+                url: string;
+                metadata: {
+                  dimensions: {
+                    width: number;
+                    height: number;
+                    aspectRatio: number;
+                  } | null;
+                  lqip: string | null;
+                } | null;
+              } | null;
+            } | null;
+          } | null;
+          videoContent: {
+            caption: string | null;
+            videoSettings: VideoSettings | null;
+            media:
+              | {
+                  kind: "image";
+                  crop: null;
+                  hotspot: null;
+                  alt: null;
+                  asset: {
+                    _id: string;
+                    url: null;
+                    metadata: null;
+                  } | null;
+                }
+              | {
+                  kind: "video";
+                  playbackId: string | null;
+                  duration: number | null;
+                  asset: {
+                    playbackId: string | null;
+                    data: MuxAssetData | null;
+                  } | null;
+                }
+              | null;
+            poster: {
+              crop: SanityImageCrop | null;
+              hotspot: SanityImageHotspot | null;
+              alt: string | null;
+              asset: {
+                _id: string;
+                url: string;
+                metadata: {
+                  dimensions: {
+                    width: number;
+                    height: number;
+                    aspectRatio: number;
+                  } | null;
+                  lqip: string | null;
+                } | null;
+              } | null;
+            } | null;
+          } | null;
+          resolvedMedia:
+            | {
+                kind: "image";
+                caption: string | null;
+                media: {
+                  kind: "image";
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              }
+            | {
+                kind: "video";
+                caption: string | null;
+                videoSettings: VideoSettings | null;
+                media:
+                  | {
+                      kind: "image";
+                      crop: null;
+                      hotspot: null;
+                      alt: null;
+                      asset: {
+                        _id: string;
+                        url: null;
+                        metadata: null;
+                      } | null;
+                    }
+                  | {
+                      kind: "video";
+                      playbackId: string | null;
+                      duration: number | null;
+                      asset: {
+                        playbackId: string | null;
+                        data: MuxAssetData | null;
+                      } | null;
+                    }
+                  | null;
+                poster: {
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              };
+        }> | null;
+        resolvedSlides:
+          | Array<{
+              _key: string;
+              _type: "image";
+              media: {
+                kind: "image";
+                crop: SanityImageCrop | null;
+                hotspot: SanityImageHotspot | null;
+                alt: string | null;
+                asset: {
+                  _id: string;
+                  url: string;
+                  metadata: {
+                    dimensions: {
+                      width: number;
+                      height: number;
+                      aspectRatio: number;
+                    } | null;
+                    lqip: string | null;
+                  } | null;
+                } | null;
+              };
+            }>
+          | Array<{
+              _key: string;
+              _type: "module.media";
+              resolvedMedia:
+                | {
+                    kind: "image";
+                    caption: string | null;
+                    media: {
+                      kind: "image";
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  }
+                | {
+                    kind: "video";
+                    caption: string | null;
+                    videoSettings: VideoSettings | null;
+                    media:
+                      | {
+                          kind: "image";
+                          crop: null;
+                          hotspot: null;
+                          alt: null;
+                          asset: {
+                            _id: string;
+                            url: null;
+                            metadata: null;
+                          } | null;
+                        }
+                      | {
+                          kind: "video";
+                          playbackId: string | null;
+                          duration: number | null;
+                          asset: {
+                            playbackId: string | null;
+                            data: MuxAssetData | null;
+                          } | null;
+                        }
+                      | null;
+                    poster: {
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  };
+            }>
+          | null;
+      }
+    | {
+        _key: string;
+        _type: "module.contentRefs";
+        heading: string | null;
+        allowMultiple: boolean | null;
+        reference:
+          | {
+              _id: string;
+              _type: "home";
+              title: string;
+              slug: null;
+              route: "index";
+            }
+          | {
+              _id: string;
+              _type: "page";
+              title: string;
+              slug: string;
+              route: "slug";
+            }
+          | null;
+        references: Array<
+          | {
+              _id: string;
+              _type: "home";
+              title: string;
+              slug: null;
+              route: "index";
+            }
+          | {
+              _id: string;
+              _type: "page";
+              title: string;
+              slug: string;
+              route: "slug";
+            }
+        > | null;
+      }
+    | {
+        _key: string;
+        _type: "module.media";
+        type: "image" | "video";
+        imageContent: {
+          caption: string | null;
+          media: {
+            kind: "image";
+            crop: SanityImageCrop | null;
+            hotspot: SanityImageHotspot | null;
+            alt: string | null;
+            asset: {
+              _id: string;
+              url: string;
+              metadata: {
+                dimensions: {
+                  width: number;
+                  height: number;
+                  aspectRatio: number;
+                } | null;
+                lqip: string | null;
+              } | null;
+            } | null;
+          } | null;
+        } | null;
+        videoContent: {
+          caption: string | null;
+          videoSettings: VideoSettings | null;
+          media:
+            | {
+                kind: "image";
+                crop: null;
+                hotspot: null;
+                alt: null;
+                asset: {
+                  _id: string;
+                  url: null;
+                  metadata: null;
+                } | null;
+              }
+            | {
+                kind: "video";
+                playbackId: string | null;
+                duration: number | null;
+                asset: {
+                  playbackId: string | null;
+                  data: MuxAssetData | null;
+                } | null;
+              }
+            | null;
+          poster: {
+            crop: SanityImageCrop | null;
+            hotspot: SanityImageHotspot | null;
+            alt: string | null;
+            asset: {
+              _id: string;
+              url: string;
+              metadata: {
+                dimensions: {
+                  width: number;
+                  height: number;
+                  aspectRatio: number;
+                } | null;
+                lqip: string | null;
+              } | null;
+            } | null;
+          } | null;
+        } | null;
+        resolvedMedia:
+          | {
+              kind: "image";
+              caption: string | null;
+              media: {
+                kind: "image";
+                crop: SanityImageCrop | null;
+                hotspot: SanityImageHotspot | null;
+                alt: string | null;
+                asset: {
+                  _id: string;
+                  url: string;
+                  metadata: {
+                    dimensions: {
+                      width: number;
+                      height: number;
+                      aspectRatio: number;
+                    } | null;
+                    lqip: string | null;
+                  } | null;
+                } | null;
+              } | null;
+            }
+          | {
+              kind: "video";
+              caption: string | null;
+              videoSettings: VideoSettings | null;
+              media:
+                | {
+                    kind: "image";
+                    crop: null;
+                    hotspot: null;
+                    alt: null;
+                    asset: {
+                      _id: string;
+                      url: null;
+                      metadata: null;
+                    } | null;
+                  }
+                | {
+                    kind: "video";
+                    playbackId: string | null;
+                    duration: number | null;
+                    asset: {
+                      playbackId: string | null;
+                      data: MuxAssetData | null;
+                    } | null;
+                  }
+                | null;
+              poster: {
+                crop: SanityImageCrop | null;
+                hotspot: SanityImageHotspot | null;
+                alt: string | null;
+                asset: {
+                  _id: string;
+                  url: string;
+                  metadata: {
+                    dimensions: {
+                      width: number;
+                      height: number;
+                      aspectRatio: number;
+                    } | null;
+                    lqip: string | null;
+                  } | null;
+                } | null;
+              } | null;
+            };
+      }
+    | {
+        _key: string;
+        _type: "module.text";
+        title: string;
+        body: Array<
+          | {
+              children?: Array<{
+                marks?: Array<string>;
+                text?: string;
+                _type: "span";
+                _key: string;
+              }>;
+              style?: "h2" | "h3" | "h4" | "normal";
+              listItem?: "bullet" | "number";
+              markDefs: Array<
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title: string | null;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func?: LinkFunctions;
+                    linkType: "linkInternal";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func?: LinkFunctions;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                    href: string | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                    href: string | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title?: string;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank?: boolean;
+                    func: {
+                      key: "open-modal" | "scroll-to";
+                      params: string | null;
+                    } | null;
+                    linkType: "linkFunction";
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title: string | null;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank: boolean | null;
+                    func?: LinkFunctions;
+                    linkType: "linkExternal";
+                    route: "page" | "slug";
+                    slug: string | null;
+                    resolvedReference:
+                      | {
+                          _id: string;
+                          _type: "home";
+                          title: string;
+                          slug: null;
+                        }
+                      | {
+                          _id: string;
+                          _type: "page";
+                          title: string;
+                          slug: string;
+                        }
+                      | null;
+                    href: string | null;
+                  }
+                | {
+                    _key: string;
+                    _type: "link";
+                    type: "external" | "function" | "internal";
+                    title: string | null;
+                    reference?: HomeReference | PageReference;
+                    url?: string;
+                    blank: boolean | null;
+                    func?: LinkFunctions;
+                    linkType: "linkExternal";
+                    href: string | null;
+                  }
+              > | null;
+              level?: number;
+              _type: "block";
+              _key: string;
+            }
+          | {
+              _key: string;
+              _type: "module.carousel";
+              heading: string | null;
+              imagesOnly: boolean | null;
+              slides: Array<{
+                _key: string;
+                _type: "image";
+                media: {
+                  kind: "image";
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                };
+              }> | null;
+              slidesMedia: Array<{
+                _key: string;
+                _type: "module.media";
+                type: "image" | "video";
+                imageContent: {
+                  caption: string | null;
+                  media: {
+                    kind: "image";
+                    crop: SanityImageCrop | null;
+                    hotspot: SanityImageHotspot | null;
+                    alt: string | null;
+                    asset: {
+                      _id: string;
+                      url: string;
+                      metadata: {
+                        dimensions: {
+                          width: number;
+                          height: number;
+                          aspectRatio: number;
+                        } | null;
+                        lqip: string | null;
+                      } | null;
+                    } | null;
+                  } | null;
+                } | null;
+                videoContent: {
+                  caption: string | null;
+                  videoSettings: VideoSettings | null;
+                  media:
+                    | {
+                        kind: "image";
+                        crop: null;
+                        hotspot: null;
+                        alt: null;
+                        asset: {
+                          _id: string;
+                          url: null;
+                          metadata: null;
+                        } | null;
+                      }
+                    | {
+                        kind: "video";
+                        playbackId: string | null;
+                        duration: number | null;
+                        asset: {
+                          playbackId: string | null;
+                          data: MuxAssetData | null;
+                        } | null;
+                      }
+                    | null;
+                  poster: {
+                    crop: SanityImageCrop | null;
+                    hotspot: SanityImageHotspot | null;
+                    alt: string | null;
+                    asset: {
+                      _id: string;
+                      url: string;
+                      metadata: {
+                        dimensions: {
+                          width: number;
+                          height: number;
+                          aspectRatio: number;
+                        } | null;
+                        lqip: string | null;
+                      } | null;
+                    } | null;
+                  } | null;
+                } | null;
+                resolvedMedia:
+                  | {
+                      kind: "image";
+                      caption: string | null;
+                      media: {
+                        kind: "image";
+                        crop: SanityImageCrop | null;
+                        hotspot: SanityImageHotspot | null;
+                        alt: string | null;
+                        asset: {
+                          _id: string;
+                          url: string;
+                          metadata: {
+                            dimensions: {
+                              width: number;
+                              height: number;
+                              aspectRatio: number;
+                            } | null;
+                            lqip: string | null;
+                          } | null;
+                        } | null;
+                      } | null;
+                    }
+                  | {
+                      kind: "video";
+                      caption: string | null;
+                      videoSettings: VideoSettings | null;
+                      media:
+                        | {
+                            kind: "image";
+                            crop: null;
+                            hotspot: null;
+                            alt: null;
+                            asset: {
+                              _id: string;
+                              url: null;
+                              metadata: null;
+                            } | null;
+                          }
+                        | {
+                            kind: "video";
+                            playbackId: string | null;
+                            duration: number | null;
+                            asset: {
+                              playbackId: string | null;
+                              data: MuxAssetData | null;
+                            } | null;
+                          }
+                        | null;
+                      poster: {
+                        crop: SanityImageCrop | null;
+                        hotspot: SanityImageHotspot | null;
+                        alt: string | null;
+                        asset: {
+                          _id: string;
+                          url: string;
+                          metadata: {
+                            dimensions: {
+                              width: number;
+                              height: number;
+                              aspectRatio: number;
+                            } | null;
+                            lqip: string | null;
+                          } | null;
+                        } | null;
+                      } | null;
+                    };
+              }> | null;
+              resolvedSlides:
+                | Array<{
+                    _key: string;
+                    _type: "image";
+                    media: {
+                      kind: "image";
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    };
+                  }>
+                | Array<{
+                    _key: string;
+                    _type: "module.media";
+                    resolvedMedia:
+                      | {
+                          kind: "image";
+                          caption: string | null;
+                          media: {
+                            kind: "image";
+                            crop: SanityImageCrop | null;
+                            hotspot: SanityImageHotspot | null;
+                            alt: string | null;
+                            asset: {
+                              _id: string;
+                              url: string;
+                              metadata: {
+                                dimensions: {
+                                  width: number;
+                                  height: number;
+                                  aspectRatio: number;
+                                } | null;
+                                lqip: string | null;
+                              } | null;
+                            } | null;
+                          } | null;
+                        }
+                      | {
+                          kind: "video";
+                          caption: string | null;
+                          videoSettings: VideoSettings | null;
+                          media:
+                            | {
+                                kind: "image";
+                                crop: null;
+                                hotspot: null;
+                                alt: null;
+                                asset: {
+                                  _id: string;
+                                  url: null;
+                                  metadata: null;
+                                } | null;
+                              }
+                            | {
+                                kind: "video";
+                                playbackId: string | null;
+                                duration: number | null;
+                                asset: {
+                                  playbackId: string | null;
+                                  data: MuxAssetData | null;
+                                } | null;
+                              }
+                            | null;
+                          poster: {
+                            crop: SanityImageCrop | null;
+                            hotspot: SanityImageHotspot | null;
+                            alt: string | null;
+                            asset: {
+                              _id: string;
+                              url: string;
+                              metadata: {
+                                dimensions: {
+                                  width: number;
+                                  height: number;
+                                  aspectRatio: number;
+                                } | null;
+                                lqip: string | null;
+                              } | null;
+                            } | null;
+                          } | null;
+                        };
+                  }>
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "module.media";
+              type: "image" | "video";
+              imageContent: {
+                caption: string | null;
+                media: {
+                  kind: "image";
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              } | null;
+              videoContent: {
+                caption: string | null;
+                videoSettings: VideoSettings | null;
+                media:
+                  | {
+                      kind: "image";
+                      crop: null;
+                      hotspot: null;
+                      alt: null;
+                      asset: {
+                        _id: string;
+                        url: null;
+                        metadata: null;
+                      } | null;
+                    }
+                  | {
+                      kind: "video";
+                      playbackId: string | null;
+                      duration: number | null;
+                      asset: {
+                        playbackId: string | null;
+                        data: MuxAssetData | null;
+                      } | null;
+                    }
+                  | null;
+                poster: {
+                  crop: SanityImageCrop | null;
+                  hotspot: SanityImageHotspot | null;
+                  alt: string | null;
+                  asset: {
+                    _id: string;
+                    url: string;
+                    metadata: {
+                      dimensions: {
+                        width: number;
+                        height: number;
+                        aspectRatio: number;
+                      } | null;
+                      lqip: string | null;
+                    } | null;
+                  } | null;
+                } | null;
+              } | null;
+              resolvedMedia:
+                | {
+                    kind: "image";
+                    caption: string | null;
+                    media: {
+                      kind: "image";
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  }
+                | {
+                    kind: "video";
+                    caption: string | null;
+                    videoSettings: VideoSettings | null;
+                    media:
+                      | {
+                          kind: "image";
+                          crop: null;
+                          hotspot: null;
+                          alt: null;
+                          asset: {
+                            _id: string;
+                            url: null;
+                            metadata: null;
+                          } | null;
+                        }
+                      | {
+                          kind: "video";
+                          playbackId: string | null;
+                          duration: number | null;
+                          asset: {
+                            playbackId: string | null;
+                            data: MuxAssetData | null;
+                          } | null;
+                        }
+                      | null;
+                    poster: {
+                      crop: SanityImageCrop | null;
+                      hotspot: SanityImageHotspot | null;
+                      alt: string | null;
+                      asset: {
+                        _id: string;
+                        url: string;
+                        metadata: {
+                          dimensions: {
+                            width: number;
+                            height: number;
+                            aspectRatio: number;
+                          } | null;
+                          lqip: string | null;
+                        } | null;
+                      } | null;
+                    } | null;
+                  };
+            }
+        > | null;
+      }
+  > | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+    imageUrl: string | null;
+  } | null;
+} | null;
 
 // Source: sanity/queries/snippets/settings.ts
 // Variable: siteLanguageSettingsQuery
@@ -694,53 +2788,37 @@ export type SiteLanguageSettingsQueryResult =
 
 // Source: sanity/queries/snippets/settings.ts
 // Variable: siteSettingsTitleQuery
-// Query: *[_id == "siteSettings"][0]{title}
-export type SiteSettingsTitleQueryResult =
-  | {
-      title: InternationalizedArrayString;
-    }
-  | {
-      title: null;
-    }
-  | {
-      title: string;
-    }
-  | {
-      title: string | null;
-    }
-  | null;
+// Query: *[_type == "siteSettings" && language == $locale][0]{title}
+export type SiteSettingsTitleQueryResult = {
+  title: string;
+} | null;
 
 // Source: sanity/queries/snippets/settings.ts
 // Variable: siteSettingsSeoFallbackQuery
-// Query: *[_id == "siteSettings"][0]{  "title": seo.title,  "description": seo.description,  "imageUrl": seo.image.asset->url}
-export type SiteSettingsSeoFallbackQueryResult =
-  | {
-      title: null;
-      description: null;
-      imageUrl: null;
-    }
-  | {
-      title: string | null;
-      description: string | null;
-      imageUrl: string | null;
-    }
-  | null;
+// Query: *[_type == "siteSettings" && language == $locale][0]{  "title": seo.title,  "description": seo.description,  "imageUrl": seo.image.asset->url}
+export type SiteSettingsSeoFallbackQueryResult = {
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+} | null;
 
 // Source: sanity/queries/snippets/sitemap.ts
 // Variable: pageSlugsQuery
-// Query: *[_type == "page" && defined(slug.current)]{  "slug": slug.current}
+// Query: *[_type == "page" && defined(slug.current)]{  "slug": slug.current,  language}
 export type PageSlugsQueryResult = Array<{
   slug: string;
+  language: string | null;
 }>;
 
 // Source: sanity/queries/snippets/sitemap.ts
 // Variable: sitemapPagesQuery
-// Query: *[_type == "home" || (_type == "page" && defined(slug.current))]{  _id,  _type,  _updatedAt,  "slug": select(_type == "home" => null, slug.current),  "path": select(_type == "home" => "/", "/" + slug.current)}
+// Query: *[_type == "home" || (_type == "page" && defined(slug.current))]{  _id,  _type,  _updatedAt,  language,  "slug": select(_type == "home" => null, slug.current),  "path": select(_type == "home" => "/", "/" + slug.current)}
 export type SitemapPagesQueryResult = Array<
   | {
       _id: string;
       _type: "home";
       _updatedAt: string;
+      language: string | null;
       slug: null;
       path: "/";
     }
@@ -748,6 +2826,7 @@ export type SitemapPagesQueryResult = Array<
       _id: string;
       _type: "page";
       _updatedAt: string;
+      language: string | null;
       slug: string;
       path: string;
     }
@@ -757,10 +2836,12 @@ export type SitemapPagesQueryResult = Array<
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
+    '*[_type == "home" && language == $locale][0]{\n  _id,\n  title,\n  language,\n  modules[]{\n  _key,\n  _type,\n  _type == "module.text" => {\n  title,\n  body[]{\n    \n    \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  ...,\n  type == "internal" => {\n    "linkType": "linkInternal",\n    "title": coalesce(title, reference->title),\n    "route": select(\n      reference->_type == "home" => "page",\n      reference->_type == "page" => "slug",\n      "page"\n    ),\n    "slug": reference->slug.current,\n    "resolvedReference": reference->{\n      _id,\n      _type,\n      title,\n      "slug": slug.current\n    }\n  },\n  type == "external" => {\n    ...,\n    "linkType": "linkExternal",\n    "href": url,\n    "title": coalesce(title, url),\n    blank\n  },\n  type == "function" => {\n    ...,\n    "linkType": "linkFunction",\n    "func": func {\n      key,\n      params\n    }\n  }\n\n        }\n      }\n    }\n  ,\n    _type == "module.media" => {\n      \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n    },\n    _type == "module.carousel" => {\n      \n  heading,\n  imagesOnly,\n  "slides": slides[]{\n    _key,\n    _type,\n    "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n  },\n  "slidesMedia": slidesMedia[]{\n    _key,\n    _type,\n    \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n  },\n  "resolvedSlides": select(\n    imagesOnly == true => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n    },\n    _type == "module.contentRefs" => {\n      \n  heading,\n  allowMultiple,\n  "reference": reference->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  },\n  "references": references[]->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  }\n\n    },\n    _type == "module.text" => {\n      title,\n      body[]{\n        \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  ...,\n  type == "internal" => {\n    "linkType": "linkInternal",\n    "title": coalesce(title, reference->title),\n    "route": select(\n      reference->_type == "home" => "page",\n      reference->_type == "page" => "slug",\n      "page"\n    ),\n    "slug": reference->slug.current,\n    "resolvedReference": reference->{\n      _id,\n      _type,\n      title,\n      "slug": slug.current\n    }\n  },\n  type == "external" => {\n    ...,\n    "linkType": "linkExternal",\n    "href": url,\n    "title": coalesce(title, url),\n    blank\n  },\n  type == "function" => {\n    ...,\n    "linkType": "linkFunction",\n    "func": func {\n      key,\n      params\n    }\n  }\n\n        }\n      }\n    }\n  ,\n        _type == "module.media" => {\n          \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n        },\n        _type == "module.carousel" => {\n          \n  heading,\n  imagesOnly,\n  "slides": slides[]{\n    _key,\n    _type,\n    "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n  },\n  "slidesMedia": slidesMedia[]{\n    _key,\n    _type,\n    \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n  },\n  "resolvedSlides": select(\n    imagesOnly == true => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n        },\n        _type == "module.contentRefs" => {\n          \n  heading,\n  allowMultiple,\n  "reference": reference->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  },\n  "references": references[]->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  }\n\n        },\n        _type == "module.text" => {\n          title,\n          body[]{\n            \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  ...,\n  type == "internal" => {\n    "linkType": "linkInternal",\n    "title": coalesce(title, reference->title),\n    "route": select(\n      reference->_type == "home" => "page",\n      reference->_type == "page" => "slug",\n      "page"\n    ),\n    "slug": reference->slug.current,\n    "resolvedReference": reference->{\n      _id,\n      _type,\n      title,\n      "slug": slug.current\n    }\n  },\n  type == "external" => {\n    ...,\n    "linkType": "linkExternal",\n    "href": url,\n    "title": coalesce(title, url),\n    blank\n  },\n  type == "function" => {\n    ...,\n    "linkType": "linkFunction",\n    "func": func {\n      key,\n      params\n    }\n  }\n\n        }\n      }\n    }\n  \n          }\n        }\n      }\n    }\n  \n  }\n},\n  _type == "module.media" => {\n  \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n},\n  _type == "module.carousel" => {\n  \n  heading,\n  imagesOnly,\n  "slides": slides[]{\n    _key,\n    _type,\n    "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n  },\n  "slidesMedia": slidesMedia[]{\n    _key,\n    _type,\n    \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n  },\n  "resolvedSlides": select(\n    imagesOnly == true => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n},\n  _type == "module.contentRefs" => {\n  \n  heading,\n  allowMultiple,\n  "reference": reference->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  },\n  "references": references[]->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  }\n\n}\n},\n  seo {\n  title,\n  description,\n  "imageUrl": image.asset->url\n}\n}': HomeQueryResult;
+    '*[_type == "page" && slug.current == $slug && language == $locale][0]{\n  _id,\n  title,\n  slug,\n  language,\n  modules[]{\n  _key,\n  _type,\n  _type == "module.text" => {\n  title,\n  body[]{\n    \n    \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  ...,\n  type == "internal" => {\n    "linkType": "linkInternal",\n    "title": coalesce(title, reference->title),\n    "route": select(\n      reference->_type == "home" => "page",\n      reference->_type == "page" => "slug",\n      "page"\n    ),\n    "slug": reference->slug.current,\n    "resolvedReference": reference->{\n      _id,\n      _type,\n      title,\n      "slug": slug.current\n    }\n  },\n  type == "external" => {\n    ...,\n    "linkType": "linkExternal",\n    "href": url,\n    "title": coalesce(title, url),\n    blank\n  },\n  type == "function" => {\n    ...,\n    "linkType": "linkFunction",\n    "func": func {\n      key,\n      params\n    }\n  }\n\n        }\n      }\n    }\n  ,\n    _type == "module.media" => {\n      \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n    },\n    _type == "module.carousel" => {\n      \n  heading,\n  imagesOnly,\n  "slides": slides[]{\n    _key,\n    _type,\n    "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n  },\n  "slidesMedia": slidesMedia[]{\n    _key,\n    _type,\n    \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n  },\n  "resolvedSlides": select(\n    imagesOnly == true => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n    },\n    _type == "module.contentRefs" => {\n      \n  heading,\n  allowMultiple,\n  "reference": reference->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  },\n  "references": references[]->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  }\n\n    },\n    _type == "module.text" => {\n      title,\n      body[]{\n        \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  ...,\n  type == "internal" => {\n    "linkType": "linkInternal",\n    "title": coalesce(title, reference->title),\n    "route": select(\n      reference->_type == "home" => "page",\n      reference->_type == "page" => "slug",\n      "page"\n    ),\n    "slug": reference->slug.current,\n    "resolvedReference": reference->{\n      _id,\n      _type,\n      title,\n      "slug": slug.current\n    }\n  },\n  type == "external" => {\n    ...,\n    "linkType": "linkExternal",\n    "href": url,\n    "title": coalesce(title, url),\n    blank\n  },\n  type == "function" => {\n    ...,\n    "linkType": "linkFunction",\n    "func": func {\n      key,\n      params\n    }\n  }\n\n        }\n      }\n    }\n  ,\n        _type == "module.media" => {\n          \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n        },\n        _type == "module.carousel" => {\n          \n  heading,\n  imagesOnly,\n  "slides": slides[]{\n    _key,\n    _type,\n    "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n  },\n  "slidesMedia": slidesMedia[]{\n    _key,\n    _type,\n    \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n  },\n  "resolvedSlides": select(\n    imagesOnly == true => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n        },\n        _type == "module.contentRefs" => {\n          \n  heading,\n  allowMultiple,\n  "reference": reference->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  },\n  "references": references[]->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  }\n\n        },\n        _type == "module.text" => {\n          title,\n          body[]{\n            \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  ...,\n  type == "internal" => {\n    "linkType": "linkInternal",\n    "title": coalesce(title, reference->title),\n    "route": select(\n      reference->_type == "home" => "page",\n      reference->_type == "page" => "slug",\n      "page"\n    ),\n    "slug": reference->slug.current,\n    "resolvedReference": reference->{\n      _id,\n      _type,\n      title,\n      "slug": slug.current\n    }\n  },\n  type == "external" => {\n    ...,\n    "linkType": "linkExternal",\n    "href": url,\n    "title": coalesce(title, url),\n    blank\n  },\n  type == "function" => {\n    ...,\n    "linkType": "linkFunction",\n    "func": func {\n      key,\n      params\n    }\n  }\n\n        }\n      }\n    }\n  \n          }\n        }\n      }\n    }\n  \n  }\n},\n  _type == "module.media" => {\n  \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n},\n  _type == "module.carousel" => {\n  \n  heading,\n  imagesOnly,\n  "slides": slides[]{\n    _key,\n    _type,\n    "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n  },\n  "slidesMedia": slidesMedia[]{\n    _key,\n    _type,\n    \n  type,\n  imageContent{\n    caption,\n    "media": image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n  },\n  videoContent{\n    caption,\n    videoSettings,\n    "media": video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n    "poster": poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  },\n  "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n\n  },\n  "resolvedSlides": select(\n    imagesOnly == true => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    data\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio },\n      lqip\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n},\n  _type == "module.contentRefs" => {\n  \n  heading,\n  allowMultiple,\n  "reference": reference->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  },\n  "references": references[]->{\n    _id,\n    _type,\n    title,\n    "slug": slug.current,\n    "route": select(\n      _type == "home" => "index",\n      _type == "page" => "slug",\n      "index"\n    )\n  }\n\n}\n},\n  seo {\n  title,\n  description,\n  "imageUrl": image.asset->url\n}\n}': PageBySlugQueryResult;
     '*[_id == "siteLanguageSettings"][0]{\n  _id,\n  availableLanguages[]{id, title},\n  defaultLanguageId\n}': SiteLanguageSettingsQueryResult;
-    '*[_id == "siteSettings"][0]{title}': SiteSettingsTitleQueryResult;
-    '*[_id == "siteSettings"][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
-    '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current\n}': PageSlugsQueryResult;
-    '*[_type == "home" || (_type == "page" && defined(slug.current))]{\n  _id,\n  _type,\n  _updatedAt,\n  "slug": select(_type == "home" => null, slug.current),\n  "path": select(_type == "home" => "/", "/" + slug.current)\n}': SitemapPagesQueryResult;
+    '*[_type == "siteSettings" && language == $locale][0]{title}': SiteSettingsTitleQueryResult;
+    '*[_type == "siteSettings" && language == $locale][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
+    '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current,\n  language\n}': PageSlugsQueryResult;
+    '*[_type == "home" || (_type == "page" && defined(slug.current))]{\n  _id,\n  _type,\n  _updatedAt,\n  language,\n  "slug": select(_type == "home" => null, slug.current),\n  "path": select(_type == "home" => "/", "/" + slug.current)\n}': SitemapPagesQueryResult;
   }
 }

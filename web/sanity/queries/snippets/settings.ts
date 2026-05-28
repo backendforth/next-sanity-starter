@@ -6,25 +6,18 @@ import { imageQuery } from "./media";
 import { pageSeoQuery } from "./seo";
 
 /**
- * `internationalizedArrayRichText` field: array of { language, value: portable text }.
- * Resolves link annotations like module text bodies.
+ * Portable Text `body[]` projection for plain `richText` fields (no embedded
+ * modules) — resolves `link` annotations.
  */
-function internationalizedRichTextArrayField(fieldName: string): string {
-	return `${fieldName}[]{
-  _key,
-  _type,
-  language,
-  value[]{
+const richTextBody = `[]{
+  ...,
+  markDefs[]{
     ...,
-    markDefs[]{
-      ...,
-      _type == "link" => {
-        ${linkQuery}
-      }
+    _type == "link" => {
+      ${linkQuery}
     }
   }
 }`;
-}
 
 /** Main menu: links plus optional `nav.languageSwitch` blocks (order preserved). */
 const navMainMenuQuery = `mainMenu[]{
@@ -54,27 +47,30 @@ export const navMenusQuery = `
   "footerMenu": ${navFooterMenuQuery}
 `;
 
-/** Document id: `siteNav` (see studio structure). */
-export const siteNavQuery = `*[_id == "siteNav"][0]{
+/** Document type: `siteNav` (one per language; see studio structure). */
+export const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
   _id,
   title,
+  language,
   ${navMenusQuery},
   ${modulesQuery}
 }`;
 
-/** Same resolved menus as `siteNavQuery` without `modules[]` (lighter layout fetch). */
 /**
+ * Same resolved menus as `siteNavQuery` without `modules[]` (lighter layout fetch).
+ *
  * Not wrapped in `defineQuery`: Sanity Typegen cannot resolve the `link`
  * projection here and mis-types `mainMenu`/`footerMenu` as `null`. The
  * hand-written `SiteNavMenusDocument` (sanity/types/nav.ts) is authoritative.
  */
-export const siteNavMenusQuery = `*[_id == "siteNav"][0]{
+export const siteNavMenusQuery = `*[_type == "siteNav" && language == $locale][0]{
   _id,
   title,
+  language,
   ${navMenusQuery}
 }`;
 
-/** Document id: `siteLanguageSettings` — drives Next routes + `internationalizedArray` codegen in Studio. */
+/** Document id: `siteLanguageSettings` — the global locale registry. */
 export const siteLanguageSettingsQuery =
 	defineQuery(`*[_id == "siteLanguageSettings"][0]{
   _id,
@@ -84,40 +80,43 @@ export const siteLanguageSettingsQuery =
 
 /** Minimal fetch for `app/[locale]/layout.tsx` `generateMetadata` (tab title template). */
 export const siteSettingsTitleQuery = defineQuery(
-	`*[_id == "siteSettings"][0]{title}`,
+	`*[_type == "siteSettings" && language == $locale][0]{title}`,
 );
 
 /** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
 export const siteSettingsSeoFallbackQuery =
-	defineQuery(`*[_id == "siteSettings"][0]{
+	defineQuery(`*[_type == "siteSettings" && language == $locale][0]{
   "title": seo.title,
   "description": seo.description,
   "imageUrl": seo.image.asset->url
 }`);
 
-/** Document id: `siteSettings`. */
-export const siteSettingsQuery = `*[_id == "siteSettings"][0]{
+/** Document type: `siteSettings` (one per language). */
+export const siteSettingsQuery = `*[_type == "siteSettings" && language == $locale][0]{
   _id,
   title,
+  language,
   "favicon": favicon${imageQuery},
   ${modulesQuery},
   ${pageSeoQuery}
 }`;
 
-/** Document id: `errorSettings`. */
-export const errorSettingsQuery = `*[_id == "errorSettings"][0]{
+/** Document type: `errorSettings` (one per language). */
+export const errorSettingsQuery = `*[_type == "errorSettings" && language == $locale][0]{
   _id,
+  language,
   notFoundTitle,
-  ${internationalizedRichTextArrayField("notFoundBody")},
+  "notFoundBody": notFoundBody${richTextBody},
   serverErrorTitle,
-  ${internationalizedRichTextArrayField("serverErrorBody")},
+  "serverErrorBody": serverErrorBody${richTextBody},
   ${modulesQuery}
 }`;
 
-/** Document id: `siteCookieBanner`. */
-export const siteCookieBannerQuery = `*[_id == "siteCookieBanner"][0]{
+/** Document type: `siteCookieBanner` (one per language). */
+export const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && language == $locale][0]{
   _id,
   title,
+  language,
   useCookieBanner,
   consentModal,
   preferencesModal,
@@ -126,7 +125,7 @@ export const siteCookieBannerQuery = `*[_id == "siteCookieBanner"][0]{
 
 /**
  * Single fetch for app shell: settings, nav, errors, cookie banner.
- * Document ids match Studio Documents: siteSettings, siteNav, errorSettings, siteCookieBanner.
+ * Document types match Studio Documents: siteSettings, siteNav, errorSettings, siteCookieBanner.
  *
  * NOTE: not consumed by any current route — provided as a convenience aggregate
  * (and the reason `siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`

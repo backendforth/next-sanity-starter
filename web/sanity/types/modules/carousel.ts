@@ -1,10 +1,9 @@
-import type { IntlStringEntry } from "@/sanity/utils";
 import type { ModuleMediaData, ResolvedMediaPayload } from "./media";
 
 export type ModuleCarouselData = {
 	_type: "module.carousel";
 	_key?: string;
-	heading?: IntlStringEntry[] | null;
+	heading?: string | null;
 	imagesOnly?: boolean | null;
 	/** Image slides: each slide has `media` from `mediaQuery` (kind + payload). */
 	slides?: Array<{

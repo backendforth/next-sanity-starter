@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import type { SanityImageField } from "@/sanity/types/modules";
 import {
@@ -78,8 +78,10 @@ function buildSrcSet(image: SanityImageField, maxWidth: number): string {
  * Sanity-driven image: **native `<img>`** with deterministic Sanity CDN URLs (same SSR / client),
  * responsive `srcset` + `sizes` so the browser picks the right variant per container / viewport.
  *
- * Server Component (no `"use client"`) so URLs are built once on the server and the
- * layout boot script may add `.img-loaded` without React hydration conflicts.
+ * The `img-loaded` class is React-managed (via `useState` + `useEffect`) so the SSR markup
+ * stays stable through hydration — adding the class from an inline boot script raced React
+ * 19's streaming hydration on cached images and produced "tree hydrated but attributes
+ * didn't match" warnings.
  */
 export function MediaImage({
 	imagePayload,
@@ -92,6 +94,29 @@ export function MediaImage({
 	sizes = "100vw",
 }: MediaImageProps) {
 	const image = resolveSanityImageFieldForUrl(imagePayload);
+	const imgRef = useRef<HTMLImageElement>(null);
+	/* Priority images skip the fade — they render visible immediately. Non-priority
+	   images start at `loaded=false` (matches SSR) and flip to `true` from the load
+	   handler in `useEffect` (or right away if cached). */
+	const [loaded, setLoaded] = useState(priority);
+
+	useEffect(() => {
+		if (priority) return;
+		const el = imgRef.current;
+		if (!el) return;
+		if (el.complete && el.naturalWidth > 0) {
+			setLoaded(true);
+			return;
+		}
+		const onSettled = () => setLoaded(true);
+		el.addEventListener("load", onSettled, { once: true });
+		el.addEventListener("error", onSettled, { once: true });
+		return () => {
+			el.removeEventListener("load", onSettled);
+			el.removeEventListener("error", onSettled);
+		};
+	}, [priority]);
+
 	if (!image) return null;
 
 	const cropped = getCroppedImageDisplayDimensions(image);
@@ -132,6 +157,7 @@ export function MediaImage({
 		>
 			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
 			<img
+				ref={imgRef}
 				src={src}
 				srcSet={srcSet || undefined}
 				sizes={srcSet ? sizes : undefined}
@@ -142,7 +168,10 @@ export function MediaImage({
 				fetchPriority={priority ? "high" : "auto"}
 				decoding={priority ? "sync" : "async"}
 				{...(!priority && { "data-lazy": "" })}
-				className="absolute inset-0 block h-full w-full max-w-none"
+				className={clsx(
+					"absolute inset-0 block h-full w-full max-w-none",
+					!priority && loaded && "img-loaded",
+				)}
 				style={imgStyle}
 			/>
 		</div>

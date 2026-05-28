@@ -22,9 +22,15 @@ export const page = defineType({
   ],
   fields: [
     {
+      name: "language",
+      type: "string",
+      readOnly: true,
+      hidden: true,
+    },
+    {
       name: "title",
       title: "Title",
-      type: "internationalizedArrayString",
+      type: "string",
       group: "editorial",
       validation: (rule) => rule.required(),
     },
@@ -50,12 +56,15 @@ export const page = defineType({
   ],
   preview: {
     select: {
+      title: "title",
       slug: "slug",
+      language: "language",
     },
-    prepare(selection) {
-      const { slug } = selection;
+    prepare({ title, slug, language }) {
+      const path = slug?.current?.trim() ? `/${slug.current}` : "Page";
       return {
-        title: slug?.current?.trim() ? `/${slug.current}` : "Page",
+        title: typeof title === "string" && title.trim() ? title : path,
+        subtitle: language ? `${path} · ${language}` : path,
       };
     },
   },

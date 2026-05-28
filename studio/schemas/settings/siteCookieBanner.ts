@@ -10,6 +10,12 @@ export const siteCookieBanner = defineType({
   icon: CodeBlockIcon,
   fields: [
     {
+      name: "language",
+      type: "string",
+      readOnly: true,
+      hidden: true,
+    },
+    {
       title: "Title",
       name: "title",
       type: "string",
@@ -101,10 +107,11 @@ export const siteCookieBanner = defineType({
     },
   ],
   preview: {
-    select: { title: "title" },
-    prepare({ title }) {
+    select: { title: "title", language: "language" },
+    prepare({ title, language }) {
       return {
         title: title ?? "Cookie Banner",
+        subtitle: language || undefined,
       };
     },
   },

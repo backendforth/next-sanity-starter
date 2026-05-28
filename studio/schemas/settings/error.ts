@@ -15,38 +15,46 @@ export const errorSettings = defineType({
   ],
   fields: [
     {
+      name: "language",
+      type: "string",
+      readOnly: true,
+      hidden: true,
+    },
+    {
       name: "notFoundTitle",
       title: "404 — Title",
-      type: "internationalizedArrayString",
+      type: "string",
       group: "editorial",
       validation: (rule) => rule.required(),
     },
     {
       name: "notFoundBody",
       title: "404 — Body",
-      type: "internationalizedArrayRichText",
+      type: "richText",
       description: "Basic rich text (no media modules).",
       group: "editorial",
     },
     {
       name: "serverErrorTitle",
       title: "500 — Title",
-      type: "internationalizedArrayString",
+      type: "string",
       group: "editorial",
       validation: (rule) => rule.required(),
     },
     {
       name: "serverErrorBody",
       title: "500 — Body",
-      type: "internationalizedArrayRichText",
+      type: "richText",
       description: "Basic rich text (no media modules).",
       group: "editorial",
     },
   ],
   preview: {
-    prepare() {
+    select: { language: "language" },
+    prepare({ language }) {
       return {
         title: "Error pages",
+        subtitle: language || undefined,
       };
     },
   },

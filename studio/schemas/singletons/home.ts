@@ -22,9 +22,15 @@ export const home = defineType({
   ],
   fields: [
     {
+      name: "language",
+      type: "string",
+      readOnly: true,
+      hidden: true,
+    },
+    {
       name: "title",
       title: "Title",
-      type: "internationalizedArrayString",
+      type: "string",
       group: "editorial",
       validation: (rule) => rule.required(),
     },
@@ -38,9 +44,11 @@ export const home = defineType({
     },
   ],
   preview: {
-    prepare() {
+    select: { language: "language" },
+    prepare({ language }) {
       return {
         title: "Home",
+        subtitle: language || undefined,
       };
     },
   },

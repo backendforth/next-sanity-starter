@@ -83,11 +83,11 @@ export const metadata: Metadata = {
 /**
  * Tiny blocking inline script — runs synchronously before hydration.
  *
- * 1. Wendet den gespeicherten Theme-Override (`localStorage["color-scheme"]`) als
- *    `data-theme="light" | "dark"` auf <html> an, **bevor** der erste Paint
- *    stattfindet. Bei `"system"` oder fehlendem Wert bleibt das Attribut weg,
- *    sodass `@media (prefers-color-scheme: dark)` in `variables/colors.css`
- *    von alleine greift — funktioniert deshalb auch ohne JavaScript.
+ * 1. Applies the stored theme override (`localStorage["color-scheme"]`) as
+ *    `data-theme="light" | "dark"` on <html> **before** the first paint. For
+ *    `"system"` or a missing value the attribute stays unset, so the
+ *    `@media (prefers-color-scheme: dark)` rule in `variables/colors.css`
+ *    takes over — works without JavaScript.
  * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
  * 3. Wires up the lazy-image fade-in: when an img[data-lazy] finishes loading,
  *    adds `.img-loaded` → CSS transition kicks in (0.2 s ease-in-out).

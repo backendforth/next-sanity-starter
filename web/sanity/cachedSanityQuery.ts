@@ -24,21 +24,12 @@ import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings"
 export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 
 /**
- * **Published-only** reads via `client.fetch` + `unstable_cache` (tag- + time-based revalidation).
+ * Published-only reads via `client.fetch` + `unstable_cache`. See `web/sanity/README.md`
+ * (*Layout*) for when to use this vs the `fetchSanityData.ts` wrappers (Draft Mode /
+ * Presentation paths).
  *
- * App routes that need **Presentation / Draft Mode / Visual Editing** must use
- * `fetchHomeDocument` / `fetchPageBySlug` from `fetchSanityData.ts` instead — those wrap
- * `sanityFetch` from `defineLive`, which is required for stega + live previews.
- *
- * Use this module from places that **never** need draft state:
- * - `app/sitemap.ts`           — sitemap snapshot, refreshed via `pages` / `home` tags.
- * - `generateStaticParams`     — slug lists for ISR pre-rendering.
- * - `proxy.ts` / no-token reads of `siteLanguageSettings` (cross-request cache).
- *
- * Static GROQ (no `$params`) is deduped within a request when the same `query` string
- * is reused (e.g. `generateMetadata` + page component). For parameterised queries, use
- * a dedicated wrapper like `cachedPageDocumentBySlug` so arguments stay primitives —
- * object params break React `cache` deduplication.
+ * Parameterised queries need their own wrapper (e.g. `cachedPageDocumentBySlug`) with
+ * primitive args — object params break React `cache()` deduplication.
  */
 export const cachedSanityQuery = cache(async <T>(query: string) => {
 	if (!isSanityConfigured) return { data: null as T | null };

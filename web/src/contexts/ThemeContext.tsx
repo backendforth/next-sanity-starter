@@ -35,9 +35,9 @@ function readStoredTheme(): Theme {
 }
 
 /**
- * Spiegelt die Wahl als `data-theme="light" | "dark"` auf `<html>`; bei `"system"`
- * wird das Attribut entfernt — dadurch greift `@media (prefers-color-scheme: dark)`
- * in `variables/colors.css` ohne weiteres Markup.
+ * Mirrors the choice as `data-theme="light" | "dark"` on `<html>`; for `"system"`
+ * the attribute is removed so `@media (prefers-color-scheme: dark)` in
+ * `variables/colors.css` takes over without extra markup.
  */
 function applyThemeToDocument(theme: Theme) {
 	const el = document.documentElement;

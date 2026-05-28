@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import type {
 	ContentModule,
 	ModuleCarouselData,
@@ -7,9 +8,19 @@ import type {
 } from "@/sanity/types/modules";
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
-import { ModuleCarousel } from "@/src/components/carousel";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModuleText } from "./ModuleText";
+
+/**
+ * Carousel pulls in `embla-carousel-react` + `embla-carousel-autoplay` (~15 KB
+ * gzipped of client JS). Loading it via `next/dynamic` defers the chunk fetch
+ * until a page actually renders a carousel module — text- and media-only pages
+ * never pay the cost. SSR stays on (default) so the first paint still includes
+ * static slide markup.
+ */
+const ModuleCarousel = dynamic(() =>
+	import("@/src/components/carousel").then((m) => m.ModuleCarousel),
+);
 
 type Props = {
 	modules: ContentModule[];

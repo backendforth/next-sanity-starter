@@ -7,6 +7,7 @@ import type {
 	ModuleCarouselData,
 	ModuleMediaData,
 } from "@/sanity/types/modules";
+import { type LinkMark, resolveLinkMark } from "@/sanity/utils/linkResolver";
 import { ModuleCarousel } from "@/src/components/carousel";
 import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
 
@@ -20,78 +21,39 @@ import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type ResolvedRef = {
-	_type?: string;
-	slug?: string | null;
-};
-
-/** Portable Text `link` mark — aligned with GROQ `linkQuery` / `studio/schemas/objects/link.ts`. */
-export type RichTextMediaLinkMark = {
-	_type?: string;
-	type?: "internal" | "external" | "function" | string;
-	title?: string | null;
-	url?: string | null;
-	blank?: boolean | null;
-	resolvedReference?: ResolvedRef | null;
-	func?: { key?: string; params?: string | null } | null;
-};
+/** @deprecated Import `LinkMark` from `@/sanity/utils/linkResolver` instead. */
+export type RichTextMediaLinkMark = LinkMark;
 
 type RichTextMediaProps = {
 	value: PortableTextBlock[];
 	className?: string;
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function internalHref(ref: ResolvedRef | null | undefined): string | undefined {
-	if (!ref?._type) return undefined;
-	if (ref._type === "home") return "/";
-	if (ref._type === "page" && ref.slug) return `/${ref.slug}`;
-	return undefined;
-}
-
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function LinkMark({
+function LinkMarkRenderer({
 	children,
 	value,
 }: {
 	children?: ReactNode;
-	value?: RichTextMediaLinkMark;
+	value?: LinkMark;
 }) {
-	if (!value || value._type !== "link") {
+	const resolved = resolveLinkMark(value);
+	if (!resolved) {
 		return <>{children}</>;
 	}
-
-	if (value.type === "external" && value.url) {
-		const blank = value.blank !== false;
-		return (
-			<a
-				href={value.url}
-				target={blank ? "_blank" : undefined}
-				rel={blank ? "noopener noreferrer" : undefined}
-			>
-				{children}
-			</a>
-		);
-	}
-
-	if (value.type === "internal") {
-		const href = internalHref(value.resolvedReference ?? undefined);
-		if (href) {
-			return <a href={href}>{children}</a>;
-		}
-	}
-
-	if (value.type === "function") {
+	if (resolved.kind === "function") {
 		return (
 			<span className="cursor-default underline decoration-dotted decoration-color-link-decoration">
 				{children}
 			</span>
 		);
 	}
-
-	return <>{children}</>;
+	return (
+		<a href={resolved.href} target={resolved.target} rel={resolved.rel}>
+			{children}
+		</a>
+	);
 }
 
 // ─── Portable Text configuration ─────────────────────────────────────────────
@@ -127,7 +89,9 @@ function portableTextComponents(): Partial<PortableTextComponents> {
 			em: ({ children }) => <em className="italic">{children}</em>,
 			code: ({ children }) => <code className="px-1.5 py-0.5">{children}</code>,
 			link: ({ children, value }) => (
-				<LinkMark value={value as RichTextMediaLinkMark}>{children}</LinkMark>
+				<LinkMarkRenderer value={value as LinkMark}>
+					{children}
+				</LinkMarkRenderer>
 			),
 		},
 		types: {

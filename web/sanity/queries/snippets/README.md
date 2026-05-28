@@ -4,7 +4,7 @@ Small **GROQ string snippets** you compose into larger queries. They are not run
 
 Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 
-## What lives here
+## Contents
 
 | File | Export(s) | Role |
 |------|-----------|------|

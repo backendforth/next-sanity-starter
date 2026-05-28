@@ -2,7 +2,7 @@
 
 This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** for fetched module shapes, and **utilities** (localization, images, labels). It is designed so pages and components can stay thin: fetch at the route, map types, render.
 
-## Layout
+## Contents
 
 | Path | Role |
 |------|------|

@@ -12,7 +12,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 **Web** uses [`fallbackSiteLocales.ts`](./fallbackSiteLocales.ts) `FALLBACK_SITE_LOCALE_CONFIG` — **minimal `en` only** — via [`sanity/normalizeSiteLocaleConfig.ts`](../../sanity/normalizeSiteLocaleConfig.ts). **Studio** uses the same minimal list in [`studio/config/sync/internationalizedArrayLanguages.ts`](../../../studio/config/sync/internationalizedArrayLanguages.ts) (`FALLBACK_LANGUAGES`). Those two constants **must stay in sync** (comments in both files cross-reference).
 
-## Files
+## Contents
 
 | File | Role |
 |------|------|

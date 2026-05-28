@@ -9,7 +9,7 @@ This folder holds **GROQ** strings for the Next.js app: reusable **snippets**, *
 - **Docs:** [sanity.io/docs/groq](https://www.sanity.io/docs/groq)
 - **Tooling:** **Vision** in Sanity Studio (Tools → Vision) runs queries against the **current dataset** — use it to validate the examples below.
 
-## Folder structure
+## Contents
 
 | Path | Role |
 |------|------|

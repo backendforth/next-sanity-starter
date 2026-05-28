@@ -13,8 +13,5 @@ export { resolveStudioDatasetAsync };
 export function getSanityStudioProjectId(
 	env: NodeJS.ProcessEnv = process.env,
 ): string {
-	return (
-		env.SANITY_STUDIO_PROJECT_ID?.trim() ||
-		""
-	);
+	return env.SANITY_STUDIO_PROJECT_ID?.trim() || "";
 }

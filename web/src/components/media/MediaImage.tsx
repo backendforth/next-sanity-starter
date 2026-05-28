@@ -1,3 +1,5 @@
+"use client";
+
 import clsx from "clsx";
 import type { CSSProperties } from "react";
 
@@ -142,7 +144,6 @@ export function MediaImage({
 			{...(!priority && { "data-lazy": "" })}
 			className="absolute inset-0 block h-full w-full max-w-none"
 			style={imgStyle}
-			suppressHydrationWarning
 		/>
 		</div>
 	);

@@ -47,8 +47,17 @@ export const navMenusQuery = `
   "footerMenu": ${navFooterMenuQuery}
 `;
 
+/**
+ * `siteNav` for the active locale. Falls back to a legacy document with no
+ * `language` (pre–document-level i18n) when no locale-specific doc exists.
+ */
+const siteNavByLocale = `coalesce(
+  *[_type == "siteNav" && language == $locale][0],
+  *[_type == "siteNav" && !defined(language)][0]
+)`;
+
 /** Document type: `siteNav` (one per language; see studio structure). */
-export const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
+export const siteNavQuery = `${siteNavByLocale}{
   _id,
   title,
   language,
@@ -63,7 +72,7 @@ export const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
  * projection here and mis-types `mainMenu`/`footerMenu` as `null`. The
  * hand-written `SiteNavMenusDocument` (sanity/types/nav.ts) is authoritative.
  */
-export const siteNavMenusQuery = `*[_type == "siteNav" && language == $locale][0]{
+export const siteNavMenusQuery = `${siteNavByLocale}{
   _id,
   title,
   language,

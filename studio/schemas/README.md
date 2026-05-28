@@ -101,7 +101,7 @@ You do **not** need a Desk structure item for a module (modules are not document
 | Module | Role |
 |--------|------|
 | `module.media` | Image or Mux video via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) depending on `type`. |
-| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). |
+| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`autoplay`** + **`autoplayDelayMs`**. |
 | `module.contentRefs` | Optional heading; **`allowMultiple`** toggles single **`reference`** vs **`references`** array to **`PAGE_REFERENCES`** (same as internal links). |
 | `module.text` | Title + rich text body. |
 

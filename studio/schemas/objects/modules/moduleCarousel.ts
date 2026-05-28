@@ -8,6 +8,13 @@ export const moduleCarousel = defineType({
   title: "Carousel",
   type: "object",
   icon: ImagesIcon,
+  fieldsets: [
+    {
+      name: "behavior",
+      title: "Carousel behavior",
+      options: { collapsible: true, collapsed: false },
+    },
+  ],
   fields: [
     {
       name: "heading",
@@ -51,6 +58,49 @@ export const moduleCarousel = defineType({
           }
           return true;
         }),
+    },
+    {
+      name: "loop",
+      title: "Loop",
+      description: "Wrap from the last slide back to the first.",
+      type: "boolean",
+      initialValue: false,
+      fieldset: "behavior",
+    },
+    {
+      name: "showThumbnails",
+      title: "Show thumbnails",
+      description: "Display a thumbnail strip below the carousel.",
+      type: "boolean",
+      initialValue: false,
+      fieldset: "behavior",
+    },
+    {
+      name: "showNavDots",
+      title: "Navigation dots",
+      description: "Show pagination dots under the carousel.",
+      type: "boolean",
+      initialValue: true,
+      fieldset: "behavior",
+    },
+    {
+      name: "autoplay",
+      title: "Autoplay slides",
+      description:
+        "Automatically advance to the next slide. Independent of per-video autoplay.",
+      type: "boolean",
+      initialValue: false,
+      fieldset: "behavior",
+    },
+    {
+      name: "autoplayDelayMs",
+      title: "Autoplay delay (ms)",
+      description: "Time between slide changes when autoplay is enabled.",
+      type: "number",
+      initialValue: 5000,
+      hidden: ({ parent }) => parent?.autoplay !== true,
+      validation: (rule) => rule.min(1000).integer(),
+      fieldset: "behavior",
     },
   ],
   preview: {

@@ -7,6 +7,7 @@ import type {
 } from "@/sanity/types/modules";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
+import { ModuleCarousel } from "@/src/components/carousel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModuleText } from "./ModuleText";
@@ -22,38 +23,6 @@ type Props = {
 const IS_DEV = process.env.NODE_ENV === "development";
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
-
-/**
- * Carousel placeholder — schema + GROQ exist, no production renderer yet.
- * Renders a labeled placeholder in dev only; nothing in production so empty
- * Studio modules don't surface visible warnings to end users.
- */
-function ModuleCarouselPlaceholder({
-	module,
-	locale,
-	siteLocale,
-}: {
-	module: ModuleCarouselData;
-	locale: string;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-}) {
-	if (!IS_DEV) return null;
-	const heading = pickLocalizedString(module.heading, locale, siteLocale);
-	const slideCount =
-		module.resolvedSlides?.length ??
-		module.slidesMedia?.length ??
-		module.slides?.length ??
-		0;
-	return (
-		<div className="rounded-md border border-dashed border-color-border-subtle p-4 text-sm text-color-text-muted">
-			<strong className="block">module.carousel</strong>
-			{heading ? <span className="block">heading: {heading}</span> : null}
-			<span className="block">
-				slides: {slideCount} (no frontend renderer yet)
-			</span>
-		</div>
-	);
-}
 
 function ModuleContentRefsPlaceholder({
 	module,
@@ -123,7 +92,7 @@ export function ModulesRenderer({ modules, locale, siteLocale }: Props) {
 				}
 				if (mod._type === "module.carousel") {
 					return (
-						<ModuleCarouselPlaceholder
+						<ModuleCarousel
 							key={key}
 							module={mod as ModuleCarouselData}
 							locale={locale}

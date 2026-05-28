@@ -19,6 +19,8 @@
 		"@sanity/client": "^7.22.0",
 		"@sanity/image-url": "^2.1.1",
 		"clsx": "^2.1.1",
+		"embla-carousel-autoplay": "^8.6.0",
+		"embla-carousel-react": "^8.6.0",
 		"hls.js": "^1.6.16",
 		"next": "16.2.6",
 		"next-sanity": "^13.0.4",

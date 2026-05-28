@@ -270,6 +270,11 @@ export type ModuleCarousel = {
       _key: string;
     } & ModuleMedia
   >;
+  loop?: boolean;
+  showThumbnails?: boolean;
+  showNavDots?: boolean;
+  autoplay?: boolean;
+  autoplayDelayMs?: number;
 };
 
 export type MediaVideo = {

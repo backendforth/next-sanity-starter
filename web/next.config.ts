@@ -5,6 +5,20 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
 	transpilePackages: ["@repo/sanity-dataset-resolve"],
 
+	/**
+	 * Inline `SANITY_STUDIO_*` into the **client** bundle.
+	 *
+	 * Next normally only exposes `NEXT_PUBLIC_*` variables to the browser. We keep a single
+	 * env-var name across `web/` and `studio/` (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`)
+	 * by listing them here — `next.config`'s `env` map gets statically replaced at build time
+	 * exactly like `NEXT_PUBLIC_*`. Without this, Client Components (image-URL builder etc.)
+	 * would see `undefined` and SSR / CSR would diverge → hydration mismatch on Sanity images.
+	 */
+	env: {
+		SANITY_STUDIO_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID ?? "",
+		SANITY_STUDIO_DATASET: process.env.SANITY_STUDIO_DATASET ?? "",
+	},
+
 	/** Drop the `X-Powered-By: Next.js` header — small fingerprinting reduction. */
 	poweredByHeader: false,
 

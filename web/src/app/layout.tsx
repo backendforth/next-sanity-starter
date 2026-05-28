@@ -151,7 +151,17 @@ export default async function RootLayout({
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
 				<ThemeProvider>{children}</ThemeProvider>
-				{shouldMountSanityLive ? <SanityLive /> : null}
+				{shouldMountSanityLive ? (
+					<SanityLive
+						onError={(error, context) => {
+							console.error("[SanityLive] live connection error", {
+								error,
+								includeDrafts: context.includeDrafts,
+								waitFor: context.waitFor,
+							});
+						}}
+					/>
+				) : null}
 				{isDraft ? (
 					<>
 						<VisualEditing />

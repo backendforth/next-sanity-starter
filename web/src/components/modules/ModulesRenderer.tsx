@@ -75,47 +75,55 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	);
 }
 
-/** Renders the document `modules[]` stack (one UI block per `module.*` type). */
+function renderModuleChild(mod: ContentModule) {
+	if (mod._type === "module.text") {
+		return <ModuleText module={mod as ModuleTextData} />;
+	}
+	if (mod._type === "module.media") {
+		return <ModuleMedia module={mod as ModuleMediaData} />;
+	}
+	if (mod._type === "module.carousel") {
+		return <ModuleCarousel module={mod as ModuleCarouselData} />;
+	}
+	if (mod._type === "module.contentRefs") {
+		return (
+			<ModuleContentRefsPlaceholder module={mod as ModuleContentRefsData} />
+		);
+	}
+	return <UnknownModule moduleType={mod._type} />;
+}
+
+/**
+ * Renders the document `modules[]` stack. Each module is rendered server-side
+ * (so module bundles stay out of the page's client chunk) and handed to a thin
+ * client wrapper that orchestrates optimistic reordering when Visual Editing
+ * dispatches a document update.
+ *
+ * Modules without `_key` are kept in the initial order but cannot participate
+ * in optimistic reordering — they'd lose their slot on the next Sanity update.
+ * Production data from Sanity always carries `_key`s; this branch is only for
+ * legacy edge cases.
+ */
 export function ModulesRenderer({ modules, documentId, documentType }: Props) {
+	const initialModules = modules.map((mod, index) => {
+		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
+		const sanityAttr = mod._key
+			? dataAttr({
+					id: documentId,
+					type: documentType,
+					path: `modules[_key=="${mod._key}"]`,
+				})
+			: undefined;
+		return {
+			_key: key,
+			rendered: <div data-sanity={sanityAttr}>{renderModuleChild(mod)}</div>,
+		};
+	});
+
 	return (
-		<div className="flex flex-col gap-10">
-			{modules.map((mod, index) => {
-				const key = mod._key ?? `${mod._type ?? "module"}-${index}`;
-				// Only modules with a stable `_key` can be reverse-mapped to a
-				// GROQ path. Without `_key` (legacy data) the Presentation
-				// overlay would target the wrong array slot, so we skip it.
-				const sanityAttr = mod._key
-					? dataAttr({
-							id: documentId,
-							type: documentType,
-							path: `modules[_key=="${mod._key}"]`,
-						})
-					: undefined;
-				const child = (() => {
-					if (mod._type === "module.text") {
-						return <ModuleText module={mod as ModuleTextData} />;
-					}
-					if (mod._type === "module.media") {
-						return <ModuleMedia module={mod as ModuleMediaData} />;
-					}
-					if (mod._type === "module.carousel") {
-						return <ModuleCarousel module={mod as ModuleCarouselData} />;
-					}
-					if (mod._type === "module.contentRefs") {
-						return (
-							<ModuleContentRefsPlaceholder
-								module={mod as ModuleContentRefsData}
-							/>
-						);
-					}
-					return <UnknownModule moduleType={mod._type} />;
-				})();
-				return (
-					<div key={key} data-sanity={sanityAttr}>
-						{child}
-					</div>
-				);
-			})}
-		</div>
+		<ModulesRendererClient
+			documentId={documentId}
+			initialModules={initialModules}
+		/>
 	);
 }

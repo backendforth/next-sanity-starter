@@ -6,5 +6,5 @@ export function siteNavStructureItem(S: StructureBuilder) {
     .title("Navigation")
     .icon(MenuIcon)
     .id("site-nav")
-    .child(S.document().schemaType("siteNav").documentId("siteNav"));
+    .child(S.documentTypeList("siteNav").title("Navigation"));
 }

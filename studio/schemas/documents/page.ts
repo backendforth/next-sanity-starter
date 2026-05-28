@@ -1,6 +1,6 @@
 import { DocumentTextIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
-import { validateSlug } from "../../utils/validateSlug";
+import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
 export const page = defineType({
@@ -38,10 +38,11 @@ export const page = defineType({
       name: "slug",
       title: "Path",
       description:
-        "URL path for this page (e.g. yoursite.com/my-path). Use lowercase letters, numbers, and hyphens.",
+        "URL path for this page (e.g. yoursite.com/my-path). Use lowercase letters, numbers, and hyphens. The same slug may be reused on different language variants.",
       type: "slug",
       options: {
         maxLength: 96,
+        isUnique: isUniqueLocaleAgnostic,
       },
       validation: validateSlug,
       group: "editorial",

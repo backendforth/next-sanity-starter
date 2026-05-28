@@ -6,5 +6,5 @@ export function siteSettingsStructureItem(S: StructureBuilder) {
     .title("Settings")
     .icon(CogIcon)
     .id("site-settings")
-    .child(S.document().schemaType("siteSettings").documentId("siteSettings"));
+    .child(S.documentTypeList("siteSettings").title("Settings"));
 }

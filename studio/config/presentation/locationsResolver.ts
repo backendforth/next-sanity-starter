@@ -14,7 +14,18 @@ import {
 
 const SLUG_TYPE_SET = new Set<string>(SLUG_BASED_DOCUMENT_TYPES);
 
-const SLUG_QUERY = `*[_id in $ids][0]{ "slug": slug.current }`;
+const SLUG_QUERY = `*[_id in $ids][0]{ "slug": slug.current, language }`;
+
+/**
+ * Builds the web URL for a slugged document. Always emits the language-prefixed
+ * path — the web app's `proxy.ts` redirects the default-locale prefix to the
+ * canonical unprefixed URL, so Presentation lands in the right place either way.
+ */
+function localizedPath(slug: string, language?: string | null): string {
+  const lang = typeof language === "string" ? language.trim() : "";
+  if (!lang) return `/${slug}`;
+  return `/${lang}/${slug}`;
+}
 
 /**
  * Types that need fully custom locations (no convention).
@@ -73,12 +84,12 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
   return context.documentStore
     .listenQuery(SLUG_QUERY, { ids }, { perspective: "drafts" })
     .pipe(
-      map((doc: { slug?: string } | null) => {
-        const raw = doc?.slug;
-        const slug = typeof raw === "string" ? raw.trim() : "";
+      map((doc: { slug?: string; language?: string | null } | null) => {
+        const rawSlug = doc?.slug;
+        const slug = typeof rawSlug === "string" ? rawSlug.trim() : "";
 
         if (slug) {
-          const path = `/${slug}`;
+          const path = localizedPath(slug, doc?.language);
           return {
             message: PRESENTATION_LOCATIONS_HEADER,
             locations: [

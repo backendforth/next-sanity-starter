@@ -6,9 +6,5 @@ export function siteCookieBannerStructureItem(S: StructureBuilder) {
     .title("Cookie Banner")
     .icon(CodeBlockIcon)
     .id("site-cookie-banner")
-    .child(
-      S.document()
-        .schemaType("siteCookieBanner")
-        .documentId("siteCookieBanner"),
-    );
+    .child(S.documentTypeList("siteCookieBanner").title("Cookie Banner"));
 }

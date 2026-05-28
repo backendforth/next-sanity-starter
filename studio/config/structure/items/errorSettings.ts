@@ -6,7 +6,5 @@ export function errorSettingsStructureItem(S: StructureBuilder) {
     .title("Error pages")
     .icon(ErrorOutlineIcon)
     .id("error-settings")
-    .child(
-      S.document().schemaType("errorSettings").documentId("errorSettings"),
-    );
+    .child(S.documentTypeList("errorSettings").title("Error pages"));
 }

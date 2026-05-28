@@ -1,15 +1,15 @@
-/**
+/*
  * Tailwind v4 theme extensions (replaces legacy `tailwind.config.ts` `theme.extend`).
  * Merges with the default Tailwind theme and with `variables/breakpoints.css` (`@theme` breakpoints).
  *
  * Design tokens live in `variables/*.css`; here we only wire them to utility namespaces (`--color-*`, `--spacing-*`, …).
  */
 
-/**
- * `dark:`-Utilities folgen primär `prefers-color-scheme: dark`. Token-getriebenes
- * Theming (siehe `variables/colors.css`) übernimmt den manuellen Override —
- * rohe `dark:`-Utilities reagieren bewusst nicht auf den `data-theme`-Toggle,
- * um Klassen-/Markup-Komplexität zu vermeiden.
+/*
+ * `dark:` utilities track `prefers-color-scheme: dark`. The token-driven theming
+ * in `variables/colors.css` handles the manual override — raw `dark:` utilities
+ * deliberately do not react to the `data-theme` toggle, to keep class/markup
+ * complexity down.
  */
 @custom-variant dark (@media (prefers-color-scheme: dark));
 

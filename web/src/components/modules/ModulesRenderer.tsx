@@ -99,24 +99,33 @@ function renderModuleChild(mod: ContentModule) {
  * client wrapper that orchestrates optimistic reordering when Visual Editing
  * dispatches a document update.
  *
+ * Variant note: this is the `document-level` translation branch, so the
+ * Presentation `data-sanity` attribute targets the `modules` array as a whole
+ * (one attribute on the outer container) — clicking any module opens the
+ * modules array in Studio, scoped to this document. The field-level (`main`)
+ * branch attaches per-module attributes with deeper paths into the specific
+ * localized sub-field instead.
+ *
+ * `@sanity/visual-editing-csm` rejects empty paths at runtime, so true
+ * doc-only scopes (`{ id, type }` without path) are not possible — the
+ * shallowest valid scope is the top-level field name.
+ *
  * Modules without `_key` are kept in the initial order but cannot participate
  * in optimistic reordering — they'd lose their slot on the next Sanity update.
  * Production data from Sanity always carries `_key`s; this branch is only for
  * legacy edge cases.
  */
 export function ModulesRenderer({ modules, documentId, documentType }: Props) {
+	const containerSanityAttr = dataAttr({
+		id: documentId,
+		type: documentType,
+		path: "modules",
+	});
 	const initialModules = modules.map((mod, index) => {
 		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
-		const sanityAttr = mod._key
-			? dataAttr({
-					id: documentId,
-					type: documentType,
-					path: `modules[_key=="${mod._key}"]`,
-				})
-			: undefined;
 		return {
 			_key: key,
-			rendered: <div data-sanity={sanityAttr}>{renderModuleChild(mod)}</div>,
+			rendered: renderModuleChild(mod),
 		};
 	});
 
@@ -124,6 +133,7 @@ export function ModulesRenderer({ modules, documentId, documentType }: Props) {
 		<ModulesRendererClient
 			documentId={documentId}
 			initialModules={initialModules}
+			containerSanityAttr={containerSanityAttr}
 		/>
 	);
 }

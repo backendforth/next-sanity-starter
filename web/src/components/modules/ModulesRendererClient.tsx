@@ -16,6 +16,11 @@ type DocumentShape = {
 type Props = {
 	documentId: string;
 	initialModules: PrerenderedModule[];
+	/** Document-level `data-sanity` attribute applied to the outer container.
+	 * Used on `variant/document-level` where Presentation overlays target the
+	 * whole document. Field-level branches leave this undefined and attach
+	 * per-module attributes inside each `rendered` node instead. */
+	containerSanityAttr?: string;
 };
 
 /**
@@ -29,7 +34,11 @@ type Props = {
  * (we have no pre-rendered node for them); they show up after the next
  * `<SanityLive />` refetch. Reordering and deletion are instant.
  */
-export function ModulesRendererClient({ documentId, initialModules }: Props) {
+export function ModulesRendererClient({
+	documentId,
+	initialModules,
+	containerSanityAttr,
+}: Props) {
 	const modules = useOptimistic<PrerenderedModule[], DocumentShape>(
 		initialModules,
 		(current, action) => {
@@ -48,7 +57,7 @@ export function ModulesRendererClient({ documentId, initialModules }: Props) {
 	);
 
 	return (
-		<div className="flex flex-col gap-10">
+		<div className="flex flex-col gap-10" data-sanity={containerSanityAttr}>
 			{modules.map((m) => (
 				<div key={m._key}>{m.rendered}</div>
 			))}

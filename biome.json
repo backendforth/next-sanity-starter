@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/README.md"]
+		"includes": ["**", "!**/README.md", "!**/sanity.types.gen.ts"]
 	},
 	"formatter": {
 		"enabled": true,

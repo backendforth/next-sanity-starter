@@ -1,3 +1,5 @@
+"use client";
+
 import type { ModuleMediaData } from "@/sanity/types/modules";
 
 import { MediaImage, MediaVideo, MediaVideoLoop } from "@/src/components/media";

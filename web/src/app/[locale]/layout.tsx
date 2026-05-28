@@ -41,14 +41,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
-	const siteLocale = await fetchSiteLanguageSettings();
+	// Parallelize: locale config (for validation + LanguageProvider) and nav
+	// menus are independent. The nav fetch when `raw` ends up invalid is
+	// wasted effort but the path is rare (404s only); the common case saves a
+	// roundtrip.
+	const [siteLocale, siteNav] = await Promise.all([
+		fetchSiteLanguageSettings(),
+		fetchSiteNavMenus(),
+	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
 	if (!pathUtils.isAppLocale(raw)) {
 		notFound();
 	}
 	const locale = raw;
-	const siteNav = await fetchSiteNavMenus();
 
 	return (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>

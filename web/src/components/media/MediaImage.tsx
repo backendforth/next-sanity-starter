@@ -106,7 +106,10 @@ export function MediaImage({
 		if (priority) return;
 		const el = imgRef.current;
 		if (!el) return;
-		if (el.complete && el.naturalWidth > 0) {
+		/* `complete` is also true for failed loads — reveal the element either way,
+		   otherwise broken images stay at opacity:0 forever (load/error events have
+		   already fired before this effect attaches its listeners). */
+		if (el.complete) {
 			setLoaded(true);
 			return;
 		}

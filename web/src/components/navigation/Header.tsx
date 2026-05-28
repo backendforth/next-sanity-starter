@@ -124,7 +124,9 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					</Link>
 					<div className="flex items-center gap-2 sm:gap-3">
 						{showLanguageSwitcher ? (
-							<LanguageSwitch onAfterLocaleChange={closeMenuAfterLocaleChange} />
+							<LanguageSwitch
+								onAfterLocaleChange={closeMenuAfterLocaleChange}
+							/>
 						) : null}
 						<ThemeToggle />
 					</div>
@@ -147,7 +149,9 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
 					<div className="hidden items-center gap-2 md:flex">
 						{showLanguageSwitcher ? (
-							<LanguageSwitch onAfterLocaleChange={closeMenuAfterLocaleChange} />
+							<LanguageSwitch
+								onAfterLocaleChange={closeMenuAfterLocaleChange}
+							/>
 						) : null}
 						<ThemeToggle />
 					</div>
@@ -179,7 +183,9 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					>
 						<div className="flex flex-col gap-3 md:hidden">
 							{showLanguageSwitcher ? (
-								<LanguageSwitch onAfterLocaleChange={closeMenuAfterLocaleChange} />
+								<LanguageSwitch
+									onAfterLocaleChange={closeMenuAfterLocaleChange}
+								/>
 							) : null}
 							<ThemeToggle />
 						</div>

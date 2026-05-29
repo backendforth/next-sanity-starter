@@ -21,7 +21,7 @@
 	--border-width-DEFAULT: 0.0625rem;
 	--border-width-0: 0;
 
-	/* Semantic font stacks (see `variables/typography.css` / `typography/fonts.css`) */
+	/* Semantic font stacks (see `variables/fontsizes.css` / `typography/fonts.css`) */
 	--font-sans: var(--font-family-sans), system-ui, sans-serif;
 	--font-serif: var(--font-family-serif), ui-serif, Georgia, serif;
 	--font-text: var(--font-family-text), system-ui, sans-serif;

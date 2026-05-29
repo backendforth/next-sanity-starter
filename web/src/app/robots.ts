@@ -8,7 +8,7 @@ const BASE_URL = (
  * Production-only crawling. Deploy previews and staging environments are
  * blanket-disallowed so they don't pollute search results with duplicate
  * content. Detection covers Vercel, Netlify, and the explicit Sanity
- * deployment-target convention used by this boilerplate.
+ * deployment-target convention used by this starter.
  */
 function isProductionDeployment(): boolean {
 	if (process.env.SANITY_STUDIO_DEPLOYMENT_TARGET === "production") return true;

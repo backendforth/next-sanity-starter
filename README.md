@@ -1,4 +1,4 @@
-# next-sanity-boilerplate
+# next-sanity-starter
 
 > A production-shaped starting point for a multi-language, CMS-driven site — **Next.js 16** App Router, **React 19**, **Sanity Studio v5**, with optional **Mux** video and **Netlify** hosting.
 
@@ -16,7 +16,7 @@ It stays slim on purpose: no unused features, production-grade defaults, and a c
 
 ## Two flavours
 
-This boilerplate ships in **two parallel variants** so you can pick the internationalisation model that matches your editorial workflow:
+This starter ships in **two parallel variants** so you can pick the internationalisation model that matches your editorial workflow:
 
 | Branch | i18n strategy | Pick when |
 |---|---|---|

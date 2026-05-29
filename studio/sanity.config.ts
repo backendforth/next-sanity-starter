@@ -42,7 +42,7 @@ const webPreviewOrigins =
 
 export default defineConfig({
   name: "default",
-  title: "Next Sanity Boilerplate",
+  title: "Next Sanity Starter",
   projectId,
   dataset,
   releases: { enabled: isDev },

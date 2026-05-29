@@ -393,6 +393,21 @@
                   "type": "inline",
                   "name": "nav.languageSwitch"
                 }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "_key": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "inline",
+                  "name": "nav.themeToggle"
+                }
               }
             ]
           }
@@ -1648,6 +1663,29 @@
           "optional": true
         },
         "caption": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "nav.themeToggle",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "nav.themeToggle"
+          }
+        },
+        "blockKind": {
           "type": "objectAttribute",
           "value": {
             "type": "string"

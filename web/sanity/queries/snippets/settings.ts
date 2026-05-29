@@ -38,6 +38,10 @@ const navMainMenuQuery = `mainMenu[]{
   _type == "nav.languageSwitch" => {
     _key,
     _type
+  },
+  _type == "nav.themeToggle" => {
+    _key,
+    _type
   }
 }`;
 

@@ -10,6 +10,7 @@ import { moduleContentRefs } from "./objects/modules/moduleContentRefs";
 import { moduleMedia } from "./objects/modules/moduleMedia";
 import { moduleText } from "./objects/modules/moduleText";
 import { navLanguageSwitch } from "./objects/navLanguageSwitch";
+import { navThemeToggle } from "./objects/navThemeToggle";
 import { seoFallback, seoPage } from "./objects/seo/page";
 import { errorSettings } from "./settings/error";
 import { siteCookieBanner } from "./settings/siteCookieBanner";
@@ -24,6 +25,7 @@ export const schemaTypes = [
   seoFallback,
   link,
   navLanguageSwitch,
+  navThemeToggle,
   mediaImage,
   mediaVideo,
   moduleCarousel,

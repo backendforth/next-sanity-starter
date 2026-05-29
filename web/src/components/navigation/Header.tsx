@@ -46,16 +46,20 @@ function MainMenuItems({
 }) {
 	return (
 		<>
-			{entries.map((entry) =>
-				entry.kind === "languageSwitch" ? (
-					<LanguageSwitch
-						key={entry.id}
-						onAfterLocaleChange={onAfterLocaleChange}
-					/>
-				) : (
-					<NavItem key={entry.id} row={entry} onNavigate={onNavigate} />
-				),
-			)}
+			{entries.map((entry) => {
+				if (entry.kind === "languageSwitch") {
+					return (
+						<LanguageSwitch
+							key={entry.id}
+							onAfterLocaleChange={onAfterLocaleChange}
+						/>
+					);
+				}
+				if (entry.kind === "themeToggle") {
+					return <ThemeToggle key={entry.id} />;
+				}
+				return <NavItem key={entry.id} row={entry} onNavigate={onNavigate} />;
+			})}
 		</>
 	);
 }
@@ -118,7 +122,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					>
 						{brandLabel}
 					</Link>
-					<ThemeToggle />
 				</div>
 			</header>
 		);
@@ -136,9 +139,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				</Link>
 
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
-					<div className="hidden md:block">
-						<ThemeToggle />
-					</div>
 					<nav
 						className="hidden flex-wrap items-center justify-end gap-1 md:flex"
 						aria-label="Main"
@@ -165,9 +165,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 						className="mx-auto flex max-w-container flex-col gap-3 px-6 py-sm text-base sm:px-8"
 						aria-label="Main"
 					>
-						<div className="md:hidden">
-							<ThemeToggle />
-						</div>
 						<MainMenuItems
 							entries={entries}
 							onNavigate={close}

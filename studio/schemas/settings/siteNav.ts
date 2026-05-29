@@ -13,6 +13,7 @@ export const siteNav = defineType({
       type: "string",
       readOnly: true,
       hidden: true,
+      initialValue: "en",
     },
     {
       title: "Title",

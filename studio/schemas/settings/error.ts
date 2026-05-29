@@ -19,6 +19,7 @@ export const errorSettings = defineType({
       type: "string",
       readOnly: true,
       hidden: true,
+      initialValue: "en",
     },
     {
       name: "notFoundTitle",

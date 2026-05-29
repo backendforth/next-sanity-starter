@@ -25,6 +25,7 @@ export const siteSettings = defineType({
       type: "string",
       readOnly: true,
       hidden: true,
+      initialValue: "en",
     },
     {
       title: "Site Title",

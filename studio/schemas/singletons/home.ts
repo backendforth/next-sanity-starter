@@ -26,6 +26,7 @@ export const home = defineType({
       type: "string",
       readOnly: true,
       hidden: true,
+      initialValue: "en",
     },
     {
       name: "title",

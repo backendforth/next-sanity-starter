@@ -17,27 +17,23 @@ html {
 	@apply font-bold font-text not-italic;
 	font-size: var(--font-size-9xl);
 	line-height: var(--line-height-9xl);
-	letter-spacing: var(--letter-spacing-none);
 }
 
 @utility page-title {
 	@apply font-bold font-text not-italic;
 	font-size: var(--font-size-4xl);
 	line-height: var(--line-height-xl);
-	letter-spacing: var(--letter-spacing-none);
 }
 
 @utility section-title {
 	@apply font-normal font-headline;
 	font-size: var(--font-size-2xl);
-	letter-spacing: var(--letter-spacing-md);
 	line-height: var(--line-height-md);
 }
 
 @utility content-title {
 	@apply font-normal font-headline;
 	font-size: var(--font-size-lg);
-	letter-spacing: var(--letter-spacing-md);
 	line-height: var(--line-height-md);
 }
 
@@ -45,14 +41,12 @@ html {
 	@apply font-headline italic;
 	font-size: var(--font-size-3xl);
 	line-height: var(--line-height-lg);
-	letter-spacing: var(--letter-spacing-sm);
 }
 
 @utility sub-title {
 	@apply font-bold font-text not-italic;
 	font-size: var(--font-size-xl);
 	line-height: var(--line-height-lg);
-	letter-spacing: var(--letter-spacing-sm);
 }
 
 @utility paragraph {
@@ -71,7 +65,6 @@ html {
 	@apply font-headline not-italic;
 	font-size: var(--font-size-sm);
 	line-height: var(--line-height-lg);
-	letter-spacing: var(--letter-spacing-sm);
 }
 
 h1 {

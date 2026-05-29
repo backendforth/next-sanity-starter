@@ -46,16 +46,20 @@ function MainMenuItems({
 }) {
 	return (
 		<>
-			{entries.map((entry) =>
-				entry.kind === "languageSwitch" ? (
-					<LanguageSwitch
-						key={entry.id}
-						onAfterLocaleChange={onAfterLocaleChange}
-					/>
-				) : (
-					<NavItem key={entry.id} row={entry} onNavigate={onNavigate} />
-				),
-			)}
+			{entries.map((entry) => {
+				if (entry.kind === "languageSwitch") {
+					return (
+						<LanguageSwitch
+							key={entry.id}
+							onAfterLocaleChange={onAfterLocaleChange}
+						/>
+					);
+				}
+				if (entry.kind === "themeToggle") {
+					return <ThemeToggle key={entry.id} />;
+				}
+				return <NavItem key={entry.id} row={entry} onNavigate={onNavigate} />;
+			})}
 		</>
 	);
 }
@@ -128,7 +132,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 								onAfterLocaleChange={closeMenuAfterLocaleChange}
 							/>
 						) : null}
-						<ThemeToggle />
 					</div>
 				</div>
 			</header>
@@ -153,7 +156,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 								onAfterLocaleChange={closeMenuAfterLocaleChange}
 							/>
 						) : null}
-						<ThemeToggle />
 					</div>
 					<nav
 						className="hidden flex-wrap items-center justify-end gap-1 md:flex"
@@ -187,7 +189,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 									onAfterLocaleChange={closeMenuAfterLocaleChange}
 								/>
 							) : null}
-							<ThemeToggle />
 						</div>
 						<MainMenuItems
 							entries={menuEntries}

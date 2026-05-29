@@ -39,7 +39,16 @@ export type NavLanguageSwitchItem = {
 	_type: "nav.languageSwitch";
 };
 
-export type MainMenuItem = NavMenuLink | NavLanguageSwitchItem;
+/** Marker block from Studio — renders the light/dark theme toggle at this position in the main menu. */
+export type NavThemeToggleItem = {
+	_key?: string;
+	_type: "nav.themeToggle";
+};
+
+export type MainMenuItem =
+	| NavMenuLink
+	| NavLanguageSwitchItem
+	| NavThemeToggleItem;
 
 export type SiteNavMenusDocument = {
 	_id: string;

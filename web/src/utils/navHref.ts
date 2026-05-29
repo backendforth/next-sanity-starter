@@ -18,10 +18,11 @@ export type ResolvedNavRow =
 			params?: string | null;
 	  };
 
-/** Main menu row or inline language switch (from `nav.languageSwitch` in Studio). */
+/** Main menu row, inline language switch (`nav.languageSwitch`), or theme toggle (`nav.themeToggle`) from Studio. */
 export type MainMenuEntry =
 	| ResolvedNavRow
-	| { kind: "languageSwitch"; id: string };
+	| { kind: "languageSwitch"; id: string }
+	| { kind: "themeToggle"; id: string };
 
 function rowId(link: NavMenuLink, index: number, idPrefix: string): string {
 	const k = link._key;
@@ -184,6 +185,13 @@ export function resolveMainMenuEntries(
 		if (item._type === "nav.languageSwitch") {
 			out.push({
 				kind: "languageSwitch",
+				id: mainMenuEntryId(item, index),
+			});
+			return;
+		}
+		if (item._type === "nav.themeToggle") {
+			out.push({
+				kind: "themeToggle",
 				id: mainMenuEntryId(item, index),
 			});
 			return;

@@ -180,6 +180,11 @@ export type MediaImage = {
   caption?: string;
 };
 
+export type NavThemeToggle = {
+  _type: "nav.themeToggle";
+  blockKind?: string;
+};
+
 export type NavLanguageSwitch = {
   _type: "nav.languageSwitch";
   blockKind?: string;
@@ -364,6 +369,9 @@ export type SiteNav = {
     | ({
         _key: string;
       } & NavLanguageSwitch)
+    | ({
+        _key: string;
+      } & NavThemeToggle)
   >;
   footerMenu?: Array<
     {
@@ -665,6 +673,7 @@ export type AllSanitySchemaTypes =
   | ModuleCarousel
   | MediaVideo
   | MediaImage
+  | NavThemeToggle
   | NavLanguageSwitch
   | Link
   | SeoFallback

@@ -8,6 +8,7 @@ import {
 	errorSettingsQuery,
 	homeQuery,
 	pageBySlugQuery,
+	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
 	siteSettingsSeoFallbackQuery,
@@ -17,6 +18,7 @@ import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { SiteNavMenusDocument } from "./types/nav";
 import type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
+import type { SiteCookieBannerDocument } from "./types/siteCookieBanner";
 import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
 export type { HomeDocument, PageDocument, PageSeo };
@@ -95,6 +97,22 @@ export const fetchSiteNavMenus = cache(async (locale: string) => {
 	});
 	return data as SiteNavMenusDocument | null;
 });
+
+/** Cookie banner copy for the app shell — no embedded modules. */
+export const fetchSiteCookieBanner = cache(
+	async (
+		locale: string,
+		options?: LiveFetchOptions,
+	): Promise<SiteCookieBannerDocument | null> => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: siteCookieBannerLayoutQuery,
+			params: { locale },
+			...options,
+		});
+		return data as SiteCookieBannerDocument | null;
+	},
+);
 
 function draftClientForSiteLanguageSettings(token: string) {
 	return client.withConfig({

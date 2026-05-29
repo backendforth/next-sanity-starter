@@ -16,6 +16,10 @@ export const linkFunctions = defineType({
         list: [
           { title: "Scroll to anchor", value: "scroll-to" },
           { title: "Open modal", value: "open-modal" },
+          {
+            title: "Cookie / Open preferences",
+            value: "open-cookie-preferences",
+          },
         ],
         layout: "radio",
       },

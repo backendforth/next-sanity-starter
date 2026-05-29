@@ -20,6 +20,7 @@ export {
 	errorSettingsQuery,
 	navMenusQuery,
 	settingsBundleQuery,
+	siteCookieBannerLayoutQuery,
 	siteCookieBannerQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,

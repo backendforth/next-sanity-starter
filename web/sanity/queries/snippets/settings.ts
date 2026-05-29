@@ -137,6 +137,19 @@ export const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && language 
 }`;
 
 /**
+ * Lightweight cookie banner projection for the app shell — same document as
+ * `siteCookieBannerQuery` but without `modules[]`, mirroring `siteNavMenusQuery`.
+ */
+export const siteCookieBannerLayoutQuery =
+	defineQuery(`*[_type == "siteCookieBanner" && language == $locale][0]{
+  _id,
+  language,
+  useCookieBanner,
+  consentModal,
+  preferencesModal
+}`);
+
+/**
  * Single fetch for app shell: settings, nav, errors, cookie banner.
  * Document types match Studio Documents: siteSettings, siteNav, errorSettings, siteCookieBanner.
  *

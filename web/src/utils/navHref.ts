@@ -14,7 +14,7 @@ export type ResolvedNavRow =
 			id: string;
 			label: string;
 			kind: "button";
-			action: "open-modal";
+			action: "open-modal" | "open-cookie-preferences";
 			params?: string | null;
 	  };
 
@@ -124,6 +124,16 @@ export function resolveNavMenuLink(
 				kind: "button",
 				action: "open-modal",
 				params,
+			};
+		}
+
+		if (key === "open-cookie-preferences") {
+			return {
+				id: rowId(link, index, idPrefix),
+				label,
+				kind: "button",
+				action: "open-cookie-preferences",
+				params: null,
 			};
 		}
 

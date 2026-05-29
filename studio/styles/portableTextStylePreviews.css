@@ -35,7 +35,6 @@
   font-style: normal;
   font-size: 1.5625rem;
   line-height: 1.15;
-  letter-spacing: 0.07em;
 }
 
 /* Web h3 / @utility content-title */
@@ -45,7 +44,6 @@
   font-style: normal;
   font-size: 1.125rem;
   line-height: 1.2;
-  letter-spacing: 0.07em;
 }
 
 /* Web h4–h6 / @utility sub-title */
@@ -55,5 +53,4 @@
   font-style: normal;
   font-size: 1.25rem;
   line-height: 1.25;
-  letter-spacing: 0.045em;
 }

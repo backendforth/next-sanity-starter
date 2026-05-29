@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
+	fetchSiteCookieBanner,
 	fetchSiteLanguageSettings,
 	fetchSiteNavMenus,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
+import { CookieConsentBanner } from "@/src/components/cookies/CookieConsent";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
@@ -45,9 +47,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 	// menus are independent. The nav fetch when `raw` ends up invalid is
 	// wasted effort but the path is rare (404s only); the common case saves a
 	// roundtrip.
-	const [siteLocale, siteNav] = await Promise.all([
+	const [siteLocale, siteNav, cookieBanner] = await Promise.all([
 		fetchSiteLanguageSettings(),
 		fetchSiteNavMenus(),
+		fetchSiteCookieBanner(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
@@ -77,6 +80,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				footerMenu={siteNav?.footerMenu}
 				pathUtils={pathUtils}
 			/>
+			<CookieConsentBanner doc={cookieBanner} locale={locale} />
 		</LanguageProvider>
 	);
 }

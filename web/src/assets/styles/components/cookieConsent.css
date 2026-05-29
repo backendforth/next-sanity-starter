@@ -1,0 +1,49 @@
+/*
+ * Theme overrides for vanilla-cookieconsent v3.
+ * Maps the library's `--cc-*` tokens onto design tokens from `variables/colors.css`
+ * so the banner inherits light/dark mode automatically.
+ */
+
+#cc-main {
+	--cc-bg: var(--color-bg);
+	--cc-primary-color: var(--color-text);
+	--cc-secondary-color: var(--color-text-muted);
+
+	--cc-btn-primary-bg: var(--color-accent);
+	--cc-btn-primary-color: var(--color-bg);
+	--cc-btn-primary-border-color: var(--color-accent);
+	--cc-btn-primary-hover-bg: var(--color-active);
+	--cc-btn-primary-hover-color: var(--color-bg);
+	--cc-btn-primary-hover-border-color: var(--color-active);
+
+	--cc-btn-secondary-bg: var(--color-surface-muted);
+	--cc-btn-secondary-color: var(--color-text);
+	--cc-btn-secondary-border-color: var(--color-border-subtle);
+	--cc-btn-secondary-hover-bg: var(--color-border-subtle);
+	--cc-btn-secondary-hover-color: var(--color-text);
+	--cc-btn-secondary-hover-border-color: var(--color-border-subtle);
+
+	--cc-cookie-category-block-bg: var(--color-surface-muted);
+	--cc-cookie-category-block-border: var(--color-border-subtle);
+	--cc-cookie-category-block-hover-bg: var(--color-border-subtle);
+	--cc-cookie-category-block-hover-border: var(--color-border-subtle);
+	--cc-cookie-category-expanded-block-bg: var(--color-surface-muted);
+	--cc-cookie-category-expanded-block-hover-bg: var(--color-border-subtle);
+
+	--cc-footer-bg: var(--color-surface-muted);
+	--cc-footer-color: var(--color-text-muted);
+	--cc-footer-border-color: var(--color-border-subtle);
+
+	--cc-link-color: var(--color-link);
+	--cc-overlay-bg: rgba(0, 0, 0, 0.6);
+
+	--cc-separator-border-color: var(--color-border-subtle);
+	--cc-section-category-border: var(--color-border-subtle);
+
+	--cc-toggle-on-bg: var(--color-accent);
+	--cc-toggle-off-bg: var(--color-text-muted);
+	--cc-toggle-on-knob-bg: var(--color-bg);
+	--cc-toggle-off-knob-bg: var(--color-bg);
+	--cc-toggle-enabled-icon-color: var(--color-bg);
+	--cc-toggle-disabled-icon-color: var(--color-text-muted);
+}

@@ -129,6 +129,18 @@ export const siteCookieBannerQuery = `*[_id == "siteCookieBanner"][0]{
 }`;
 
 /**
+ * Lightweight cookie banner projection for the app shell — same document as
+ * `siteCookieBannerQuery` but without `modules[]`, mirroring `siteNavMenusQuery`.
+ */
+export const siteCookieBannerLayoutQuery =
+	defineQuery(`*[_id == "siteCookieBanner"][0]{
+  _id,
+  useCookieBanner,
+  consentModal,
+  preferencesModal
+}`);
+
+/**
  * Single fetch for app shell: settings, nav, errors, cookie banner.
  * Document ids match Studio Documents: siteSettings, siteNav, errorSettings, siteCookieBanner.
  *

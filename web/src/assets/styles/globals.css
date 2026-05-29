@@ -16,6 +16,8 @@
 @import "tailwindcss";
 @import "./tailwind/theme.css";
 @import "./components/mux-player.css";
+@import "vanilla-cookieconsent/dist/cookieconsent.css";
+@import "./components/cookieConsent.css";
 
 body {
 	@apply font-text;

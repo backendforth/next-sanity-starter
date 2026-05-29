@@ -8,6 +8,7 @@ import { isCurrentNavHref } from "@/src/i18n/paths";
 import { cn } from "@/src/utils/cn";
 
 import type { ResolvedNavRow } from "../../utils/navHref";
+import { showCookiePreferences } from "../cookies/cookieConsentApi";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,23 @@ export function NavItem({ row, onNavigate, className }: Props) {
 			: ("page" as const);
 
 	if (row.kind === "button") {
+		if (row.action === "open-cookie-preferences") {
+			return (
+				<button
+					type="button"
+					className={cn(
+						"rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent",
+						className,
+					)}
+					onClick={() => {
+						showCookiePreferences();
+						onNavigate?.();
+					}}
+				>
+					{row.label}
+				</button>
+			);
+		}
 		return (
 			<button
 				type="button"

@@ -1,7 +1,7 @@
 {
-	"name": "next-sanity-boilerplate",
+	"name": "next-sanity-starter",
 	"version": "1.0.0",
-	"description": "Next and Sanity Boilerplate",
+	"description": "Next and Sanity Starter",
 	"private": true,
 	"scripts": {
 		"lint": "biome check .",

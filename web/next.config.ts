@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
 	/** Drop the `X-Powered-By: Next.js` header — small fingerprinting reduction. */
 	poweredByHeader: false,
 
-	/** Default in Next 16; pinned explicitly to make the boilerplate's choice obvious. */
+	/** Default in Next 16; pinned explicitly to make the starter's choice obvious. */
 	reactStrictMode: true,
 
 	/**

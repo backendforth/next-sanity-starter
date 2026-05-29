@@ -84,7 +84,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter web run build
         env:
-          # Builds without a project must still succeed (boilerplate). Real
+          # Builds without a project must still succeed (starter). Real
           # deploys provide SANITY_STUDIO_PROJECT_ID via the host's env.
           NEXT_TELEMETRY_DISABLED: "1"
 

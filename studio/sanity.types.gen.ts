@@ -402,7 +402,7 @@ export type InternationalizedArrayRichTextMedia = Array<
 
 export type LinkFunctions = {
   _type: "linkFunctions";
-  key: "scroll-to" | "open-modal";
+  key: "scroll-to" | "open-modal" | "open-cookie-preferences";
   params?: string;
 };
 

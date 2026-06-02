@@ -12,40 +12,39 @@ import {
 
 export const COLOR_SCHEME_STORAGE_KEY = "color-scheme";
 
-export type Theme = "light" | "dark" | "system";
+export type Theme = "light" | "dark";
+
+const DEFAULT_THEME: Theme = "light";
 
 type ThemeContextValue = {
 	theme: Theme;
 	setTheme: (value: Theme) => void;
+	toggleTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readStoredTheme(): Theme {
-	if (typeof window === "undefined") return "system";
+	if (typeof window === "undefined") return DEFAULT_THEME;
 	try {
 		const stored = localStorage.getItem(COLOR_SCHEME_STORAGE_KEY);
-		if (stored === "light" || stored === "dark" || stored === "system") {
+		if (stored === "light" || stored === "dark") {
 			return stored;
 		}
 	} catch {
 		// private mode / blocked storage
 	}
-	return "system";
+	return DEFAULT_THEME;
 }
 
 /**
- * Mirrors the choice as `data-theme="light" | "dark"` on `<html>`; for `"system"`
- * the attribute is removed so `@media (prefers-color-scheme: dark)` in
- * `variables/colors.css` takes over without extra markup.
+ * Mirrors the choice as `data-theme="light" | "dark"` on `<html>`. The
+ * `:root[data-theme="dark"]` block in `variables/colors.css` (and the
+ * `[data-theme="dark"]` Tailwind `dark:` variant in `tailwind/theme.css`)
+ * both key off this attribute. OS preference is intentionally ignored.
  */
 function applyThemeToDocument(theme: Theme) {
-	const el = document.documentElement;
-	if (theme === "system") {
-		el.removeAttribute("data-theme");
-	} else {
-		el.setAttribute("data-theme", theme);
-	}
+	document.documentElement.setAttribute("data-theme", theme);
 }
 
 type ThemeProviderProps = {
@@ -53,7 +52,7 @@ type ThemeProviderProps = {
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-	const [theme, setThemeState] = useState<Theme>("system");
+	const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {
@@ -73,12 +72,17 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 		applyThemeToDocument(value);
 	}, []);
 
+	const toggleTheme = useCallback(() => {
+		setTheme(readStoredTheme() === "dark" ? "light" : "dark");
+	}, [setTheme]);
+
 	const value = useMemo<ThemeContextValue>(
 		() => ({
-			theme: mounted ? theme : "system",
+			theme: mounted ? theme : DEFAULT_THEME,
 			setTheme,
+			toggleTheme,
 		}),
-		[mounted, setTheme, theme],
+		[mounted, setTheme, theme, toggleTheme],
 	);
 
 	return (

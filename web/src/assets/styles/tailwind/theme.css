@@ -6,12 +6,11 @@
  */
 
 /*
- * `dark:` utilities track `prefers-color-scheme: dark`. The token-driven theming
- * in `variables/colors.css` handles the manual override — raw `dark:` utilities
- * deliberately do not react to the `data-theme` toggle, to keep class/markup
- * complexity down.
+ * `dark:` utilities follow the `<ThemeToggle>` choice (the `data-theme="dark"`
+ * attribute on `<html>`) — same source of truth as the token overrides in
+ * `variables/colors.css`. OS preference is deliberately ignored.
  */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
 	/* Default `rounded` — former `borderRadius.DEFAULT` */

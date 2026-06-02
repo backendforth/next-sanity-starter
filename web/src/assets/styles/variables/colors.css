@@ -1,12 +1,12 @@
 /*
  * Semantic `--color-*` tokens → Tailwind `theme.extend.colors`.
  *
- * Dark-mode strategy (no class hack):
+ * Dark-mode strategy: toggle-only, OS preference is deliberately ignored.
  *  - Default: `:root` → light tokens.
- *  - System dark: `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])`
- *    kicks in automatically — works without JavaScript.
- *  - Manual choice via toggle: `:root[data-theme="light"]` / `[data-theme="dark"]`
- *    overrides the media query. "System" removes the attribute.
+ *  - Manual dark: `:root[data-theme="dark"]` overrides the light defaults.
+ * The `<ThemeToggle>` writes `data-theme="light" | "dark"` on `<html>`;
+ * an inline boot script in `app/layout.tsx` applies the stored choice
+ * before the first paint to avoid a flash.
  */
 
 :root {
@@ -58,45 +58,7 @@
 	--foreground: var(--color-text);
 }
 
-/* Dark-Tokens — geteilt von OS-Präferenz und manuellem `data-theme="dark"`-Override. */
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme="light"]) {
-		color-scheme: dark;
-
-		--color-grey: #71717a;
-
-		--color-brand: #fafafa;
-		--color-accent: #60a5fa;
-
-		--color-text: #fafafa;
-		--color-text-muted: #a1a1aa;
-		--color-heading: #fafafa;
-
-		--color-link: #60a5fa;
-		--color-hover: #93c5fd;
-		--color-blue-pressed: #3b82f6;
-		--color-active: var(--color-blue-pressed);
-
-		--color-bg: #0a0a0a;
-		--color-surface-muted: #171717;
-		--color-border-subtle: #27272a;
-
-		--color-link-decoration: #71717a;
-		--color-link-decoration-hover: #a1a1aa;
-
-		--color-code-bg: #27272a;
-		--color-code-text: #e4e4e7;
-
-		--color-error: #f87171;
-		--color-success: #4ade80;
-		--color-danger: #fca5a5;
-
-		--background: var(--color-bg);
-		--foreground: var(--color-text);
-	}
-}
-
-/* Manual dark override (toggle), independent of the OS preference. */
+/* Dark tokens — applied only when the toggle sets `data-theme="dark"`. */
 :root[data-theme="dark"] {
 	color-scheme: dark;
 

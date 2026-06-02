@@ -85,10 +85,9 @@ export const metadata: Metadata = {
  * Tiny blocking inline script — runs synchronously before hydration.
  *
  * 1. Applies the stored theme override (`localStorage["color-scheme"]`) as
- *    `data-theme="light" | "dark"` on <html> **before** the first paint. For
- *    `"system"` or a missing value the attribute stays unset, so the
- *    `@media (prefers-color-scheme: dark)` rule in `variables/colors.css`
- *    takes over — works without JavaScript.
+ *    `data-theme="light" | "dark"` on <html> **before** the first paint.
+ *    Without JS, `<html>` carries no attribute and the `:root` light defaults
+ *    in `variables/colors.css` apply — OS preference is deliberately ignored.
  * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
  *
  * The lazy-image `img-loaded` class is added by `MediaImage` itself via
@@ -102,9 +101,7 @@ export const metadata: Metadata = {
 const bootScript = `(function(){
   try{
     var t=localStorage.getItem('color-scheme');
-    if(t==='light'||t==='dark'){
-      document.documentElement.setAttribute('data-theme',t);
-    }
+    document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');
   }catch(e){}
   document.documentElement.classList.add('js-enabled');
 })();`;

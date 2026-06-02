@@ -2213,6 +2213,10 @@
               {
                 "type": "string",
                 "value": "open-modal"
+              },
+              {
+                "type": "string",
+                "value": "open-cookie-preferences"
               }
             ]
           },

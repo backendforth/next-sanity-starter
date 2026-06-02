@@ -402,7 +402,7 @@ export type InternationalizedArrayRichTextMedia = Array<
 
 export type LinkFunctions = {
   _type: "linkFunctions";
-  key: "scroll-to" | "open-modal";
+  key: "scroll-to" | "open-modal" | "open-cookie-preferences";
   params?: string;
 };
 
@@ -740,6 +740,35 @@ export type SiteSettingsSeoFallbackQueryResult =
     }
   | null;
 
+// Source: sanity/queries/snippets/settings.ts
+// Variable: siteCookieBannerLayoutQuery
+// Query: *[_id == "siteCookieBanner"][0]{  _id,  useCookieBanner,  consentModal,  preferencesModal}
+export type SiteCookieBannerLayoutQueryResult =
+  | {
+      _id: "siteCookieBanner";
+      useCookieBanner: null;
+      consentModal: null;
+      preferencesModal: null;
+    }
+  | {
+      _id: "siteCookieBanner";
+      useCookieBanner: boolean | null;
+      consentModal: {
+        description?: string;
+        acceptAllBtn?: string;
+        acceptNecessaryBtn?: string;
+        showPreferencesBtn?: string;
+      } | null;
+      preferencesModal: {
+        title?: string;
+        acceptAllBtn?: string;
+        acceptNecessaryBtn?: string;
+        savePreferencesBtn?: string;
+        sections?: Code;
+      } | null;
+    }
+  | null;
+
 // Source: sanity/queries/snippets/sitemap.ts
 // Variable: pageSlugsQuery
 // Query: *[_type == "page" && defined(slug.current)]{  "slug": slug.current}
@@ -774,6 +803,7 @@ declare module "@sanity/client" {
     '*[_id == "siteLanguageSettings"][0]{\n  _id,\n  availableLanguages[]{id, title},\n  defaultLanguageId\n}': SiteLanguageSettingsQueryResult;
     '*[_id == "siteSettings"][0]{title}': SiteSettingsTitleQueryResult;
     '*[_id == "siteSettings"][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
+    '*[_id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal,\n  preferencesModal\n}': SiteCookieBannerLayoutQueryResult;
     '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current\n}': PageSlugsQueryResult;
     '*[_type == "home" || (_type == "page" && defined(slug.current))]{\n  _id,\n  _type,\n  _updatedAt,\n  "slug": select(_type == "home" => null, slug.current),\n  "path": select(_type == "home" => "/", "/" + slug.current)\n}': SitemapPagesQueryResult;
   }

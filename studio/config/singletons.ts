@@ -14,6 +14,7 @@
  */
 export const SINGLETON_PREVIEW_ROLE = {
   home: "root",
+  work: "custom",
   siteSettings: "none",
   siteLanguageSettings: "none",
   siteNav: "none",

@@ -9,6 +9,7 @@ import { cn } from "@/src/utils/cn";
 
 import type { ResolvedNavRow } from "../../utils/navHref";
 import { showCookiePreferences } from "../cookies/cookieConsentApi";
+import { navLinkButtonClass } from "./navControlStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,12 +40,7 @@ export function NavItem({ row, onNavigate, className }: Props) {
 	const isActive =
 		row.kind === "link" && isCurrentNavHref(pathname, row.href, hash);
 
-	const linkClassName = cn(
-		"rounded-sm px-2 py-1.5 underline-offset-4 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent",
-		!isActive && "text-color-text hover:text-color-link",
-		className,
-		isActive && "text-color-hover",
-	);
+	const linkClassName = cn(navLinkButtonClass(isActive), className);
 
 	const ariaCurrent = !isActive
 		? undefined
@@ -57,10 +53,7 @@ export function NavItem({ row, onNavigate, className }: Props) {
 			return (
 				<button
 					type="button"
-					className={cn(
-						"rounded-sm px-2 py-1.5 text-color-text underline-offset-4 transition-colors hover:text-color-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent",
-						className,
-					)}
+					className={cn(navLinkButtonClass(false), className)}
 					onClick={() => {
 						showCookiePreferences();
 						onNavigate?.();
@@ -74,8 +67,9 @@ export function NavItem({ row, onNavigate, className }: Props) {
 			<button
 				type="button"
 				className={cn(
+					navLinkButtonClass(false),
+					"cursor-not-allowed opacity-60",
 					className,
-					"cursor-not-allowed rounded-sm px-2 py-1.5 text-color-text underline-offset-4 opacity-60 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent",
 				)}
 				disabled
 				title="Modal link — not connected yet"

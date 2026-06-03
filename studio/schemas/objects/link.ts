@@ -1,6 +1,7 @@
 import { LinkIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import {
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
@@ -31,16 +32,18 @@ export const link = defineType({
     {
       title: "Title",
       name: "title",
-      type: "string",
+      type: "internationalizedArrayString",
       description:
-        "If empty for internal links, the referenced document title is used where available. Required for external and function links.",
+        "Per-locale label. Optional for internal links — the referenced document title is used as fallback. Required for external and function links.",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
-          const str = typeof value === "string" ? value : "";
-          if ((t === "external" || t === "function") && !str.trim()) {
-            return "This field is required";
+          if (t === "external" || t === "function") {
+            const label = firstLocalizedLabel(value, "");
+            if (!label) {
+              return "Add a title in at least one language";
+            }
           }
           return true;
         }),
@@ -103,25 +106,37 @@ export const link = defineType({
   ],
   preview: {
     select: {
-      funcKey: "func.key",
-      funcParams: "func.params",
+      type: "type",
+      titleEntries: "title",
+      refTitleEntries: "reference.title",
       referenceType: "reference._type",
       slug: "reference.slug.current",
-      title: "title",
-      type: "type",
       url: "url",
+      funcKey: "func.key",
+      funcParams: "func.params",
     },
     prepare(selection) {
-      const { funcKey, funcParams, referenceType, slug, title, type, url } =
-        selection;
+      const {
+        type,
+        titleEntries,
+        refTitleEntries,
+        referenceType,
+        slug,
+        url,
+        funcKey,
+        funcParams,
+      } = selection;
 
       let subtitle = "";
-
       if (type === "internal") {
         if (referenceType === "home") {
           subtitle = "→ /";
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
+        } else if (referenceType === "project" && slug) {
+          subtitle = `→ /work/${slug}`;
+        } else if (referenceType === "work") {
+          subtitle = "→ /work";
         } else if (referenceType) {
           subtitle = `→ (${referenceType})`;
         } else {
@@ -135,8 +150,17 @@ export const link = defineType({
           : "→ (function)";
       }
 
+      const linkLabel = firstLocalizedLabel(titleEntries, "");
+      const refLabel = firstLocalizedLabel(refTitleEntries, "");
+      const title =
+        linkLabel ||
+        refLabel ||
+        (type === "external" && typeof url === "string" ? url : "") ||
+        (type === "function" && funcKey ? funcKey : "") ||
+        "Link";
+
       return {
-        title: title || referenceType || "Link",
+        title,
         subtitle,
       };
     },

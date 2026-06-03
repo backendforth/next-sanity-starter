@@ -48,7 +48,7 @@ export function ModulesRendererClient({ documentId, initialModules }: Props) {
 	);
 
 	return (
-		<div className="flex flex-col gap-10">
+		<div className="flex flex-col gap-lg">
 			{modules.map((m) => (
 				<div key={m._key}>{m.rendered}</div>
 			))}

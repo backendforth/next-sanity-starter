@@ -8,20 +8,34 @@ import {
 	errorSettingsQuery,
 	homeQuery,
 	pageBySlugQuery,
+	projectBySlugQuery,
 	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
+	workQuery,
 } from "./queries";
 import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { SiteNavMenusDocument } from "./types/nav";
-import type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
+import type {
+	HomeDocument,
+	PageDocument,
+	PageSeo,
+	ProjectDocument,
+	WorkDocument,
+} from "./types/pages";
 import type { SiteCookieBannerDocument } from "./types/siteCookieBanner";
 import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
-export type { HomeDocument, PageDocument, PageSeo };
+export type {
+	HomeDocument,
+	PageDocument,
+	PageSeo,
+	ProjectDocument,
+	WorkDocument,
+};
 
 type LiveFetchOptions = {
 	stega?: boolean;
@@ -48,6 +62,29 @@ export const fetchPageBySlug = cache(
 			...options,
 		});
 		return data as PageDocument | null;
+	},
+);
+
+/** Work singleton — document id `work`. */
+export const fetchWorkDocument = cache(async (options?: LiveFetchOptions) => {
+	if (!isSanityConfigured) return null;
+	const { data } = await sanityFetch({
+		query: workQuery,
+		...options,
+	});
+	return data as WorkDocument | null;
+});
+
+/** Dedupes project fetches; pass `{ stega: false }` in `generateMetadata`. */
+export const fetchProjectBySlug = cache(
+	async (slug: string, options?: LiveFetchOptions) => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: projectBySlugQuery,
+			params: { slug },
+			...options,
+		});
+		return data as ProjectDocument | null;
 	},
 );
 

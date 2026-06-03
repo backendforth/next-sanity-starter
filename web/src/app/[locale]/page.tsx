@@ -61,7 +61,7 @@ export default async function Home({ params }: PageProps) {
 	if (!data) {
 		return (
 			<div className="flex flex-col flex-1 bg-color-bg">
-				<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-6 px-6 py-16 sm:px-8">
+				<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
 					<p>
 						Home singleton is not in the dataset yet. Create it in Sanity Studio
 						(document id <code>home</code>
@@ -74,10 +74,9 @@ export default async function Home({ params }: PageProps) {
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-10 px-6 py-16 sm:px-8">
+			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{data.modules?.length ? (
-					<section className="flex flex-col gap-4">
-						<h2>Modules</h2>
+					<section className="flex flex-col gap-sm">
 						<ModulesRenderer
 							modules={data.modules}
 							locale={locale}

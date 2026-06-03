@@ -8,12 +8,14 @@ import { siteCookieBannerStructureItem } from "./items/siteCookieBanner";
 import { siteLanguageSettingsStructureItem } from "./items/siteLanguageSettings";
 import { siteNavStructureItem } from "./items/siteNav";
 import { siteSettingsStructureItem } from "./items/siteSettings";
+import { workGroupStructureItem } from "./items/workGroup";
 
 export const structure: StructureResolver = (S) =>
   S.list()
     .title("Content")
     .items([
       homeStructureItem(S),
+      workGroupStructureItem(S),
       pagesStructureItem(S),
       S.divider(),
       S.listItem()

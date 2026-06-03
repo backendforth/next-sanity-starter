@@ -13,7 +13,9 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
  */
 const ALLOWED_DOCUMENT_TYPES = new Set([
 	"home",
+	"work",
 	"page",
+	"project",
 	"siteSettings",
 	"errorSettings",
 	"siteLanguageSettings",
@@ -120,10 +122,21 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		tags.push("home", "site-pages");
 	}
 
+	if (_type === "work") {
+		tags.push("work", "site-pages");
+	}
+
 	if (_type === "page") {
 		tags.push("pages", "site-pages");
 		if (slug?.current) {
 			tags.push(`page-${slug.current}`);
+		}
+	}
+
+	if (_type === "project") {
+		tags.push("projects", "site-pages");
+		if (slug?.current) {
+			tags.push(`project-${slug.current}`);
 		}
 	}
 

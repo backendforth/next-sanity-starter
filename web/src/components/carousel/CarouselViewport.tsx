@@ -16,11 +16,16 @@ import {
 } from "@/src/utils/muxPlayback";
 
 import { CarouselSlide, type NormalizedSlide } from "./CarouselSlide";
+import {
+	slideWidthAtRowHeightPx,
+	useMultiSlideRowHeight,
+} from "./carouselMultiSlideLayout";
 
 type CarouselOptions = {
 	loop: boolean;
 	showThumbnails: boolean;
 	showNavDots: boolean;
+	multipleSlides: boolean;
 	autoplay: boolean;
 	autoplayDelayMs: number;
 };
@@ -79,13 +84,21 @@ export function CarouselViewport({ slides, options }: Props) {
 		{ loop: options.loop, align: "start" },
 		autoplayPlugin.current ? [autoplayPlugin.current] : [],
 	);
+	const viewportRef = useRef<HTMLDivElement | null>(null);
+
+	const setViewportRef = useCallback(
+		(node: HTMLDivElement | null) => {
+			viewportRef.current = node;
+			emblaRef(node);
+		},
+		[emblaRef],
+	);
 	const [thumbsRef, thumbsApi] = useEmblaCarousel({
 		containScroll: "keepSnaps",
 		dragFree: true,
 	});
 
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [snapCount, setSnapCount] = useState(0);
 	const [canScrollPrev, setCanScrollPrev] = useState(false);
 	const [canScrollNext, setCanScrollNext] = useState(false);
 
@@ -100,7 +113,6 @@ export function CarouselViewport({ slides, options }: Props) {
 
 	useEffect(() => {
 		if (!emblaApi) return;
-		setSnapCount(emblaApi.scrollSnapList().length);
 		onSelect();
 		emblaApi.on("select", onSelect);
 		emblaApi.on("reInit", onSelect);
@@ -134,78 +146,119 @@ export function CarouselViewport({ slides, options }: Props) {
 		[slides, options.showThumbnails],
 	);
 
+	const isMulti = options.multipleSlides;
+	const multiSlideRowHeight = useMultiSlideRowHeight(
+		isMulti,
+		slides,
+		viewportRef,
+	);
+
+	useEffect(() => {
+		if (!emblaApi || !isMulti || !multiSlideRowHeight) return;
+		emblaApi.reInit();
+	}, [emblaApi, isMulti, multiSlideRowHeight]);
+
 	if (slides.length === 0) return null;
 
+	const imageSizes = isMulti ? "(max-width: 768px) 50vw, 33vw" : "100vw";
+	const showNavigation = slides.length > 1;
+
 	return (
-		<div className="flex flex-col gap-3">
-			<div className="relative">
-				<div ref={emblaRef} className="overflow-hidden rounded-md bg-black">
-					<div className="flex">
-						{slides.map((slide, index) => (
+		<div className="flex flex-col gap-sm">
+			<div
+				ref={setViewportRef}
+				className={clsx(
+					"overflow-hidden",
+					isMulti ? undefined : "rounded-md bg-black",
+				)}
+			>
+				<div className={clsx("flex", isMulti && "gap-md")}>
+					{slides.map((slide, index) => {
+						const slideWidthPx =
+							isMulti && multiSlideRowHeight
+								? slideWidthAtRowHeightPx(slide, multiSlideRowHeight)
+								: undefined;
+
+						return (
 							<div
 								key={slide.key}
-								className="relative aspect-video min-w-0 shrink-0 grow-0 basis-full"
+								className={clsx(
+									"relative shrink-0 grow-0",
+									isMulti ? "min-h-0" : "min-w-0 aspect-video basis-full",
+								)}
+								style={
+									isMulti && multiSlideRowHeight && slideWidthPx
+										? {
+												height: multiSlideRowHeight,
+												width: slideWidthPx,
+												flexBasis: slideWidthPx,
+											}
+										: undefined
+								}
 							>
 								<CarouselSlide
 									slide={slide}
 									isActive={index === selectedIndex}
+									imageSizes={imageSizes}
+									respectAspectRatio={isMulti}
+									rowHeightPx={multiSlideRowHeight}
 								/>
 							</div>
-						))}
-					</div>
+						);
+					})}
 				</div>
-
-				{snapCount > 1 ? (
-					<>
-						<button
-							type="button"
-							onClick={scrollPrev}
-							disabled={!options.loop && !canScrollPrev}
-							aria-label="Previous slide"
-							className="absolute left-2 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-30"
-						>
-							<svg
-								viewBox="0 0 24 24"
-								width={18}
-								height={18}
-								fill="none"
-								stroke="currentColor"
-								strokeWidth={2}
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								aria-hidden="true"
-							>
-								<polyline points="15 18 9 12 15 6" />
-							</svg>
-						</button>
-						<button
-							type="button"
-							onClick={scrollNext}
-							disabled={!options.loop && !canScrollNext}
-							aria-label="Next slide"
-							className="absolute right-2 top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white transition hover:bg-black/70 disabled:cursor-not-allowed disabled:opacity-30"
-						>
-							<svg
-								viewBox="0 0 24 24"
-								width={18}
-								height={18}
-								fill="none"
-								stroke="currentColor"
-								strokeWidth={2}
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								aria-hidden="true"
-							>
-								<polyline points="9 18 15 12 9 6" />
-							</svg>
-						</button>
-					</>
-				) : null}
 			</div>
 
-			{options.showNavDots && snapCount > 1 ? (
-				<div className="flex items-center justify-center gap-2">
-					{slides.slice(0, snapCount).map((slide, index) => {
+			{showNavigation ? (
+				<div className="flex items-center justify-center gap-sm">
+					<button
+						type="button"
+						onClick={scrollPrev}
+						disabled={!options.loop && !canScrollPrev}
+						aria-label="Previous slide"
+						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
+					>
+						<svg
+							viewBox="0 0 24 24"
+							width={18}
+							height={18}
+							fill="none"
+							stroke="currentColor"
+							strokeWidth={2}
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<polyline points="15 18 9 12 15 6" />
+						</svg>
+					</button>
+					<button
+						type="button"
+						onClick={scrollNext}
+						disabled={!options.loop && !canScrollNext}
+						aria-label="Next slide"
+						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
+					>
+						<svg
+							viewBox="0 0 24 24"
+							width={18}
+							height={18}
+							fill="none"
+							stroke="currentColor"
+							strokeWidth={2}
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<polyline points="9 18 15 12 9 6" />
+						</svg>
+					</button>
+				</div>
+			) : null}
+
+			{options.showNavDots && showNavigation ? (
+				<div className="flex items-center justify-center gap-xs">
+					{slides.map((slide, index) => {
 						const isActive = index === selectedIndex;
 						return (
 							<button
@@ -228,7 +281,7 @@ export function CarouselViewport({ slides, options }: Props) {
 
 			{options.showThumbnails && thumbnails ? (
 				<div ref={thumbsRef} className="overflow-hidden">
-					<div className="flex gap-2">
+					<div className="flex gap-xs">
 						{slides.map((slide, index) => {
 							const url = thumbnails[index];
 							const isActive = index === selectedIndex;

@@ -1,6 +1,7 @@
 import { HomeIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
 export const home = defineType({
@@ -38,9 +39,15 @@ export const home = defineType({
     },
   ],
   preview: {
-    prepare() {
+    select: {
+      titleEntries: "title",
+    },
+    prepare(selection) {
+      const { titleEntries } = selection;
+      const title = firstLocalizedLabel(titleEntries, "Home");
       return {
-        title: "Home",
+        title,
+        subtitle: "/",
       };
     },
   },

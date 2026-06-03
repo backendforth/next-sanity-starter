@@ -7,9 +7,9 @@ import type {
 	ModuleTextData,
 } from "@/sanity/types/modules";
 import { dataAttr } from "@/sanity/utils/dataAttr";
-import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { ModuleContentRefs } from "./ModuleContentRefs";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModulesRendererClient } from "./ModulesRendererClient";
 import { ModuleText } from "./ModuleText";
@@ -42,33 +42,6 @@ const IS_DEV = process.env.NODE_ENV === "development";
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function ModuleContentRefsPlaceholder({
-	module,
-	locale,
-	siteLocale,
-}: {
-	module: ModuleContentRefsData;
-	locale: string;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-}) {
-	if (!IS_DEV) return null;
-	const heading = pickLocalizedString(module.heading, locale, siteLocale);
-	const refCount = module.allowMultiple
-		? (module.references?.length ?? 0)
-		: module.reference
-			? 1
-			: 0;
-	return (
-		<div className="rounded-md border border-dashed border-color-border-subtle p-4 text-sm text-color-text-muted">
-			<strong className="block">module.contentRefs</strong>
-			{heading ? <span className="block">heading: {heading}</span> : null}
-			<span className="block">
-				references: {refCount} (no frontend renderer yet)
-			</span>
-		</div>
-	);
-}
-
 function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	if (!IS_DEV) {
 		console.warn(
@@ -78,7 +51,7 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 		return null;
 	}
 	return (
-		<div className="rounded-md border border-dashed border-color-warning p-4 text-sm text-color-warning">
+		<div className="rounded-md border border-dashed border-color-warning p-sm text-sm text-color-warning">
 			<strong className="block">{getSanityModuleLabel(moduleType)}</strong>
 			<span className="block">
 				No frontend renderer for this module type yet.
@@ -117,7 +90,7 @@ function renderModuleChild(
 	}
 	if (mod._type === "module.contentRefs") {
 		return (
-			<ModuleContentRefsPlaceholder
+			<ModuleContentRefs
 				module={mod as ModuleContentRefsData}
 				locale={locale}
 				siteLocale={siteLocale}

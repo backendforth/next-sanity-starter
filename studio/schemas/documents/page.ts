@@ -1,5 +1,6 @@
 import { DocumentTextIcon, SearchIcon, TextIcon } from "@sanity/icons";
 import { defineType } from "sanity";
+import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { validateSlug } from "../../utils/validateSlug";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
@@ -50,12 +51,17 @@ export const page = defineType({
   ],
   preview: {
     select: {
+      titleEntries: "title",
       slug: "slug",
     },
     prepare(selection) {
-      const { slug } = selection;
+      const { titleEntries, slug } = selection;
+      const segment = slug?.current?.trim();
+      const path = segment ? `/${segment}` : "/";
+      const title = firstLocalizedLabel(titleEntries, path);
       return {
-        title: slug?.current?.trim() ? `/${slug.current}` : "Page",
+        title,
+        subtitle: title === path ? undefined : path,
       };
     },
   },

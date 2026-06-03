@@ -1,0 +1,5 @@
+/*
+ * Studio-only font load (Next.js `next/font/google` does not apply here).
+ * Keep in sync with web: Geist + Geist Mono.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:ital,wght@0,100..900;1,100..900&family=Geist:ital,wght@0,100..900;1,100..900&display=swap");

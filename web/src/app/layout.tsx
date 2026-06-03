@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
-// import localFont from "next/font/local";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
@@ -10,75 +10,25 @@ import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
-// ── Fonts ─────────────────────────────────────────────────────────────────────
-//
-// next/font/local handles subsetting, preload, and font-face injection
-// automatically — no manual @font-face or <link rel="preload"> needed.
-//
-// Setup (once real woff2 files are placed in `web/src/assets/fonts/`):
-//   1. Drop in your font files, e.g.:
-//        web/src/assets/fonts/YourSans-Regular.woff2
-//        web/src/assets/fonts/YourSans-Bold.woff2
-//        web/src/assets/fonts/YourSerif-Regular.woff2
-//   2. Uncomment the block below and update paths + weights.
-//   3. Add the .variable classes to <html> (see below).
-//   4. Remove @font-face rules from fonts.css — next/font replaces them.
-//
-// `display` trade-offs (CSS Fonts spec):
-//   - "block"    → up to ~3 s invisible text (FOIT), then fallback, swap to
-//                  custom font when it arrives. No FOUT, no fallback flash.
-//                  With preload + same-origin WOFF2 the invisible window is
-//                  typically <200 ms and not perceivable. Recommended default.
-//   - "auto"     → browser decides; Chrome / Firefox / Safari currently behave
-//                  like "block" but the spec leaves room. Use "block" for
-//                  deterministic behavior.
-//   - "swap"     → ~100 ms block, then fallback, swap to custom font when ready.
-//                  Always shows the custom font on the first visit but causes a
-//                  visible fallback → custom font flash (FOUT) and CLS.
-//   - "optional" → ~100 ms block, then fallback for the WHOLE page session if
-//                  the font is not ready. Font is fetched in the background and
-//                  cached for subsequent visits. Zero CLS, but on a cold cache
-//                  the custom font typically only shows starting from the
-//                  second page load — even with preload.
-//   - "fallback" → 100 ms block + 3 s swap window, then locks fallback for the
-//                  rest of the session. Middle ground.
-//
-// To keep the FOIT window short with "block":
-//   - Subset the font to the glyphs you actually use (Latin / Latin-Ext).
-//   - Prefer a variable font (1 file covers all weights → 1 preload).
-//   - Only set `preload: true` for above-the-fold weights; italic / display
-//     cuts that are not in the first viewport should use `preload: false`.
-//   - `adjustFontFallback` (default true for next/font) auto-generates a
-//     metrics-matched fallback to minimize the swap CLS if the 3 s elapse.
-//
-// const sans = localFont({
-//   src: [
-//     { path: "../../assets/fonts/YourSans-Regular.woff2", weight: "400", style: "normal" },
-//     { path: "../../assets/fonts/YourSans-Bold.woff2",    weight: "700", style: "normal" },
-//   ],
-//   variable: "--font-family-sans",
-//   display: "block",
-//   preload: true,    // emits <link rel="preload"> for the first weight in `src`
-// });
-//
-// const serif = localFont({
-//   src: "../../assets/fonts/YourSerif-Regular.woff2",
-//   variable: "--font-family-serif",
-//   display: "block",
-//   preload: false,   // serif headlines are usually not above-the-fold
-// });
-//
-// Usage on <html>: className={`... ${sans.variable} ${serif.variable}`}
-// ─────────────────────────────────────────────────────────────────────────────
+/** Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`). */
+const geistSans = Geist({
+	subsets: ["latin"],
+	variable: "--font-family-sans",
+	display: "block",
+});
 
+/** Tags, buttons, inline code — `font-mono` utilities. */
+const geistMono = Geist_Mono({
+	subsets: ["latin"],
+	variable: "--font-family-mono",
+	display: "block",
+});
+
+/** Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template). */
 export const metadata: Metadata = {
 	metadataBase: new URL(
 		process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
 	),
-	title: {
-		default: "Site",
-		template: "%s | Site",
-	},
 };
 
 /**
@@ -124,9 +74,7 @@ export default async function RootLayout({
 	return (
 		<html
 			lang={FALLBACK_SITE_LOCALE_CONFIG.defaultLocale}
-			// Add font variables here once next/font/local is wired up:
-			// className={`h-full antialiased ${sans.variable} ${serif.variable}`}
-			className="h-full antialiased"
+			className={`h-full antialiased ${geistSans.variable} ${geistMono.variable}`}
 			suppressHydrationWarning
 		>
 			<head>
@@ -145,9 +93,25 @@ export default async function RootLayout({
 				<link rel="preconnect" href="https://image.mux.com" />
 				<link rel="dns-prefetch" href="https://image.mux.com" />
 
-				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
+				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
+				<svg
+					aria-hidden="true"
+					focusable="false"
+					width="0"
+					height="0"
+					style={{ position: "absolute" }}
+				>
+					<title>Video sharpen filter</title>
+					<filter id="mvl-sharpen" colorInterpolationFilters="sRGB">
+						<feConvolveMatrix
+							order="3"
+							preserveAlpha="true"
+							kernelMatrix="0 -0.35 0  -0.35 2.4 -0.35  0 -0.35 0"
+						/>
+					</filter>
+				</svg>
 				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />

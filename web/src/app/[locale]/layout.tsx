@@ -47,10 +47,11 @@ export default async function LocaleLayout({ children, params }: Props) {
 	// menus are independent. The nav fetch when `raw` ends up invalid is
 	// wasted effort but the path is rare (404s only); the common case saves a
 	// roundtrip.
-	const [siteLocale, siteNav, cookieBanner] = await Promise.all([
+	const [siteLocale, siteNav, cookieBanner, siteBrand] = await Promise.all([
 		fetchSiteLanguageSettings(),
 		fetchSiteNavMenus(),
 		fetchSiteCookieBanner(),
+		fetchSiteSettingsTitle(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
@@ -63,11 +64,11 @@ export default async function LocaleLayout({ children, params }: Props) {
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
 			<a
 				href="#main-content"
-				className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-color-bg focus:px-3 focus:py-2 focus:text-color-text focus:shadow-md focus:outline-2 focus:outline-offset-2 focus:outline-color-accent"
+				className="sr-only focus:not-sr-only focus:fixed focus:top-xs focus:left-xs focus:z-50 focus:rounded focus:bg-color-bg focus:px-min focus:py-min focus:text-color-text focus:shadow-md focus:outline-2 focus:outline-offset-2 focus:outline-color-accent"
 			>
 				{skipLinkLabel(locale)}
 			</a>
-			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteNav?.title} />
+			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteBrand} />
 			<main
 				id="main-content"
 				className="flex min-h-0 flex-1 flex-col"
@@ -79,6 +80,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				locale={locale}
 				footerMenu={siteNav?.footerMenu}
 				pathUtils={pathUtils}
+				siteLocale={siteLocale}
 			/>
 			<CookieConsentBanner doc={cookieBanner} locale={locale} />
 		</LanguageProvider>

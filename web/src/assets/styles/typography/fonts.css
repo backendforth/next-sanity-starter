@@ -1,30 +1,15 @@
 /*
- * ── Font Setup ────────────────────────────────────────────────────────────────
- *
- * Fonts are loaded via `next/font/local` in `app/layout.tsx`.
- * next/font handles @font-face injection, subsetting, and <link rel="preload">
- * automatically — no @font-face rules belong here.
- *
- * Each localFont call emits a CSS variable class (e.g. `--font-family-sans`).
- * That class is applied to <html> in layout.tsx and picked up by the :root
- * declarations below.
- *
- * Until real font files are wired up, the system-font fallback stacks are active.
+ * Font stacks — families are loaded via `next/font/google` in `app/layout.tsx`
+ * (`Geist` → `--font-family-sans`, `Geist_Mono` → `--font-family-mono` on `<html>`).
+ * No @font-face rules here.
  */
 
 :root {
-	/*
-	 * Override these once next/font/local is active in layout.tsx.
-	 * The variable names must match the `variable` option in each localFont() call.
-	 *
-	 * Example after setup:
-	 *   --font-family-sans: "YourSans", ui-sans-serif, system-ui, sans-serif;
-	 *   --font-family-serif: "YourSerif", ui-serif, Georgia, serif;
-	 */
-	--font-family-sans: ui-sans-serif, system-ui, sans-serif;
-	--font-family-serif: ui-serif, Georgia, serif;
-	--font-family-mono: ui-monospace, monospace;
-
-	--font-family-text: var(--font-family-sans);
-	--font-family-headline: var(--font-family-serif);
+	--font-family-text: var(
+		--font-family-sans,
+		ui-sans-serif,
+		system-ui,
+		sans-serif
+	);
+	--font-family-headline: var(--font-family-mono, ui-monospace, monospace);
 }

@@ -26,6 +26,108 @@ export type VideoSettings = {
   controls?: boolean;
 };
 
+export type ProjectCategory = {
+  _id: string;
+  _type: "projectCategory";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: InternationalizedArrayString;
+};
+
+export type InternationalizedArrayString = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayStringValue
+>;
+
+export type ProjectCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "projectCategory";
+};
+
+export type Project = {
+  _id: string;
+  _type: "project";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: InternationalizedArrayString;
+  categories?: Array<
+    {
+      _key: string;
+    } & ProjectCategoryReference
+  >;
+  slug: Slug;
+  modules?: Array<
+    | ({
+        _key: string;
+      } & ModuleMedia)
+    | ({
+        _key: string;
+      } & ModuleCarousel)
+    | ({
+        _key: string;
+      } & ModuleContentRefs)
+    | ({
+        _key: string;
+      } & ModuleText)
+  >;
+  seo?: SeoPage;
+};
+
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
+export type SeoPage = {
+  _type: "seo.page";
+  title?: string;
+  description?: string;
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
+};
+
+export type Work = {
+  _id: string;
+  _type: "work";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: InternationalizedArrayString;
+  modules?: Array<
+    | ({
+        _key: string;
+      } & ModuleMedia)
+    | ({
+        _key: string;
+      } & ModuleCarousel)
+    | ({
+        _key: string;
+      } & ModuleContentRefs)
+    | ({
+        _key: string;
+      } & ModuleText)
+  >;
+  seo?: SeoPage;
+};
+
 export type SiteCookieBanner = {
   _id: string;
   _type: "siteCookieBanner";
@@ -75,12 +177,6 @@ export type InternationalizedArrayRichText = Array<
   } & InternationalizedArrayRichTextValue
 >;
 
-export type InternationalizedArrayString = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayStringValue
->;
-
 export type SiteNav = {
   _id: string;
   _type: "siteNav";
@@ -120,13 +216,6 @@ export type SiteLanguageSettings = {
     _key: string;
   }>;
   defaultLanguageId: string;
-};
-
-export type SanityImageAssetReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
 };
 
 export type SiteSettings = {
@@ -183,7 +272,7 @@ export type RichTextMedia = Array<
         _type: "span";
         _key: string;
       }>;
-      style?: "normal" | "h2" | "h3" | "h4";
+      style?: "normal" | "bigText" | "h1" | "h2" | "h3" | "h4";
       listItem?: "bullet" | "number";
       markDefs?: Array<
         {
@@ -209,7 +298,7 @@ export type RichText = Array<{
     _type: "span";
     _key: string;
   }>;
-  style?: "normal" | "h2" | "h3" | "h4";
+  style?: "normal" | "bigText" | "h1" | "h2" | "h3" | "h4";
   listItem?: "bullet" | "number";
   markDefs?: Array<
     {
@@ -223,7 +312,7 @@ export type RichText = Array<{
 
 export type ModuleText = {
   _type: "module.text";
-  title: InternationalizedArrayString;
+  title?: InternationalizedArrayString;
   body?: InternationalizedArrayRichTextMedia;
 };
 
@@ -241,19 +330,28 @@ export type PageReference = {
   [internalGroqTypeReferenceTo]?: "page";
 };
 
+export type ProjectReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "project";
+};
+
 export type ModuleContentRefs = {
   _type: "module.contentRefs";
   heading?: InternationalizedArrayString;
-  allowMultiple?: boolean;
-  reference?: HomeReference | PageReference;
-  references?: ArrayOf<HomeReference | PageReference>;
+  sourceScope: "all" | "pages" | "projects";
+  showProjectFilters?: boolean;
+  selection: "all" | "selected";
+  references?: ArrayOf<HomeReference | PageReference | ProjectReference>;
 };
 
 export type ModuleMedia = {
   _type: "module.media";
-  type: "image" | "video";
+  type: "image" | "video" | "loop";
   imageContent?: MediaImage;
   videoContent?: MediaVideo;
+  videoLoopContent?: MediaVideoLoop;
 };
 
 export type ModuleCarousel = {
@@ -278,6 +376,20 @@ export type ModuleCarousel = {
   showNavDots?: boolean;
   autoplay?: boolean;
   autoplayDelayMs?: number;
+};
+
+export type MediaVideoLoop = {
+  _type: "media.videoLoop";
+  video?: MuxVideo;
+  poster?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  allowUnmute?: boolean;
+  caption?: string;
 };
 
 export type MediaVideo = {
@@ -319,7 +431,7 @@ export type NavLanguageSwitch = {
 export type Link = {
   _type: "link";
   type: "internal" | "external" | "function";
-  title?: string;
+  title?: InternationalizedArrayString;
   reference?: HomeReference | PageReference;
   url?: string;
   blank?: boolean;
@@ -349,25 +461,6 @@ export type Page = {
       } & ModuleText)
   >;
   seo?: SeoPage;
-};
-
-export type SeoPage = {
-  _type: "seo.page";
-  title?: string;
-  description?: string;
-  image?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
 };
 
 export type Home = {
@@ -635,14 +728,20 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | VideoSettings
+  | ProjectCategory
+  | InternationalizedArrayString
+  | ProjectCategoryReference
+  | Project
+  | SanityImageAssetReference
+  | SeoPage
+  | Slug
+  | Work
   | SiteCookieBanner
   | Code
   | ErrorSettings
   | InternationalizedArrayRichText
-  | InternationalizedArrayString
   | SiteNav
   | SiteLanguageSettings
-  | SanityImageAssetReference
   | SiteSettings
   | SeoFallback
   | SanityImageCrop
@@ -652,17 +751,17 @@ export type AllSanitySchemaTypes =
   | ModuleText
   | HomeReference
   | PageReference
+  | ProjectReference
   | ModuleContentRefs
   | ModuleMedia
   | ModuleCarousel
+  | MediaVideoLoop
   | MediaVideo
   | MediaImage
   | NavThemeToggle
   | NavLanguageSwitch
   | Link
   | Page
-  | SeoPage
-  | Slug
   | Home
   | InternationalizedArrayRichTextMedia
   | LinkFunctions

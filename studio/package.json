@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node scripts/dev-with-hint.mjs",
     "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
+    "migrate:project-body-rich-text": "node scripts/migrate-project-body-rich-text.mjs",
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy",
@@ -31,6 +32,7 @@
     "styled-components": "^6.4.2"
   },
   "devDependencies": {
+    "@sanity/client": "^7.22.1",
     "@types/node": "^22.15.30",
     "@types/react": "^19.2.15",
     "typescript": "^6.0.3"

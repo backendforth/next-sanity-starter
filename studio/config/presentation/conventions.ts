@@ -7,6 +7,11 @@ import { singletonTypesWithRole } from "../singletons";
  */
 export const SLUG_BASED_DOCUMENT_TYPES = ["page"] as const;
 
+/** Slug-based documents under a URL prefix (not site root). */
+export const PREFIXED_SLUG_DOCUMENT_TYPES = ["project"] as const;
+
+export const PROJECT_URL_PREFIX = "/work";
+
 /**
  * Singletons that resolve Web Preview to `/` (same behaviour as the live site root).
  * Derived from the canonical singleton map (`config/singletons.ts`, role `root`).

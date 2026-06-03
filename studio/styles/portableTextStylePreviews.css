@@ -1,56 +1,123 @@
 /*
  * Portable Text block-style previews in Studio (richText / richTextMedia).
  *
- * These classes mirror the *intent* of web utilities in
- * `web/src/assets/styles/typography/typography.css` (@utility paragraph, section-title,
- * content-title, sub-title). Studio does not run Tailwind — keep sizes/families roughly
- * aligned, or duplicate critical `--font-*` tokens here if you need pixel parity.
- *
- * Opt out: remove `component` from each style in `schemas/objects/editors/text/styles.ts`
- * and/or stop importing this file from `sanity.config.ts`.
+ * Token values mirror `web/src/assets/styles/variables/fontsizes.css` (keep in sync).
+ * Utility mapping matches `web/src/assets/styles/typography/typography.css`:
+ *   normal → text (md), bigText → big-text (lg),
+ *   h1 → heading-1 (3lg), h2 → heading-2 (2lg), h3 → heading-3 (lg, Geist Mono semibold),
+ *   h4 → heading-4 (md, Geist Mono semibold)
  */
 
 :root {
-  --pt-preview-font-text: ui-sans-serif, system-ui, sans-serif;
-  --pt-preview-font-headline: ui-serif, Georgia, "Times New Roman", serif;
+  --pt-preview-font-text: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --pt-preview-font-headline: "Geist Mono", ui-monospace, monospace;
+  --pt-preview-font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --pt-font-size-md: 0.875rem;
+  --pt-font-size-lg: 1.125rem;
+  --pt-font-size-2lg: 1.5rem;
+  --pt-font-size-3lg: 1.75rem;
+  --pt-font-size-xl: 3.1875rem;
+
+  --pt-line-height-md: 1.18125rem;
+  --pt-line-height-lg: 1.51875rem;
+  --pt-line-height-2lg: 2.025rem;
+  --pt-line-height-3lg: 2.3625rem;
+  --pt-line-height-xl: 4.303125rem;
+}
+
+@media (width >= 1440px) {
+  :root {
+    --pt-font-size-md: 1rem;
+    --pt-font-size-lg: 1.25rem;
+    --pt-font-size-2lg: 1.625rem;
+    --pt-font-size-3lg: 1.875rem;
+    --pt-font-size-xl: 6rem;
+
+    --pt-line-height-md: 1.35rem;
+    --pt-line-height-lg: 1.6875rem;
+    --pt-line-height-2lg: 2.19375rem;
+    --pt-line-height-3lg: 3.54375rem;
+    --pt-line-height-xl: 8.1rem;
+  }
 }
 
 .pt-preview {
   min-width: 0;
 }
 
-/* Web @utility paragraph — body copy */
+/* @utility text — body (md) */
 .pt-preview--normal {
   font-family: var(--pt-preview-font-text);
   font-weight: 400;
   font-style: normal;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: var(--pt-font-size-md);
+  line-height: var(--pt-line-height-md);
 }
 
-/* Web h2 / @utility section-title */
-.pt-preview--h2 {
-  font-family: var(--pt-preview-font-headline);
-  font-weight: 400;
-  font-style: normal;
-  font-size: 1.5625rem;
-  line-height: 1.15;
-}
-
-/* Web h3 / @utility content-title */
-.pt-preview--h3 {
-  font-family: var(--pt-preview-font-headline);
-  font-weight: 400;
-  font-style: normal;
-  font-size: 1.125rem;
-  line-height: 1.2;
-}
-
-/* Web h4–h6 / @utility sub-title */
-.pt-preview--h4 {
+/* @utility big-text — lg, Geist Sans regular */
+.pt-preview--big-text {
   font-family: var(--pt-preview-font-text);
-  font-weight: 700;
+  font-weight: 400;
   font-style: normal;
-  font-size: 1.25rem;
-  line-height: 1.25;
+  font-size: var(--pt-font-size-lg);
+  line-height: var(--pt-line-height-lg);
+}
+
+/* PT “Heading 1” — heading-1 (3lg, Geist Sans regular) */
+.pt-preview--h1 {
+  font-family: var(--pt-preview-font-text);
+  font-weight: 400;
+  font-style: normal;
+  font-size: var(--pt-font-size-3lg);
+  line-height: var(--pt-line-height-3lg);
+}
+
+/* PT “Heading 2” — heading-2 (2lg, Geist Sans regular) */
+.pt-preview--h2 {
+  font-family: var(--pt-preview-font-text);
+  font-weight: 400;
+  font-style: normal;
+  font-size: var(--pt-font-size-2lg);
+  line-height: var(--pt-line-height-2lg);
+}
+
+/* PT “Heading 3” — heading-3 (lg, Geist Mono semibold) */
+.pt-preview--h3 {
+  font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--pt-font-size-lg);
+  line-height: var(--pt-line-height-lg);
+}
+
+/* PT “Heading 4” — heading-4 (md, Geist Mono semibold) */
+.pt-preview--h4 {
+  font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--pt-font-size-md);
+  line-height: var(--pt-line-height-md);
+}
+
+/* Body emphasis: Geist Mono semibold (single accent face for inline bold/italic) */
+.pt-preview--normal :is(strong, b),
+.pt-preview--big-text :is(strong, b) {
+  font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+}
+
+.pt-preview--normal :is(em, i),
+.pt-preview--big-text :is(em, i) {
+  font-family: var(--pt-preview-font-mono);
+  font-style: italic;
+}
+
+/* Heading emphasis: inherit family + weight (single weight per heading) */
+.pt-preview--h1 :is(strong, em, i, b),
+.pt-preview--h2 :is(strong, em, i, b),
+.pt-preview--h3 :is(strong, em, i, b),
+.pt-preview--h4 :is(strong, em, i, b) {
+  font-family: inherit;
+  font-weight: inherit;
 }

@@ -100,16 +100,16 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 | Module | Role |
 |--------|------|
-| `module.media` | Image or Mux video via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) depending on `type`. |
+| `module.media` | Image, Mux video, or silent loop via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) / **`videoLoopContent`** (`media.videoLoop`) depending on `type` (`image` / `video` / `loop`). |
 | `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`autoplay`** + **`autoplayDelayMs`**. |
-| `module.contentRefs` | Optional heading; **`allowMultiple`** toggles single **`reference`** vs **`references`** array to **`PAGE_REFERENCES`** (same as internal links). |
+| `module.contentRefs` | Optional heading; **`sourceScope`** (`all` / `pages` / `projects`); **`showProjectFilters`** (projects only); **`selection`** (`all` / `selected`). Projects support **`projectCategory`** filters + sort (A–Z / newest) on the web. |
 | `module.text` | Title + rich text body. |
 
 **Breaking change (JSON / GROQ):** Legacy `module.media` stored `image`, `video`, `videoSettings`, and `caption` at the root. Current data nests these under **`imageContent`** and **`videoContent`** (caption lives on the nested `media.image` / `media.video` objects). Update queries and front-end mapping accordingly, or migrate old documents.
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** in **`schemas/constants/references.ts`**. To allow more routable singletons in the picker, extend that list and follow the presentation/routing notes in section 4.
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
 
 ## 9. Mux / media
 

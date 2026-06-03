@@ -60,3 +60,15 @@ function buildRichTextMediaQuery(depth: number): string {
 
 /** Default nesting depth for `module.text` inside rich text (each level adds one `body[]` → `value[]`). */
 export const richTextMediaQuery = buildRichTextMediaQuery(3);
+
+/** i18n wrapper for a document-level `body` field using `internationalizedArrayRichTextMedia`. */
+export const internationalizedRichTextMediaBodyQuery = `
+  body[]{
+    _key,
+    _type,
+    language,
+    value[]{
+      ${richTextMediaQuery}
+    }
+  }
+`;

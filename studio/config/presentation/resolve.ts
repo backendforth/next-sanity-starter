@@ -13,6 +13,11 @@ const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
  */
 export const presentationMainDocuments = defineDocuments([
   { route: "/", type: "home" },
+  { route: "/work", type: "work" },
+  {
+    route: "/work/:slug",
+    filter: `_type == "project" && slug.current == $slug`,
+  },
   ...(SLUG_BASED_DOCUMENT_TYPES.length > 0
     ? [
         {

@@ -27,6 +27,25 @@ function payloadKind(
 	return null;
 }
 
+/**
+ * Editor-chosen slide kind. Prefers the outer `resolvedMedia.kind` (set by GROQ from
+ * `module.media.type`) because loops carry a Mux asset that would otherwise be
+ * indistinguishable from a regular video at the asset level.
+ */
+function slideKind(
+	resolvedKind: "image" | "video" | "loop" | null | undefined,
+	payload: ResolvedMediaPayload | null | undefined,
+): "image" | "video" | "loop" | null {
+	if (
+		resolvedKind === "loop" ||
+		resolvedKind === "video" ||
+		resolvedKind === "image"
+	) {
+		return resolvedKind;
+	}
+	return payloadKind(payload);
+}
+
 /** Normalize the GROQ `resolvedSlides` into a single shape `CarouselSlide` understands. */
 function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
 	const imagesOnly = module.imagesOnly !== false;
@@ -53,7 +72,7 @@ function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
 			.map((slide, index): NormalizedSlide | null => {
 				const resolved = slide.resolvedMedia;
 				if (!resolved) return null;
-				const kind = payloadKind(resolved.media) ?? resolved.kind ?? null;
+				const kind = slideKind(resolved.kind, resolved.media);
 				if (!kind || !resolved.media) return null;
 				return {
 					key: slide._key ?? `slide-${index}`,
@@ -61,7 +80,9 @@ function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
 					media: resolved.media,
 					poster: resolved.poster ?? undefined,
 					caption: resolved.caption ?? null,
-					videoSettings: resolved.videoSettings ?? null,
+					videoSettings:
+						kind === "video" ? (resolved.videoSettings ?? null) : null,
+					allowUnmute: kind === "loop" ? (resolved.allowUnmute ?? null) : null,
 				};
 			})
 			.filter((s): s is NormalizedSlide => s !== null);
@@ -94,6 +115,19 @@ function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
 					videoSettings: slide.videoContent.videoSettings ?? null,
 				};
 			}
+			if (slide.type === "loop" && slide.videoLoopContent) {
+				const muxField =
+					slide.videoLoopContent.media ?? slide.videoLoopContent.video ?? null;
+				if (!muxField) return null;
+				return {
+					key: slide._key ?? `slide-${index}`,
+					kind: "loop",
+					media: muxField,
+					poster: slide.videoLoopContent.poster ?? undefined,
+					caption: slide.videoLoopContent.caption ?? null,
+					allowUnmute: slide.videoLoopContent.allowUnmute ?? null,
+				};
+			}
 			return null;
 		})
 		.filter((s): s is NormalizedSlide => s !== null);
@@ -101,7 +135,7 @@ function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
 
 /**
  * `module.carousel` renderer. Behavior fields (`loop`, `showThumbnails`, `showNavDots`,
- * `autoplay`, `autoplayDelayMs`) come from Sanity and drive the embla viewport.
+ * `multipleSlides`, `autoplay`, `autoplayDelayMs`) come from Sanity and drive the embla viewport.
  */
 export function ModuleCarousel({ module, locale, siteLocale }: Props) {
 	const slides = normalizeSlides(module);
@@ -110,14 +144,15 @@ export function ModuleCarousel({ module, locale, siteLocale }: Props) {
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 
 	return (
-		<section className="flex flex-col gap-4">
-			{heading ? <h2>{heading}</h2> : null}
+		<section className="flex flex-col">
+			{heading ? <h2 className="content-title">{heading}</h2> : null}
 			<CarouselViewport
 				slides={slides}
 				options={{
 					loop: module.loop === true,
 					showThumbnails: module.showThumbnails === true,
 					showNavDots: module.showNavDots !== false,
+					multipleSlides: module.multipleSlides === true,
 					autoplay: module.autoplay === true,
 					autoplayDelayMs:
 						typeof module.autoplayDelayMs === "number"

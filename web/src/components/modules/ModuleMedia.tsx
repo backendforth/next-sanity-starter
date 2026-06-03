@@ -26,10 +26,13 @@ type Props = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
- * Single media block (`module.media`) — image or Mux video. Intended for full width
- * of the parent column (`w-full`).
+ * Single media block (`module.media`) — image, video (full MuxPlayer), or silent loop.
+ * Intended for full width of the parent column (`w-full`).
  *
- * Prefer `resolvedMedia` from GROQ; falls back to `imageContent` / `videoContent` when needed.
+ * The editor picks the kind via a radio in Studio (`type: "image" | "video" | "loop"`).
+ * GROQ normalizes the per-kind payload into `resolvedMedia` with a discriminating `kind`
+ * field; the raw `videoLoopContent` / `videoContent` / `imageContent` are kept as
+ * fallbacks for non-resolved sources.
  */
 export function ModuleMedia({ module }: Props) {
 	const rm = module.resolvedMedia;
@@ -39,7 +42,25 @@ export function ModuleMedia({ module }: Props) {
 			<figure className="w-full min-w-0">
 				<MediaImage imagePayload={rm.media} caption={rm.caption} />
 				{rm.caption ? (
-					<figcaption className="mt-2 text-color-text-muted paragraph-small">
+					<figcaption className="mt-xs text-color-text-muted paragraph-small">
+						{rm.caption}
+					</figcaption>
+				) : null}
+			</figure>
+		);
+	}
+
+	if (rm?.kind === "loop" && rm.media) {
+		return (
+			<figure className="w-full min-w-0">
+				<MediaVideoLoop
+					media={rm.media}
+					caption={rm.caption}
+					posterPayload={rm.poster}
+					allowUnmute={rm.allowUnmute === true}
+				/>
+				{rm.caption ? (
+					<figcaption className="mt-xs text-color-text-muted paragraph-small">
 						{rm.caption}
 					</figcaption>
 				) : null}
@@ -65,7 +86,7 @@ export function ModuleMedia({ module }: Props) {
 					/>
 				)}
 				{rm.caption ? (
-					<figcaption className="mt-2 text-color-text-muted paragraph-small">
+					<figcaption className="mt-xs text-color-text-muted paragraph-small">
 						{rm.caption}
 					</figcaption>
 				) : null}
@@ -83,8 +104,28 @@ export function ModuleMedia({ module }: Props) {
 					caption={module.imageContent?.caption}
 				/>
 				{module.imageContent?.caption ? (
-					<figcaption className="mt-2 text-color-text-muted paragraph-small">
+					<figcaption className="mt-xs text-color-text-muted paragraph-small">
 						{module.imageContent.caption}
+					</figcaption>
+				) : null}
+			</figure>
+		);
+	}
+
+	if (module.type === "loop" && module.videoLoopContent) {
+		const muxField =
+			module.videoLoopContent.video ?? module.videoLoopContent.media;
+		return (
+			<figure className="w-full min-w-0">
+				<MediaVideoLoop
+					media={muxField}
+					caption={module.videoLoopContent.caption}
+					posterPayload={module.videoLoopContent.poster}
+					allowUnmute={module.videoLoopContent.allowUnmute === true}
+				/>
+				{module.videoLoopContent.caption ? (
+					<figcaption className="mt-xs text-color-text-muted paragraph-small">
+						{module.videoLoopContent.caption}
 					</figcaption>
 				) : null}
 			</figure>
@@ -110,7 +151,7 @@ export function ModuleMedia({ module }: Props) {
 					/>
 				)}
 				{module.videoContent.caption ? (
-					<figcaption className="mt-2 text-color-text-muted paragraph-small">
+					<figcaption className="mt-xs text-color-text-muted paragraph-small">
 						{module.videoContent.caption}
 					</figcaption>
 				) : null}

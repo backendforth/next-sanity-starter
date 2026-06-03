@@ -1,10 +1,14 @@
 import { page } from "./documents/page";
+import { project } from "./documents/project";
+import { projectCategory } from "./documents/projectCategory";
+import { work } from "./documents/work";
 import { richText } from "./objects/editors/richText";
 import { richTextMedia } from "./objects/editors/richTextMedia";
 import { link } from "./objects/link";
 import { linkFunctions } from "./objects/linkFunctions";
 import { mediaImage } from "./objects/media/image";
 import { mediaVideo } from "./objects/media/video";
+import { mediaVideoLoop } from "./objects/media/videoLoop";
 import { moduleCarousel } from "./objects/modules/moduleCarousel";
 import { moduleContentRefs } from "./objects/modules/moduleContentRefs";
 import { moduleMedia } from "./objects/modules/moduleMedia";
@@ -28,6 +32,7 @@ export const schemaTypes = [
   navThemeToggle,
   mediaImage,
   mediaVideo,
+  mediaVideoLoop,
   moduleCarousel,
   moduleMedia,
   moduleContentRefs,
@@ -40,5 +45,8 @@ export const schemaTypes = [
   errorSettings,
   siteCookieBanner,
   home,
+  work,
   page,
+  project,
+  projectCategory,
 ];

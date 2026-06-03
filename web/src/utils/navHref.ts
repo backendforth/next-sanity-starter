@@ -1,5 +1,9 @@
 import type { MainMenuItem, NavMenuLink } from "@/sanity/types/nav";
+import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+
+type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
 export type ResolvedNavRow =
 	| {
@@ -32,10 +36,34 @@ function rowId(link: NavMenuLink, index: number, idPrefix: string): string {
 	return `${idPrefix}-${index}`;
 }
 
-function labelFor(link: NavMenuLink): string {
-	const t = link.title;
-	if (typeof t === "string" && t.trim().length > 0) {
-		return t.trim();
+function labelFor(
+	link: NavMenuLink,
+	locale: string,
+	siteLocale: SiteLocaleSlice | null | undefined,
+): string {
+	if (link.type === "internal" && link.linkType === "linkInternal") {
+		return resolveLinkLabel({
+			linkTitle: link.title,
+			referenceTitle: link.resolvedReference?.title,
+			locale,
+			siteLocale,
+		});
+	}
+	if (link.type === "external" && link.linkType === "linkExternal") {
+		return resolveLinkLabel({
+			linkTitle: link.title,
+			externalUrl: link.href,
+			locale,
+			siteLocale,
+		});
+	}
+	if (link.type === "function" && link.linkType === "linkFunction") {
+		return resolveLinkLabel({
+			linkTitle: link.title,
+			functionKey: link.func?.key,
+			locale,
+			siteLocale,
+		});
 	}
 	return "Link";
 }
@@ -52,6 +80,15 @@ function internalHref(
 	if (refType === "home" || route === "page") {
 		return localePath("/", locale);
 	}
+	if (refType === "work" || route === "work") {
+		return localePath("/work", locale);
+	}
+	if (refType === "project" || route === "project") {
+		if (!slug) {
+			return null;
+		}
+		return localePath(`/work/${slug}`, locale);
+	}
 	if (slug.length > 0) {
 		return localePath(`/${slug}`, locale);
 	}
@@ -64,8 +101,9 @@ export function resolveNavMenuLink(
 	index: number,
 	pathUtils: Pick<LanguagePathUtils, "localePath">,
 	idPrefix = "nav",
+	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow | null {
-	const label = labelFor(link);
+	const label = labelFor(link, locale, siteLocale);
 
 	if (link.type === "internal" && link.linkType === "linkInternal") {
 		const href = internalHref(link, locale, pathUtils.localePath);
@@ -148,13 +186,21 @@ export function resolveMenuRows(
 	locale: string,
 	pathUtils: Pick<LanguagePathUtils, "localePath">,
 	idPrefix: string,
+	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow[] {
 	if (!menu?.length) {
 		return [];
 	}
 	const out: ResolvedNavRow[] = [];
 	menu.forEach((link, index) => {
-		const row = resolveNavMenuLink(link, locale, index, pathUtils, idPrefix);
+		const row = resolveNavMenuLink(
+			link,
+			locale,
+			index,
+			pathUtils,
+			idPrefix,
+			siteLocale,
+		);
 		if (row) {
 			out.push(row);
 		}
@@ -166,8 +212,9 @@ export function resolveMainMenuRows(
 	mainMenu: NavMenuLink[] | null | undefined,
 	locale: string,
 	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow[] {
-	return resolveMenuRows(mainMenu, locale, pathUtils, "nav");
+	return resolveMenuRows(mainMenu, locale, pathUtils, "nav", siteLocale);
 }
 
 function mainMenuEntryId(item: MainMenuItem, index: number): string {
@@ -186,6 +233,7 @@ export function resolveMainMenuEntries(
 	mainMenu: MainMenuItem[] | null | undefined,
 	locale: string,
 	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	siteLocale?: SiteLocaleSlice | null,
 ): MainMenuEntry[] {
 	if (!mainMenu?.length) {
 		return [];
@@ -206,7 +254,14 @@ export function resolveMainMenuEntries(
 			});
 			return;
 		}
-		const row = resolveNavMenuLink(item, locale, index, pathUtils, "nav");
+		const row = resolveNavMenuLink(
+			item,
+			locale,
+			index,
+			pathUtils,
+			"nav",
+			siteLocale,
+		);
 		if (row) {
 			out.push(row);
 		}
@@ -218,6 +273,7 @@ export function resolveFooterMenuRows(
 	footerMenu: NavMenuLink[] | null | undefined,
 	locale: string,
 	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow[] {
-	return resolveMenuRows(footerMenu, locale, pathUtils, "footer");
+	return resolveMenuRows(footerMenu, locale, pathUtils, "footer", siteLocale);
 }

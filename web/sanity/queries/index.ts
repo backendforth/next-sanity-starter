@@ -4,10 +4,19 @@ export {
 	moduleMediaQuery,
 	modulesQuery,
 	moduleTextQuery,
-	richTextMediaQuery,
 } from "./components/modules";
+export {
+	internationalizedRichTextBodyQuery,
+	richTextQuery,
+} from "./components/text/richText";
+export {
+	internationalizedRichTextMediaBodyQuery,
+	richTextMediaQuery,
+} from "./components/text/richTextMedia";
 export { homeQuery } from "./pages/home";
 export { pageBySlugQuery } from "./pages/page";
+export { projectBySlugQuery } from "./pages/project";
+export { workQuery } from "./pages/work";
 export { linkQuery } from "./snippets/link";
 export {
 	imageQuery,
@@ -29,4 +38,8 @@ export {
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 } from "./snippets/settings";
-export { pageSlugsQuery, sitemapPagesQuery } from "./snippets/sitemap";
+export {
+	pageSlugsQuery,
+	projectSlugsQuery,
+	sitemapPagesQuery,
+} from "./snippets/sitemap";

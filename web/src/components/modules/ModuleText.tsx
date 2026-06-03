@@ -25,8 +25,8 @@ export function ModuleText({ module, locale, siteLocale }: Props) {
 	);
 
 	return (
-		<article className="flex flex-col gap-4 border-b border-color-border-subtle pb-10 last:border-b-0 last:pb-0">
-			{title ? <h2>{title}</h2> : null}
+		<article className="flex flex-col border-b border-color-border-subtle pb-lg last:border-b-0 last:pb-0">
+			{title ? <h2 className="content-title">{title}</h2> : null}
 			<RichTextMedia value={blocks} locale={locale} siteLocale={siteLocale} />
 		</article>
 	);

@@ -121,3 +121,56 @@ ul {
 ol {
 	@apply list-decimal;
 }
+
+/* Portable Text vertical rhythm (RichTextMedia and future rich-text renderers) */
+.rich-text > p,
+.rich-text > blockquote {
+	margin-bottom: var(--space-sm);
+}
+
+.rich-text > p:last-child,
+.rich-text > blockquote:last-child {
+	margin-bottom: 0;
+}
+
+.rich-text > h2 {
+	margin-top: var(--space-md);
+	margin-bottom: calc(var(--space-xs) + var(--space-min));
+}
+
+.rich-text > h2:first-child {
+	margin-top: 0;
+}
+
+.rich-text > h3 {
+	margin-top: calc(var(--space-sm) + var(--space-xs));
+	margin-bottom: var(--space-xs);
+}
+
+.rich-text > h3:first-child {
+	margin-top: 0;
+}
+
+.rich-text > h4 {
+	margin-top: var(--space-sm);
+	margin-bottom: var(--space-xs);
+}
+
+.rich-text > h4:first-child {
+	margin-top: 0;
+}
+
+.rich-text > ul,
+.rich-text > ol {
+	margin-bottom: var(--space-sm);
+	padding-left: calc(var(--space-sm) + var(--space-xs));
+}
+
+.rich-text > ul > li + li,
+.rich-text > ol > li + li {
+	margin-top: var(--space-min);
+}
+
+.rich-text .rich-text-embed {
+	margin-block: calc(var(--space-sm) + var(--space-xs));
+}

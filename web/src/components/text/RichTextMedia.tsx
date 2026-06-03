@@ -10,6 +10,7 @@ import type {
 import { type LinkMark, resolveLinkMark } from "@/sanity/utils/linkResolver";
 import { ModuleCarousel } from "@/src/components/carousel";
 import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 /**
  * **Source of truth for body copy in the app** matches Studio schema **`richTextMedia`**
@@ -27,6 +28,9 @@ export type RichTextMediaLinkMark = LinkMark;
 type RichTextMediaProps = {
 	value: PortableTextBlock[];
 	className?: string;
+	/** Required when rich text bodies may embed `module.carousel` (localized heading). */
+	locale?: string;
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -58,13 +62,25 @@ function LinkMarkRenderer({
 
 // ─── Portable Text configuration ─────────────────────────────────────────────
 
-function portableTextComponents(): Partial<PortableTextComponents> {
+function portableTextComponents({
+	locale,
+	siteLocale,
+}: {
+	locale?: string;
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+}): Partial<PortableTextComponents> {
 	return {
 		block: {
-			normal: ({ children }) => <p>{children}</p>,
-			h2: ({ children }) => <h2>{children}</h2>,
-			h3: ({ children }) => <h3>{children}</h3>,
-			h4: ({ children }) => <h4>{children}</h4>,
+			normal: ({ children }) => <p className="text">{children}</p>,
+			bigText: ({ children }) => <p className="big-text">{children}</p>,
+			h1: ({ children }) => (
+				<h1 className="rich-text-heading-sans">{children}</h1>
+			),
+			h2: ({ children }) => (
+				<h2 className="rich-text-heading-sans">{children}</h2>
+			),
+			h3: ({ children }) => <h3 className="heading-3">{children}</h3>,
+			h4: ({ children }) => <h4 className="heading-4">{children}</h4>,
 		},
 		list: {
 			bullet: ({ children }) => <ul>{children}</ul>,
@@ -75,9 +91,9 @@ function portableTextComponents(): Partial<PortableTextComponents> {
 			number: ({ children }) => <li>{children}</li>,
 		},
 		marks: {
-			strong: ({ children }) => <strong>{children}</strong>,
-			em: ({ children }) => <em className="italic">{children}</em>,
-			code: ({ children }) => <code className="px-1.5 py-0.5">{children}</code>,
+			strong: ({ children }) => <strong className="font-mono">{children}</strong>,
+			em: ({ children }) => <em className="font-mono italic">{children}</em>,
+			code: ({ children }) => <code>{children}</code>,
 			link: ({ children, value }) => (
 				<LinkMarkRenderer value={value as LinkMark}>
 					{children}
@@ -90,11 +106,18 @@ function portableTextComponents(): Partial<PortableTextComponents> {
 					<ModuleMedia module={value as ModuleMediaData} />
 				</div>
 			),
-			"module.carousel": ({ value }) => (
-				<div className="rich-text-embed w-full min-w-0">
-					<ModuleCarousel module={value as ModuleCarouselData} />
-				</div>
-			),
+			"module.carousel": ({ value }) => {
+				if (!locale || !siteLocale) return null;
+				return (
+					<div className="rich-text-embed w-full min-w-0">
+						<ModuleCarousel
+							module={value as ModuleCarouselData}
+							locale={locale}
+							siteLocale={siteLocale}
+						/>
+					</div>
+				);
+			},
 		},
 	};
 }
@@ -105,9 +128,14 @@ function portableTextComponents(): Partial<PortableTextComponents> {
  * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.media`).
  * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields.
  */
-export function RichTextMedia({ value, className }: RichTextMediaProps) {
+export function RichTextMedia({
+	value,
+	className,
+	locale,
+	siteLocale,
+}: RichTextMediaProps) {
 	if (!value.length) return null;
-	const components = portableTextComponents();
+	const components = portableTextComponents({ locale, siteLocale });
 	return (
 		<div
 			className={clsx(

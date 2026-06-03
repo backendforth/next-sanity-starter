@@ -24,12 +24,14 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale: raw } = await params;
-	const siteLocale = await fetchSiteLanguageSettings({ stega: false });
+	const [siteLocale, siteTitle] = await Promise.all([
+		fetchSiteLanguageSettings({ stega: false }),
+		fetchSiteSettingsTitle({ stega: false }),
+	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	if (!pathUtils.isAppLocale(raw)) {
 		notFound();
 	}
-	const siteTitle = await fetchSiteSettingsTitle(raw, { stega: false });
 	const suffix = siteTitle.trim() || "Site";
 	return {
 		title: {
@@ -42,12 +44,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
 	// Parallelize: locale config (for validation + LanguageProvider) and nav
-	// menus are independent. The nav fetch for an invalid `raw` locale is wasted
-	// effort but the path is rare (404s only); the common case saves a roundtrip.
-	const [siteLocale, siteNav, cookieBanner] = await Promise.all([
+	// menus are independent. The nav fetch when `raw` ends up invalid is
+	// wasted effort but the path is rare (404s only); the common case saves a
+	// roundtrip.
+	const [siteLocale, siteNav, cookieBanner, siteBrand] = await Promise.all([
 		fetchSiteLanguageSettings(),
-		fetchSiteNavMenus(raw),
-		fetchSiteCookieBanner(raw),
+		fetchSiteNavMenus(),
+		fetchSiteCookieBanner(),
+		fetchSiteSettingsTitle(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
@@ -64,7 +68,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 			>
 				{skipLinkLabel(locale)}
 			</a>
-			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteNav?.title} />
+			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteBrand} />
 			<main
 				id="main-content"
 				className="flex min-h-0 flex-1 flex-col"
@@ -76,6 +80,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				locale={locale}
 				footerMenu={siteNav?.footerMenu}
 				pathUtils={pathUtils}
+				siteLocale={siteLocale}
 			/>
 			<CookieConsentBanner doc={cookieBanner} locale={locale} />
 		</LanguageProvider>

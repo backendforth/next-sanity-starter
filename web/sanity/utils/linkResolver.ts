@@ -10,13 +10,16 @@
 export type LinkResolvedRef = {
 	_type?: string;
 	slug?: string | null;
+	title?: IntlStringEntry[] | string | null;
 };
+
+import type { IntlStringEntry } from "./sanityLocalizedText";
 
 /** Portable Text `link` mark — aligned with GROQ `linkQuery` / `studio/schemas/objects/link.ts`. */
 export type LinkMark = {
 	_type?: string;
 	type?: "internal" | "external" | "function" | string;
-	title?: string | null;
+	title?: IntlStringEntry[] | string | null;
 	url?: string | null;
 	blank?: boolean | null;
 	resolvedReference?: LinkResolvedRef | null;
@@ -34,7 +37,7 @@ export type ResolvedLink =
 	| null;
 
 /**
- * URL for a polymorphic document reference (`home`, `page`). Returns
+ * URL for a polymorphic document reference (`home`, `page`, `project`). Returns
  * `undefined` for unknown ref shapes so callers can skip rendering the link.
  *
  * Pass `locale` to prefix the path (e.g. `/de/about`); leave it undefined
@@ -48,6 +51,8 @@ export function resolveRefHref(
 	const prefix = options?.locale ? `/${options.locale}` : "";
 	if (ref._type === "home") return prefix || "/";
 	if (ref._type === "page" && ref.slug) return `${prefix}/${ref.slug}`;
+	if (ref._type === "project" && ref.slug)
+		return `${prefix}/projects/${ref.slug}`;
 	return undefined;
 }
 

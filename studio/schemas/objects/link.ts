@@ -1,6 +1,7 @@
 import { LinkIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import {
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
@@ -31,16 +32,17 @@ export const link = defineType({
     {
       title: "Title",
       name: "title",
-      type: "string",
+      type: "internationalizedArrayString",
       description:
         "If empty for internal links, the referenced document title is used where available. Required for external and function links.",
       validation: (rule) =>
         rule.custom((value, context) => {
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
-          const str = typeof value === "string" ? value : "";
-          if ((t === "external" || t === "function") && !str.trim()) {
-            return "This field is required";
+          if (t === "external" || t === "function") {
+            return firstLocalizedLabel(value, "")
+              ? true
+              : "Add a title in at least one language.";
           }
           return true;
         }),
@@ -108,12 +110,26 @@ export const link = defineType({
       referenceType: "reference._type",
       slug: "reference.slug.current",
       title: "title",
+      refTitle: "reference.title",
       type: "type",
       url: "url",
     },
     prepare(selection) {
-      const { funcKey, funcParams, referenceType, slug, title, type, url } =
-        selection;
+      const {
+        funcKey,
+        funcParams,
+        referenceType,
+        slug,
+        title,
+        refTitle,
+        type,
+        url,
+      } = selection;
+
+      const mainTitle =
+        firstLocalizedLabel(title, "") ||
+        firstLocalizedLabel(refTitle, "") ||
+        "Link";
 
       let subtitle = "";
 
@@ -122,6 +138,10 @@ export const link = defineType({
           subtitle = "→ /";
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
+        } else if (referenceType === "project" && slug) {
+          subtitle = `→ /projects/${slug}`;
+        } else if (referenceType === "work") {
+          subtitle = "→ /work";
         } else if (referenceType) {
           subtitle = `→ (${referenceType})`;
         } else {
@@ -136,7 +156,7 @@ export const link = defineType({
       }
 
       return {
-        title: title || referenceType || "Link",
+        title: mainTitle,
         subtitle,
       };
     },

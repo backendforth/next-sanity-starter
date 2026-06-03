@@ -1,23 +1,10 @@
-"use client";
-
 import type {
 	ModuleCarouselData,
 	ModuleMediaData,
 	ResolvedMediaPayload,
 } from "@/sanity/types/modules";
-import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import type { NormalizedSlide } from "./CarouselSlide";
-import { CarouselViewport } from "./CarouselViewport";
-
-type Props = {
-	module: ModuleCarouselData;
-	locale: string;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-};
-
-const DEFAULT_AUTOPLAY_DELAY_MS = 5000;
 
 function payloadKind(
 	payload: ResolvedMediaPayload | null | undefined,
@@ -46,8 +33,10 @@ function slideKind(
 	return payloadKind(payload);
 }
 
-/** Normalize the GROQ `resolvedSlides` into a single shape `CarouselSlide` understands. */
-function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
+/** Normalize GROQ `resolvedSlides` into the shape {@link CarouselSlide} expects. */
+export function normalizeCarouselSlides(
+	module: ModuleCarouselData,
+): NormalizedSlide[] {
 	const imagesOnly = module.imagesOnly !== false;
 
 	if (imagesOnly) {
@@ -131,35 +120,4 @@ function normalizeSlides(module: ModuleCarouselData): NormalizedSlide[] {
 			return null;
 		})
 		.filter((s): s is NormalizedSlide => s !== null);
-}
-
-/**
- * `module.carousel` renderer. Behavior fields (`loop`, `showThumbnails`, `showNavDots`,
- * `multipleSlides`, `autoplay`, `autoplayDelayMs`) come from Sanity and drive the embla viewport.
- */
-export function ModuleCarousel({ module, locale, siteLocale }: Props) {
-	const slides = normalizeSlides(module);
-	if (slides.length === 0) return null;
-
-	const heading = pickLocalizedString(module.heading, locale, siteLocale);
-
-	return (
-		<section className="flex flex-col">
-			{heading ? <h2 className="content-title">{heading}</h2> : null}
-			<CarouselViewport
-				slides={slides}
-				options={{
-					loop: module.loop === true,
-					showThumbnails: module.showThumbnails === true,
-					showNavDots: module.showNavDots !== false,
-					multipleSlides: module.multipleSlides === true,
-					autoplay: module.autoplay === true,
-					autoplayDelayMs:
-						typeof module.autoplayDelayMs === "number"
-							? module.autoplayDelayMs
-							: DEFAULT_AUTOPLAY_DELAY_MS,
-				}}
-			/>
-		</section>
-	);
 }

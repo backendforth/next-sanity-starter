@@ -17,6 +17,8 @@ import {
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { cn } from "@/src/utils/cn";
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 type SortMode = "newest" | "az";
 
 type CategoryOption = {
@@ -31,6 +33,8 @@ type Props = {
 	isProjectList: boolean;
 	showCategoryFilters: boolean;
 };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function targetTitle(
 	target: ModuleContentRefListItem,
@@ -89,6 +93,8 @@ function itemMatchesCategory(
 function ContentRefCardTitle({ label }: { label: string }) {
 	return <h4 className="heading-4 mt-xs mb-xs">{label}</h4>;
 }
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function ModuleContentRefsClient({
 	locale,

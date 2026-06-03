@@ -9,6 +9,7 @@ import type {
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+
 import { ModuleContentRefs } from "./ModuleContentRefs";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModulesRendererClient } from "./ModulesRendererClient";
@@ -22,7 +23,7 @@ import { ModuleText } from "./ModuleText";
  * static slide markup.
  */
 const ModuleCarousel = dynamic(() =>
-	import("@/src/components/carousel").then((m) => m.ModuleCarousel),
+	import("./ModuleCarousel").then((m) => m.ModuleCarousel),
 );
 
 // ─── Types ───────────────────────────────────────────────────────────────────

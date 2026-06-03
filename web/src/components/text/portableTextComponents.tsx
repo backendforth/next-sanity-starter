@@ -6,8 +6,10 @@ import type {
 	ModuleMediaData,
 } from "@/sanity/types/modules";
 import { type LinkMark, resolveLinkMark } from "@/sanity/utils/linkResolver";
-import { ModuleCarousel } from "@/src/components/carousel";
-import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
+import {
+	ModuleCarousel,
+	ModuleMedia,
+} from "@/src/components/modules";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 function LinkMarkRenderer({
@@ -78,7 +80,7 @@ export function portableTextMediaComponents({
 		types: {
 			"module.media": ({ value }) => (
 				<div className="rich-text-embed rich-text-embed-media min-w-0">
-					<ModuleMedia module={value as ModuleMediaData} />
+					<ModuleMedia module={value as ModuleMediaData} variant="embed" />
 				</div>
 			),
 			"module.carousel": ({ value }) => {
@@ -89,6 +91,7 @@ export function portableTextMediaComponents({
 							module={value as ModuleCarouselData}
 							locale={locale}
 							siteLocale={siteLocale}
+							variant="embed"
 						/>
 					</div>
 				);

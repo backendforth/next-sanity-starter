@@ -6,6 +6,12 @@ import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { contentRefTargetHref } from "@/src/utils/contentRefHref";
 
 import { ModuleContentRefsClient } from "./ModuleContentRefsClient";
+import {
+	moduleHeadingClassName,
+	moduleSectionClassName,
+} from "./moduleStyles";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
 	module: ModuleContentRefsData;
@@ -13,6 +19,9 @@ type Props = {
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
+// ─── Component ───────────────────────────────────────────────────────────────
+
+/** `module.contentRefs` — resolved reference list with optional project filters. */
 export function ModuleContentRefs({ module, locale, siteLocale }: Props) {
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 	const { localePath } = createLanguagePathUtils(siteLocale);
@@ -32,8 +41,8 @@ export function ModuleContentRefs({ module, locale, siteLocale }: Props) {
 	}
 
 	return (
-		<section className="flex flex-col border-b border-color-border-subtle pb-lg last:border-b-0 last:pb-0">
-			{heading ? <h2 className="content-title">{heading}</h2> : null}
+		<section className={moduleSectionClassName}>
+			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<ModuleContentRefsClient
 				locale={locale}
 				siteLocale={siteLocale}

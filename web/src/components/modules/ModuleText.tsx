@@ -4,7 +4,12 @@ import {
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import { RichTextMedia } from "../text/RichTextMedia";
+import { RichTextMedia } from "@/src/components/text/RichTextMedia";
+
+import {
+	moduleHeadingClassName,
+	moduleSectionClassName,
+} from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -16,6 +21,7 @@ type Props = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+/** `module.text` — optional title + localized rich text body (with embedded modules). */
 export function ModuleText({ module, locale, siteLocale }: Props) {
 	const title = pickLocalizedString(module.title, locale, siteLocale);
 	const blocks = pickLocalizedPortableTextBlocks(
@@ -25,8 +31,8 @@ export function ModuleText({ module, locale, siteLocale }: Props) {
 	);
 
 	return (
-		<article className="flex flex-col border-b border-color-border-subtle pb-lg last:border-b-0 last:pb-0">
-			{title ? <h2 className="content-title">{title}</h2> : null}
+		<article className={moduleSectionClassName}>
+			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
 			<RichTextMedia value={blocks} locale={locale} siteLocale={siteLocale} />
 		</article>
 	);

@@ -1,15 +1,22 @@
 /**
  * `siteNav` menu items after `linkQuery` expansion (see `sanity/queries/snippets/link.ts`).
  */
+import type { IntlStringEntry } from "../utils/sanityLocalizedText";
+
 export type NavLinkInternal = {
 	_key?: string;
 	_type: "link";
 	type: "internal";
 	linkType: "linkInternal";
-	title?: string | null;
+	title?: IntlStringEntry[] | string | null;
 	route?: string | null;
 	slug?: string | null;
-	resolvedReference?: { _type?: string | null; _id?: string | null } | null;
+	resolvedReference?: {
+		_type?: string | null;
+		_id?: string | null;
+		title?: IntlStringEntry[] | string | null;
+		slug?: string | null;
+	} | null;
 };
 
 export type NavLinkExternal = {
@@ -17,7 +24,7 @@ export type NavLinkExternal = {
 	_type: "link";
 	type: "external";
 	linkType: "linkExternal";
-	title?: string | null;
+	title?: IntlStringEntry[] | string | null;
 	href?: string | null;
 	blank?: boolean | null;
 };
@@ -27,7 +34,7 @@ export type NavLinkFunction = {
 	_type: "link";
 	type: "function";
 	linkType: "linkFunction";
-	title?: string | null;
+	title?: IntlStringEntry[] | string | null;
 	func?: { key?: string | null; params?: string | null } | null;
 };
 

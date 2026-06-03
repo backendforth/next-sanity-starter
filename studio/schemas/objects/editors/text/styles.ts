@@ -1,4 +1,6 @@
 import {
+  PtPreviewBigText,
+  PtPreviewH1,
   PtPreviewH2,
   PtPreviewH3,
   PtPreviewH4,
@@ -19,22 +21,32 @@ import {
  */
 export const portableTextStyles = [
   {
-    title: "Normal",
+    title: "Text (md)",
     value: "normal",
     component: PtPreviewNormal,
   },
   {
-    title: "Heading 2",
+    title: "Big text (2lg)",
+    value: "bigText",
+    component: PtPreviewBigText,
+  },
+  {
+    title: "Heading 1 (3lg)",
+    value: "h1",
+    component: PtPreviewH1,
+  },
+  {
+    title: "Heading 2 (3lg)",
     value: "h2",
     component: PtPreviewH2,
   },
   {
-    title: "Heading 3",
+    title: "Heading 3 (2lg)",
     value: "h3",
     component: PtPreviewH3,
   },
   {
-    title: "Heading 4",
+    title: "Heading 4 (lg)",
     value: "h4",
     component: PtPreviewH4,
   },
@@ -42,9 +54,11 @@ export const portableTextStyles = [
 
 /* Plain variant (no Studio preview components) — swap for `portableTextStyles` if needed:
 export const portableTextStyles = [
-  { title: "Normal", value: "normal" },
-  { title: "Heading 2", value: "h2" },
-  { title: "Heading 3", value: "h3" },
-  { title: "Heading 4", value: "h4" },
+  { title: "Text (md)", value: "normal" },
+  { title: "Big text (2lg)", value: "bigText" },
+  { title: "Heading 1 (xl)", value: "h1" },
+  { title: "Heading 2 (3lg)", value: "h2" },
+  { title: "Heading 3 (2lg)", value: "h3" },
+  { title: "Heading 4 (lg)", value: "h4" },
 ];
 */

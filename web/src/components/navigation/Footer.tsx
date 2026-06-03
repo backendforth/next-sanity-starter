@@ -1,4 +1,5 @@
 import type { NavMenuLink } from "@/sanity/types/nav";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { resolveFooterMenuRows } from "../../utils/navHref";
 import { NavItem } from "./NavItem";
@@ -9,12 +10,13 @@ type Props = {
 	locale: string;
 	footerMenu?: NavMenuLink[] | null;
 	pathUtils: Pick<LanguagePathUtils, "localePath">;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Footer({ locale, footerMenu, pathUtils }: Props) {
-	const rows = resolveFooterMenuRows(footerMenu, locale, pathUtils);
+export function Footer({ locale, footerMenu, pathUtils, siteLocale }: Props) {
+	const rows = resolveFooterMenuRows(footerMenu, locale, pathUtils, siteLocale);
 
 	if (rows.length === 0) {
 		return null;
@@ -28,11 +30,7 @@ export function Footer({ locale, footerMenu, pathUtils }: Props) {
 					aria-label="Footer"
 				>
 					{rows.map((row) => (
-						<NavItem
-							key={row.id}
-							row={row}
-							className="text-sm text-color-text-muted hover:text-color-link py-1"
-						/>
+						<NavItem key={row.id} row={row} className="text-color-text-muted" />
 					))}
 				</nav>
 			</div>

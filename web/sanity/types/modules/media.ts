@@ -9,7 +9,7 @@ export type ResolvedMediaPayload = {
 export type ModuleMediaData = {
 	_type: "module.media";
 	_key?: string;
-	type?: "image" | "video";
+	type?: "image" | "video" | "loop";
 	imageContent?: {
 		caption?: string | null;
 		image?: SanityImageField;
@@ -37,13 +37,33 @@ export type ModuleMediaData = {
 			asset?: SanityImageAssetRef | null;
 		} | null;
 	} | null;
+	videoLoopContent?: {
+		caption?: string | null;
+		allowUnmute?: boolean | null;
+		video?: {
+			asset?: {
+				playbackId?: string | null;
+				data?: {
+					playbackId?: string | null;
+					playback_ids?: Array<{ id?: string | null } | null> | null;
+				} | null;
+			} | null;
+		} | null;
+		media?: ResolvedMediaPayload | null;
+		poster?: {
+			crop?: unknown;
+			hotspot?: unknown;
+			asset?: SanityImageAssetRef | null;
+		} | null;
+	} | null;
 	resolvedMedia?: {
-		kind?: "image" | "video";
+		kind?: "image" | "video" | "loop";
 		caption?: string | null;
 		videoSettings?: {
 			autoplay?: boolean | null;
 			controls?: boolean | null;
 		} | null;
+		allowUnmute?: boolean | null;
 		media?: ResolvedMediaPayload | null;
 		poster?: SanityImageField | null;
 	} | null;

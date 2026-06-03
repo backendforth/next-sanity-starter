@@ -8,20 +8,34 @@ import {
 	errorSettingsQuery,
 	homeQuery,
 	pageBySlugQuery,
+	projectBySlugQuery,
 	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
+	workQuery,
 } from "./queries";
 import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
 import type { SiteNavMenusDocument } from "./types/nav";
-import type { HomeDocument, PageDocument, PageSeo } from "./types/pages";
+import type {
+	HomeDocument,
+	PageDocument,
+	PageSeo,
+	ProjectDocument,
+	WorkDocument,
+} from "./types/pages";
 import type { SiteCookieBannerDocument } from "./types/siteCookieBanner";
 import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
-export type { HomeDocument, PageDocument, PageSeo };
+export type {
+	HomeDocument,
+	PageDocument,
+	PageSeo,
+	ProjectDocument,
+	WorkDocument,
+};
 
 type LiveFetchOptions = {
 	stega?: boolean;
@@ -51,6 +65,32 @@ export const fetchPageBySlug = cache(
 			...options,
 		});
 		return data as PageDocument | null;
+	},
+);
+
+/** `work` landing — one doc per locale (doc-level i18n). */
+export const fetchWorkDocument = cache(
+	async (locale: string, options?: LiveFetchOptions) => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: workQuery,
+			params: { locale },
+			...options,
+		});
+		return data as WorkDocument | null;
+	},
+);
+
+/** Project detail by slug — one doc per locale. */
+export const fetchProjectBySlug = cache(
+	async (slug: string, locale: string, options?: LiveFetchOptions) => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: projectBySlugQuery,
+			params: { slug, locale },
+			...options,
+		});
+		return data as ProjectDocument | null;
 	},
 );
 

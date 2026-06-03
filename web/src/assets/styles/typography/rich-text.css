@@ -1,0 +1,99 @@
+/*
+ * Portable Text spacing + layout — imported after `tailwindcss` in globals.css
+ * so heading margins win over preflight (`h1–h6 { margin: 0 }`).
+ */
+
+.rich-text > p {
+	@apply text;
+	line-height: var(--line-height-body);
+	margin-bottom: var(--space-sm);
+	max-width: var(--measure-heading-4-text);
+}
+
+.rich-text a {
+	@apply underline decoration-color-link-decoration hover:text-color-hover;
+}
+
+.rich-text > p:last-child {
+	margin-bottom: 0;
+}
+
+.rich-text > p.big-text {
+	@apply big-text;
+	line-height: var(--line-height-big-text);
+}
+
+.rich-text > blockquote {
+	@apply quote-paragraph;
+	margin-bottom: var(--space-sm);
+	max-width: var(--measure-heading-4-text);
+}
+
+.rich-text > blockquote:last-child {
+	margin-bottom: 0;
+}
+
+.rich-text > h2.heading-1 {
+	margin-top: var(--space-xl);
+	margin-bottom: var(--space-md);
+}
+
+.rich-text > h2.heading-1:first-child {
+	margin-top: 0;
+}
+
+.rich-text > h2.heading-2 {
+	margin-top: var(--space-xl);
+	margin-bottom: var(--space-md);
+}
+
+.rich-text > h2.heading-2:first-child {
+	margin-top: 0;
+}
+
+.rich-text > h3.heading-3 {
+	margin-top: var(--space-lg);
+	margin-bottom: var(--space-sm);
+}
+
+.rich-text > h3.heading-3:first-child {
+	margin-top: 0;
+}
+
+.rich-text > h4.heading-4 {
+	margin-top: var(--space-md);
+	margin-bottom: var(--space-sm);
+}
+
+.rich-text > h4.heading-4:first-child {
+	margin-top: 0;
+}
+
+.rich-text code {
+	@apply code-inline rounded px-xs py-min;
+	color: var(--color-code-text);
+	background-color: var(--color-code-bg);
+}
+
+.rich-text > ul,
+.rich-text > ol {
+	@apply text;
+	line-height: var(--line-height-body);
+	margin-bottom: var(--space-md);
+	padding-left: calc(var(--space-sm) + var(--space-xs));
+	max-width: var(--measure-heading-4-text);
+}
+
+.rich-text > ul > li + li,
+.rich-text > ol > li + li {
+	margin-top: var(--space-min);
+}
+
+.rich-text .rich-text-embed {
+	margin-block: calc(var(--space-sm) + var(--space-xs));
+}
+
+.rich-text .rich-text-embed-media {
+	width: 100%;
+	max-width: var(--rich-text-media-max-width);
+}

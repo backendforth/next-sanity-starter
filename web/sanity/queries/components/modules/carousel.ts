@@ -11,6 +11,7 @@ export const moduleCarouselInnerFields = `
   loop,
   showThumbnails,
   showNavDots,
+  multipleSlides,
   autoplay,
   autoplayDelayMs,
   "slides": slides[]{

@@ -11,11 +11,13 @@ import {
 	homeQuery,
 	pageBySlugQuery,
 	pageSlugsQuery,
+	projectSlugsQuery,
 	siteLanguageSettingsQuery,
 	sitemapPagesQuery,
 } from "./queries";
 import type {
 	PageSlugsQueryResult,
+	ProjectSlugsQueryResult,
 	SitemapPagesQueryResult,
 } from "./sanity.types.gen";
 import type { HomeDocument, PageDocument } from "./types/pages";
@@ -43,6 +45,8 @@ export const SANITY_CACHE_TAGS = {
 	home: (locale: string) => `home-${locale}`,
 	pages: "pages",
 	pageSlug: (slug: string, locale: string) => `page-${slug}-${locale}`,
+	projects: "projects",
+	projectSlug: (slug: string, locale: string) => `project-${slug}-${locale}`,
 	sitemap: "site-pages",
 	siteLanguageSettings: "site-language-settings",
 } as const;
@@ -134,6 +138,22 @@ export const cachedPageSlugs = cache(
 	async (): Promise<PageSlugsQueryResult> => {
 		if (!isSanityConfigured) return [];
 		return (await fetchPageSlugsCached()) ?? [];
+	},
+);
+
+const fetchProjectSlugsCached = unstable_cache(
+	async () => client.fetch<ProjectSlugsQueryResult | null>(projectSlugsQuery),
+	["project-slugs"],
+	{
+		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
+		tags: [SANITY_CACHE_TAGS.projects],
+	},
+);
+
+export const cachedProjectSlugs = cache(
+	async (): Promise<ProjectSlugsQueryResult> => {
+		if (!isSanityConfigured) return [];
+		return (await fetchProjectSlugsCached()) ?? [];
 	},
 );
 

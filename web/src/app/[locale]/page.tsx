@@ -53,7 +53,10 @@ export async function generateMetadata({
 
 export default async function Home({ params }: PageProps) {
 	const { locale } = await params;
-	const data = await fetchHomeDocument(locale);
+	const [data, siteLocale] = await Promise.all([
+		fetchHomeDocument(locale),
+		fetchSiteLanguageSettings(),
+	]);
 
 	if (!data) {
 		return (
@@ -78,6 +81,8 @@ export default async function Home({ params }: PageProps) {
 							modules={data.modules}
 							documentId={data._id}
 							documentType="home"
+							locale={locale}
+							siteLocale={siteLocale}
 						/>
 					</section>
 				) : null}

@@ -42,6 +42,11 @@ export type MediaVideoProps = {
 	 * Optional override for Mux `accentColor` (progress / scrubber). Default `#262626`.
 	 */
 	accentColor?: string;
+	/**
+	 * Above-the-fold hint: starts loading the player bundle + HLS manifest immediately
+	 * (no `IntersectionObserver` wait, `preload="auto"`). Use for hero / LCP videos only.
+	 */
+	priority?: boolean;
 };
 
 /** Progress / scrubber accent — dark grey (Mux default is pink). */
@@ -59,7 +64,7 @@ function resolvePosterUrl(
 ): string {
 	const img = resolveSanityImageFieldForUrl(posterPayload);
 	if (img) {
-		const u = urlForFetchedImage(img, Math.min(thumbWidthPx, 1920));
+		const u = urlForFetchedImage(img, Math.min(thumbWidthPx, 3840));
 		if (u) return u;
 	}
 	return muxThumbnailUrl(playbackId, muxThumbnailTimeSec(media), {
@@ -76,6 +81,7 @@ export function MediaVideo({
 	fillParent = false,
 	aspectRatioOverride,
 	accentColor: accentColorProp,
+	priority = false,
 }: MediaVideoProps) {
 	const playbackId = extractMuxPlaybackId(media);
 	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
@@ -128,7 +134,8 @@ export function MediaVideo({
 			style={fillParent ? undefined : { aspectRatio: resolvedAspectRatio }}
 		>
 			<MuxPlayer
-				loading="viewport"
+				loading={priority ? "page" : "viewport"}
+				preload={priority ? "auto" : "metadata"}
 				streamType="on-demand"
 				playbackId={playbackId}
 				poster={posterUrl}
@@ -137,6 +144,21 @@ export function MediaVideo({
 				muted={autoplay}
 				playsInline
 				renditionOrder="desc"
+				/* Ceiling at 2160p — 4K available for capable devices on fast
+				 * connections; ABR + MuxPlayer's internal player-size cap land
+				 * most viewers at 1440p naturally. Floor at 1080p enforces a
+				 * "no visible degradation" policy: on a slow link the player
+				 * rebuffers at 1080p instead of dropping to 720p/540p. Quality
+				 * over instant-recovery — the loop player uses 540p floor
+				 * instead because autoplay there can't tolerate stalls. */
+				maxResolution="2160p"
+				minResolution="1080p"
+				/* Privacy + bytes: skip Mux Data analytics pings and the
+				 * associated cookies. We lose the Mux Data dashboard, but no
+				 * cookie banner is needed for video playback. Re-enable per
+				 * project if observability is wanted. */
+				disableTracking
+				disableCookies
 				metadataVideoTitle={videoTitle}
 				accentColor={accentColorProp ?? MUX_ACCENT}
 				primaryColor={MUX_PRIMARY}

@@ -38,9 +38,9 @@ export const link = defineType({
         rule.custom((value, context) => {
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
-          const str = typeof value === "string" ? value : "";
-          if ((t === "external" || t === "function") && !str.trim()) {
-            return "This field is required";
+          if (t === "external" || t === "function") {
+            const text = typeof value === "string" ? value.trim() : "";
+            return text ? true : "Add a title.";
           }
           return true;
         }),
@@ -108,12 +108,27 @@ export const link = defineType({
       referenceType: "reference._type",
       slug: "reference.slug.current",
       title: "title",
+      refTitle: "reference.title",
       type: "type",
       url: "url",
     },
     prepare(selection) {
-      const { funcKey, funcParams, referenceType, slug, title, type, url } =
-        selection;
+      const {
+        funcKey,
+        funcParams,
+        referenceType,
+        slug,
+        title,
+        refTitle,
+        type,
+        url,
+      } = selection;
+
+      const titleText =
+        typeof title === "string" && title.trim() ? title.trim() : "";
+      const refTitleText =
+        typeof refTitle === "string" && refTitle.trim() ? refTitle.trim() : "";
+      const mainTitle = titleText || refTitleText || "Link";
 
       let subtitle = "";
 
@@ -122,6 +137,10 @@ export const link = defineType({
           subtitle = "→ /";
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
+        } else if (referenceType === "project" && slug) {
+          subtitle = `→ /work/${slug}`;
+        } else if (referenceType === "work") {
+          subtitle = "→ /work";
         } else if (referenceType) {
           subtitle = `→ (${referenceType})`;
         } else {
@@ -136,7 +155,7 @@ export const link = defineType({
       }
 
       return {
-        title: title || referenceType || "Link",
+        title: mainTitle,
         subtitle,
       };
     },

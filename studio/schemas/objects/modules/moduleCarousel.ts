@@ -82,6 +82,15 @@ export const moduleCarousel = defineType({
       fieldset: "behavior",
     },
     {
+      name: "multipleSlides",
+      title: "Multiple slides",
+      description:
+        "Show several slides at once (equal height). Use the arrow buttons to move through the set.",
+      type: "boolean",
+      initialValue: false,
+      fieldset: "behavior",
+    },
+    {
       name: "autoplay",
       title: "Autoplay slides",
       description:

@@ -41,20 +41,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
-	// Parallelize: locale config (for validation + LanguageProvider) and nav
-	// menus are independent. The nav fetch for an invalid `raw` locale is wasted
-	// effort but the path is rare (404s only); the common case saves a roundtrip.
-	const [siteLocale, siteNav, cookieBanner] = await Promise.all([
-		fetchSiteLanguageSettings(),
-		fetchSiteNavMenus(raw),
-		fetchSiteCookieBanner(raw),
-	]);
+	const siteLocale = await fetchSiteLanguageSettings();
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
 	if (!pathUtils.isAppLocale(raw)) {
 		notFound();
 	}
 	const locale = raw;
+
+	// `siteLocale` is shared by all locales (single doc) — the per-locale fetches
+	// run in parallel once we know the locale is valid.
+	const [siteNav, cookieBanner, siteBrand] = await Promise.all([
+		fetchSiteNavMenus(locale),
+		fetchSiteCookieBanner(locale),
+		fetchSiteSettingsTitle(locale),
+	]);
 
 	return (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
@@ -64,7 +65,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 			>
 				{skipLinkLabel(locale)}
 			</a>
-			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteNav?.title} />
+			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteBrand} />
 			<main
 				id="main-content"
 				className="flex min-h-0 flex-1 flex-col"
@@ -76,6 +77,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				locale={locale}
 				footerMenu={siteNav?.footerMenu}
 				pathUtils={pathUtils}
+				siteLocale={siteLocale}
 			/>
 			<CookieConsentBanner doc={cookieBanner} locale={locale} />
 		</LanguageProvider>

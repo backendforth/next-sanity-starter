@@ -1,7 +1,6 @@
 import { LinkIcon } from "@sanity/icons";
 import { defineType } from "sanity";
 
-import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import {
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
@@ -32,7 +31,7 @@ export const link = defineType({
     {
       title: "Title",
       name: "title",
-      type: "internationalizedArrayString",
+      type: "string",
       description:
         "If empty for internal links, the referenced document title is used where available. Required for external and function links.",
       validation: (rule) =>
@@ -40,9 +39,8 @@ export const link = defineType({
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
           if (t === "external" || t === "function") {
-            return firstLocalizedLabel(value, "")
-              ? true
-              : "Add a title in at least one language.";
+            const text = typeof value === "string" ? value.trim() : "";
+            return text ? true : "Add a title.";
           }
           return true;
         }),
@@ -126,10 +124,11 @@ export const link = defineType({
         url,
       } = selection;
 
-      const mainTitle =
-        firstLocalizedLabel(title, "") ||
-        firstLocalizedLabel(refTitle, "") ||
-        "Link";
+      const titleText =
+        typeof title === "string" && title.trim() ? title.trim() : "";
+      const refTitleText =
+        typeof refTitle === "string" && refTitle.trim() ? refTitle.trim() : "";
+      const mainTitle = titleText || refTitleText || "Link";
 
       let subtitle = "";
 
@@ -139,7 +138,7 @@ export const link = defineType({
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
         } else if (referenceType === "project" && slug) {
-          subtitle = `→ /projects/${slug}`;
+          subtitle = `→ /work/${slug}`;
         } else if (referenceType === "work") {
           subtitle = "→ /work";
         } else if (referenceType) {

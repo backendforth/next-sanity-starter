@@ -82,7 +82,7 @@ function internalHref(
 		return localePath("/work", locale);
 	}
 	if (refType === "project" && slug.length > 0) {
-		return localePath(`/projects/${slug}`, locale);
+		return localePath(`/work/${slug}`, locale);
 	}
 	if (slug.length > 0) {
 		return localePath(`/${slug}`, locale);

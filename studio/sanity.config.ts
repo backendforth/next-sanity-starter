@@ -31,6 +31,9 @@ import { schemaTypes } from "./schemas";
 const TRANSLATABLE_SCHEMA_TYPES = [
   "home",
   "page",
+  "work",
+  "project",
+  "projectCategory",
   "errorSettings",
   "siteNav",
   "siteSettings",

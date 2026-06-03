@@ -7,12 +7,15 @@ import type {
 
 import {
   DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW,
+  PREFIXED_SLUG_DOCUMENT_TYPES,
   PRESENTATION_LOCATIONS_HEADER,
+  PROJECT_URL_PREFIX,
   SITE_ROOT_DOCUMENT_TYPES,
   SLUG_BASED_DOCUMENT_TYPES,
 } from "./conventions";
 
 const SLUG_TYPE_SET = new Set<string>(SLUG_BASED_DOCUMENT_TYPES);
+const PREFIXED_SLUG_TYPE_SET = new Set<string>(PREFIXED_SLUG_DOCUMENT_TYPES);
 
 const SLUG_QUERY = `*[_id in $ids][0]{ "slug": slug.current, language }`;
 
@@ -21,11 +24,24 @@ const SLUG_QUERY = `*[_id in $ids][0]{ "slug": slug.current, language }`;
  * path — the web app's `proxy.ts` redirects the default-locale prefix to the
  * canonical unprefixed URL, so Presentation lands in the right place either way.
  */
-function localizedPath(slug: string, language?: string | null): string {
+function localizedSlugPath(
+  slug: string,
+  language?: string | null,
+  prefix = "",
+): string {
   const lang = typeof language === "string" ? language.trim() : "";
-  if (!lang) return `/${slug}`;
-  return `/${lang}/${slug}`;
+  const base = `${prefix}/${slug}`;
+  if (!lang) return base;
+  return `/${lang}${base}`;
 }
+
+function localizedFixedPath(path: string, language?: string | null): string {
+  const lang = typeof language === "string" ? language.trim() : "";
+  if (!lang) return path;
+  return `/${lang}${path}`;
+}
+
+const WORK_INDEX_QUERY = `*[_id in $ids][0]{ language }`;
 
 /**
  * Types that need fully custom locations (no convention).
@@ -48,7 +64,8 @@ function staticLocationsForType(
 
 /**
  * Central Presentation `resolve.locations`: overrides → site-root singletons →
- * slug-based (from `SLUG_BASED_DOCUMENT_TYPES` or any doc with `slug.current`).
+ * work landing → slug-based (from `SLUG_BASED_DOCUMENT_TYPES` /
+ * `PREFIXED_SLUG_DOCUMENT_TYPES` or any doc with `slug.current`).
  */
 export const presentationLocationsResolver: DocumentLocationResolver = (
   params,
@@ -81,6 +98,26 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
     new Set([getPublishedId(id), getDraftId(id)].map(String)),
   );
 
+  if (type === "work") {
+    return context.documentStore
+      .listenQuery(WORK_INDEX_QUERY, { ids }, { perspective: "drafts" })
+      .pipe(
+        map((doc: { language?: string | null } | null) => {
+          const workPath = localizedFixedPath(
+            PROJECT_URL_PREFIX,
+            doc?.language,
+          );
+          return {
+            message: PRESENTATION_LOCATIONS_HEADER,
+            locations: [
+              { title: workPath, href: workPath },
+              { title: "Home", href: "/" },
+            ],
+          };
+        }),
+      );
+  }
+
   return context.documentStore
     .listenQuery(SLUG_QUERY, { ids }, { perspective: "drafts" })
     .pipe(
@@ -89,12 +126,27 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
         const slug = typeof rawSlug === "string" ? rawSlug.trim() : "";
 
         if (slug) {
-          const path = localizedPath(slug, doc?.language);
+          const prefix = PREFIXED_SLUG_TYPE_SET.has(type)
+            ? PROJECT_URL_PREFIX
+            : "";
+          const path = localizedSlugPath(slug, doc?.language, prefix);
           return {
             message: PRESENTATION_LOCATIONS_HEADER,
             locations: [
               { title: path, href: path },
               { title: "Home", href: "/" },
+            ],
+          };
+        }
+
+        if (PREFIXED_SLUG_TYPE_SET.has(type)) {
+          return {
+            message: PRESENTATION_LOCATIONS_HEADER,
+            locations: [
+              {
+                title: "Project (set path first)",
+                href: PROJECT_URL_PREFIX,
+              },
             ],
           };
         }

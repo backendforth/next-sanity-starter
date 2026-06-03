@@ -50,7 +50,7 @@ export type RichTextMedia = Array<
         _type: "span";
         _key: string;
       }>;
-      style?: "normal" | "h2" | "h3" | "h4";
+      style?: "normal" | "bigText" | "h1" | "h2" | "h3" | "h4";
       listItem?: "bullet" | "number";
       markDefs?: Array<
         {
@@ -76,7 +76,7 @@ export type RichText = Array<{
     _type: "span";
     _key: string;
   }>;
-  style?: "normal" | "h2" | "h3" | "h4";
+  style?: "normal" | "bigText" | "h1" | "h2" | "h3" | "h4";
   listItem?: "bullet" | "number";
   markDefs?: Array<
     {
@@ -108,19 +108,28 @@ export type PageReference = {
   [internalGroqTypeReferenceTo]?: "page";
 };
 
+export type ProjectReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "project";
+};
+
 export type ModuleContentRefs = {
   _type: "module.contentRefs";
   heading?: string;
-  allowMultiple?: boolean;
-  reference?: HomeReference | PageReference;
-  references?: ArrayOf<HomeReference | PageReference>;
+  sourceScope: "all" | "pages" | "projects";
+  showProjectFilters?: boolean;
+  selection: "all" | "selected";
+  references?: ArrayOf<HomeReference | PageReference | ProjectReference>;
 };
 
 export type ModuleMedia = {
   _type: "module.media";
-  type: "image" | "video";
+  type: "image" | "video" | "loop";
   imageContent?: MediaImage;
   videoContent?: MediaVideo;
+  videoLoopContent?: MediaVideoLoop;
 };
 
 export type SanityImageAssetReference = {
@@ -150,8 +159,23 @@ export type ModuleCarousel = {
   loop?: boolean;
   showThumbnails?: boolean;
   showNavDots?: boolean;
+  multipleSlides?: boolean;
   autoplay?: boolean;
   autoplayDelayMs?: number;
+};
+
+export type MediaVideoLoop = {
+  _type: "media.videoLoop";
+  video?: MuxVideo;
+  poster?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  allowUnmute?: boolean;
+  caption?: string;
 };
 
 export type MediaVideo = {
@@ -228,7 +252,7 @@ export type SeoPage = {
 
 export type LinkFunctions = {
   _type: "linkFunctions";
-  key: "scroll-to" | "open-modal";
+  key: "scroll-to" | "open-modal" | "open-cookie-preferences";
   params?: string;
 };
 
@@ -247,6 +271,20 @@ export type InternationalizedArrayReference = Array<
     _key: string;
   } & InternationalizedArrayReferenceValue
 >;
+
+export type WorkReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "work";
+};
+
+export type ProjectCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "projectCategory";
+};
 
 export type ErrorSettingsReference = {
   _ref: string;
@@ -281,6 +319,9 @@ export type InternationalizedArrayReferenceValue = {
   value?:
     | HomeReference
     | PageReference
+    | WorkReference
+    | ProjectReference
+    | ProjectCategoryReference
     | ErrorSettingsReference
     | SiteNavReference
     | SiteSettingsReference
@@ -393,6 +434,66 @@ export type ErrorSettings = {
   serverErrorBody?: RichText;
 };
 
+export type ProjectCategory = {
+  _id: string;
+  _type: "projectCategory";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title: string;
+};
+
+export type Project = {
+  _id: string;
+  _type: "project";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title: string;
+  titleMedia: ModuleMedia;
+  categories?: Array<
+    {
+      _key: string;
+    } & ProjectCategoryReference
+  >;
+  slug: Slug;
+  body?: RichTextMedia;
+  seo?: SeoPage;
+};
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
+};
+
+export type Work = {
+  _id: string;
+  _type: "work";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title: string;
+  modules?: Array<
+    | ({
+        _key: string;
+      } & ModuleMedia)
+    | ({
+        _key: string;
+      } & ModuleCarousel)
+    | ({
+        _key: string;
+      } & ModuleContentRefs)
+    | ({
+        _key: string;
+      } & ModuleText)
+  >;
+  seo?: SeoPage;
+};
+
 export type Page = {
   _id: string;
   _type: "page";
@@ -417,12 +518,6 @@ export type Page = {
       } & ModuleText)
   >;
   seo?: SeoPage;
-};
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
 };
 
 export type Home = {
@@ -667,10 +762,12 @@ export type AllSanitySchemaTypes =
   | ModuleText
   | HomeReference
   | PageReference
+  | ProjectReference
   | ModuleContentRefs
   | ModuleMedia
   | SanityImageAssetReference
   | ModuleCarousel
+  | MediaVideoLoop
   | MediaVideo
   | MediaImage
   | NavThemeToggle
@@ -681,6 +778,8 @@ export type AllSanitySchemaTypes =
   | LinkFunctions
   | TranslationMetadata
   | InternationalizedArrayReference
+  | WorkReference
+  | ProjectCategoryReference
   | ErrorSettingsReference
   | SiteNavReference
   | SiteSettingsReference
@@ -693,8 +792,11 @@ export type AllSanitySchemaTypes =
   | SanityImageHotspot
   | SiteNav
   | ErrorSettings
-  | Page
+  | ProjectCategory
+  | Project
   | Slug
+  | Work
+  | Page
   | Home
   | MuxVideoAssetReference
   | MuxVideo

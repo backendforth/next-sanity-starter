@@ -8,6 +8,8 @@ import type {
 } from "@/sanity/types/modules";
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { ModuleContentRefs } from "./ModuleContentRefs";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModulesRendererClient } from "./ModulesRendererClient";
 import { ModuleText } from "./ModuleText";
@@ -20,10 +22,17 @@ import { ModuleText } from "./ModuleText";
  * static slide markup.
  */
 const ModuleCarousel = dynamic(() =>
-	import("@/src/components/carousel").then((m) => m.ModuleCarousel),
+	import("./ModuleCarousel").then((m) => m.ModuleCarousel),
 );
 
-type Props = {
+type ModuleContextProps = {
+	/** Active route locale id — required for `module.contentRefs` href building. */
+	locale: string;
+	/** Site locale config — required for `module.contentRefs` href building. */
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+};
+
+type Props = ModuleContextProps & {
 	modules: ContentModule[];
 	/** Document `_id` of the page rendering these modules. Used to mark each
 	 * module as Presentation-tool clickable via `data-sanity`. */
@@ -33,29 +42,6 @@ type Props = {
 };
 
 const IS_DEV = process.env.NODE_ENV === "development";
-
-function ModuleContentRefsPlaceholder({
-	module,
-}: {
-	module: ModuleContentRefsData;
-}) {
-	if (!IS_DEV) return null;
-	const heading = module.heading?.trim() ?? "";
-	const refCount = module.allowMultiple
-		? (module.references?.length ?? 0)
-		: module.reference
-			? 1
-			: 0;
-	return (
-		<div className="rounded-md border border-dashed border-color-border-subtle p-4 text-sm text-color-text-muted">
-			<strong className="block">module.contentRefs</strong>
-			{heading ? <span className="block">heading: {heading}</span> : null}
-			<span className="block">
-				references: {refCount} (no frontend renderer yet)
-			</span>
-		</div>
-	);
-}
 
 function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	if (!IS_DEV) {
@@ -75,7 +61,7 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	);
 }
 
-function renderModuleChild(mod: ContentModule) {
+function renderModuleChild(mod: ContentModule, ctx: ModuleContextProps) {
 	if (mod._type === "module.text") {
 		return <ModuleText module={mod as ModuleTextData} />;
 	}
@@ -87,7 +73,11 @@ function renderModuleChild(mod: ContentModule) {
 	}
 	if (mod._type === "module.contentRefs") {
 		return (
-			<ModuleContentRefsPlaceholder module={mod as ModuleContentRefsData} />
+			<ModuleContentRefs
+				module={mod as ModuleContentRefsData}
+				locale={ctx.locale}
+				siteLocale={ctx.siteLocale}
+			/>
 		);
 	}
 	return <UnknownModule moduleType={mod._type} />;
@@ -115,17 +105,24 @@ function renderModuleChild(mod: ContentModule) {
  * Production data from Sanity always carries `_key`s; this branch is only for
  * legacy edge cases.
  */
-export function ModulesRenderer({ modules, documentId, documentType }: Props) {
+export function ModulesRenderer({
+	modules,
+	documentId,
+	documentType,
+	locale,
+	siteLocale,
+}: Props) {
 	const containerSanityAttr = dataAttr({
 		id: documentId,
 		type: documentType,
 		path: "modules",
 	});
+	const ctx: ModuleContextProps = { locale, siteLocale };
 	const initialModules = modules.map((mod, index) => {
 		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
 		return {
 			_key: key,
-			rendered: renderModuleChild(mod),
+			rendered: renderModuleChild(mod, ctx),
 		};
 	});
 

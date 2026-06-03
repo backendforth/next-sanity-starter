@@ -8,6 +8,8 @@ export {
 } from "./components/modules";
 export { homeQuery } from "./pages/home";
 export { pageBySlugQuery } from "./pages/page";
+export { projectBySlugQuery } from "./pages/project";
+export { workQuery } from "./pages/work";
 export { linkQuery } from "./snippets/link";
 export {
 	imageQuery,
@@ -29,4 +31,8 @@ export {
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 } from "./snippets/settings";
-export { pageSlugsQuery, sitemapPagesQuery } from "./snippets/sitemap";
+export {
+	pageSlugsQuery,
+	projectSlugsQuery,
+	sitemapPagesQuery,
+} from "./snippets/sitemap";

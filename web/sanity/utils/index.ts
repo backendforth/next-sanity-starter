@@ -6,7 +6,10 @@ export {
 	resolveLinkMark,
 	resolveRefHref,
 } from "./linkResolver";
-export { resolveLinkLabel, type ResolveLinkLabelInput } from "./resolveLinkLabel";
+export {
+	type ResolveLinkLabelInput,
+	resolveLinkLabel,
+} from "./resolveLinkLabel";
 export * from "./sanityImageBuilder";
 export {
 	type IntlRichTextEntry,

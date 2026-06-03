@@ -16,12 +16,7 @@ type Props = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Footer({ locale, footerMenu, pathUtils, siteLocale }: Props) {
-	const rows = resolveFooterMenuRows(
-		footerMenu,
-		locale,
-		pathUtils,
-		siteLocale,
-	);
+	const rows = resolveFooterMenuRows(footerMenu, locale, pathUtils, siteLocale);
 
 	if (rows.length === 0) {
 		return null;
@@ -35,11 +30,7 @@ export function Footer({ locale, footerMenu, pathUtils, siteLocale }: Props) {
 					aria-label="Footer"
 				>
 					{rows.map((row) => (
-						<NavItem
-							key={row.id}
-							row={row}
-							className="text-color-text-muted"
-						/>
+						<NavItem key={row.id} row={row} className="text-color-text-muted" />
 					))}
 				</nav>
 			</div>

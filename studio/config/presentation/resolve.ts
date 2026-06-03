@@ -14,10 +14,14 @@ const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
  * locales under `/:locale/…`. We register both shapes for every routable type
  * so editing any language variant lands on the right document:
  *
- * - `/`              → default-locale `home`
- * - `/:locale`       → `home` filtered by `language`
- * - `/:slug`         → default-locale slugged doc
- * - `/:locale/:slug` → slugged doc filtered by `language`
+ * - `/`                   → default-locale `home`
+ * - `/:locale`            → `home` filtered by `language`
+ * - `/work`               → default-locale `work` landing
+ * - `/:locale/work`       → `work` landing filtered by `language`
+ * - `/work/:slug`         → default-locale `project`
+ * - `/:locale/work/:slug` → `project` filtered by `language`
+ * - `/:slug`              → default-locale slugged doc
+ * - `/:locale/:slug`      → slugged doc filtered by `language`
  *
  * Note: the default-locale routes do not constrain `language` because we don't
  * know the default at config-load time (it lives in `siteLanguageSettings`).
@@ -27,6 +31,19 @@ const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
 export const presentationMainDocuments = defineDocuments([
   { route: "/", type: "home" },
   { route: "/:locale", filter: `_type == "home" && language == $locale` },
+  { route: "/work", type: "work" },
+  {
+    route: "/:locale/work",
+    filter: `_type == "work" && language == $locale`,
+  },
+  {
+    route: "/work/:slug",
+    filter: `_type == "project" && slug.current == $slug`,
+  },
+  {
+    route: "/:locale/work/:slug",
+    filter: `_type == "project" && slug.current == $slug && language == $locale`,
+  },
   ...(SLUG_BASED_DOCUMENT_TYPES.length > 0
     ? [
         {

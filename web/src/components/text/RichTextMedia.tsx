@@ -1,26 +1,9 @@
-import { PortableText, type PortableTextComponents } from "@portabletext/react";
+import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import type { LinkMark } from "@/sanity/utils/linkResolver";
 
-import type {
-	ModuleCarouselData,
-	ModuleMediaData,
-} from "@/sanity/types/modules";
-import { type LinkMark, resolveLinkMark } from "@/sanity/utils/linkResolver";
-import { ModuleCarousel } from "@/src/components/carousel";
-import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-
-/**
- * **Source of truth for body copy in the app** matches Studio schema **`richTextMedia`**
- * (`internationalizedArrayRichTextMedia` on `module.text`, etc.): blocks + embedded `module.*`.
- *
- * Plain **`richText`** (blocks only, no media modules) exists in Studio as an optional fallback;
- * it is not wired in the UI yet — add a separate renderer if you introduce fields that use it.
- */
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+import { portableTextMediaComponents } from "./portableTextComponents";
 
 /** @deprecated Import `LinkMark` from `@/sanity/utils/linkResolver` instead. */
 export type RichTextMediaLinkMark = LinkMark;
@@ -28,124 +11,23 @@ export type RichTextMediaLinkMark = LinkMark;
 type RichTextMediaProps = {
 	value: PortableTextBlock[];
 	className?: string;
-	/** Required when rich text bodies may embed `module.carousel` (localized heading). */
-	locale?: string;
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function LinkMarkRenderer({
-	children,
-	value,
-}: {
-	children?: ReactNode;
-	value?: LinkMark;
-}) {
-	const resolved = resolveLinkMark(value);
-	if (!resolved) {
-		return <>{children}</>;
-	}
-	if (resolved.kind === "function") {
-		return (
-			<span className="cursor-default underline decoration-dotted decoration-color-link-decoration">
-				{children}
-			</span>
-		);
-	}
-	return (
-		<a href={resolved.href} target={resolved.target} rel={resolved.rel}>
-			{children}
-		</a>
-	);
-}
-
-// ─── Portable Text configuration ─────────────────────────────────────────────
-
-function portableTextComponents({
-	locale,
-	siteLocale,
-}: {
-	locale?: string;
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-}): Partial<PortableTextComponents> {
-	return {
-		block: {
-			normal: ({ children }) => <p className="text">{children}</p>,
-			bigText: ({ children }) => <p className="big-text">{children}</p>,
-			h1: ({ children }) => (
-				<h1 className="rich-text-heading-sans">{children}</h1>
-			),
-			h2: ({ children }) => (
-				<h2 className="rich-text-heading-sans">{children}</h2>
-			),
-			h3: ({ children }) => <h3 className="heading-3">{children}</h3>,
-			h4: ({ children }) => <h4 className="heading-4">{children}</h4>,
-		},
-		list: {
-			bullet: ({ children }) => <ul>{children}</ul>,
-			number: ({ children }) => <ol>{children}</ol>,
-		},
-		listItem: {
-			bullet: ({ children }) => <li>{children}</li>,
-			number: ({ children }) => <li>{children}</li>,
-		},
-		marks: {
-			strong: ({ children }) => <strong className="font-mono">{children}</strong>,
-			em: ({ children }) => <em className="font-mono italic">{children}</em>,
-			code: ({ children }) => <code>{children}</code>,
-			link: ({ children, value }) => (
-				<LinkMarkRenderer value={value as LinkMark}>
-					{children}
-				</LinkMarkRenderer>
-			),
-		},
-		types: {
-			"module.media": ({ value }) => (
-				<div className="rich-text-embed w-full min-w-0">
-					<ModuleMedia module={value as ModuleMediaData} />
-				</div>
-			),
-			"module.carousel": ({ value }) => {
-				if (!locale || !siteLocale) return null;
-				return (
-					<div className="rich-text-embed w-full min-w-0">
-						<ModuleCarousel
-							module={value as ModuleCarouselData}
-							locale={locale}
-							siteLocale={siteLocale}
-						/>
-					</div>
-				);
-			},
-		},
-	};
-}
-
-// ─── Component ───────────────────────────────────────────────────────────────
-
 /**
- * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.media`).
- * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields.
+ * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.*`).
+ * Document-level variant: the document is already in one locale, so this renderer
+ * takes no locale/siteLocale props.
  */
-export function RichTextMedia({
-	value,
-	className,
-	locale,
-	siteLocale,
-}: RichTextMediaProps) {
+export function RichTextMedia({ value, className }: RichTextMediaProps) {
 	if (!value.length) return null;
-	const components = portableTextComponents({ locale, siteLocale });
+
 	return (
 		<div
-			className={clsx(
-				"rich-text rich-text-media w-full min-w-0 [&_.rich-text-embed]:max-w-none",
-				className,
-			)}
+			className={clsx("rich-text rich-text-media w-full min-w-0", className)}
 		>
 			<PortableText
 				value={value}
-				components={components}
+				components={portableTextMediaComponents()}
 				onMissingComponent={false}
 			/>
 		</div>

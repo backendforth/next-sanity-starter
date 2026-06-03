@@ -3,7 +3,13 @@ import type { Metadata } from "next";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
-import type { HomeDocument, PageDocument, PageSeo } from "../types/pages";
+import type {
+	HomeDocument,
+	PageDocument,
+	PageSeo,
+	ProjectDocument,
+	WorkDocument,
+} from "../types/pages";
 
 const SITE_BASE_URL = (
 	process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
@@ -124,8 +130,8 @@ export function resolveSanityMetadata({
 }
 
 export type MetadataFromSanityPageDataInput = {
-	/** Route document (home singleton or `page` by slug). */
-	data: HomeDocument | PageDocument;
+	/** Route document (home / work singletons or `page` / `project` by slug). */
+	data: HomeDocument | PageDocument | WorkDocument | ProjectDocument;
 	/** Active route locale id. */
 	locale: string;
 	/** Last-resort meta title (e.g. localized heading or slug) when SEO fields are empty. */

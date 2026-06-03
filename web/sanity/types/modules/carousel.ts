@@ -8,6 +8,7 @@ export type ModuleCarouselData = {
 	loop?: boolean | null;
 	showThumbnails?: boolean | null;
 	showNavDots?: boolean | null;
+	multipleSlides?: boolean | null;
 	autoplay?: boolean | null;
 	autoplayDelayMs?: number | null;
 	/** Image slides: each slide has `media` from `mediaQuery` (kind + payload). */

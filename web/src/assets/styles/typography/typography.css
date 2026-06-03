@@ -13,9 +13,27 @@ html {
 	}
 }
 
-/* xs — tags */
+/* ─── Utilities ─────────────────────────────────────────────────────────────
+ * RT scale: H1–H2 + big-text → Geist Sans regular · H3–H4 → Geist Mono semibold.
+ */
+
+/* md — main menu links + site title (Geist Sans regular) */
+@utility nav-menu {
+	@apply font-normal font-text not-italic;
+	font-size: var(--font-size-md);
+	line-height: var(--line-height-md);
+}
+
+/* xs — language switch, theme toggle (Geist Sans regular) */
+@utility nav-label {
+	@apply font-normal font-text not-italic;
+	font-size: var(--font-size-xs);
+	line-height: var(--line-height-xs);
+}
+
+/* xs — tags (mono semibold) */
 @utility tag {
-	@apply font-normal font-mono not-italic;
+	@apply font-semibold font-mono not-italic;
 	font-size: var(--font-size-xs);
 	line-height: var(--line-height-xs);
 }
@@ -27,22 +45,27 @@ html {
 	line-height: var(--line-height-sm);
 }
 
-/* Inline code — 90% of parent text size (not the sm scale) */
+/* Inline code — 80% of parent; no hyphenation, no line breaks (incl. at `-`). */
 @utility code-inline {
 	@apply font-normal font-mono not-italic;
-	font-size: 0.9em;
+	font-size: 0.8em;
 	line-height: inherit;
+	hyphens: none;
+	white-space: nowrap;
+	overflow-wrap: normal;
+	word-break: normal;
 }
 
-/* md — body text & buttons */
+/* md — body text */
 @utility text {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-md);
 	line-height: var(--line-height-md);
 }
 
+/* md — buttons (mono semibold) */
 @utility text-button {
-	@apply font-bold font-mono not-italic;
+	@apply font-semibold font-mono not-italic;
 	font-size: var(--font-size-md);
 	line-height: var(--line-height-md);
 }
@@ -54,60 +77,70 @@ html {
 	line-height: var(--line-height-lg);
 }
 
-/* 2lg — rich-text h3 */
-@utility heading-3 {
-	@apply font-semibold font-mono not-italic;
-	font-size: var(--font-size-2lg);
-	line-height: var(--line-height-2lg);
+/* lg — big text (Geist Sans regular) */
+@utility big-text {
+	@apply font-normal font-text not-italic;
+	font-size: var(--font-size-lg);
+	line-height: var(--line-height-lg);
+	max-width: var(--measure-heading-3-big);
 }
 
-/* 2lg — lead paragraph (p, h3 scale, Geist sans) */
-@utility big-text {
+/* ─── Headings (RT + module titles) ─────────────────────────────────────────
+ * 3lg heading-1 — RT “Heading 1” (same scale as content-title / page-title)
+ * 2lg heading-2 — RT “Heading 2”
+ * lg  heading-3 — RT “Heading 3” (Geist Mono semibold)
+ * md  heading-4 — RT “Heading 4” (Geist Mono semibold)
+ * md  text       — body
+ */
+
+/* 3lg — RT h1 / module title (Geist Sans regular) */
+@utility heading-1 {
+	@apply font-normal font-text not-italic;
+	font-size: var(--font-size-3lg);
+	line-height: var(--line-height-3lg);
+	max-width: var(--measure-heading-1-2);
+}
+
+/* 2lg — RT h2 (Geist Sans regular) */
+@utility heading-2 {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-2lg);
 	line-height: var(--line-height-2lg);
+	max-width: var(--measure-heading-1-2);
 }
 
-/* lg — rich-text h4 */
-@utility heading-4 {
+/* lg — RT h3 (Geist Mono semibold) */
+@utility heading-3 {
 	@apply font-semibold font-mono not-italic;
 	font-size: var(--font-size-lg);
 	line-height: var(--line-height-lg);
+	max-width: var(--measure-heading-3-big);
 }
 
-/*
- * CMS field titles — same scale as rich-text h2 (3lg), Geist sans only (not section-title mono).
- */
+/* md — RT h4 (Geist Mono semibold) */
+@utility heading-4 {
+	@apply font-semibold font-mono not-italic;
+	font-size: var(--font-size-md);
+	line-height: var(--line-height-md);
+	max-width: var(--measure-heading-4-text);
+}
+
+/* ─── CMS field titles (h2 outside rich text — always 3lg, Geist Sans regular) ─ */
+
 @utility content-title {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-3lg);
 	line-height: var(--line-height-3lg);
+	margin-bottom: var(--space-md);
+	max-width: var(--measure-heading-1-2);
 }
 
 @utility page-title {
-	@apply font-bold font-text not-italic;
+	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-3lg);
 	line-height: var(--line-height-3lg);
-}
-
-/* 3lg — rich-text h1 + h2 (Geist Sans, semibold) */
-@utility rich-text-heading-sans {
-	@apply font-semibold font-text not-italic;
-	font-size: var(--font-size-3lg);
-	line-height: var(--line-height-3lg);
-}
-
-/* Legacy — prefer rich-text-heading-sans in Portable Text */
-@utility heading-1 {
-	@apply rich-text-heading-sans;
-}
-
-@utility section-title {
-	@apply rich-text-heading-sans;
-}
-
-@utility heading-2 {
-	@apply rich-text-heading-sans;
+	margin-bottom: var(--space-md);
+	max-width: var(--measure-heading-1-2);
 }
 
 /* Legacy aliases (prefer semantic names above) */
@@ -123,14 +156,7 @@ html {
 	@apply page-title;
 }
 
-/* CMS field titles — force Geist sans + h2 scale (wins over mono heading utilities) */
-h1.page-title,
-h1.content-title,
-h2.content-title {
-	@apply font-text;
-	font-size: var(--font-size-3lg);
-	line-height: var(--line-height-3lg);
-}
+/* ─── Element defaults ────────────────────────────────────────────────────── */
 
 h5,
 h6 {
@@ -141,12 +167,8 @@ p {
 	@apply text;
 }
 
-:is(h1, h2, h3, h4, h5, h6, p):not(.page-title, .content-title) :is(strong, em, i) {
-	@apply font-mono;
-}
-
 a {
-	@apply font-bold underline hover:text-color-hover;
+	@apply font-semibold no-underline hover:text-color-hover;
 }
 
 small {
@@ -175,7 +197,9 @@ blockquote p {
 }
 
 code {
-	@apply rounded bg-color-code-bg text-color-code-text code-inline;
+	@apply code-inline rounded px-xs py-min;
+	color: var(--color-code-text);
+	background-color: var(--color-code-bg);
 }
 
 ul {
@@ -186,85 +210,58 @@ ol {
 	@apply list-decimal;
 }
 
-/* Portable Text (RichTextMedia and future rich-text renderers) */
-.rich-text > p {
-	@apply text;
-	margin-bottom: var(--space-sm);
+/* Bold / emphasis inside body text → Geist Mono semibold (single text accent face). */
+:is(p, li, blockquote, figcaption, small) :is(strong, b) {
+	@apply font-mono font-semibold;
 }
 
-.rich-text > p:last-child {
-	margin-bottom: 0;
+:is(p, li, blockquote, figcaption, small) :is(em, i) {
+	@apply font-mono italic;
+	font-weight: inherit;
 }
 
-.rich-text > p.big-text {
-	@apply big-text;
+/* Inside headings, inline emphasis inherits weight + family — single weight per heading. */
+:is(h1, h2, h3, h4, h5, h6) :is(strong, em, i, b) {
+	font-family: inherit;
+	font-weight: inherit;
 }
 
-.rich-text > blockquote {
-	@apply quote-paragraph;
-	margin-bottom: var(--space-sm);
+/* Rich text block spacing → typography/rich-text.css (after Tailwind in globals.css). */
+
+/* Header nav — beat global `a` / `button` element typography (semibold, text-button). */
+header nav a,
+header h1 a {
+	@apply nav-menu font-normal;
+	text-decoration-line: none;
 }
 
-.rich-text > blockquote:last-child {
-	margin-bottom: 0;
+footer nav a {
+	@apply nav-menu font-normal;
+	text-decoration-line: none;
 }
 
-.rich-text > h1 {
-	@apply rich-text-heading-sans;
-	margin-top: var(--space-lg);
-	margin-bottom: var(--space-sm);
+:is(header, footer) nav a[aria-current],
+header h1 a[aria-current] {
+	text-decoration-line: underline;
+	text-decoration-color: var(--color-link-decoration);
+	text-underline-offset: 0.25rem;
 }
 
-.rich-text > h1:first-child {
-	margin-top: 0;
+header nav [role="group"] button {
+	@apply tag no-underline;
 }
 
-.rich-text > h2 {
-	@apply rich-text-heading-sans;
-	margin-top: var(--space-md);
-	margin-bottom: calc(var(--space-xs) + var(--space-min));
+/* Content refs — category / sort filters (pill buttons, same as header utilities). */
+.content-refs-controls [role="group"] button {
+	@apply tag no-underline;
 }
 
-.rich-text > h2:first-child {
-	margin-top: 0;
+.content-refs-controls ul.content-refs-grid {
+	list-style: none;
+	margin: 0;
+	padding: 0;
 }
 
-.rich-text > h3 {
-	@apply heading-3;
-	margin-top: calc(var(--space-sm) + var(--space-xs));
-	margin-bottom: var(--space-xs);
-}
-
-.rich-text > h3:first-child {
-	margin-top: 0;
-}
-
-.rich-text > h4 {
-	@apply heading-4;
-	margin-top: var(--space-sm);
-	margin-bottom: var(--space-xs);
-}
-
-.rich-text > h4:first-child {
-	margin-top: 0;
-}
-
-.rich-text :not(pre) > code {
-	@apply code-inline rounded bg-color-code-bg text-color-code-text px-1.5 py-0.5;
-}
-
-.rich-text > ul,
-.rich-text > ol {
-	@apply text;
-	margin-bottom: var(--space-sm);
-	padding-left: calc(var(--space-sm) + var(--space-xs));
-}
-
-.rich-text > ul > li + li,
-.rich-text > ol > li + li {
-	margin-top: var(--space-min);
-}
-
-.rich-text .rich-text-embed {
-	margin-block: calc(var(--space-sm) + var(--space-xs));
+.content-refs-controls ul.content-refs-grid > li {
+	list-style: none;
 }

@@ -8,87 +8,87 @@
  */
 
 :root {
-	--pt-preview-font-text: "Geist", ui-sans-serif, system-ui, sans-serif;
-	--pt-preview-font-headline: "Geist Mono", ui-monospace, monospace;
-	--pt-preview-font-mono: "Geist Mono", ui-monospace, monospace;
+  --pt-preview-font-text: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --pt-preview-font-headline: "Geist Mono", ui-monospace, monospace;
+  --pt-preview-font-mono: "Geist Mono", ui-monospace, monospace;
 
-	--pt-font-size-md: 0.875rem;
-	--pt-font-size-lg: 1.125rem;
-	--pt-font-size-2lg: 1.5rem;
-	--pt-font-size-3lg: 1.75rem;
-	--pt-font-size-xl: 3.1875rem;
+  --pt-font-size-md: 0.875rem;
+  --pt-font-size-lg: 1.125rem;
+  --pt-font-size-2lg: 1.5rem;
+  --pt-font-size-3lg: 1.75rem;
+  --pt-font-size-xl: 3.1875rem;
 
-	--pt-line-height-md: 1.18125rem;
-	--pt-line-height-lg: 1.51875rem;
-	--pt-line-height-2lg: 2.025rem;
-	--pt-line-height-3lg: 2.3625rem;
-	--pt-line-height-xl: 4.303125rem;
+  --pt-line-height-md: 1.18125rem;
+  --pt-line-height-lg: 1.51875rem;
+  --pt-line-height-2lg: 2.025rem;
+  --pt-line-height-3lg: 2.3625rem;
+  --pt-line-height-xl: 4.303125rem;
 }
 
 @media (width >= 1440px) {
-	:root {
-		--pt-font-size-md: 1rem;
-		--pt-font-size-lg: 1.25rem;
-		--pt-font-size-2lg: 1.625rem;
-		--pt-font-size-3lg: 1.875rem;
-		--pt-font-size-xl: 6rem;
+  :root {
+    --pt-font-size-md: 1rem;
+    --pt-font-size-lg: 1.25rem;
+    --pt-font-size-2lg: 1.625rem;
+    --pt-font-size-3lg: 1.875rem;
+    --pt-font-size-xl: 6rem;
 
-		--pt-line-height-md: 1.35rem;
-		--pt-line-height-lg: 1.6875rem;
-		--pt-line-height-2lg: 2.19375rem;
-		--pt-line-height-3lg: 3.54375rem;
-		--pt-line-height-xl: 8.1rem;
-	}
+    --pt-line-height-md: 1.35rem;
+    --pt-line-height-lg: 1.6875rem;
+    --pt-line-height-2lg: 2.19375rem;
+    --pt-line-height-3lg: 3.54375rem;
+    --pt-line-height-xl: 8.1rem;
+  }
 }
 
 .pt-preview {
-	min-width: 0;
+  min-width: 0;
 }
 
 /* @utility text — body (md) */
 .pt-preview--normal {
-	font-family: var(--pt-preview-font-text);
-	font-weight: 400;
-	font-style: normal;
-	font-size: var(--pt-font-size-md);
-	line-height: var(--pt-line-height-md);
+  font-family: var(--pt-preview-font-text);
+  font-weight: 400;
+  font-style: normal;
+  font-size: var(--pt-font-size-md);
+  line-height: var(--pt-line-height-md);
 }
 
 /* @utility big-text — paragraph with h3 scale (2lg, Geist) */
 .pt-preview--big-text {
-	font-family: var(--pt-preview-font-text);
-	font-weight: 400;
-	font-style: normal;
-	font-size: var(--pt-font-size-2lg);
-	line-height: var(--pt-line-height-2lg);
+  font-family: var(--pt-preview-font-text);
+  font-weight: 400;
+  font-style: normal;
+  font-size: var(--pt-font-size-2lg);
+  line-height: var(--pt-line-height-2lg);
 }
 
 /* @utility rich-text-heading-sans — h1 + h2 (3lg, Geist Sans, semibold) */
 .pt-preview--h1,
 .pt-preview--h2 {
-	font-family: var(--pt-preview-font-text);
-	font-weight: 600;
-	font-style: normal;
-	font-size: var(--pt-font-size-3lg);
-	line-height: var(--pt-line-height-3lg);
+  font-family: var(--pt-preview-font-text);
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--pt-font-size-3lg);
+  line-height: var(--pt-line-height-3lg);
 }
 
 /* @utility heading-3 — h3 (2lg, Geist Mono, semibold) */
 .pt-preview--h3 {
-	font-family: var(--pt-preview-font-mono);
-	font-weight: 600;
-	font-style: normal;
-	font-size: var(--pt-font-size-2lg);
-	line-height: var(--pt-line-height-2lg);
+  font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--pt-font-size-2lg);
+  line-height: var(--pt-line-height-2lg);
 }
 
 /* @utility heading-4 — h4 (lg, Geist Mono, semibold) */
 .pt-preview--h4 {
-	font-family: var(--pt-preview-font-mono);
-	font-weight: 600;
-	font-style: normal;
-	font-size: var(--pt-font-size-lg);
-	line-height: var(--pt-line-height-lg);
+  font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--pt-font-size-lg);
+  line-height: var(--pt-line-height-lg);
 }
 
 .pt-preview--big-text :is(strong, em, i),
@@ -97,5 +97,5 @@
 .pt-preview--h3 :is(strong, em, i),
 .pt-preview--h4 :is(strong, em, i),
 .pt-preview--normal :is(strong, em, i) {
-	font-family: var(--pt-preview-font-mono);
+  font-family: var(--pt-preview-font-mono);
 }

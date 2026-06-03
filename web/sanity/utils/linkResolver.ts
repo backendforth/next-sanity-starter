@@ -51,8 +51,8 @@ export function resolveRefHref(
 	const prefix = options?.locale ? `/${options.locale}` : "";
 	if (ref._type === "home") return prefix || "/";
 	if (ref._type === "page" && ref.slug) return `${prefix}/${ref.slug}`;
-	if (ref._type === "project" && ref.slug)
-		return `${prefix}/projects/${ref.slug}`;
+	if (ref._type === "work") return `${prefix}/work`;
+	if (ref._type === "project" && ref.slug) return `${prefix}/work/${ref.slug}`;
 	return undefined;
 }
 

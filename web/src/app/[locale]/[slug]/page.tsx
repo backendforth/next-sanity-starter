@@ -64,7 +64,10 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const data = await fetchPageBySlug(slug, locale);
+	const [data, siteLocale] = await Promise.all([
+		fetchPageBySlug(slug, locale),
+		fetchSiteLanguageSettings(),
+	]);
 
 	if (!data) {
 		notFound();
@@ -80,6 +83,8 @@ export default async function Page({ params }: PageProps) {
 							modules={data.modules}
 							documentId={data._id}
 							documentType="page"
+							locale={locale}
+							siteLocale={siteLocale}
 						/>
 					</section>
 				) : null}

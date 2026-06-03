@@ -61,24 +61,14 @@ function LinkMarkRenderer({
 function portableTextComponents(): Partial<PortableTextComponents> {
 	return {
 		block: {
-			normal: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-			h2: ({ children }) => (
-				<h2 className="mb-3 mt-8 first:mt-0">{children}</h2>
-			),
-			h3: ({ children }) => (
-				<h3 className="mb-2 mt-6 first:mt-0">{children}</h3>
-			),
-			h4: ({ children }) => (
-				<h4 className="mb-2 mt-4 first:mt-0">{children}</h4>
-			),
+			normal: ({ children }) => <p>{children}</p>,
+			h2: ({ children }) => <h2>{children}</h2>,
+			h3: ({ children }) => <h3>{children}</h3>,
+			h4: ({ children }) => <h4>{children}</h4>,
 		},
 		list: {
-			bullet: ({ children }) => (
-				<ul className="mb-4 space-y-1 pl-6">{children}</ul>
-			),
-			number: ({ children }) => (
-				<ol className="mb-4 space-y-1 pl-6">{children}</ol>
-			),
+			bullet: ({ children }) => <ul>{children}</ul>,
+			number: ({ children }) => <ol>{children}</ol>,
 		},
 		listItem: {
 			bullet: ({ children }) => <li>{children}</li>,
@@ -96,12 +86,12 @@ function portableTextComponents(): Partial<PortableTextComponents> {
 		},
 		types: {
 			"module.media": ({ value }) => (
-				<div className="rich-text-embed my-6 w-full min-w-0">
+				<div className="rich-text-embed w-full min-w-0">
 					<ModuleMedia module={value as ModuleMediaData} />
 				</div>
 			),
 			"module.carousel": ({ value }) => (
-				<div className="rich-text-embed my-6 w-full min-w-0">
+				<div className="rich-text-embed w-full min-w-0">
 					<ModuleCarousel module={value as ModuleCarouselData} />
 				</div>
 			),
@@ -121,7 +111,7 @@ export function RichTextMedia({ value, className }: RichTextMediaProps) {
 	return (
 		<div
 			className={clsx(
-				"rich-text-media w-full min-w-0 [&_.rich-text-embed]:max-w-none",
+				"rich-text rich-text-media w-full min-w-0 [&_.rich-text-embed]:max-w-none",
 				className,
 			)}
 		>

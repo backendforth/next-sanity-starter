@@ -1,0 +1,30 @@
+import type { __MODULE_DATA_TYPE__ } from "@/sanity/types/modules";
+import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+
+import {
+	moduleHeadingClassName,
+	moduleSectionClassName,
+} from "./moduleStyles";
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type Props = {
+	module: __MODULE_DATA_TYPE__;
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+};
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+/** `__MODULE_NAME__` — TODO: describe what this module renders. */
+export function __MODULE_COMPONENT__({ module, locale, siteLocale }: Props) {
+	const title = pickLocalizedString(module.title, locale, siteLocale);
+
+	return (
+		<section className={moduleSectionClassName} data-sanity={module._key}>
+			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
+			{/* TODO: render the rest of the module data */}
+		</section>
+	);
+}

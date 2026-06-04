@@ -36,6 +36,11 @@ jobs:
       - name: Ensure formatter produced no changes
         run: git diff --exit-code
       - run: pnpm run typecheck
+      # Wiring drift between schema, component, query, and type files is a
+      # silent bug class — `pnpm gen:module` creates them atomically, but
+      # hand-edits routinely miss a file. This gate catches partial wirings
+      # before they reach main.
+      - run: pnpm run check:wiring
 
   schema-typegen:
     name: schema typegen

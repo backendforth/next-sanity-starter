@@ -1,53 +1,40 @@
 # studio/ — Claude Code subtree rules
 
-> Canonical: [`/AGENTS.md`](../AGENTS.md). This file scopes the Sanity Studio conventions.
+Canonical guardrails: @../AGENTS.md. This file only adds Studio-specific gotchas.
 
-## Stack
+## Studio quirks (non-obvious)
 
-- Sanity Studio v5.
-- Schemas under `schemas/` (`documents/`, `singletons/`, `settings/`, `objects/...`).
-- Structure (sidebar) under `config/structure/`; Presentation (Visual Editing) under `config/presentation/`.
-- Dataset resolution via `@repo/sanity-dataset-resolve` (`config/sync/studioDataset.ts`). Do not hand-roll dataset switching.
-- Biome override: 2-space indentation, double quotes.
+- Sanity Studio v5. Biome enforces **2 spaces + double quotes** in `studio/` (overriding the root tabs default).
+- `schemas/index.ts` is the gate — any new type is **invisible** to Studio and APIs until exported and added to `schemaTypes`. **YOU MUST** register every new schema there.
+- The sidebar does **NOT** auto-populate from `schemaTypes`. New document types need a structure item under `config/structure/items/` and registration in `config/structure/index.ts`.
+- `pnpm studio:generate` runs `sanity schema extract` AND `sanity typegen generate`. CI fails if either produces a diff. **Commit** `studio/schema.json` + `studio/sanity.types.gen.ts` in the same commit as the schema change.
+- Languages come from the `siteLanguageSettings` singleton at **runtime** (`config/sync/internationalizedArrayLanguages.ts`). Don't hard-code language lists in source.
 
-## Hard rules
+## Module pattern — Studio half
 
-1. **`schemas/index.ts` is the gate.** Any new type is invisible until exported and added to `schemaTypes`.
-2. **Module wiring touches three files.** When adding a `module.<id>`: the schema file, `schemas/index.ts`, `objects/editors/richTextMedia.ts`, AND `fields/modulesArrayField.ts`. Then run `pnpm studio:generate`. See `schemas/README.md` §8 for the canonical narrative.
-3. **Sidebar is manual.** New document types do NOT appear in the desk until you add an item under `config/structure/items/` and wire it into `config/structure/index.ts`. See `config/structure/README.md`.
-4. **Presentation wiring is explicit.** Routable types must be registered in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`) and resolved in `resolve.ts` / `locationsResolver.ts`.
-5. **i18n at field level.** Translatable fields use `internationalizedArrayString` / `internationalizedArrayRichText` / `internationalizedArrayRichTextMedia` from the plugin — never plain `string` for translatable content. Languages come from the `siteLanguageSettings` singleton via `config/sync/internationalizedArrayLanguages.ts`.
-6. **Reuse `media.*` objects.** `media.image`, `media.video`, `media.videoLoop` exist in `objects/media/` — compose them, do not redeclare image/video field shapes.
-7. **Slugs use `validateSlug`** from `utils/validateSlug.ts` on every URL-bearing slug field.
+The 8-step wiring is in @../AGENTS.md. The Studio half (steps 1–4) touches `schemas/objects/modules/`, `schemas/index.ts`, `objects/editors/richTextMedia.ts`, and `fields/modulesArrayField.ts`. **YOU MUST** keep `richTextMedia.ts` and `modulesArrayField.ts` in lockstep — they expose the same module set unless you have a documented reason to differ.
 
-## After schema changes (mandatory)
+Quickest path: `pnpm gen:module <Name>` from the repo root. See @../packages/scaffold-module/README.md for details.
 
-```bash
-pnpm studio:generate         # regenerates schema.json + sanity.types.gen.ts
-git add studio/schema.json studio/sanity.types.gen.ts
-pnpm typecheck
-```
+## Presentation / Web Preview
 
-CI fails if `studio:generate` produces a diff. Never hand-edit the gen artifacts.
+Routable types need explicit wiring in `config/presentation/`:
 
-## Adding a new language
+- `conventions.ts` — `SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`.
+- `resolve.ts` — `presentationMainDocuments` for non-`/:slug` routes.
+- `locationsResolver.ts` — custom paths / error pages.
 
-Edit the **Site Language Settings** singleton in the running Studio (or via API), not source code:
+Internal links use `PAGE_REFERENCES` (and `PROJECT_REFERENCES` on `main`) from `schemas/constants/references.ts`.
 
-- Append to `availableLanguages` (order = fallback priority).
-- Optionally set `defaultLanguageId`.
+## Reuse before invention
 
-Then update `web/src/i18n/fallbackSiteLocales.ts` for offline fallback. No schema, no query, no component change.
+- `media.image`, `media.video`, `media.videoLoop` already exist in `objects/media/`. **NEVER** redeclare image hotspot fields inline.
+- Slug fields use `validateSlug` from `utils/validateSlug.ts`.
+- Translatable fields use `internationalizedArrayString` / `internationalizedArrayRichText` / `internationalizedArrayRichTextMedia` — **NEVER** plain `string` for translatable content.
 
-## Never edit
+## Anti-patterns specific to studio
 
-- `studio/sanity.types.gen.ts`
-- `studio/schema.json`
-- Anything under `studio/.sanity/`
-
-## Anti-patterns
-
-- Adding a `module.<id>` only to `richTextMedia.ts` OR only to `modulesArrayField.ts` — they must stay in lockstep.
-- Declaring a Document Type without a structure item — invisible to editors.
-- Using a plain `array` of `string` for translatable content.
-- Importing from `web/` — schema must remain web-agnostic.
+- Adding a `module.<id>` to only one of `richTextMedia.ts` / `modulesArrayField.ts`.
+- Document type without a structure item — invisible to editors.
+- Plain `array` of `string` for translatable content.
+- Importing from `web/` — schemas must remain web-agnostic.

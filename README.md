@@ -21,9 +21,9 @@ This starter ships in **two parallel variants** so you can pick the internationa
 | Branch | i18n strategy | Pick when |
 |---|---|---|
 | **[`main`](../../tree/main)** | Field-level via `sanity-plugin-internationalized-array` | All translations of one piece of content live in one document with language tabs per field; short, UI-shaped translations. |
-| **[`variant/document-level`](../../tree/variant/document-level)** ← **you are here** | Document-level via `@sanity/document-internationalization` | Each language is its own document — different slugs, modules, SEO per locale. GROQ does the locale matching; no runtime resolver. |
+| **[`variant/document-level`](../../tree/variant/document-level)** | Document-level via `@sanity/document-internationalization` | Each language is its own document — different slugs, modules, SEO per locale. GROQ does the locale matching; no runtime resolver. |
 
-You're reading the **document-level** branch. [**PR #62**](../../pull/62) keeps a permanent side-by-side comparison + decision guide for adopters. Neither branch is a downgrade of the other; both are production-shaped.
+[**PR #62**](../../pull/62) keeps a permanent side-by-side comparison + decision guide for adopters. Neither branch is a downgrade of the other; both are production-shaped.
 
 ---
 
@@ -31,7 +31,7 @@ You're reading the **document-level** branch. [**PR #62**](../../pull/62) keeps 
 
 **Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). `SanityLive` only mounts when it's actually useful (read token present or draft mode active).
 
-**Sanity Studio v5** — Vision, Dashboard, Presentation with configurable preview origin, a **Translations toolbar** (`@sanity/document-internationalization`) whose supported languages are loaded from the `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
+**Sanity Studio v5** — Vision, Dashboard, Presentation with configurable preview origin, runtime language tabs driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position`, LQIP and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
@@ -41,9 +41,9 @@ You're reading the **document-level** branch. [**PR #62**](../../pull/62) keeps 
 
 **Hardened by default** — CSP with `frame-ancestors` (Studio-friendly), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options` via `netlify.toml`. Netlify `build.ignore` skips web builds on Studio-only commits.
 
-**Cookie consent (optional)** — Sanity-driven [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner with light/dark theming via `--color-*` tokens, editable copy and per-category sections in JSON, plus `en` / `de` defaults when the doc is empty. An `open-cookie-preferences` link function lets any nav item reopen the preferences modal, and `hasConsent(category)` is exposed for gating analytics scripts. Toggle it on per language under **Settings → Cookie Banner**; the banner stays inert until `useCookieBanner` is `true`.
+**Cookie consent (optional)** — Sanity-driven [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner with light/dark theming via `--color-*` tokens, editable copy and per-category sections in JSON, plus `en` / `de` defaults when the doc is empty. An `open-cookie-preferences` link function lets any nav item reopen the preferences modal, and `hasConsent(category)` is exposed for gating analytics scripts. Toggle it on under **Settings → Cookie Banner**; the banner stays inert until `useCookieBanner` is `true`.
 
-**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration. **Full coverage on this branch** — document-level schemas use plain `string` / `richText` fields, so there's no recursive fragment to block the analyser (`main` has hybrid coverage).
+**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration. (Hybrid coverage on `main`; **full coverage** on the `variant/document-level` branch — no recursive fragment to block the analyser.)
 
 **Tailwind CSS v4** — CSS-first config (`@theme`), token-driven dark mode without class hacks, PostCSS pipeline with custom `rem()` helper. Design tokens live in `web/src/assets/styles/`.
 
@@ -58,7 +58,9 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Web** | `web/` | Next.js 16 App Router app — i18n routing, GROQ data fetching, Portable Text, Mux, sitemap/robots, cache-tag revalidation |
 | **Studio** | `studio/` | Sanity Studio v5 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
-| **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean documentation when you ship your fork |
+| **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
+| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module across all 8 wiring points |
+| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` — validates module wiring across schema, component, query, and type files (CI gate) |
 
 ---
 
@@ -89,7 +91,7 @@ pnpm studio:dev        # Studio at http://localhost:3333
 pnpm web:dev           # Web at http://localhost:3000
 ```
 
-In Studio, open **Settings → Site languages** (pre-filled `en` + `de` on first create, default `en`) and publish. Create a `page`, then use the **Translations** toolbar to add language variants — each locale is its own document, and the same slug may exist per locale (`/about` in both `en` and `de`). Visit `http://localhost:3000/<locale>/<slug>` — done.
+In Studio, open **Settings → Site languages** (pre-filled `en` + `de` on first create, default `en`), publish, then create a `page` with a unique slug. Visit `http://localhost:3000/<locale>/<slug>` — done.
 
 ---
 
@@ -126,8 +128,8 @@ Consumed by `web/sanity/resolveStudioDataset.ts` + `web/sanity/sanityEnv.ts` and
 The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)). The short version:
 
 - **Data access** — `web/sanity/fetchSanityData.ts` is the only place React talks to Sanity; it wraps `sanityFetch` from `defineLive` for Draft Mode / Presentation. Published-only reads (sitemap, `generateStaticParams`, no-token paths) go through `web/sanity/cachedSanityQuery.ts` (`unstable_cache` + cache tags).
-- **GROQ** — strings live under `web/sanity/queries/` (snippets, page-level queries, component projections). Page and home queries filter by `language == $locale`, so the locale match happens in the query rather than in JavaScript. The final queries are wrapped in `defineQuery` so `sanity typegen` emits result types.
-- **i18n (document-level)** — each language is its **own document** carrying a hidden `language` field (`@sanity/document-internationalization`); sibling translations are linked by an auto-managed `translation.metadata` document, and editors switch between them via the **Translations** toolbar. The web app filters at the document level (`language == $locale`) and reads plain `string` / Portable Text fields — **no runtime resolver in the hot path**. `siteLanguageSettings` still drives URL routing, `<html lang>`, `hreflang` alternates, and the Studio language list; a minimal `en`-only fallback applies only when that document is missing/invalid (CI, first deploy).
+- **GROQ** — strings live under `web/sanity/queries/` (snippets, page-level queries, component projections). The final queries are wrapped in `defineQuery` so `sanity typegen` emits result types.
+- **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the language tabs in Studio. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
 - **Media** — `<MediaImage />`, `<MediaVideo />`, `<MediaVideoLoop />` share container measurement, hydration-safe URLs, and viewport-deferred JS.
 
 ---
@@ -149,7 +151,9 @@ All from the repo root.
 | `pnpm format` | Biome `--write` (repo-wide) |
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
-| `pnpm strip-readmes` | Remove per-folder READMEs when shipping your fork |
+| `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
+| `pnpm gen:module <Name>` | Scaffold a new content module across the 8 wiring points. PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
+| `pnpm check:wiring` | Validate the 8-point module wiring (schema, component, query, type, and their barrels/registrations). Runs in CI. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.
 
@@ -162,7 +166,8 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 - **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 20 & 22, `pnpm studio:generate` and `pnpm --filter web run generate` with diff guards on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
 - **Dependabot** — weekly npm updates, Sanity plugins grouped, `@types/node` major bumps explicitly ignored (typings track Node 22 LTS).
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
-- **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, `.cursor/` are ignored; see root `.gitignore`.
+- **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, and editor caches under `.cursor/` are ignored; the committed `.cursor/rules/` folder (Cursor IDE rules) is explicitly re-included. See root `.gitignore`.
+- **Agent guardrails** — AI coding assistants (Claude Code, Cursor, Windsurf, Copilot) read [`AGENTS.md`](AGENTS.md) at the repo root. Sub-paths get auto-loaded `CLAUDE.md` files and `.cursor/rules/*.mdc` rules with file-glob scoping. Update `AGENTS.md` first; the others defer to it.
 
 ---
 

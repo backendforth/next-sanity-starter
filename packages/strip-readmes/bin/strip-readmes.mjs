@@ -67,9 +67,7 @@ async function walk(dir) {
 await walk(root);
 
 const preservedSummary =
-	preserved.length > 0
-		? ` Preserved ${preserved.length} root README.`
-		: "";
+	preserved.length > 0 ? ` Preserved ${preserved.length} root README.` : "";
 
 if (removed.length === 0) {
 	console.log(

@@ -95,7 +95,9 @@ for (const file of schemaFiles) {
 	if (!content) continue;
 	// extract `name: "module.<id>"`
 	const nameMatch = content.match(/name:\s*"(module\.[A-Za-z0-9_-]+)"/);
-	const exportMatch = content.match(/export\s+const\s+(module[A-Za-z0-9_]+)\s*=/);
+	const exportMatch = content.match(
+		/export\s+const\s+(module[A-Za-z0-9_]+)\s*=/,
+	);
 	if (!nameMatch || !exportMatch) {
 		console.warn(
 			`warn: could not parse module name/export from ${rel(join(STUDIO_MODULES_DIR, file))}`,
@@ -160,13 +162,19 @@ for (const m of modules) {
 	if (!schemasIndexSrc.includes(`{ ${m.varName} }`)) {
 		add(m.id, SCHEMAS_INDEX, `missing import of ${m.varName}`);
 	}
-	if (!new RegExp(`(^|\n)\\s*${m.varName}\\s*,?\\s*(\n|$)`).test(schemasIndexSrc)) {
+	if (
+		!new RegExp(`(^|\n)\\s*${m.varName}\\s*,?\\s*(\n|$)`).test(schemasIndexSrc)
+	) {
 		add(m.id, SCHEMAS_INDEX, `${m.varName} not present in schemaTypes`);
 	}
 
 	// 4. modulesArrayField.ts — entry for `type: "${id}"`
 	if (!modulesArrayFieldSrc.includes(`"${m.id}"`)) {
-		add(m.id, MODULES_ARRAY_FIELD, `no entry for type "${m.id}" in moduleTypes`);
+		add(
+			m.id,
+			MODULES_ARRAY_FIELD,
+			`no entry for type "${m.id}" in moduleTypes`,
+		);
 	}
 
 	// 3. richTextMedia.ts — optional. Warn only.
@@ -192,9 +200,7 @@ for (const m of modules) {
 		const renderer = await read(
 			join(WEB_COMPONENTS_DIR, "ModulesRenderer.tsx"),
 		);
-		const hasPlaceholder = renderer?.includes(
-			`Module${m.pascal}Placeholder`,
-		);
+		const hasPlaceholder = renderer?.includes(`Module${m.pascal}Placeholder`);
 		if (!hasPlaceholder) {
 			add(
 				m.id,
@@ -222,11 +228,7 @@ for (const m of modules) {
 	} else if (queriesBarrelSrc) {
 		const queryVar = `${m.varName}Query`;
 		if (!queriesBarrelSrc.includes(queryVar)) {
-			add(
-				m.id,
-				QUERIES_BARREL,
-				`${queryVar} not referenced in queries barrel`,
-			);
+			add(m.id, QUERIES_BARREL, `${queryVar} not referenced in queries barrel`);
 		}
 	}
 

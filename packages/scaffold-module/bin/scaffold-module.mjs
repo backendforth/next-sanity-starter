@@ -35,7 +35,9 @@ const inline = argv.includes("--inline");
 const rawName = argv.find((a) => !a.startsWith("--"));
 
 if (!rawName) {
-	console.error("usage: pnpm gen:module <PascalCaseName> [--dry-run] [--inline]");
+	console.error(
+		"usage: pnpm gen:module <PascalCaseName> [--dry-run] [--inline]",
+	);
 	process.exit(2);
 }
 
@@ -72,11 +74,7 @@ const webQueryPath = join(
 	"web/sanity/queries/components/modules",
 	`${webFileBase}.ts`,
 );
-const webTypePath = join(
-	root,
-	"web/sanity/types/modules",
-	`${webFileBase}.ts`,
-);
+const webTypePath = join(root, "web/sanity/types/modules", `${webFileBase}.ts`);
 
 const insertions = [];
 const skipped = [];

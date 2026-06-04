@@ -1,17 +1,21 @@
 # web/src/components/modules/ — Claude Code subtree rules
 
-> Canonical: [`/AGENTS.md`](../../../../AGENTS.md) §"The module pattern".
+Canonical: @../../../../AGENTS.md §"The module pattern".
 
-This folder holds the **component half** of every module. Every file here has a paired Sanity schema at `studio/schemas/objects/modules/module<Name>.ts`, a GROQ projection at `web/sanity/queries/components/modules/<name>.ts`, and a TS shape at `web/sanity/types/modules/<name>.ts`. All four must stay in sync.
+This folder holds the **component half** of every module. You are touching points 5–6 of the 8-step wiring.
 
-## When you add a new component here
+## YOU MUST
 
-You are touching points 5–6 of the 8-step wiring. The other 6 are mandatory; see `/AGENTS.md` or `/studio/schemas/objects/modules/CLAUDE.md`.
+1. Prefer `pnpm gen:module <Name>` over hand-writing — it scaffolds all 8 points atomically.
+2. Name the file `Module<Name>.tsx` (PascalCase). The Sanity schema `name` must be `module.<name>` (dot-lowercase). 1:1 correspondence.
+3. Accept `{ data, locale, siteLocale }` props — even if the module doesn't read i18n today. `ModulesRenderer` always passes them; consistency matters when fields become translatable.
+4. Resolve i18n via `pickLocalizedString` / `parseLocalizedText` from `@/sanity/utils/sanityLocalizedText`. **NEVER** index arrays directly or call `.find(t => t.language === locale)`.
+5. Set `data-sanity` attrs on the root element — Visual Editing click-to-edit depends on it. Copy the pattern from `ModuleText.tsx`.
+6. Register in `ModulesRenderer.tsx` (`_type` switch) and the barrel `index.ts`. Heavy components use `next/dynamic` (see `ModuleCarousel` import in `ModulesRenderer.tsx` for the pattern).
 
 ## Component shape
 
 ```tsx
-// ModuleFoo.tsx
 import type { ContentModuleFoo } from "@/sanity/types/modules/foo";
 import type { SiteLocaleConfig } from "@/i18n/fallbackSiteLocales";
 import { parseLocalizedText } from "@/sanity/utils/sanityLocalizedText";
@@ -32,24 +36,14 @@ export function ModuleFoo({ data, locale, siteLocale }: Props) {
 }
 ```
 
-## Hard rules
-
-1. **Filename `Module<Name>.tsx` ↔ schema `module.<name>`.** PascalCase here, dot-lowercase there. Diverging names is a bug.
-2. **Always accept `{ locale, siteLocale }`** even if you don't read i18n today — `ModulesRenderer` passes them and consistency matters when fields become translatable later.
-3. **Resolve i18n via `pickLocalizedString` / `parseLocalizedText`.** Never index `value[0]` or `.find(t => t.language === locale)`.
-4. **Never read locale from `useRouter()`** or browser APIs inside a module. SSR + Visual Editing both break.
-5. **Set `data-sanity` attributes** on the root element so click-to-edit works. Copy the pattern from `ModuleText.tsx`.
-6. **Register in `index.ts`** (barrel) and `ModulesRenderer.tsx` (`_type` switch). Heavy components (e.g. carousel) use `dynamic()` import.
-7. **Co-locate styles** under `web/src/assets/styles/` (Tailwind tokens) — no per-component CSS files.
-
 ## Hand-maintained types
 
-`web/sanity/types/modules/<name>.ts` is **not** generated. After changing the schema or the GROQ projection, update this type by hand to match. CI typecheck will catch most drift, but field renames slip through if you forget.
+`web/sanity/types/modules/<name>.ts` is **NOT** generated. After changing the schema or the GROQ projection, update this type by hand. `pnpm check:wiring` catches missing files; field renames slip through silently.
 
-## Anti-patterns
+## Anti-patterns specific to module components
 
-- Component without GROQ projection → query returns `null`/`undefined` for the field.
-- Component without TS type → `any` propagates through the renderer.
+- Component without a matching GROQ projection → query returns `null`/`undefined`.
+- Component without a TS type → `any` propagates through the renderer.
 - Reading locale via `useRouter()` / `usePathname()` → wrong locale during SSR.
 - Skipping `data-sanity` → editor click-to-edit breaks on this module.
-- Importing from `studio/` — illegal across packages.
+- Importing from `studio/...` — illegal across packages.

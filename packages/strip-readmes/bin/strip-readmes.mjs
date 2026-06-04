@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Removes every file named README.md under the repo root.
- * Skips dependency and build output dirs. Use after cloning the boilerplate.
+ * Removes nested README.md files under the repo root after cloning the starter.
+ * The root-level README.md is preserved so the public-facing repo description
+ * survives the strip. Dependency and build output dirs are also skipped.
  *
  * Usage:
  *   pnpm --filter @repo/strip-readmes run strip
@@ -31,6 +32,8 @@ const root = fileURLToPath(new URL("../../..", import.meta.url));
 
 /** @type {string[]} */
 const removed = [];
+/** @type {string[]} */
+const preserved = [];
 
 /**
  * @param {string} dir
@@ -45,6 +48,11 @@ async function walk(dir) {
 			await walk(full);
 		} else if (name === "README.md") {
 			const rel = relative(root, full) || "README.md";
+			if (rel === "README.md") {
+				preserved.push(rel);
+				console.log(`preserved (repo root): ${rel}`);
+				continue;
+			}
 			if (dryRun) {
 				console.log(`would remove: ${rel}`);
 			} else {
@@ -58,14 +66,21 @@ async function walk(dir) {
 
 await walk(root);
 
+const preservedSummary =
+	preserved.length > 0
+		? ` Preserved ${preserved.length} root README.`
+		: "";
+
 if (removed.length === 0) {
 	console.log(
-		dryRun ? "No README.md files found." : "No README.md files to remove.",
+		dryRun
+			? `No nested README.md files found.${preservedSummary}`
+			: `No nested README.md files to remove.${preservedSummary}`,
 	);
 } else {
 	console.log(
 		dryRun
-			? `\n${removed.length} file(s) would be removed (run without --dry-run to delete).`
-			: `\nDone. ${removed.length} README.md file(s) removed.`,
+			? `\n${removed.length} file(s) would be removed (run without --dry-run to delete).${preservedSummary}`
+			: `\nDone. ${removed.length} README.md file(s) removed.${preservedSummary}`,
 	);
 }

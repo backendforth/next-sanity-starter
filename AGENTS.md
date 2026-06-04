@@ -97,18 +97,72 @@ After any schema edit:
 
 ```bash
 pnpm studio:generate       # regenerate studio/schema.json + studio/sanity.types.gen.ts
+pnpm check:wiring          # YOU MUST verify all 8 module wiring points are consistent
 pnpm typecheck             # web + studio
 pnpm format                # biome check --write .
 ```
 
-Pre-commit / pre-push hooks already run `format` and `typecheck`. Don't bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
+Pre-commit / pre-push hooks already run `format` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
 
-**Never edit:**
+**IMPORTANT — never edit:**
 
 - `studio/sanity.types.gen.ts`
 - `studio/schema.json`
 - Any `*.gen.*` file
 - Lockfiles (`pnpm-lock.yaml`) unless you ran a dependency command
+
+## CLI command reference
+
+The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (Next.js app), and **studio** (Sanity). Most root scripts forward to one or both apps.
+
+### Root (run from repo root)
+
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | Start web (3000) and studio (3333) in parallel. |
+| `pnpm web:dev` | Start the web app only. |
+| `pnpm studio:dev` | Start the Studio only (uses `studio/scripts/dev-with-hint.mjs`). |
+| `pnpm build` | Build both apps. |
+| `pnpm studio:build` | Build the Studio only. |
+| `pnpm studio:deploy` | Deploy the Studio to Sanity (production target). |
+| `pnpm studio:generate` | Regenerate `studio/schema.json` + `studio/sanity.types.gen.ts`. **Run after every schema edit.** |
+| `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
+| `pnpm typecheck` | `tsc --noEmit` across web + studio. |
+| `pnpm lint` | `biome check .` (no writes). |
+| `pnpm format` | `biome check --write .` (auto-fix). |
+| `pnpm gen:module <Name>` | Scaffold a new module (all 8 wiring points). PascalCase name. Add `--dry-run` to preview. |
+| `pnpm check:wiring` | Validate all 8 module wiring points across the monorepo. CI gate. |
+| `pnpm strip-readmes` | Remove nested READMEs after forking the starter. The root `README.md` is preserved. |
+| `pnpm strip-readmes:dry-run` | Preview what `strip-readmes` would delete. |
+| `pnpm update` | `pnpm up --stream -r` (interactive upgrade across workspaces). |
+| `pnpm studio:update` | Upgrade Studio dependencies only. |
+
+### web (run from `web/` or via `pnpm --filter web run …`)
+
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | `next dev --webpack`. |
+| `pnpm build` | `next build`. |
+| `pnpm start` | `next start` (after `build`). |
+| `pnpm typecheck` | `tsc --noEmit` (web only). |
+| `pnpm lint` | Biome on `web/`. |
+| `pnpm format` | Biome write on `web/`. |
+| `pnpm generate` | `sanity typegen generate` (web-side typegen — currently unused, web types are hand-maintained). |
+
+### studio (run from `studio/` or via `pnpm --filter studio run …`)
+
+| Command | Purpose |
+|---|---|
+| `pnpm dev` | Studio dev server via `scripts/dev-with-hint.mjs`. |
+| `pnpm start` | `sanity start`. |
+| `pnpm build` | `sanity build`. |
+| `pnpm deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy`. |
+| `pnpm generate` | `sanity schema extract --enforce-required-fields && sanity typegen generate`. |
+| `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
+| `pnpm migrate:project-body-rich-text` | One-off migration. Only run when explicitly needed. |
+| `pnpm typecheck` | `tsc --noEmit` (studio only). |
+| `pnpm lint` | Biome on `studio/`. |
+| `pnpm format` | Biome write on `studio/`. |
 
 ## i18n — the multilingual structure
 

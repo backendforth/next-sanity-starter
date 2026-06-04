@@ -9,6 +9,8 @@
 		"typecheck": "pnpm --stream -r run typecheck",
 		"strip-readmes": "pnpm --filter @repo/strip-readmes run strip",
 		"strip-readmes:dry-run": "pnpm --filter @repo/strip-readmes run strip:dry-run",
+		"gen:module": "pnpm --filter @repo/scaffold-module run gen --",
+		"check:wiring": "pnpm --filter @repo/check-wiring run check",
 		"prepare": "husky",
 		"//dev": "Starts both web (3000) and studio (3333) in parallel — comment out one filter or use `web:dev`/`studio:dev` to run only one.",
 		"dev": "pnpm --stream -r run dev",

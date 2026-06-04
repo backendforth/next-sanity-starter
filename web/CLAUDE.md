@@ -1,53 +1,29 @@
 # web/ — Claude Code subtree rules
 
-> Canonical: [`/AGENTS.md`](../AGENTS.md). This file scopes the web-app conventions.
+Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas — see AGENTS.md for the full repo conventions, module pattern, and i18n architecture.
 
-## Stack
+## Stack quirks (non-obvious)
 
-- Next.js 16, App Router only. Route segments live under `web/src/app/[locale]/...`.
-- React Server Components by default; reach for `"use client"` only when you need state, effects, or browser APIs.
-- Tailwind CSS v4 (token-driven). Styles live in `web/src/assets/styles/`; see that folder's README.
-- Path alias: `@/*` → `web/`. Use it for absolute imports. Never deeper-relative paths like `../../../sanity/...`.
+- Next.js 16 App Router only. RSC by default; `"use client"` only when you need state, effects, or browser APIs.
+- Path alias `@/*` resolves to `web/` (configured in `web/tsconfig.json`). **NEVER** use `@/*` outside `web/`.
+- Biome enforces **tabs** in `web/`. Studio uses 2 spaces — don't copy formatting across boundaries.
+- Tailwind v4 (CSS-first config). Tokens live in `web/src/assets/styles/`. No per-component CSS files.
 
-## Hard rules
+## Locale flow (the part that breaks SSR if you get it wrong)
 
-1. **Locale awareness everywhere.** Every page/component that touches Sanity content threads `{ locale, siteLocale }` through props. Resolve translatable fields with `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`. Never index i18n arrays.
-2. **No GROQ locale filtering.** Project full `{ _key, _type, language, value }` arrays. Resolution happens at render.
-3. **Content blocks are modules.** New page sections go through the 8-step wiring (see `/AGENTS.md` §"The module pattern"). No ad-hoc `<section>` in route files.
-4. **Hand-maintained Sanity types.** `web/sanity/types/*` are NOT generated. When a schema field changes, update both the GROQ projection in `web/sanity/queries/components/` and the matching type. Never import from `studio/sanity.types.gen.ts`.
-5. **Visual Editing.** Components that render Sanity content set `data-sanity` attributes — copy the pattern from `ModuleText.tsx` or `MediaImage.tsx`. Breaking these breaks click-to-edit in Presentation.
-6. **No browser-only locale reads.** Do not read locale from `useRouter()`, `window.location`, or `document.cookie` inside a module — it breaks SSR and Presentation iframes.
+- **YOU MUST** thread `{ locale, siteLocale }` through every render path that touches Sanity content. The render tree starts at `app/[locale]/page.tsx` and ends in modules.
+- **NEVER** read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR and Presentation iframes.
+- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
 
-## Locale URL helpers
+## Sanity-side gotchas
 
-Path-shaping utilities live in `web/src/i18n/`:
+- `web/sanity/types/*` are **hand-maintained**. After schema or GROQ projection changes, update the type in the same commit. `pnpm check:wiring` catches missing files; field renames slip through silently.
+- **NEVER** import from `studio/sanity.types.gen.ts` — wrong direction, breaks the build.
+- Set `data-sanity` attrs on Sanity-rendered roots (copy from `ModuleText.tsx` / `MediaImage.tsx`). Visual Editing depends on it.
 
-- `paths.ts`, `siteLocalePathUtils.ts` — build/parse `/{locale}/{slug}` URLs.
-- `site-locales.ts`, `fallbackSiteLocales.ts` — runtime locale config + offline fallback.
-- `proxyLocaleFetch.ts` — server-side site-locale fetch with caching.
-
-Use these. Do not concatenate locale prefixes by hand.
-
-## Tooling
-
-After web-only changes:
-
-```bash
-pnpm typecheck
-pnpm format
-```
-
-After web changes that depend on a schema edit, first run `pnpm studio:generate` in the studio app, then re-run typecheck here.
-
-## Never edit
-
-- `web/.next/`
-- Any `*.gen.*` files
-- Files copied from `studio/sanity.types.gen.ts` — they are studio-side only
-
-## Anti-patterns
+## Anti-patterns specific to web
 
 - `import` from `studio/...` — illegal across packages. Share via `packages/*` instead.
-- Hardcoded locale codes (`"en"`, `"de"`) anywhere outside `web/src/i18n/`.
-- `useState` / `useEffect` in a server component (forgetting `"use client"`).
-- Bypassing `ModulesRenderer` to render a single module ad hoc — keeps Visual Editing wiring consistent only when going through the renderer.
+- Adding a `<section>` directly inside `app/[locale]/page.tsx` instead of a module.
+- `useState` / `useEffect` in a server component (you forgot `"use client"`).
+- Bypassing `ModulesRenderer` to render a single module ad hoc.

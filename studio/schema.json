@@ -162,6 +162,14 @@
         },
         "optional": false
       },
+      "titleMedia": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "module.media"
+        },
+        "optional": false
+      },
       "categories": {
         "type": "objectAttribute",
         "value": {
@@ -192,75 +200,11 @@
         },
         "optional": false
       },
-      "modules": {
+      "body": {
         "type": "objectAttribute",
         "value": {
-          "type": "array",
-          "of": {
-            "type": "union",
-            "of": [
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "module.media"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "module.carousel"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "module.contentRefs"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "module.text"
-                }
-              }
-            ]
-          }
+          "type": "inline",
+          "name": "internationalizedArrayRichTextMedia"
         },
         "optional": true
       },
@@ -382,6 +326,28 @@
     }
   },
   {
+    "name": "internationalizedArrayRichTextMedia",
+    "type": "type",
+    "value": {
+      "type": "array",
+      "of": {
+        "type": "object",
+        "attributes": {
+          "_key": {
+            "type": "objectAttribute",
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "rest": {
+          "type": "inline",
+          "name": "internationalizedArrayRichTextMediaValue"
+        }
+      }
+    }
+  },
+  {
     "name": "slug",
     "type": "type",
     "value": {
@@ -405,6 +371,67 @@
           "type": "objectAttribute",
           "value": {
             "type": "string"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "module.media",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "module.media"
+          }
+        },
+        "type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "image"
+              },
+              {
+                "type": "string",
+                "value": "video"
+              },
+              {
+                "type": "string",
+                "value": "loop"
+              }
+            ]
+          },
+          "optional": false
+        },
+        "imageContent": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "media.image"
+          },
+          "optional": true
+        },
+        "videoContent": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "media.video"
+          },
+          "optional": true
+        },
+        "videoLoopContent": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "media.videoLoop"
           },
           "optional": true
         }
@@ -1852,67 +1879,6 @@
     }
   },
   {
-    "name": "module.media",
-    "type": "type",
-    "value": {
-      "type": "object",
-      "attributes": {
-        "_type": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string",
-            "value": "module.media"
-          }
-        },
-        "type": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "image"
-              },
-              {
-                "type": "string",
-                "value": "video"
-              },
-              {
-                "type": "string",
-                "value": "loop"
-              }
-            ]
-          },
-          "optional": false
-        },
-        "imageContent": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "inline",
-            "name": "media.image"
-          },
-          "optional": true
-        },
-        "videoContent": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "inline",
-            "name": "media.video"
-          },
-          "optional": true
-        },
-        "videoLoopContent": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "inline",
-            "name": "media.videoLoop"
-          },
-          "optional": true
-        }
-      }
-    }
-  },
-  {
     "name": "module.carousel",
     "type": "type",
     "value": {
@@ -2038,6 +2004,13 @@
           "optional": true
         },
         "showNavDots": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        },
+        "multipleSlides": {
           "type": "objectAttribute",
           "value": {
             "type": "boolean"
@@ -2687,28 +2660,6 @@
           "name": "seo.page"
         },
         "optional": true
-      }
-    }
-  },
-  {
-    "name": "internationalizedArrayRichTextMedia",
-    "type": "type",
-    "value": {
-      "type": "array",
-      "of": {
-        "type": "object",
-        "attributes": {
-          "_key": {
-            "type": "objectAttribute",
-            "value": {
-              "type": "string"
-            }
-          }
-        },
-        "rest": {
-          "type": "inline",
-          "name": "internationalizedArrayRichTextMediaValue"
-        }
       }
     }
   },

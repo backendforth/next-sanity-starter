@@ -1,0 +1,12 @@
+{
+	"name": "@repo/scaffold-module",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"bin": {
+		"scaffold-module": "./bin/scaffold-module.mjs"
+	},
+	"scripts": {
+		"gen": "node ./bin/scaffold-module.mjs"
+	}
+}

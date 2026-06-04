@@ -6,10 +6,7 @@ import type {
 	ModuleMediaData,
 } from "@/sanity/types/modules";
 import { type LinkMark, resolveLinkMark } from "@/sanity/utils/linkResolver";
-import {
-	ModuleCarousel,
-	ModuleMedia,
-} from "@/src/components/modules";
+import { ModuleCarousel, ModuleMedia } from "@/src/components/modules";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 function LinkMarkRenderer({

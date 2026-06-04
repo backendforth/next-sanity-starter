@@ -1,36 +1,30 @@
-import type { ModuleTextData } from "@/sanity/types/modules";
-import {
-	pickLocalizedPortableTextBlocks,
-	pickLocalizedString,
-} from "@/sanity/utils/sanityLocalizedText";
-import { RichTextMedia } from "@/src/components/text/RichTextMedia";
+import type { __MODULE_DATA_TYPE__ } from "@/sanity/types/modules";
+import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
-import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
+import {
+	moduleHeadingClassName,
+	moduleSectionClassName,
+} from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	module: ModuleTextData;
+	module: __MODULE_DATA_TYPE__;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-/** `module.text` — optional title + localized rich text body (with embedded modules). */
-export function ModuleText({ module, locale, siteLocale }: Props) {
+/** `__MODULE_NAME__` — TODO: describe what this module renders. */
+export function __MODULE_COMPONENT__({ module, locale, siteLocale }: Props) {
 	const title = pickLocalizedString(module.title, locale, siteLocale);
-	const blocks = pickLocalizedPortableTextBlocks(
-		module.body,
-		locale,
-		siteLocale,
-	);
 
 	return (
-		<article className={moduleSectionClassName}>
+		<section className={moduleSectionClassName} data-sanity={module._key}>
 			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
-			<RichTextMedia value={blocks} locale={locale} siteLocale={siteLocale} />
-		</article>
+			{/* TODO: render the rest of the module data */}
+		</section>
 	);
 }

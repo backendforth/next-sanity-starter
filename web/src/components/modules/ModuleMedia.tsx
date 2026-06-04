@@ -5,10 +5,7 @@ import type { ReactNode } from "react";
 import type { ModuleMediaData } from "@/sanity/types/modules";
 import { MediaImage, MediaVideo, MediaVideoLoop } from "@/src/components/media";
 
-import {
-	moduleCaptionClassName,
-	moduleSectionClassName,
-} from "./moduleStyles";
+import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

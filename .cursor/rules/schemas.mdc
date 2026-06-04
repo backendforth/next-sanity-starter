@@ -1,0 +1,36 @@
+---
+description: Sanity schema conventions and typegen workflow.
+globs:
+  - studio/schemas/**
+  - studio/config/**
+---
+
+Sanity Studio v5. Schemas live under `studio/schemas/`. Indent 2 spaces, double quotes.
+
+Hard rules:
+
+- A new type is invisible until exported and added to `schemaTypes` in `studio/schemas/index.ts`.
+- New document types also need a structure item under `studio/config/structure/items/` and registration in `studio/config/structure/index.ts`. The sidebar does NOT auto-populate from schemas.
+- Routable types must be wired into Presentation: `studio/config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`) and `resolve.ts` / `locationsResolver.ts`.
+- Internally linkable types go into `studio/schemas/constants/references.ts` (`PAGE_REFERENCES`).
+- Translatable fields use `internationalizedArrayString` / `internationalizedArrayRichText` / `internationalizedArrayRichTextMedia` — never plain `string` for translatable content.
+- Slug fields use `validateSlug` from `studio/utils/validateSlug.ts`.
+- Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
+
+After every schema edit:
+
+```
+pnpm studio:generate
+git add studio/schema.json studio/sanity.types.gen.ts
+pnpm typecheck
+```
+
+CI rejects any uncommitted gen diff.
+
+NEVER edit:
+
+- `studio/sanity.types.gen.ts`
+- `studio/schema.json`
+- Anything under `studio/.sanity/`
+
+Languages come from the `siteLanguageSettings` singleton — add new languages there, not in source. `web/src/i18n/fallbackSiteLocales.ts` is the offline fallback only.

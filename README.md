@@ -58,7 +58,9 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Web** | `web/` | Next.js 16 App Router app — i18n routing, GROQ data fetching, Portable Text, Mux, sitemap/robots, cache-tag revalidation |
 | **Studio** | `studio/` | Sanity Studio v5 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
-| **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean documentation when you ship your fork |
+| **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
+| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module across all 8 wiring points |
+| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` — validates module wiring across schema, component, query, and type files (CI gate) |
 
 ---
 
@@ -149,7 +151,9 @@ All from the repo root.
 | `pnpm format` | Biome `--write` (repo-wide) |
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
-| `pnpm strip-readmes` | Remove per-folder READMEs when shipping your fork |
+| `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
+| `pnpm gen:module <Name>` | Scaffold a new content module across the 8 wiring points. PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
+| `pnpm check:wiring` | Validate the 8-point module wiring (schema, component, query, type, and their barrels/registrations). Runs in CI. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.
 
@@ -162,7 +166,8 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 - **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 20 & 22, `pnpm studio:generate` and `pnpm --filter web run generate` with diff guards on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
 - **Dependabot** — weekly npm updates, Sanity plugins grouped, `@types/node` major bumps explicitly ignored (typings track Node 22 LTS).
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
-- **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, `.cursor/` are ignored; see root `.gitignore`.
+- **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, and editor caches under `.cursor/` are ignored; the committed `.cursor/rules/` folder (Cursor IDE rules) is explicitly re-included. See root `.gitignore`.
+- **Agent guardrails** — AI coding assistants (Claude Code, Cursor, Windsurf, Copilot) read [`AGENTS.md`](AGENTS.md) at the repo root. Sub-paths get auto-loaded `CLAUDE.md` files and `.cursor/rules/*.mdc` rules with file-glob scoping. Update `AGENTS.md` first; the others defer to it.
 
 ---
 

@@ -1,0 +1,36 @@
+---
+description: Module pattern — 8-step wiring. Applies when editing modules anywhere.
+globs:
+  - studio/schemas/objects/modules/**
+  - web/src/components/modules/**
+  - web/sanity/queries/components/modules/**
+  - web/sanity/types/modules/**
+---
+
+A **module** is a paired Sanity object (`module.<id>`) plus a React component (`Module<Name>.tsx`). Adding, renaming, or removing one is atomic across **8 files**:
+
+1. `studio/schemas/objects/modules/module<Name>.ts` — `defineType`, `name: "module.<id>"`, fields, `preview`, optional `icon`.
+2. `studio/schemas/index.ts` — import + add to `schemaTypes`.
+3. `studio/schemas/objects/editors/richTextMedia.ts` — append `{ type: "module.<id>" }` to `of`.
+4. `studio/schemas/fields/modulesArrayField.ts` — append `{ type: "module.<id>" }` to `moduleTypes`.
+5. `web/src/components/modules/Module<Name>.tsx` — accepts `{ data, locale, siteLocale }`, sets `data-sanity` attrs.
+6. `web/src/components/modules/index.ts` — re-export from barrel and register in `ModulesRenderer.tsx`.
+7. `web/sanity/queries/components/modules/<name>.ts` — GROQ projection, full i18n arrays, re-export from `index.ts`.
+8. `web/sanity/types/modules/<name>.ts` — hand-maintained TS shape, re-export from `index.ts`.
+
+After steps 1–4 land, run `pnpm studio:generate` and commit the gen artifacts.
+
+DO:
+
+- Ship all 8 in a single commit.
+- Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
+- Project i18n fields as full `{ _key, _type, language, value }` arrays.
+- Read i18n via `pickLocalizedString` / `parseLocalizedText`.
+
+DON'T:
+
+- Land schema without component (or vice versa).
+- Add `{ type: "module.<id>" }` to only one of `richTextMedia.ts` / `modulesArrayField.ts`.
+- Index i18n arrays directly (`title[0].value`).
+- `coalesce(field[language==$locale].value, ...)` in GROQ.
+- Hand-edit `studio/sanity.types.gen.ts` or `studio/schema.json`.

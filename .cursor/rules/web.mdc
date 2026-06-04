@@ -1,0 +1,33 @@
+---
+description: Next.js web app conventions — routing, i18n, components.
+globs:
+  - web/**
+---
+
+Next.js 16 App Router. RSC by default; `"use client"` only when needed (state, effects, browser APIs). Tailwind v4. Biome: tabs, double quotes. Path alias `@/*` → `web/`.
+
+Hard rules:
+
+- Thread `{ locale, siteLocale }` through every render path that touches Sanity content.
+- Resolve translatable fields via `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`. Never index i18n arrays.
+- No locale filtering inside GROQ — projections return full `{ _key, _type, language, value }` arrays.
+- Content blocks are **modules** (see `.cursor/rules/modules.mdc`). No ad-hoc `<section>` in route files.
+- `web/sanity/types/*` are hand-maintained. Update them in the same commit as the GROQ projection.
+- Set `data-sanity` attrs on Sanity-rendered roots (copy from `ModuleText.tsx` / `MediaImage.tsx`) — Visual Editing depends on it.
+- Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
+- No hardcoded locale codes outside `web/src/i18n/`.
+
+URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; do not concatenate locale prefixes by hand.
+
+After web changes:
+
+```
+pnpm typecheck
+pnpm format
+```
+
+NEVER edit:
+
+- `web/.next/`
+- Any `*.gen.*` files
+- Imports from `studio/...` (use `packages/*` for shared code).

@@ -83,12 +83,16 @@ When you add a **new** module, wire it up in **both** places so behaviour stays 
 
 ### Adding a new module (checklist)
 
+> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus the safe insertions atomically. On this branch the script gracefully skips the `web/src/components/modules/index.ts` barrel patch (no barrel exists here). See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
+
 1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
    - **`type: "object"`** — fields, `preview`, optional `icon`, etc.
 2. **Register the type** — export it and add it to **`schemas/index.ts`** → `schemaTypes` (keep module types together with other `module.*` entries).
 3. **Rich text (inline blocks)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**.
 4. **Document-level `modules` arrays** — append the same `{ type: "module.<id>" }` to **`moduleTypes`** in **`fields/modulesArrayField.ts`**.
+
+After any module change, run `pnpm check:wiring` from the repo root. The validator is branch-aware: it treats the missing `web/src/components/modules/index.ts` barrel and `Module<Name>Placeholder` fallbacks as skips, not failures.
 
 You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
 

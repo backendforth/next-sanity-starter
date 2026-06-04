@@ -126,7 +126,9 @@ async function writeNewFile(target, content, label) {
 async function patch(file, search, replacement, description, optional = false) {
 	if (!existsSync(file)) {
 		if (optional) {
-			skipped.push(`${rel(file)} — ${description} (file does not exist on this branch)`);
+			skipped.push(
+				`${rel(file)} — ${description} (file does not exist on this branch)`,
+			);
 			return false;
 		}
 		console.error(

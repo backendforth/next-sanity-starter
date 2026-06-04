@@ -55,26 +55,14 @@ export type Project = {
   _updatedAt: string;
   _rev: string;
   title: InternationalizedArrayString;
+  titleMedia: ModuleMedia;
   categories?: Array<
     {
       _key: string;
     } & ProjectCategoryReference
   >;
   slug: Slug;
-  modules?: Array<
-    | ({
-        _key: string;
-      } & ModuleMedia)
-    | ({
-        _key: string;
-      } & ModuleCarousel)
-    | ({
-        _key: string;
-      } & ModuleContentRefs)
-    | ({
-        _key: string;
-      } & ModuleText)
-  >;
+  body?: InternationalizedArrayRichTextMedia;
   seo?: SeoPage;
 };
 
@@ -98,10 +86,24 @@ export type SeoPage = {
   };
 };
 
+export type InternationalizedArrayRichTextMedia = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayRichTextMediaValue
+>;
+
 export type Slug = {
   _type: "slug";
   current: string;
   source?: string;
+};
+
+export type ModuleMedia = {
+  _type: "module.media";
+  type: "image" | "video" | "loop";
+  imageContent?: MediaImage;
+  videoContent?: MediaVideo;
+  videoLoopContent?: MediaVideoLoop;
 };
 
 export type Work = {
@@ -346,14 +348,6 @@ export type ModuleContentRefs = {
   references?: ArrayOf<HomeReference | PageReference | ProjectReference>;
 };
 
-export type ModuleMedia = {
-  _type: "module.media";
-  type: "image" | "video" | "loop";
-  imageContent?: MediaImage;
-  videoContent?: MediaVideo;
-  videoLoopContent?: MediaVideoLoop;
-};
-
 export type ModuleCarousel = {
   _type: "module.carousel";
   heading?: InternationalizedArrayString;
@@ -374,6 +368,7 @@ export type ModuleCarousel = {
   loop?: boolean;
   showThumbnails?: boolean;
   showNavDots?: boolean;
+  multipleSlides?: boolean;
   autoplay?: boolean;
   autoplayDelayMs?: number;
 };
@@ -486,12 +481,6 @@ export type Home = {
   >;
   seo?: SeoPage;
 };
-
-export type InternationalizedArrayRichTextMedia = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayRichTextMediaValue
->;
 
 export type LinkFunctions = {
   _type: "linkFunctions";
@@ -734,7 +723,9 @@ export type AllSanitySchemaTypes =
   | Project
   | SanityImageAssetReference
   | SeoPage
+  | InternationalizedArrayRichTextMedia
   | Slug
+  | ModuleMedia
   | Work
   | SiteCookieBanner
   | Code
@@ -753,7 +744,6 @@ export type AllSanitySchemaTypes =
   | PageReference
   | ProjectReference
   | ModuleContentRefs
-  | ModuleMedia
   | ModuleCarousel
   | MediaVideoLoop
   | MediaVideo
@@ -763,7 +753,6 @@ export type AllSanitySchemaTypes =
   | Link
   | Page
   | Home
-  | InternationalizedArrayRichTextMedia
   | LinkFunctions
   | InternationalizedArrayRichTextMediaValue
   | InternationalizedArrayRichTextValue

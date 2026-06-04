@@ -3,13 +3,10 @@ import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
-import {
-	moduleHeadingClassName,
-	moduleSectionClassName,
-} from "./moduleStyles";
+import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

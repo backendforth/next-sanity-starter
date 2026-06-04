@@ -6,10 +6,7 @@ import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { contentRefTargetHref } from "@/src/utils/contentRefHref";
 
 import { ModuleContentRefsClient } from "./ModuleContentRefsClient";
-import {
-	moduleHeadingClassName,
-	moduleSectionClassName,
-} from "./moduleStyles";
+import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

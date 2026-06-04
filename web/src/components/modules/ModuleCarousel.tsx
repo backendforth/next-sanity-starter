@@ -6,10 +6,7 @@ import { CarouselViewport } from "@/src/components/carousel/CarouselViewport";
 import { normalizeCarouselSlides } from "@/src/components/carousel/normalizeCarouselSlides";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
-import {
-	moduleHeadingClassName,
-	moduleSectionClassName,
-} from "./moduleStyles";
+import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

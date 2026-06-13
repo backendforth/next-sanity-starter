@@ -34,6 +34,7 @@ export {
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
 	siteNavQuery,
+	siteSettingsFaviconQuery,
 	siteSettingsQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,

@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
+import {
+	fetchSiteLanguageSettings,
+	fetchSiteSettingsFavicon,
+} from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
-import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -24,12 +27,20 @@ const geistMono = Geist_Mono({
 	display: "block",
 });
 
-/** Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template). */
-export const metadata: Metadata = {
-	metadataBase: new URL(
-		process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
-	),
-};
+/**
+ * Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template).
+ * The favicon comes from `siteSettings.favicon`; the static `app/favicon.ico`
+ * remains the fallback when the field is unset (Next emits it automatically).
+ */
+export async function generateMetadata(): Promise<Metadata> {
+	const faviconUrl = await fetchSiteSettingsFavicon({ stega: false });
+	return {
+		metadataBase: new URL(
+			process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
+		),
+		...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
+	};
+}
 
 /**
  * Tiny blocking inline script — runs synchronously before hydration.
@@ -59,7 +70,8 @@ const bootScript = `(function(){
 /**
  * Root shell only — avoid `headers()` here (keeps static routes static where possible).
  * `draftMode()` only toggles Visual Editing UI; locale chrome lives in `app/[locale]/layout.tsx`.
- * `lang` defaults to the site default; `LanguageProvider` syncs `<html lang>` on the client after navigation.
+ * `lang` is the Sanity site default (`siteLanguageSettings.defaultLanguageId`, deduped via
+ * React `cache`); `LanguageProvider` syncs `<html lang>` on the client after navigation.
  */
 export default async function RootLayout({
 	children,
@@ -70,10 +82,11 @@ export default async function RootLayout({
 	const isDraft = draft.isEnabled;
 	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
 	const shouldMountSanityLive = hasReadToken || isDraft;
+	const siteLocale = await fetchSiteLanguageSettings();
 
 	return (
 		<html
-			lang={FALLBACK_SITE_LOCALE_CONFIG.defaultLocale}
+			lang={siteLocale.defaultLocale}
 			className={`h-full antialiased ${geistSans.variable} ${geistMono.variable}`}
 			suppressHydrationWarning
 		>

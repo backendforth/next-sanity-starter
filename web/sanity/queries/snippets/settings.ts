@@ -91,6 +91,13 @@ export const siteSettingsTitleQuery = defineQuery(
 	`*[_id == "siteSettings"][0]{title}`,
 );
 
+/** `siteSettings.favicon` for root metadata icons — `app/favicon.ico` is the static fallback. */
+export const siteSettingsFaviconQuery = defineQuery(
+	`*[_id == "siteSettings"][0]{
+  "faviconUrl": favicon.asset->url
+}`,
+);
+
 /** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
 export const siteSettingsSeoFallbackQuery =
 	defineQuery(`*[_id == "siteSettings"][0]{

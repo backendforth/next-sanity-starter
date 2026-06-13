@@ -172,7 +172,19 @@ export function MediaVideoLoop({
 	enableFilter = true,
 }: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(media);
-	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
+	const [containerRef, slotWidthPx, slotHeightPx] =
+		useContainerPixelWidth<HTMLDivElement>();
+	/* DPR snapshotted once at mount: matches what `muxLoopHlsSrc` needs for
+	 * tier selection and stays stable across renders. Re-measuring on every
+	 * render would just be noise — switching displays after page load doesn't
+	 * retroactively warrant a manifest reload. */
+	const [devicePixelRatio, setDevicePixelRatio] = useState<number | undefined>(
+		undefined,
+	);
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		setDevicePixelRatio(window.devicePixelRatio || 1);
+	}, []);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const isActiveRef = useRef(isActive);
 	isActiveRef.current = isActive;
@@ -207,6 +219,25 @@ export function MediaVideoLoop({
 	 */
 	const [muted, setMuted] = useState(true);
 
+	/* Safari-autoplay reliability: set `muted` + `defaultMuted` imperatively in
+	 * a layout effect, which runs *synchronously after DOM commit* and *before*
+	 * any `useEffect` — including the one in `useMuxHlsSource` that assigns
+	 * `video.src`. React's `muted` JSX prop alone is unreliable here: under
+	 * StrictMode double-mount the property briefly flips between renders, and
+	 * Safari's autoplay-engagement heuristic latches the very first state it
+	 * sees. If that snapshot is `muted=false` for even a microsecond, Safari
+	 * silently denies muted-autoplay for the rest of the page session — and
+	 * remembers the denial across reloads via its per-origin engagement
+	 * counter (the "plays briefly on first load, never on reload" pattern).
+	 * `defaultMuted = true` also serializes back to the HTML `muted` attribute
+	 * across `video.load()` cycles, so re-attaches don't reset the state. */
+	useLayoutEffect(() => {
+		const el = videoRef.current;
+		if (!el) return;
+		el.muted = true;
+		el.defaultMuted = true;
+	}, []);
+
 	useEffect(() => {
 		if (typeof window === "undefined" || !window.matchMedia) return;
 		const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -222,7 +253,13 @@ export function MediaVideoLoop({
 	 *   - `loadedmetadata` lifts to ~0.15 once dimensions/duration are known
 	 *   - `progress` events advance based on `buffered.end(0)` versus a 2.5 s
 	 *     target (typical buffer needed before `canplay`)
-	 *   - `canplay` snaps to 1.0 — the loading bridge's dismiss signal */
+	 *   - `canplay` lifts to 0.95 — buffered, but the hardware decoder hasn't
+	 *     ramped to steady-state yet (first ~30–60 frames can drop on M1 / M2
+	 *     while the decode pipeline warms up — exactly the visible jank we're
+	 *     here to avoid)
+	 *   - `requestVideoFrameCallback` after a handful of painted frames snaps
+	 *     to 1.0 — only at that point is playback actually smooth, so only
+	 *     then is it safe to dismiss the bridge */
 	const onLoadProgressRef = useRef(onLoadProgress);
 	onLoadProgressRef.current = onLoadProgress;
 	useEffect(() => {
@@ -248,20 +285,88 @@ export function MediaVideoLoop({
 			const ratio = Math.min(bufferedSec / 2.5, 1);
 			emit(0.15 + 0.8 * ratio);
 		};
-		const onCanPlay = () => emit(1);
+		/* Safety net: if no painted frame ever arrives after canplay — autoplay
+		 * denied (rare on muted videos but possible), tab backgrounded right at
+		 * this moment, decoder error swallowed — don't leave the loading bridge
+		 * stuck at 0.95 forever. After this many ms past canplay, force the
+		 * snap to 1.0 so the user at least sees the poster + first frame. */
+		const FORCE_READY_AFTER_CANPLAY_MS = 1500;
+		let forceReadyTimer: number | undefined;
+		const onCanPlay = () => {
+			emit(0.95);
+			if (forceReadyTimer === undefined) {
+				forceReadyTimer = window.setTimeout(() => {
+					emit(1);
+				}, FORCE_READY_AFTER_CANPLAY_MS);
+			}
+		};
+
+		/* requestVideoFrameCallback fires once per actually-painted video frame.
+		 * Counting a few consecutive callbacks is a cheap, accurate signal that
+		 * the decode → composite pipeline is producing frames steadily. We don't
+		 * measure frame timing — just *that* frames arrive — because by the time
+		 * 4 of them have, any decoder ramp-up is over. */
+		const STABLE_FRAMES_REQUIRED = 4;
+		const supportsRVFC =
+			typeof (
+				el as HTMLVideoElement & {
+					requestVideoFrameCallback?: unknown;
+				}
+			).requestVideoFrameCallback === "function";
+		let rVFCHandle: number | undefined;
+		let stableFrameCount = 0;
+		const onPaintedFrame = () => {
+			stableFrameCount += 1;
+			if (stableFrameCount >= STABLE_FRAMES_REQUIRED) {
+				emit(1);
+				return;
+			}
+			rVFCHandle = el.requestVideoFrameCallback(onPaintedFrame);
+		};
+		const onPlaying = () => {
+			if (supportsRVFC && rVFCHandle === undefined) {
+				rVFCHandle = el.requestVideoFrameCallback(onPaintedFrame);
+			}
+		};
+		/* Fallback for browsers without rVFC (older Firefox): timeupdate fires
+		 * ~4× per second once playback advances. currentTime ≥ 0.3 s is a strong
+		 * indicator that the decoder is producing frames at a normal cadence. */
+		const onTimeUpdateFallback = () => {
+			if (supportsRVFC) return;
+			if (el.currentTime >= 0.3) emit(1);
+		};
+
 		el.addEventListener("loadstart", onLoadStart);
 		el.addEventListener("loadedmetadata", onLoadedMetadata);
 		el.addEventListener("progress", onProgress);
 		el.addEventListener("canplay", onCanPlay);
+		el.addEventListener("playing", onPlaying);
+		el.addEventListener("timeupdate", onTimeUpdateFallback);
 		/* If the video is already past these events at mount (warm HTTP cache),
-		 * surface the correct progress immediately so the bridge can dismiss. */
-		if (el.readyState >= 3) emit(1);
-		else if (el.readyState >= 1) onLoadedMetadata();
+		 * surface the correct buffered progress immediately. The frame-watcher
+		 * still gates the final snap to 1.0 — even on a warm cache the decoder
+		 * needs to spin up for this *element* after mount. */
+		if (el.readyState >= 3) {
+			emit(0.95);
+			if (supportsRVFC && !el.paused) {
+				rVFCHandle = el.requestVideoFrameCallback(onPaintedFrame);
+			}
+		} else if (el.readyState >= 1) {
+			onLoadedMetadata();
+		}
 		return () => {
 			el.removeEventListener("loadstart", onLoadStart);
 			el.removeEventListener("loadedmetadata", onLoadedMetadata);
 			el.removeEventListener("progress", onProgress);
 			el.removeEventListener("canplay", onCanPlay);
+			el.removeEventListener("playing", onPlaying);
+			el.removeEventListener("timeupdate", onTimeUpdateFallback);
+			if (rVFCHandle !== undefined && supportsRVFC) {
+				el.cancelVideoFrameCallback(rVFCHandle);
+			}
+			if (forceReadyTimer !== undefined) {
+				window.clearTimeout(forceReadyTimer);
+			}
 		};
 	}, []);
 
@@ -291,18 +396,26 @@ export function MediaVideoLoop({
 		if (!playbackId) return "";
 		const vw = dims && !dims.isFallback ? dims.width : 16;
 		const vh = dims && !dims.isFallback ? dims.height : 9;
-		/* Deterministic per asset: no viewport / DPR inputs. `muxLoopHlsSrc`
-		 * without container dims falls back to the hard 1440p ceiling
-		 * (`LOOP_VIDEO_MAX_TIER`), which is the only thing the manifest URL
-		 * needs to express. Fine-grained level picking happens via
-		 * `useObjectCoverPick` against `video.clientWidth/Height` in
-		 * `useMuxHlsSource`. Decoupling from `window.innerSize` means a viewport
-		 * resize never invalidates this memo → no manifest reload. */
+		/* Container-aware tier selection: `muxLoopHlsSrc` combines the DPR-
+		 * capped container size with `getNetworkAwareTierCeiling()` to pick
+		 * the highest tier this device + connection can comfortably serve,
+		 * up to the {@link LOOP_VIDEO_MAX_TIER} = 2160p ceiling, and pins
+		 * the manifest's min and max to that single tier so ABR can't ramp
+		 * up from a lower rendition. The first render (before the
+		 * ResizeObserver fires and `devicePixelRatio` snapshots) passes
+		 * `undefined`s and gets the bare ceiling — measurements then refine
+		 * the URL within a paint frame, which costs one extra manifest
+		 * fetch on mount. Resizing the viewport invalidates this memo and
+		 * picks a new tier; in practice resize is rare and the manifest
+		 * itself is ~5 kB. */
 		return muxLoopHlsSrc(playbackId, {
 			videoWidthPx: vw,
 			videoHeightPx: vh,
+			containerWidthPx: slotWidthPx,
+			containerHeightPx: slotHeightPx,
+			devicePixelRatio,
 		});
-	}, [playbackId, dims]);
+	}, [playbackId, dims, slotWidthPx, slotHeightPx, devicePixelRatio]);
 
 	const objectCoverVideoPx =
 		dims && !dims.isFallback
@@ -342,6 +455,18 @@ export function MediaVideoLoop({
 	const tryPlay = useCallback(() => {
 		const el = videoRef.current;
 		if (!el) return;
+		/* Never call play() before the element has a source AND at least
+		 * loaded its metadata. The promise rejects with NotAllowedError
+		 * otherwise — Safari interprets each such rejection as an autoplay-
+		 * abuse signal and decrements the per-origin MediaEngagement score.
+		 * After two of these (which mount currently triggers — useLayoutEffect
+		 * tryPlay + the isActive effect both fire before useMuxHlsSource has
+		 * assigned `src`) Safari blacklists autoplay for the whole session,
+		 * and the *legitimate* canplay-triggered play() then also fails. The
+		 * canplay listener is what actually plays the video on Safari — this
+		 * guard makes sure we never poison the score before that fires. */
+		if (!el.currentSrc && !el.src) return;
+		if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
 		const p = el.play();
 		if (p !== undefined) {
 			p.catch(() => {
@@ -399,7 +524,8 @@ export function MediaVideoLoop({
 			el.pause();
 			return;
 		}
-		if (el.ended) {
+		/* Stacked intro slides always restart on activation (manual pick or auto-advance). */
+		if (stackedSlide || el.ended) {
 			el.currentTime = 0;
 		}
 		/* Inactive slides may have hidden the poster during background HLS decode — restore
@@ -414,6 +540,10 @@ export function MediaVideoLoop({
 		if (reducedMotion) return;
 
 		const play = () => {
+			/* Same Safari-engagement guard as `tryPlay`. The `canplay` listener
+			 * below catches the case where this fires before src is ready. */
+			if (!el.currentSrc && !el.src) return;
+			if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
 			void el.play().catch(() => {});
 		};
 		play();
@@ -569,7 +699,7 @@ export function MediaVideoLoop({
 				<button
 					type="button"
 					onClick={onToggleMute}
-					aria-label={muted ? "Sound einschalten" : "Sound ausschalten"}
+					aria-label={muted ? "Turn sound on" : "Turn sound off"}
 					aria-pressed={!muted}
 					className={clsx(
 						"absolute right-sm bottom-sm z-20",

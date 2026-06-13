@@ -154,7 +154,12 @@ export function muxHlsSrc(
 		u.searchParams.set("rendition_order", "desc");
 	}
 	if (opts.minResolutionTier) {
-		u.searchParams.set("min_resolution_tier", opts.minResolutionTier);
+		/* Mux's documented parameter name is `min_resolution` (not
+		 * `min_resolution_tier`) — unknown params are silently dropped, so the
+		 * previous `min_resolution_tier=...` was a no-op and the manifest
+		 * contained every rendition from the asset's lowest tier upward.
+		 * Safari then naturally started ABR from the bottom rung. */
+		u.searchParams.set("min_resolution", opts.minResolutionTier);
 	}
 	if (opts.maxResolutionTier) {
 		u.searchParams.set("max_resolution", opts.maxResolutionTier);
@@ -163,15 +168,16 @@ export function muxHlsSrc(
 }
 
 /**
- * DPR cap for loop renditions. 1.25 picks 1440p (instead of 1080p) on a
- * common 1920×1080 retina hero — the next-tier-up source crispens noticeably
- * at the cost of ~60–80 % more bytes per loop. Drop to 1.0 to revert; raise
- * to 1.5 to push 2160p on the largest containers (variant 2 in the plan).
+ * DPR cap for loop renditions. 2.0 honors retina (effective 2× CSS pixels)
+ * so a 1920×1080 retina hero targets 2160p and gets served 4K; phones with
+ * DPR=3 are clamped to 2× so they don't accidentally pull 4K just because
+ * the OS reports a high density screen. Drop to 1.5 if 4K turns out too
+ * heavy network-wise even on retina.
  */
-export const LOOP_VIDEO_DPR_CAP = 1.25;
+export const LOOP_VIDEO_DPR_CAP = 2.0;
 
-/** Hard manifest ceiling for silent loops (1440p QHD — between 4K and 1080p). */
-export const LOOP_VIDEO_MAX_TIER: MuxResolutionTier = "1440p";
+/** Hard manifest ceiling for silent loops (2160p / 4K UHD). */
+export const LOOP_VIDEO_MAX_TIER: MuxResolutionTier = "2160p";
 
 /** Poster width cap — hero loops; `srcset` tops out here (still retina-sharp at ~1 MB WebP). */
 export const LOOP_POSTER_MAX_WIDTH_PX = 1920;
@@ -260,7 +266,71 @@ export function computeObjectCoverTargetPx(args: {
 	return { targetW: cw, targetH: cw / videoAspect };
 }
 
-/** HLS URL tuned for silent loops: quality floor + viewport-aware ceiling (max 1440p). */
+/**
+ * Network-aware ceiling derived from the Network Information API.
+ *
+ * Only Chromium-family browsers expose `navigator.connection`; Safari and
+ * Firefox return `undefined`, and we then fall back to the hard ceiling
+ * ({@link LOOP_VIDEO_MAX_TIER}) so the container-size signal alone decides
+ * the tier — i.e. on Safari we **assume a good connection** rather than
+ * pessimise. Users on bad connections + Safari + a large screen will see
+ * the loop stall instead of degrade; accepted trade-off.
+ *
+ * `effectiveType` is a coarse synthetic bucket the browser updates
+ * conservatively; `downlink` is the raw Mbps estimate. We honour
+ * `saveData` (the explicit user opt-in to data-frugality) above both.
+ */
+export function getNetworkAwareTierCeiling(): MuxResolutionTier {
+	if (typeof navigator === "undefined") return LOOP_VIDEO_MAX_TIER;
+	type NetworkInformation = {
+		effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
+		downlink?: number;
+		saveData?: boolean;
+	};
+	const conn = (navigator as Navigator & { connection?: NetworkInformation })
+		.connection;
+	if (!conn) return LOOP_VIDEO_MAX_TIER;
+
+	if (conn.saveData === true) return "720p";
+
+	const eff = conn.effectiveType;
+	if (eff === "slow-2g" || eff === "2g") return "480p";
+	if (eff === "3g") return "720p";
+
+	const dl = conn.downlink;
+	if (typeof dl === "number") {
+		if (dl < 2) return "720p";
+		if (dl < 5) return "1080p";
+		if (dl < 15) return "1440p";
+	}
+
+	return LOOP_VIDEO_MAX_TIER;
+}
+
+/**
+ * HLS URL tuned for silent loops: container-aware tier (DPR-capped, up to
+ * 4K) combined with a network-aware ceiling, then pinned as both min and
+ * max in the manifest so ABR has nothing to ramp through.
+ *
+ * Why a single-tier manifest: Safari's native HLS picks conservatively from
+ * the lowest available rendition and ramps up over several segments. For a
+ * 4–5 s loop the top rendition is often never reached before the loop
+ * restarts. Pinning `min` = `max` forces both Safari and hls.js to play
+ * exactly the tier we chose, from frame 1 onward.
+ *
+ * Tier selection takes the minimum of:
+ *  - **Container tier** — derived from container width × height × capped DPR
+ *    (see {@link computeLoopVideoTarget}). A 1920×1080 retina hero targets
+ *    2160p; an iPhone hero with portrait container + landscape video math
+ *    targets 1440p; tiny inline loops target 720p or below.
+ *  - **Network tier** — from {@link getNetworkAwareTierCeiling}. On Chrome
+ *    this throttles back for cellular / slow connections; on Safari this
+ *    is always {@link LOOP_VIDEO_MAX_TIER} (no API), so the container size
+ *    is the sole signal.
+ *
+ * Result: a desktop retina visitor on home wifi sees 4K, a phone on LTE
+ * sees 1080p–1440p, a phone on 3G sees 720p — all without ramp-up.
+ */
 export function muxLoopHlsSrc(
 	playbackId: string,
 	args: {
@@ -276,9 +346,9 @@ export function muxLoopHlsSrc(
 	const vw = args.videoWidthPx ?? 16;
 	const vh = args.videoHeightPx ?? 9;
 
-	let maxResolutionTier: MuxResolutionTier = LOOP_VIDEO_MAX_TIER;
+	let containerTier: MuxResolutionTier = LOOP_VIDEO_MAX_TIER;
 	if (cw > 0 && ch > 0) {
-		maxResolutionTier = computeLoopVideoTarget({
+		containerTier = computeLoopVideoTarget({
 			containerWidthPx: cw,
 			containerHeightPx: ch,
 			devicePixelRatio: args.devicePixelRatio,
@@ -287,10 +357,13 @@ export function muxLoopHlsSrc(
 		}).maxResolutionTier;
 	}
 
+	const networkTier = getNetworkAwareTierCeiling();
+	const resolutionTier = minResolutionTier(containerTier, networkTier);
+
 	return muxHlsSrc(playbackId, {
 		renditionOrderDesc: true,
-		minResolutionTier: "540p",
-		maxResolutionTier,
+		minResolutionTier: resolutionTier,
+		maxResolutionTier: resolutionTier,
 	});
 }
 

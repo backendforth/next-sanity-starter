@@ -129,6 +129,27 @@ export function useMuxHlsSource(
 			}
 		};
 
+		/* Safari native-HLS fast path. Skips the hls.js dynamic import (~50–100 KB
+		 * the browser would never use anyway) AND the MediaCapabilities codec
+		 * probe (only relevant for hls.js level picking — Safari does its own
+		 * rendition selection internally). Setting `video.src` synchronously
+		 * inside this effect means it lands inside the page-load autoplay
+		 * window; the previous async path delayed src by 200–500 ms, often
+		 * past the window — Safari then denied muted-autoplay silently and the
+		 * loading bridge waited for frames that never arrived. */
+		if (video.canPlayType("application/vnd.apple.mpegurl")) {
+			video.src = src;
+			/* Register the same cleanup as the hls.js path. Without this, an
+			 * effect re-run (StrictMode double-mount in dev, `src`-memo change
+			 * in prod) would leave the previous src in place — Safari then
+			 * re-loads on top of an already-loading element, which is the
+			 * "plays briefly then stops" failure mode. */
+			return () => {
+				cancelled = true;
+				detach();
+			};
+		}
+
 		/* Wait for both hls.js and the codec probe in parallel. The probe runs a
 		 * MediaCapabilities check (~10–50 ms) — when the device can't decode AV1
 		 * smoothly + power-efficiently (e.g. M1 / M2 — no HW AV1 decoder) it

@@ -12,6 +12,7 @@ import {
 	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
+	siteSettingsFaviconQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 	workQuery,
@@ -125,6 +126,28 @@ export const fetchSettingsSeoFallback = cache(
 			...options,
 		});
 		return data as PageSeo;
+	},
+);
+
+/**
+ * `siteSettings.favicon` URL for root metadata icons (per-locale document).
+ * Returns `null` when unset — the static `app/favicon.ico` then applies.
+ */
+export const fetchSiteSettingsFavicon = cache(
+	async (
+		locale: string,
+		options?: LiveFetchOptions,
+	): Promise<string | null> => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: siteSettingsFaviconQuery,
+			params: { locale },
+			...options,
+		});
+		const row = data as { faviconUrl?: string | null } | null;
+		const url =
+			typeof row?.faviconUrl === "string" ? row.faviconUrl.trim() : "";
+		return url || null;
 	},
 );
 

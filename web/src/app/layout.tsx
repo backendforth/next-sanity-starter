@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
 // import localFont from "next/font/local";
+import {
+	fetchSiteLanguageSettings,
+	fetchSiteSettingsFavicon,
+} from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { DocumentBootScript } from "@/src/components/theme/DocumentBootScript";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
-import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -72,20 +75,30 @@ import "../assets/styles/globals.css";
 // Usage on <html>: className={`... ${sans.variable} ${serif.variable}`}
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const metadata: Metadata = {
-	metadataBase: new URL(
-		process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
-	),
-	title: {
-		default: "Site",
-		template: "%s | Site",
-	},
-};
+/**
+ * Root shell metadata. The tab title (`siteSettings.title` + `%s | …` template)
+ * is owned by `app/[locale]/layout.tsx`; the favicon comes from
+ * `siteSettings.favicon` for the default locale, with the static
+ * `app/favicon.ico` as the fallback when unset (Next emits it automatically).
+ */
+export async function generateMetadata(): Promise<Metadata> {
+	const siteLocale = await fetchSiteLanguageSettings();
+	const faviconUrl = await fetchSiteSettingsFavicon(siteLocale.defaultLocale, {
+		stega: false,
+	});
+	return {
+		metadataBase: new URL(
+			process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
+		),
+		...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
+	};
+}
 
 /**
  * Root shell only — avoid `headers()` here (keeps static routes static where possible).
  * `draftMode()` only toggles Visual Editing UI; locale chrome lives in `app/[locale]/layout.tsx`.
- * `lang` defaults to the site default; `LanguageProvider` syncs `<html lang>` on the client after navigation.
+ * `lang` is the Sanity site default (`siteLanguageSettings.defaultLanguageId`, deduped via
+ * React `cache`); `LanguageProvider` syncs `<html lang>` on the client after navigation.
  */
 export default async function RootLayout({
 	children,
@@ -96,10 +109,11 @@ export default async function RootLayout({
 	const isDraft = draft.isEnabled;
 	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
 	const shouldMountSanityLive = hasReadToken || isDraft;
+	const siteLocale = await fetchSiteLanguageSettings();
 
 	return (
 		<html
-			lang={FALLBACK_SITE_LOCALE_CONFIG.defaultLocale}
+			lang={siteLocale.defaultLocale}
 			// Add font variables here once next/font/local is wired up:
 			// className={`h-full antialiased ${sans.variable} ${serif.variable}`}
 			className="h-full antialiased"

@@ -851,6 +851,13 @@ export type SiteSettingsTitleQueryResult = {
 } | null;
 
 // Source: sanity/queries/snippets/settings.ts
+// Variable: siteSettingsFaviconQuery
+// Query: *[_type == "siteSettings" && language == $locale][0]{  "faviconUrl": favicon.asset->url}
+export type SiteSettingsFaviconQueryResult = {
+  faviconUrl: string | null;
+} | null;
+
+// Source: sanity/queries/snippets/settings.ts
 // Variable: siteSettingsSeoFallbackQuery
 // Query: *[_type == "siteSettings" && language == $locale][0]{  "title": seo.title,  "description": seo.description,  "imageUrl": seo.image.asset->url}
 export type SiteSettingsSeoFallbackQueryResult = {
@@ -941,6 +948,7 @@ declare module "@sanity/client" {
   interface SanityQueries {
     '*[_id == "siteLanguageSettings"][0]{\n  _id,\n  availableLanguages[]{id, title},\n  defaultLanguageId\n}': SiteLanguageSettingsQueryResult;
     '*[_type == "siteSettings" && language == $locale][0]{title}': SiteSettingsTitleQueryResult;
+    '*[_type == "siteSettings" && language == $locale][0]{\n  "faviconUrl": favicon.asset->url\n}': SiteSettingsFaviconQueryResult;
     '*[_type == "siteSettings" && language == $locale][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
     '*[_type == "siteCookieBanner" && language == $locale][0]{\n  _id,\n  language,\n  useCookieBanner,\n  consentModal,\n  preferencesModal\n}': SiteCookieBannerLayoutQueryResult;
     '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current,\n  language\n}': PageSlugsQueryResult;

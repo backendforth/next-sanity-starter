@@ -12,7 +12,11 @@ name: Dependabot auto-merge
 
 on:
   pull_request:
-    branches: [main]
+    # Both branches are treated as parallel main lines; Dependabot opens
+    # PRs against both (see dependabot.yml).
+    branches:
+      - main
+      - variant/document-level
 
 permissions:
   contents: write

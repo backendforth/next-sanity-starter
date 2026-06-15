@@ -1,20 +1,34 @@
 version: 2
+
+# Two parallel pipelines because `main` and `variant/document-level` are
+# treated as independently-shipped lines of the starter, not as
+# trunk + downstream. Dependabot reads this file from the default branch
+# only (`main`); the `target-branch` field is what fans updates out.
+#
+# Both entries share the same shape:
+#   - monthly schedule (first Monday 06:00 CET)
+#   - one catch-all `all-non-major` group bundles every minor + patch
+#     across the workspace into a single PR per run; majors stay
+#     individual for manual review (e.g. Next 16→17, React 19→20)
+#   - `@types/node` major bumps ignored (pinned to Node 22 LTS)
+#
+# Keep the two entries in lockstep — when editing either, mirror the
+# change to the other.
+#
+# Security advisories are NOT schedule-gated and arrive immediately on
+# both branches regardless of the monthly cadence.
+
 updates:
+  # ── main ───────────────────────────────────────────────────────────────────
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      # Monthly cadence — fires on the first matching day of the month.
-      # Security advisories are NOT schedule-gated; they still arrive immediately.
       interval: monthly
       day: monday
       time: "06:00"
       timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:
-      # Catch-all bundle: every minor + patch bump across the workspace
-      # (web, studio, packages/*) lands in one PR per run.
-      # Majors fall outside this filter and open as individual PRs for
-      # manual review (e.g. Next 16→17, React 19→20).
       all-non-major:
         patterns:
           - "*"
@@ -22,8 +36,29 @@ updates:
           - "minor"
           - "patch"
     ignore:
-      # @types/node must track the runtime (Node 22 LTS), not the latest major.
-      # Allow minor/patch within v22; block major bumps (e.g. 25.x).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+    labels:
+      - "dependencies"
+
+  # ── variant/document-level ─────────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: "/"
+    target-branch: "variant/document-level"
+    schedule:
+      interval: monthly
+      day: monday
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
+    groups:
+      all-non-major:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
     labels:

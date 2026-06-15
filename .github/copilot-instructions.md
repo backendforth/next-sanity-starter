@@ -56,4 +56,4 @@ Check `git rev-parse --abbrev-ref HEAD` and the actual file layout on the branch
 
 `pnpm typecheck` passes, `pnpm format` clean, gen artifacts committed if schema changed, all 8 module wiring points touched (when applicable), no `--no-verify`.
 
-<!-- smoke-test: Slack PR notification pipeline -->
+<!-- smoke-test: Slack PR notification pipeline (v2) -->

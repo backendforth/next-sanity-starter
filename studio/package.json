@@ -25,7 +25,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "rxjs": "^7.8.2",
-    "sanity": "^5.30.0",
+    "sanity": "^6.0.0",
     "sanity-plugin-internationalized-array": "^5.1.8",
     "sanity-plugin-media": "^4.3.1",
     "sanity-plugin-mux-input": "^2.19.0",

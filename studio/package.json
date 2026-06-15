@@ -6,6 +6,7 @@
     "dev": "node scripts/dev-with-hint.mjs",
     "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
     "migrate:project-body-rich-text": "node scripts/migrate-project-body-rich-text.mjs",
+    "mux:migrate-assets": "node scripts/mux-migrate-assets.mjs",
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy",

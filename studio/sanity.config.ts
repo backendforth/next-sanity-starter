@@ -76,8 +76,12 @@ export default defineConfig({
     ...(isDev ? [visionTool()] : []),
     media(),
     muxInput({
-      video_quality: "premium",
-      max_resolution_tier: "2160p",
+      // QHD cap — between 4K source and 1080p delivery on smaller viewports.
+      max_resolution_tier: "1440p",
+      // Per-title encoding: lower bitrates on simple loops without visible loss.
+      video_quality: "plus",
+      // No download/embed flows — HLS-only playback on the site.
+      mp4_support: "none",
     }),
     netlifyTool(),
     internationalizedArray({

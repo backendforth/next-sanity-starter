@@ -1,0 +1,13 @@
+name: PR Slack notify
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, closed]
+    branches:
+      - main
+      - variant/document-level
+
+jobs:
+  notify:
+    uses: backendforth/.github/.github/workflows/pr-slack-summary.yml@main
+    secrets: inherit

@@ -40,7 +40,7 @@
 		"postcss-import": "^16.1.1",
 		"postcss-nested-ancestors": "^3.0.0",
 		"sanity": "^5.30.0",
-		"tailwindcss": "^4.3.0",
+		"tailwindcss": "^4.3.1",
 		"typescript": "^6.0.3"
 	}
 }

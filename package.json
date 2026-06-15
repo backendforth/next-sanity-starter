@@ -36,7 +36,7 @@
 		}
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.16",
+		"@biomejs/biome": "^2.5.0",
 		"husky": "^9.1.7"
 	},
 	"packageManager": "pnpm@10.21.0"

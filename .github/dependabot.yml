@@ -3,15 +3,24 @@ updates:
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: weekly
+      # Monthly cadence — fires on the first matching day of the month.
+      # Security advisories are NOT schedule-gated; they still arrive immediately.
+      interval: monthly
       day: monday
-    open-pull-requests-limit: 10
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 5
     groups:
-      sanity-ecosystem:
+      # Catch-all bundle: every minor + patch bump across the workspace
+      # (web, studio, packages/*) lands in one PR per run.
+      # Majors fall outside this filter and open as individual PRs for
+      # manual review (e.g. Next 16→17, React 19→20).
+      all-non-major:
         patterns:
-          - "sanity"
-          - "@sanity/*"
-          - "sanity-plugin-*"
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       # @types/node must track the runtime (Node 22 LTS), not the latest major.
       # Allow minor/patch within v22; block major bumps (e.g. 25.x).

@@ -1,0 +1,39 @@
+name: Dependabot auto-merge
+
+# Enables GitHub auto-merge on Dependabot PRs for patch + minor bumps
+# (including grouped PRs). GitHub then waits for ALL required checks to
+# pass before squash-merging. Auto-merge ≠ merge-regardless — failing CI
+# leaves the PR sitting open until you act on it.
+#
+# Major bumps fall through and remain manual: fetch-metadata reports the
+# highest update-type across a group, and our dependabot.yml group filter
+# (`update-types: [minor, patch]`) excludes majors, so single-major PRs
+# return `version-update:semver-major` and skip the merge step.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch + minor
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+          steps.meta.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

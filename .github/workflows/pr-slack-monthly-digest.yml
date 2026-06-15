@@ -1,0 +1,11 @@
+name: PR monthly Slack digest
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+jobs:
+  digest:
+    uses: backendforth/.github/.github/workflows/pr-slack-monthly-digest.yml@main
+    secrets: inherit

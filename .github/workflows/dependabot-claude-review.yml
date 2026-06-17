@@ -1,0 +1,82 @@
+name: Dependabot Claude review
+
+# Reviews open Dependabot MAJOR-version PRs (patch/minor are handled by
+# dependabot-auto-merge.yml). Runs on a schedule so it has full secret access
+# and merge rights — a Dependabot-triggered `pull_request` run would have a
+# read-only token and no secrets.
+#
+# scan (deterministic) → research (OpenRouter/Gemini, real release notes)
+#   → Claude reads the reports and decides: safe → enable auto-merge,
+#     otherwise comment the breaking-change report and leave the PR open.
+#
+# Prerequisites: repo secrets CLAUDE_CODE_OAUTH_TOKEN + OPENROUTER_API_KEY,
+# the Claude GitHub App installed, and "Allow auto-merge" enabled in repo settings.
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  review:
+    if: github.repository == 'backendforth/next-sanity-starter'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scan Dependabot PRs
+        id: scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node .github/scripts/dependabot-scan.mjs
+
+      - name: Research breaking changes (OpenRouter / Gemini Flash)
+        if: steps.scan.outputs.count != '0'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: google/gemini-3.5-flash
+          CANDIDATES: ${{ steps.scan.outputs.candidates }}
+        run: node .github/scripts/breaking-change-research.mjs > /tmp/reports.json
+
+      - name: Claude decides + acts
+        if: steps.scan.outputs.count != '0'
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--max-turns 40"
+          prompt: |
+            You are gating auto-merge of Dependabot **major** version PRs in this repo.
+
+            Read the breaking-change reports in `/tmp/reports.json`. It is a JSON array;
+            each entry has: number, package, hasBreakingChanges, dataQuality, summary,
+            breakingChanges[], migrationNotes, hadReleaseNotes.
+
+            For EACH entry, act on its PR (`gh` is authenticated):
+
+            1. SAFE — only if `hasBreakingChanges === false` AND `dataQuality === "high"`:
+               - Enable auto-merge: `gh pr merge <number> --auto --squash`
+               - Post a short comment confirming auto-merge was enabled, with a one-line
+                 reason from the report.
+            2. NOT SAFE — `hasBreakingChanges` is true, OR `dataQuality` is not "high",
+               OR data was missing (`hadReleaseNotes === false`):
+               - Do NOT merge. Post a comment with the breaking-change summary, the
+                 notable breaking changes, and any migration notes, plus a clear
+                 recommendation for a human.
+
+            EVERY comment you post MUST start with the exact line `<!-- claude-dep-review -->`
+            (an HTML marker) so the PR is not reviewed again. Keep comments concise.
+            Do not push code, edit files, or touch any PR not present in the reports.

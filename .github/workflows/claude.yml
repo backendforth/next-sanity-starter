@@ -37,6 +37,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      id-token: write # required: the action fetches its GitHub App token via OIDC
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -1,0 +1,81 @@
+name: Dependabot council
+
+# On-demand "breaking-change council" for hard Dependabot MAJOR PRs.
+# Triggered by the ⚖️ reaction in Slack (→ claude-slack-bridge → repository_dispatch)
+# or manually via workflow_dispatch. Runs on a dispatch/manual trigger so it has
+# full secret access — the Dependabot `pull_request` event would have none.
+#
+# Claude is the analyst + chair: it analyses the breaking changes, researches
+# migration fixes, then hands its evaluation to a council of 4x Gemini 3.1 Flash
+# Lite (council.mjs) that deliberate over two rounds. Claude posts ONE advisory
+# comment with the analysis + council verdict + recommendation. No merge, no push.
+
+on:
+  repository_dispatch:
+    types: [council]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to convene the council on
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write # claude-code-action fetches its GitHub App token via OIDC
+
+jobs:
+  council:
+    if: github.repository == 'backendforth/next-sanity-starter'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve target PR
+        id: target
+        run: |
+          PR="${{ github.event.inputs.pr || github.event.client_payload.pr }}"
+          if [ -z "$PR" ]; then echo "no PR number supplied"; exit 1; fi
+          echo "pr=$PR" >> "$GITHUB_OUTPUT"
+          echo "Convening council on PR #$PR"
+
+      - name: Convene council
+        uses: anthropics/claude-code-action@v1
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--max-turns 40"
+          prompt: |
+            You are the analyst and chair of a "breaking-change council" for
+            Dependabot MAJOR dependency PR #${{ steps.target.outputs.pr }} in this repository.
+
+            Do this in order:
+            1. Inspect the PR: `gh pr view ${{ steps.target.outputs.pr }} --json title,body,headRefName`
+               and `gh pr diff ${{ steps.target.outputs.pr }}`. Identify the dependency
+               (or grouped dependencies) and the from -> to MAJOR versions.
+            2. Research the BREAKING CHANGES between those versions (release notes,
+               changelog, migration guides) and assess how they affect THIS codebase.
+               Propose concrete migration fixes.
+            3. Write your evaluation to `/tmp/eval.json` — breaking changes, affected
+               files/areas, proposed fixes, and your own risk read.
+            4. Convene the council: run `node .github/scripts/council.mjs /tmp/eval.json`.
+               It returns the two-round deliberation of 4 independent reviewers as JSON
+               on stdout. Read it.
+            5. Post exactly ONE comment on PR #${{ steps.target.outputs.pr }} containing:
+               - a short breaking-change summary,
+               - the proposed migration fixes,
+               - the council's verdict (tally, key risks, conditions),
+               - your final recommendation.
+               The comment MUST start with the exact marker line `<!-- dep-council -->`.
+
+            This is advisory ONLY: do NOT merge the PR and do NOT push any code.
+            If a comment starting with `<!-- dep-council -->` already exists, post an
+            updated assessment rather than duplicating boilerplate.

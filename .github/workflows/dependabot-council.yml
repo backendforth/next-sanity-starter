@@ -79,3 +79,29 @@ jobs:
             This is advisory ONLY: do NOT merge the PR and do NOT push any code.
             If a comment starting with `<!-- dep-council -->` already exists, post an
             updated assessment rather than duplicating boilerplate.
+
+      # Ping #github-logs when the council finishes (best-effort; reuses the org
+      # Slack secrets). Skips cleanly if the Slack secrets aren't present.
+      - name: Notify Slack
+        if: always()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          STATUS: ${{ job.status }}
+          PR: ${{ steps.target.outputs.pr }}
+        run: |
+          if [ -z "$SLACK_BOT_TOKEN" ] || [ -z "$SLACK_CHANNEL_ID" ]; then
+            echo "Slack secrets not set; skipping notify"; exit 0
+          fi
+          PR_URL="${{ github.server_url }}/${{ github.repository }}/pull/$PR"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ "$STATUS" = "success" ]; then
+            TEXT="⚖️ Council finished on \`${{ github.repository }}\`#${PR} — ${PR_URL}"
+          else
+            TEXT="⚠️ Council run ${STATUS} on \`${{ github.repository }}\`#${PR} — ${RUN_URL}"
+          fi
+          curl -sS -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$(jq -n --arg c "$SLACK_CHANNEL_ID" --arg t "$TEXT" '{channel:$c,text:$t}')" \
+            | jq -e '.ok' >/dev/null || echo "slack chat.postMessage failed"

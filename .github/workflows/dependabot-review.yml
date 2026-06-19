@@ -1,0 +1,84 @@
+name: Dependabot review
+
+# Automatic Claude review of every Dependabot PR (the monthly grouped minor/patch
+# PR and individual major PRs). Uses `pull_request_target` so it has secret access
+# — the plain Dependabot `pull_request` event gets a read-only token and no secrets.
+#
+# SECURITY: the review is DIFF-ONLY. We check out the BASE branch (never the PR
+# head), and Claude is instructed to read the diff + changelogs only — never to
+# install, build, or execute the PR's dependency code. So no untrusted code runs
+# with secrets present.
+#
+# Advisory only: posts a review comment with a recommendation; humans merge.
+# (Trivial patch/minor still auto-merge via dependabot-auto-merge.yml.)
+# For hard majors, convene the deeper council on demand (⚖️ / dependabot-council.yml).
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write # claude-code-action fetches its GitHub App token via OIDC
+
+jobs:
+  review:
+    if: >-
+      github.repository == 'backendforth/next-sanity-starter' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base (never the PR head)
+        uses: actions/checkout@v4
+
+      - name: Claude reviews the bump
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--max-turns 25"
+          prompt: |
+            Auto-review Dependabot PR #${{ github.event.pull_request.number }}
+            ("${{ github.event.pull_request.title }}") in this repository.
+
+            1. Read it: `gh pr view ${{ github.event.pull_request.number }} --json title,body`
+               and `gh pr diff ${{ github.event.pull_request.number }}`. List each dependency
+               bump (name, from -> to, semver level).
+            2. For notable bumps (especially majors), check release notes / changelog for
+               BREAKING CHANGES and assess the risk to THIS codebase — does our code use the
+               changed APIs?
+            3. Post exactly ONE review comment, starting with the marker line
+               `<!-- dep-review -->`, containing:
+               - a one-line verdict (✅ safe to merge / ⚠️ needs attention),
+               - the notable changes, and
+               - anything we should adjust before or after merging.
+
+            SECURITY: review by reading the diff and changelogs ONLY. Do NOT run
+            `pnpm install`, do NOT build, do NOT execute any project or dependency code,
+            and do NOT check out the PR head. Do NOT merge. If a `<!-- dep-review -->`
+            comment already exists, update it instead of duplicating.
+
+      # Ping #github-logs when the review finishes (best-effort; reuses org Slack secrets).
+      - name: Notify Slack
+        if: always()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          STATUS: ${{ job.status }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "$SLACK_BOT_TOKEN" ] || [ -z "$SLACK_CHANNEL_ID" ]; then
+            echo "Slack secrets not set; skipping notify"; exit 0
+          fi
+          PR_URL="${{ github.server_url }}/${{ github.repository }}/pull/$PR"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ "$STATUS" = "success" ]; then
+            TEXT="🤖 Claude reviewed Dependabot PR \`${{ github.repository }}\`#${PR} — ${PR_URL}"
+          else
+            TEXT="⚠️ Dependabot review ${STATUS} on \`${{ github.repository }}\`#${PR} — ${RUN_URL}"
+          fi
+          curl -sS -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$(jq -n --arg c "$SLACK_CHANNEL_ID" --arg t "$TEXT" '{channel:$c,text:$t}')" \
+            | jq -e '.ok' >/dev/null || echo "slack chat.postMessage failed"

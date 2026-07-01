@@ -27,7 +27,7 @@
     "sanity": "^6.3.0",
     "sanity-plugin-internationalized-array": "^5.1.9",
     "sanity-plugin-media": "^4.3.1",
-    "sanity-plugin-mux-input": "^3.0.0",
+    "sanity-plugin-mux-input": "^4.1.0",
     "sanity-plugin-netlify": "^1.4.0",
     "styled-components": "^6.4.3"
   },

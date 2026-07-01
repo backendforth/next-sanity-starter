@@ -65,8 +65,8 @@ importers:
         specifier: ^4.3.1
         version: 4.3.1(@emotion/is-prop-valid@1.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react-is@19.2.7)(react@19.2.7)(sanity@6.3.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.11)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(@sanity/cli-core@2.1.2(@noble/hashes@2.2.0)(@types/node@22.20.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(yaml@2.9.0))(@types/node@22.20.0)(@types/react@19.2.17)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.3)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3))(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
       sanity-plugin-mux-input:
-        specifier: ^3.0.0
-        version: 3.0.0(@emotion/is-prop-valid@1.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react-is@19.2.7)(react@19.2.7)(sanity@6.3.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.11)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(@sanity/cli-core@2.1.2(@noble/hashes@2.2.0)(@types/node@22.20.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(yaml@2.9.0))(@types/node@22.20.0)(@types/react@19.2.17)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.3)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3))(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
+        specifier: ^4.1.0
+        version: 4.1.0(@emotion/is-prop-valid@1.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sanity@6.3.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.11)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(@sanity/cli-core@2.1.2(@noble/hashes@2.2.0)(@types/node@22.20.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(yaml@2.9.0))(@types/node@22.20.0)(@types/react@19.2.17)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.3)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3))(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
       sanity-plugin-netlify:
         specifier: ^1.4.0
         version: 1.4.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react-is@19.2.7)(react@19.2.7)(sanity@6.3.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.11)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(@sanity/cli-core@2.1.2(@noble/hashes@2.2.0)(@types/node@22.20.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(yaml@2.9.0))(@types/node@22.20.0)(@types/react@19.2.17)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.3)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3))(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
@@ -4243,9 +4243,6 @@ packages:
   mdurl@2.0.0:
     resolution: {integrity: sha512-Lf+9+2r+Tdp5wXDXC4PcIBjTDtq4UKjCPMQhKIuzpJNW0b96kVqSwW0bT7FhRSfmAiFYgP+SCRvdrDozfh0U5w==}
 
-  media-chrome@4.19.0:
-    resolution: {integrity: sha512-HWhDTwts+BSbdPkkB1VsJXp5kvL0IxY7xFT5tBwliM2+89kTPVTnHnev+9it2f9PweANjT/C8/C/S0PW9oyZbA==}
-
   media-chrome@4.19.2:
     resolution: {integrity: sha512-4ai1ITN8wBhwugQcRgqe3tN0z6OSKGOXqHLNrS04MgKFfsLqu6Dm8MPq02pI9Y9ZKoXtFjIl85jOryIW9es3BA==}
 
@@ -4999,13 +4996,12 @@ packages:
       sanity: ^3.78 || ^4.0.0-0 || ^5 || ^6.0.0-0
       styled-components: ^6.1
 
-  sanity-plugin-mux-input@3.0.0:
-    resolution: {integrity: sha512-dFXS+Adep1Mbz0iddoIONFHvj5UjUmVOpDpFuYleb2ES65VK5ewIrT7/XBIpwkzQJqnoirr4ecXhFpjML19LmA==}
-    engines: {node: '>=18'}
+  sanity-plugin-mux-input@4.1.0:
+    resolution: {integrity: sha512-RYHN6bF1QiRMgKDXPsHnTpgcnciiwm+ZDlJJYXUQzxR1wg46EJLK6VhqAUtD3id16wkUpFknZpQiU+EkrMNKDQ==}
+    engines: {node: '>=20.19 <22 || >=22.12'}
     peerDependencies:
       react: ^18.3 || ^19
-      react-is: ^18.3 || ^19
-      sanity: ^4.0.0 || ^5.0.0 || ^6.0.0
+      sanity: ^5 || ^6.0.0-0
       styled-components: ^5 || ^6
 
   sanity-plugin-netlify@1.4.0:
@@ -7500,7 +7496,7 @@ snapshots:
     dependencies:
       '@mux/mux-video': 0.31.0
       '@mux/playback-core': 0.35.0
-      media-chrome: 4.19.0(react@19.2.7)
+      media-chrome: 4.19.2(react@19.2.7)
       player.style: 0.3.4(react@19.2.7)
     transitivePeerDependencies:
       - react
@@ -10281,12 +10277,6 @@ snapshots:
 
   mdurl@2.0.0: {}
 
-  media-chrome@4.19.0(react@19.2.7):
-    dependencies:
-      ce-la-react: 0.3.2(react@19.2.7)
-    transitivePeerDependencies:
-      - react
-
   media-chrome@4.19.2(react@19.2.7):
     dependencies:
       ce-la-react: 0.3.2(react@19.2.7)
@@ -11079,12 +11069,12 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  sanity-plugin-mux-input@3.0.0(@emotion/is-prop-valid@1.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react-is@19.2.7)(react@19.2.7)(sanity@6.3.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.11)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(@sanity/cli-core@2.1.2(@noble/hashes@2.2.0)(@types/node@22.20.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(yaml@2.9.0))(@types/node@22.20.0)(@types/react@19.2.17)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.3)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3))(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)):
+  sanity-plugin-mux-input@4.1.0(@emotion/is-prop-valid@1.4.0)(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(sanity@6.3.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.2.0)(@oclif/core@4.11.11)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.1.3)(vite@8.1.0(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(@sanity/cli-core@2.1.2(@noble/hashes@2.2.0)(@types/node@22.20.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(yaml@2.9.0))(@types/node@22.20.0)(@types/react@19.2.17)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.8)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(rolldown@1.1.3)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@6.0.3))(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)):
     dependencies:
+      '@mux/mux-player': 3.13.0(react@19.2.7)
       '@mux/mux-player-react': 3.13.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@mux/upchunk': 3.5.0
       '@sanity/icons': 3.7.4(react@19.2.7)
-      '@sanity/incompatible-plugin': 1.0.5(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@sanity/ui': 3.2.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react-is@19.2.7)(react@19.2.7)(styled-components@6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
       '@sanity/uuid': 3.0.3
       iso-639-1: 3.1.5
@@ -11098,8 +11088,9 @@ snapshots:
       scroll-into-view-if-needed: 3.1.0
       styled-components: 6.4.3(css-to-react-native@3.2.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       suspend-react: 0.1.3(react@19.2.7)
-      swr: 2.4.1(react@19.2.7)
+      swr: 2.4.2(react@19.2.7)
       type-fest: 4.41.0
+      use-device-pixel-ratio: 1.1.2(react@19.2.7)
       use-error-boundary: 2.0.6(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     transitivePeerDependencies:
       - '@emotion/is-prop-valid'

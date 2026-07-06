@@ -2,7 +2,7 @@ name: PR monthly Slack digest
 
 on:
   schedule:
-    - cron: "0 11 1 * *" # 11:00 UTC (~12:00 Europe/Berlin), 1st of each month
+    - cron: "0 11 2 * *" # 2nd of month, 11:00 UTC (~12:00 Europe/Berlin) — day after Dependabot opens its bundles on the 1st
   workflow_dispatch:
 
 jobs:

@@ -1,4 +1,4 @@
-import { HomeIcon } from "@sanity/icons";
+import { HomeIcon } from "@sanity/icons/Home";
 import type { StructureBuilder } from "sanity/structure";
 
 export function homeStructureItem(S: StructureBuilder) {

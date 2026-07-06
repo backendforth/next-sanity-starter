@@ -1,4 +1,4 @@
-import { TextIcon } from "@sanity/icons";
+import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 
 export const moduleText = defineType({

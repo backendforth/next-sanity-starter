@@ -1,4 +1,5 @@
-import { ImageIcon, PlayIcon } from "@sanity/icons";
+import { ImageIcon } from "@sanity/icons/Image";
+import { PlayIcon } from "@sanity/icons/Play";
 import { defineType, type PreviewValue } from "sanity";
 
 import { getDurationString } from "../../../utils/helpers";

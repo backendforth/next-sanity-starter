@@ -1,4 +1,4 @@
-import { SunIcon } from "@sanity/icons";
+import { SunIcon } from "@sanity/icons/Sun";
 import { defineField, defineType } from "sanity";
 
 /** Placed in **Navigation → Main Menu** to show the light/dark theme toggle at that position. */

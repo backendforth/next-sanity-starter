@@ -1,4 +1,6 @@
-import { DocumentTextIcon, SearchIcon, TextIcon } from "@sanity/icons";
+import { DocumentTextIcon } from "@sanity/icons/DocumentText";
+import { SearchIcon } from "@sanity/icons/Search";
+import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { validateSlug } from "../../utils/validateSlug";

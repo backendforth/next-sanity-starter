@@ -1,4 +1,6 @@
-import { HomeIcon, SearchIcon, TextIcon } from "@sanity/icons";
+import { HomeIcon } from "@sanity/icons/Home";
+import { SearchIcon } from "@sanity/icons/Search";
+import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";

@@ -1,4 +1,6 @@
-import { SearchIcon, TextIcon, ThLargeIcon } from "@sanity/icons";
+import { SearchIcon } from "@sanity/icons/Search";
+import { TextIcon } from "@sanity/icons/Text";
+import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
 
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";

@@ -1,4 +1,4 @@
-import { CaseIcon } from "@sanity/icons";
+import { CaseIcon } from "@sanity/icons/Case";
 import type { StructureBuilder } from "sanity/structure";
 
 export function projectsStructureItem(S: StructureBuilder) {

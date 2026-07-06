@@ -1,4 +1,4 @@
-import { TranslateIcon } from "@sanity/icons";
+import { TranslateIcon } from "@sanity/icons/Translate";
 import { defineField, defineType } from "sanity";
 
 /** Placed in **Navigation → Main Menu** to show the locale selector at that position. */

@@ -1,4 +1,5 @@
-import { ErrorOutlineIcon, TextIcon } from "@sanity/icons";
+import { ErrorOutlineIcon } from "@sanity/icons/ErrorOutline";
+import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 
 export const errorSettings = defineType({

@@ -1,4 +1,4 @@
-import { ControlsIcon } from "@sanity/icons";
+import { ControlsIcon } from "@sanity/icons/Controls";
 import type { StructureResolver } from "sanity/structure";
 
 import { errorSettingsStructureItem } from "./items/errorSettings";

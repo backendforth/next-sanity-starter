@@ -5,10 +5,10 @@ name: Dependabot auto-merge
 # pass before squash-merging. Auto-merge ≠ merge-regardless — failing CI
 # leaves the PR sitting open until you act on it.
 #
-# Major bumps fall through and remain manual: fetch-metadata reports the
-# highest update-type across a group, and our dependabot.yml group filter
-# (`update-types: [minor, patch]`) excludes majors, so single-major PRs
-# return `version-update:semver-major` and skip the merge step.
+# Major bumps remain manual: fetch-metadata reports the highest
+# update-type across a group, so the `all-major` bundle (see
+# dependabot.yml) returns `version-update:semver-major` and skips the
+# merge step.
 
 on:
   pull_request:

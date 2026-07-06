@@ -28,7 +28,7 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-      time: "06:00"
+      time: "13:00"
       timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:
@@ -55,7 +55,7 @@ updates:
     target-branch: "variant/document-level"
     schedule:
       interval: monthly
-      time: "06:00"
+      time: "13:00"
       timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:

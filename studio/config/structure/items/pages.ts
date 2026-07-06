@@ -1,4 +1,4 @@
-import { DocumentTextIcon } from "@sanity/icons";
+import { DocumentTextIcon } from "@sanity/icons/DocumentText";
 import type { StructureBuilder } from "sanity/structure";
 
 export function pagesStructureItem(S: StructureBuilder) {

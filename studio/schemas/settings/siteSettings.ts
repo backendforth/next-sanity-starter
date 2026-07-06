@@ -1,4 +1,6 @@
-import { CogIcon, DesktopIcon, SearchIcon } from "@sanity/icons";
+import { CogIcon } from "@sanity/icons/Cog";
+import { DesktopIcon } from "@sanity/icons/Desktop";
+import { SearchIcon } from "@sanity/icons/Search";
 import { defineType } from "sanity";
 
 /** Global site settings. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */

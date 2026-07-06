@@ -1,4 +1,6 @@
-import { CaseIcon, SearchIcon, TextIcon } from "@sanity/icons";
+import { CaseIcon } from "@sanity/icons/Case";
+import { SearchIcon } from "@sanity/icons/Search";
+import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";

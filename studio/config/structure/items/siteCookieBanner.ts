@@ -1,4 +1,4 @@
-import { CodeBlockIcon } from "@sanity/icons";
+import { CodeBlockIcon } from "@sanity/icons/CodeBlock";
 import type { StructureBuilder } from "sanity/structure";
 
 export function siteCookieBannerStructureItem(S: StructureBuilder) {

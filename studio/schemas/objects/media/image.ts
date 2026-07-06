@@ -1,4 +1,4 @@
-import { ImageIcon } from "@sanity/icons";
+import { ImageIcon } from "@sanity/icons/Image";
 import { defineType } from "sanity";
 
 import { MediaImagePreview } from "../../../components/previews/MediaImagePreview";

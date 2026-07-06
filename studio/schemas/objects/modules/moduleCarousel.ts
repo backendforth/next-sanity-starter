@@ -1,4 +1,5 @@
-import { ImagesIcon, PlayIcon } from "@sanity/icons";
+import { ImagesIcon } from "@sanity/icons/Images";
+import { PlayIcon } from "@sanity/icons/Play";
 import { defineType, type PreviewValue } from "sanity";
 
 import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";

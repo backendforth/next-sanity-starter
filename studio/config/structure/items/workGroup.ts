@@ -1,4 +1,4 @@
-import { ThLargeIcon } from "@sanity/icons";
+import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import type { StructureBuilder } from "sanity/structure";
 
 import { projectCategoriesStructureItem } from "./projectCategories";

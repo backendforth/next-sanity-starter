@@ -1,4 +1,4 @@
-import { TagIcon } from "@sanity/icons";
+import { TagIcon } from "@sanity/icons/Tag";
 import { defineType } from "sanity";
 
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";

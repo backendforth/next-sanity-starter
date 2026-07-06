@@ -1,4 +1,6 @@
-import { CodeBlockIcon, StackIcon, ThLargeIcon } from "@sanity/icons";
+import { CodeBlockIcon } from "@sanity/icons/CodeBlock";
+import { StackIcon } from "@sanity/icons/Stack";
+import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
 import { defaultCookieSections } from "../../utils/defaultCookieSections";
 

@@ -50,6 +50,10 @@ export const SANITY_CACHE_TAGS = {
 	projectSlug: (slug: string) => `project-${slug}`,
 	sitemap: "site-pages",
 	siteLanguageSettings: "site-language-settings",
+	siteSettings: "site-settings",
+	siteNav: "site-nav",
+	siteCookieBanner: "site-cookie-banner",
+	errorSettings: "error-settings",
 } as const;
 
 // ── Page-by-slug ────────────────────────────────────────────────────────────

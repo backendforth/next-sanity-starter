@@ -1,8 +1,15 @@
-/** Instant fallback while the locale segment loads (Suspense / navigation). */
+/**
+ * Fallback while the locale segment loads (Suspense / navigation).
+ *
+ * `route-loading` (see `animations.css`) holds it invisible for 300 ms so
+ * prefetched/ISR navigations never flash it — the skeleton → content swap was
+ * a layout shift on every transition. Slow loads still get feedback after the
+ * delay.
+ */
 export default function LocaleLoading() {
 	return (
 		<div
-			className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container"
+			className="route-loading mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container"
 			role="status"
 			aria-live="polite"
 			aria-busy="true"

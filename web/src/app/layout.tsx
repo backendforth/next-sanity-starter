@@ -13,18 +13,24 @@ import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
-/** Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`). */
+/**
+ * Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`).
+ *
+ * `display: "swap"` paints text immediately in the metrics-adjusted fallback that
+ * `next/font` generates (`adjustFontFallback`), so first paint isn't held for up
+ * to 3s of invisible text (`block`) and the swap itself causes no layout shift.
+ */
 const geistSans = Geist({
 	subsets: ["latin"],
 	variable: "--font-family-sans",
-	display: "block",
+	display: "swap",
 });
 
 /** Tags, buttons, inline code — `font-mono` utilities. */
 const geistMono = Geist_Mono({
 	subsets: ["latin"],
 	variable: "--font-family-mono",
-	display: "block",
+	display: "swap",
 });
 
 /**

@@ -121,7 +121,7 @@ From `sitemapPagesQuery`:
 
 ### Navigation (`siteNav`)
 
-Full query is `siteNavQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (includes resolved links and embedded `modules[]`). **Smoke test** — document and raw menu fields:
+Full query is `siteNavMenusQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (resolved links, no `modules[]`). **Smoke test** — document and raw menu fields:
 
 ```groq
 *[_id == "siteNav"][0]{
@@ -132,11 +132,11 @@ Full query is `siteNavQuery` in [`snippets/settings.ts`](./snippets/settings.ts)
 }
 ```
 
-To match the app’s resolved links, use the exported `siteNavQuery` from code (long: expands each menu item with `linkQuery` and may include modules).
+To match the app’s resolved links, use the exported `siteNavMenusQuery` from code (expands each menu item with `linkQuery`).
 
 ### Site settings
 
-From `siteSettingsQuery`:
+The app fetches `siteSettings` field-scoped (`siteSettingsTitleQuery`, `siteSettingsFaviconQuery`, `siteSettingsSeoFallbackQuery`). Combined smoke test:
 
 ```groq
 *[_id == "siteSettings"][0]{
@@ -164,7 +164,7 @@ Omit favicon/SEO lines if you only need to verify the document:
 
 ### Settings + nav + errors + cookie banner (one object)
 
-Same shape as `settingsBundleQuery` — four sub-queries in one GROQ object (handy for Vision to compare with a single `client.fetch(settingsBundleQuery)`):
+Four sub-queries in one GROQ object — a handy Vision smoke test for all shell singletons at once (the app itself fetches them separately via the `fetch*` helpers):
 
 ```groq
 {

@@ -12,7 +12,7 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | `settings.ts` includes | `siteSettingsSeoFallbackQuery` | Standalone `siteSettings.seo` projection used once per request for route `generateMetadata` fallbacks. |
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
 | `link.ts` | `linkQuery` | Portable Text `link` marks: `internal` (route, slug, `resolvedReference`), `external` (href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
-| `settings.ts` | `siteSettingsQuery`, `siteNavQuery`, `errorSettingsQuery`, `siteCookieBannerQuery`, `navMenusQuery`, `settingsBundleQuery` | Singleton settings + combined nav menus + one-shot bundle |
+| `settings.ts` | `siteNavMenusQuery`, `navMenusQuery`, `errorSettingsQuery`, `siteCookieBannerLayoutQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery` | Lean singleton projections for the app shell (each fetched via its `fetch*` helper in `fetchSanityData.ts`) |
 | `sitemap.ts` | `pageSlugsQuery`, `sitemapPagesQuery` | Slug list for `[slug]` routes; sitemap rows include `home` + all `page` docs with `path` / `lastmod` fields |
 
 ## Using a snippet in a custom query (Next.js)
@@ -46,25 +46,21 @@ Use `imageQuery` / `videoQuery` inside object projections when you need consiste
 
 ## Singleton settings
 
-- **`siteNavQuery`** — full `siteNav` document (main + footer menus + modules).
+- **`siteNavMenusQuery`** — `siteNav` document with resolved main + footer menus (no `modules[]`).
 - **`navMenusQuery`** — only the `mainMenu` / `footerMenu` projections (embed in a larger query if needed).
-- **`settingsBundleQuery`** — one request returning `{ siteSettings, siteNav, errorSettings, siteCookieBanner }` for a layout / app shell.
+- **`errorSettingsQuery`** — 404 / 500 copy; deliberately no `modules[]` (no error page renders modules).
+
+Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from `navMenusQuery` + the lean projections instead if you need a custom shape.
 
 Example:
 
 ```ts
-import { settingsBundleQuery } from "@/sanity/queries";
+import { navMenusQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
-const shell = await client.fetch<{
-  siteSettings: unknown;
-  siteNav: unknown;
-  errorSettings: unknown;
-  siteCookieBanner: unknown;
-}>(settingsBundleQuery);
+const shellNavQuery = `*[_id == "siteNav"][0]{ _id, title, ${navMenusQuery} }`;
+const nav = await client.fetch(shellNavQuery);
 ```
-
-Tighten `unknown` with types from your app when you define document shapes.
 
 ## Using snippets with a client-side store
 
@@ -77,11 +73,11 @@ Example pattern with a small API route that wraps a snippet-based query:
 
 ```ts
 // app/api/site-shell/route.ts
-import { settingsBundleQuery } from "@/sanity/queries";
+import { siteNavMenusQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
 export async function GET() {
-  const data = await client.fetch(settingsBundleQuery);
+  const data = await client.fetch(siteNavMenusQuery);
   return Response.json(data);
 }
 ```

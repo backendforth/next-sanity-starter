@@ -13,8 +13,12 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
  */
 const ALLOWED_DOCUMENT_TYPES = new Set([
 	"home",
+	"work",
 	"page",
+	"project",
 	"siteSettings",
+	"siteNav",
+	"siteCookieBanner",
 	"errorSettings",
 	"siteLanguageSettings",
 ] as const);
@@ -131,6 +135,11 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		tags.push("site-pages");
 	}
 
+	if (_type === "work") {
+		if (lang) tags.push(`work-${lang}`);
+		tags.push("site-pages");
+	}
+
 	if (_type === "page") {
 		tags.push("pages", "site-pages");
 		if (slug?.current && lang) {
@@ -138,9 +147,34 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		}
 	}
 
-	// siteSettings, errorSettings and siteNav are read via `sanityFetch` (live).
-	// next-sanity handles their invalidation through its own sync tags, so there
-	// is no manual `unstable_cache` tag to invalidate here.
+	if (_type === "project") {
+		tags.push("projects", "site-pages");
+		if (slug?.current && lang) {
+			tags.push(`project-${slug.current}-${lang}`);
+		}
+	}
+
+	// Shell singletons are read via `sanityFetch`, whose cache entries carry
+	// these tags explicitly (see `web/sanity/fetchSanityData.ts`). Without them
+	// only a mounted <SanityLive /> would ever refresh the entries — and Live is
+	// draft-gated in `app/layout.tsx`, so this webhook is the published-content
+	// invalidation path. Keep the strings in sync with `SANITY_CACHE_TAGS`.
+
+	if (_type === "siteSettings") {
+		tags.push("site-settings");
+	}
+
+	if (_type === "siteNav") {
+		tags.push("site-nav");
+	}
+
+	if (_type === "siteCookieBanner") {
+		tags.push("site-cookie-banner");
+	}
+
+	if (_type === "errorSettings") {
+		tags.push("error-settings");
+	}
 
 	if (_type === "siteLanguageSettings") {
 		tags.push("site-language-settings");

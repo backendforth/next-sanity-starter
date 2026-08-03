@@ -112,7 +112,21 @@ export default async function RootLayout({
 	const draft = await draftMode();
 	const isDraft = draft.isEnabled;
 	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
-	const shouldMountSanityLive = hasReadToken || isDraft;
+	const hasRevalidateWebhook = Boolean(
+		process.env.SANITY_REVALIDATE_SECRET?.trim(),
+	);
+	/**
+	 * <SanityLive /> opens an SSE connection per open tab and refreshes the
+	 * `sanityFetch` cache through a server action on every publish event —
+	 * needed for Presentation / Draft Mode, wasted on anonymous visitors.
+	 * Their published-content freshness comes from `/api/revalidate` instead
+	 * (the `sanityFetch` wrappers tag their cache entries for it). Fallback:
+	 * with a read token but **no** webhook secret configured, keep Live mounted
+	 * for everyone so published edits still propagate on webhook-less setups.
+	 * (Env is read at render time — the prerender needs the secret at build.)
+	 */
+	const shouldMountSanityLive =
+		isDraft || (hasReadToken && !hasRevalidateWebhook);
 	const siteLocale = await fetchSiteLanguageSettings();
 
 	return (

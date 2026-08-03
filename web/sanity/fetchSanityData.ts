@@ -1,7 +1,10 @@
 import { draftMode } from "next/headers";
 import { cache } from "react";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import { cachedSiteLanguageSettingsPublished } from "./cachedSanityQuery";
+import {
+	cachedSiteLanguageSettingsPublished,
+	SANITY_CACHE_TAGS,
+} from "./cachedSanityQuery";
 import { client, isSanityConfigured } from "./client";
 import { sanityFetch } from "./live";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
@@ -44,12 +47,23 @@ type LiveFetchOptions = {
 	perspective?: "published" | "drafts";
 };
 
+/*
+ * Every `sanityFetch` below passes the matching `SANITY_CACHE_TAGS` entry.
+ * next-sanity stores the result in Next's data cache with `revalidate: false`
+ * and only its own `sanity:*` sync tags — which nothing but a mounted
+ * `<SanityLive />` ever revalidates. Adding our webhook tags means
+ * `/api/revalidate` invalidates these entries too, so published content stays
+ * fresh without streaming live events to every anonymous visitor
+ * (see `shouldMountSanityLive` in `app/layout.tsx`).
+ */
+
 /** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
 export const fetchHomeDocument = cache(
 	async (locale: string, options?: LiveFetchOptions) => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: homeQuery,
+			tags: [SANITY_CACHE_TAGS.home(locale)],
 			params: { locale },
 			...options,
 		});
@@ -64,6 +78,7 @@ export const fetchPageBySlug = cache(
 		const { data } = await sanityFetch({
 			query: pageBySlugQuery,
 			params: { slug, locale },
+			tags: [SANITY_CACHE_TAGS.pages, SANITY_CACHE_TAGS.pageSlug(slug, locale)],
 			...options,
 		});
 		return data as PageDocument | null;
@@ -76,6 +91,7 @@ export const fetchWorkDocument = cache(
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: workQuery,
+			tags: [SANITY_CACHE_TAGS.work(locale)],
 			params: { locale },
 			...options,
 		});
@@ -90,6 +106,10 @@ export const fetchProjectBySlug = cache(
 		const { data } = await sanityFetch({
 			query: projectBySlugQuery,
 			params: { slug, locale },
+			tags: [
+				SANITY_CACHE_TAGS.projects,
+				SANITY_CACHE_TAGS.projectSlug(slug, locale),
+			],
 			...options,
 		});
 		return data as ProjectDocument | null;
@@ -106,6 +126,7 @@ export const fetchSiteSettingsTitle = cache(
 		const { data } = await sanityFetch({
 			query: siteSettingsTitleQuery,
 			params: { locale },
+			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
 		const row = data as SiteSettingsTitleQueryResult;
@@ -124,6 +145,7 @@ export const fetchSettingsSeoFallback = cache(
 		const { data } = await sanityFetch({
 			query: siteSettingsSeoFallbackQuery,
 			params: { locale },
+			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
 		return data as PageSeo;
@@ -143,6 +165,7 @@ export const fetchSiteSettingsFavicon = cache(
 		const { data } = await sanityFetch({
 			query: siteSettingsFaviconQuery,
 			params: { locale },
+			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
 		const row = data as { faviconUrl?: string | null } | null;
@@ -158,6 +181,7 @@ export const fetchSiteNavMenus = cache(async (locale: string) => {
 	const { data } = await sanityFetch({
 		query: siteNavMenusQuery,
 		params: { locale },
+		tags: [SANITY_CACHE_TAGS.siteNav],
 	});
 	return data as SiteNavMenusDocument | null;
 });
@@ -172,6 +196,7 @@ export const fetchSiteCookieBanner = cache(
 		const { data } = await sanityFetch({
 			query: siteCookieBannerLayoutQuery,
 			params: { locale },
+			tags: [SANITY_CACHE_TAGS.siteCookieBanner],
 			...options,
 		});
 		return data as SiteCookieBannerDocument | null;
@@ -237,6 +262,7 @@ export const fetchErrorSettings = cache(
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: errorSettingsQuery,
+			tags: [SANITY_CACHE_TAGS.errorSettings],
 			params: { locale },
 			...options,
 		});

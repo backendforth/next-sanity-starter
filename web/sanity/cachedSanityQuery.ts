@@ -43,12 +43,17 @@ export const cachedSanityQuery = cache(async <T>(query: string) => {
 
 export const SANITY_CACHE_TAGS = {
 	home: (locale: string) => `home-${locale}`,
+	work: (locale: string) => `work-${locale}`,
 	pages: "pages",
 	pageSlug: (slug: string, locale: string) => `page-${slug}-${locale}`,
 	projects: "projects",
 	projectSlug: (slug: string, locale: string) => `project-${slug}-${locale}`,
 	sitemap: "site-pages",
 	siteLanguageSettings: "site-language-settings",
+	siteSettings: "site-settings",
+	siteNav: "site-nav",
+	siteCookieBanner: "site-cookie-banner",
+	errorSettings: "error-settings",
 } as const;
 
 // ── Page-by-slug ────────────────────────────────────────────────────────────

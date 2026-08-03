@@ -33,6 +33,12 @@
 		"//overrides": "magicast pin avoids the older transitive 0.2.x version pulled in by some Sanity tooling, which lacks the `parseExpression` API used downstream. Re-evaluate when removing — drop the override and run `pnpm why magicast` to confirm only ^0.3 versions remain.",
 		"overrides": {
 			"magicast": "^0.3.5"
+		},
+		"//peerDependencyRules": "sanity-plugin-netlify@1.4.0 declares `sanity: ^3 || ^5`, so Sanity 6 trips an unmet-peer warning on every resolution step. Verified stale rather than real: the plugin imports only FormField, useColorScheme, useClient and definePlugin from `sanity`, all still exported by 6.x, and both apps build. Upstream PR jclusso/sanity-plugin-netlify#24 reports a FormField crash on Sanity >=5.17 (useDocumentDivergences threw without its context) — that path is dead on 6.8.0, where DocumentDivergencesContext defaults to `{enabled: false}` and FormNodeDivergenceDetail passes its children straight through. Scoped to this one edge so genuine peer warnings stay visible. Drop it once upstream widens the range — issues are disabled on that repo, so a PR is the only route. Separate, pre-existing caveat not addressed here: the plugin pins @sanity/ui ^2 and @sanity/icons ^3 as hard dependencies, so its tool UI runs on older majors than the Studio.",
+		"peerDependencyRules": {
+			"allowedVersions": {
+				"sanity-plugin-netlify>sanity": "6"
+			}
 		}
 	},
 	"devDependencies": {

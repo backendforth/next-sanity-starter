@@ -279,25 +279,23 @@ Always link to these; never duplicate their content.
 
 ## Branch-specific notes
 
-Both `main` and `variant/document-level` ship this file. The convention surface is largely identical but key wiring differs. **Always check the active branch (`git rev-parse --abbrev-ref HEAD`) before touching modules, queries, or document types.**
+Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: how a document's locale is stored.
+
+**Verify before you trust this table.** It described a much wider divergence for months after the branches had converged, which made routine ports look like rewrites. If a row here contradicts the branch you are on, the branch wins — fix the row.
 
 | Aspect | `main` | `variant/document-level` |
 |---|---|---|
-| Document types | `page`, `project`, `projectCategory`, `work` (+ `home`, settings singletons) | `page` only (+ `home`, settings singletons) |
-| Module schemas (Studio) | All four: `module.media`, `module.text`, `module.carousel`, `module.contentRefs` | All four exist as schemas |
-| Web module renderers | `ModuleMedia`, `ModuleText`, `ModuleCarousel`, `ModuleContentRefs` (+ Client) — all under `web/src/components/modules/`, registered in `web/src/components/modules/index.ts` (barrel) | `ModuleMedia`, `ModuleText` under `web/src/components/modules/`; `ModuleCarousel` lives in `web/src/components/carousel/` (dynamic-imported); `ModuleContentRefs` has a **dev-only placeholder** in `ModulesRenderer.tsx` ("no frontend renderer yet"). **No `index.ts` barrel** for modules. |
-| `module.contentRefs` schema | `sourceScope` toggles between `PAGE_REFERENCES` / `PROJECT_REFERENCES` / both; project filter UI; `showProjectFilters`, `selection`. | Simplified: `allowMultiple` toggle, `reference` (single) or `references` (array), `PAGE_REFERENCES` only. |
-| `richTextMedia.ts` inline modules | `module.media`, `module.carousel`, `module.text`, `module.contentRefs` (mirrors `modulesArrayField`) | Only `module.media` and `module.carousel` — narrower than `modulesArrayField` on purpose. |
 | Document-level locale field | None — i18n is purely field-level via `internationalizedArray*`. | `page` has a `language` string field (`readOnly: true`, `hidden: true`, `initialValue: "en"`) set by the i18n plugin, **never edit it manually**. Title, module bodies, and other content fields still use `internationalizedArray*` and resolve through `sanityLocalizedText.ts` exactly as on `main`. |
-| Query/type layout | Flat files under `web/sanity/queries/components/modules/<name>.ts` + `web/sanity/types/modules/<name>.ts` with barrels. | Subfolder structure under `web/sanity/queries/components/modules/` and `web/sanity/types/modules/`; consult the directory layout on the branch before adding files. |
+| Studio plugin | — | `@sanity/document-internationalization` in `studio/package.json` + registered in `sanity.config.ts`. |
+| Per-locale settings documents | `siteSettings` is a singleton; queries address it by `_id` (`*[_id == "siteSettings"][0]`). | `siteSettings` exists per locale; queries filter on it (`*[_type == "siteSettings" && language == $locale][0]`) and take a `$locale` param. |
+
+Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/` with the `index.ts` barrel, flat `queries/components/modules/<name>.ts` + `types/modules/<name>.ts` with barrels, and the `richTextMedia.ts` inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
 ### Variant-branch rules
 
-- **Never** reference `project`, `projectCategory`, or `work` from queries or components — those document types do not exist.
 - The `page.language` field is set programmatically by the i18n plugin; **do not edit, hide, expose, or remove it**. New page documents inherit it from `initialValue`.
-- When adding a renderer for `module.contentRefs`, replace the dev-only placeholder in `ModulesRenderer.tsx` — the schema already exists.
-- When adding a web module, follow the on-branch convention: do **not** recreate `web/src/components/modules/index.ts` unless you also rewrite `ModulesRenderer.tsx` to import through it. The renderer currently imports module components directly.
-- Check `web/sanity/queries/components/modules/` and `web/sanity/types/modules/` for the actual subfolder layout before adding files — it differs from `main`.
+- Anything reading `siteSettings` needs the `$locale` param on this branch. Porting a settings query from `main` means adding that filter, not copying the `_id` lookup.
+- Web fixes authored on `main` are expected to apply here with context conflicts only. If a port looks structural, re-check against the branch before adapting — the divergence table above has been wrong in that direction before.
 
 ### Updating conventions on both branches
 

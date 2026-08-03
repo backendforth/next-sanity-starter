@@ -45,13 +45,15 @@ Full guardrails live in `AGENTS.md` at the repo root. This file is a condensed m
 
 ## Branches
 
-The repo has two long-lived branches with non-trivial differences:
+The repo has two long-lived branches. They have converged on the whole structural surface — same document types, same module set, same wiring points, same query/type layout and barrels. One thing differs by design: how a document's locale is stored.
 
-- `main` — document types `page`, `project`, `projectCategory`, `work`; four web module renderers all under `web/src/components/modules/` with an `index.ts` barrel; `module.contentRefs` schema supports project filtering.
-- `variant/document-level` — only `page` (no projects/work); all four module schemas exist but only `ModuleMedia` and `ModuleText` have local renderers — `ModuleCarousel` lives in `web/src/components/carousel/`, `ModuleContentRefs` has a dev-only placeholder. No `web/src/components/modules/index.ts` barrel. `module.contentRefs` is simplified to `PAGE_REFERENCES` with an `allowMultiple` toggle. `page` has a `language` string field set by the i18n plugin — **never edit manually**.
+- `main` — locale is purely field-level via `internationalizedArray*`. `siteSettings` is a singleton, addressed by `_id`.
+- `variant/document-level` — adds `@sanity/document-internationalization`; `page` has a `language` string field set by the i18n plugin (**never edit manually**), and `siteSettings` exists per locale, so queries against it filter on `language == $locale` and take a `$locale` param.
 
-Check `git rev-parse --abbrev-ref HEAD` and the actual file layout on the branch before adding modules.
+Treat any other difference between the branches as drift to be reconciled, not intended divergence. Check `git rev-parse --abbrev-ref HEAD`, and trust the branch over any description of it.
 
 ## Definition of done
 
 `pnpm typecheck` passes, `pnpm format` clean, gen artifacts committed if schema changed, all 8 module wiring points touched (when applicable), no `--no-verify`.
+
+<!-- smoke-test: Slack PR notification pipeline (v2) -->

@@ -1,9 +1,6 @@
 import { defineQuery } from "next-sanity";
 
-import { modulesQuery } from "../components/modules";
 import { linkQuery } from "./link";
-import { imageQuery } from "./media";
-import { pageSeoQuery } from "./seo";
 
 /**
  * Portable Text `body[]` projection for plain `richText` fields (no embedded
@@ -60,17 +57,9 @@ const siteNavByLocale = `coalesce(
   *[_type == "siteNav" && !defined(language)][0]
 )`;
 
-/** Document type: `siteNav` (one per language; see studio structure). */
-export const siteNavQuery = `${siteNavByLocale}{
-  _id,
-  title,
-  language,
-  ${navMenusQuery},
-  ${modulesQuery}
-}`;
-
 /**
- * Same resolved menus as `siteNavQuery` without `modules[]` (lighter layout fetch).
+ * Document type: `siteNav` (one per language) — resolved menus without
+ * `modules[]` (layout fetch).
  *
  * Not wrapped in `defineQuery`: Sanity Typegen cannot resolve the `link`
  * projection here and mis-types `mainMenu`/`footerMenu` as `null`. The
@@ -111,41 +100,24 @@ export const siteSettingsSeoFallbackQuery =
   "imageUrl": seo.image.asset->url
 }`);
 
-/** Document type: `siteSettings` (one per language). */
-export const siteSettingsQuery = `*[_type == "siteSettings" && language == $locale][0]{
-  _id,
-  title,
-  language,
-  "favicon": favicon${imageQuery},
-  ${modulesQuery},
-  ${pageSeoQuery}
-}`;
-
-/** Document type: `errorSettings` (one per language). */
+/**
+ * Document type: `errorSettings` (one per language) — 404 / 500 copy only. The
+ * document's `modules[]` field is deliberately not projected: no error page
+ * renders modules, and embedding `modulesQuery` here inflated the query from
+ * ~2 KB to ~79 KB.
+ */
 export const errorSettingsQuery = `*[_type == "errorSettings" && language == $locale][0]{
   _id,
   language,
   notFoundTitle,
   "notFoundBody": notFoundBody${richTextBody},
   serverErrorTitle,
-  "serverErrorBody": serverErrorBody${richTextBody},
-  ${modulesQuery}
-}`;
-
-/** Document type: `siteCookieBanner` (one per language). */
-export const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && language == $locale][0]{
-  _id,
-  title,
-  language,
-  useCookieBanner,
-  consentModal,
-  preferencesModal,
-  ${modulesQuery}
+  "serverErrorBody": serverErrorBody${richTextBody}
 }`;
 
 /**
- * Lightweight cookie banner projection for the app shell — same document as
- * `siteCookieBannerQuery` but without `modules[]`, mirroring `siteNavMenusQuery`.
+ * Document type: `siteCookieBanner` (one per language) — banner copy for the
+ * app shell, no `modules[]`.
  */
 export const siteCookieBannerLayoutQuery =
 	defineQuery(`*[_type == "siteCookieBanner" && language == $locale][0]{
@@ -155,19 +127,3 @@ export const siteCookieBannerLayoutQuery =
   consentModal,
   preferencesModal
 }`);
-
-/**
- * Single fetch for app shell: settings, nav, errors, cookie banner.
- * Document types match Studio Documents: siteSettings, siteNav, errorSettings, siteCookieBanner.
- *
- * NOTE: not consumed by any current route — provided as a convenience aggregate
- * (and the reason `siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`
- * exist) for apps that prefer one combined app-shell fetch over the per-document
- * `fetch*` helpers in `fetchSanityData.ts`. Safe to delete if unused.
- */
-export const settingsBundleQuery = `{
-  "siteSettings": ${siteSettingsQuery},
-  "siteNav": ${siteNavQuery},
-  "errorSettings": ${errorSettingsQuery},
-  "siteCookieBanner": ${siteCookieBannerQuery}
-}`;

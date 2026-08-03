@@ -21,14 +21,10 @@ export { pageSeoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
 	navMenusQuery,
-	settingsBundleQuery,
 	siteCookieBannerLayoutQuery,
-	siteCookieBannerQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
-	siteNavQuery,
 	siteSettingsFaviconQuery,
-	siteSettingsQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
 } from "./snippets/settings";

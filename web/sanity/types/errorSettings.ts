@@ -1,7 +1,6 @@
 import type { PortableTextBlock } from "@portabletext/types";
 
-import type { ContentModule } from "./modules";
-
+/** Shape of `errorSettingsQuery` — 404 / 500 copy; `modules[]` is not projected. */
 export type ErrorSettingsDocument = {
 	_id: string;
 	language?: string | null;
@@ -9,5 +8,4 @@ export type ErrorSettingsDocument = {
 	notFoundBody?: PortableTextBlock[] | null;
 	serverErrorTitle?: string | null;
 	serverErrorBody?: PortableTextBlock[] | null;
-	modules?: ContentModule[] | null;
 };

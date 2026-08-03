@@ -8,31 +8,31 @@
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy",
-    "generate": "sanity schema extract --enforce-required-fields && sanity typegen generate",
+    "generate": "sanity schema extract --enforce-required-fields --force && sanity typegen generate",
     "lint": "pnpm --workspace-root exec biome check studio",
     "format": "pnpm --workspace-root exec biome format --write studio",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@repo/sanity-dataset-resolve": "workspace:*",
-    "@sanity/code-input": "^7.2.5",
-    "@sanity/dashboard": "^6.0.7",
-    "@sanity/document-internationalization": "^6.2.15",
-    "@sanity/icons": "^5.0.0",
+    "@sanity/code-input": "^7.3.3",
+    "@sanity/dashboard": "^6.0.14",
+    "@sanity/document-internationalization": "^6.2.27",
+    "@sanity/icons": "^5.2.1",
     "@sanity/image-url": "^2.1.1",
-    "@sanity/vision": "^6.3.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "@sanity/vision": "^6.7.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "rxjs": "^7.8.2",
-    "sanity": "^6.3.0",
-    "sanity-plugin-internationalized-array": "^5.1.15",
+    "sanity": "^6.7.0",
+    "sanity-plugin-internationalized-array": "^5.1.24",
     "sanity-plugin-media": "^5.0.10",
     "sanity-plugin-mux-input": "^4.1.5",
     "sanity-plugin-netlify": "^1.4.0",
-    "styled-components": "^6.4.3"
+    "styled-components": "^6.4.4"
   },
   "devDependencies": {
-    "@types/node": "^22.20.0",
+    "@types/node": "^22.20.1",
     "@types/react": "^19.2.17",
     "typescript": "^6.0.3"
   }

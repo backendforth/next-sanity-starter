@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"@mux/mux-player-react": "^3.13.2",
-		"@portabletext/react": "^6.2.0",
+		"@portabletext/react": "^7.0.1",
 		"@portabletext/types": "^4.0.2",
 		"@repo/sanity-dataset-resolve": "workspace:*",
 		"@sanity/client": "^7.25.0",
@@ -34,13 +34,13 @@
 		"@types/node": "^22.20.1",
 		"@types/react": "^19.2.17",
 		"@types/react-dom": "^19.2.3",
-		"groq-js": "^1.30.3",
+		"groq-js": "^2.0.0",
 		"postcss-calc": "^10.1.1",
 		"postcss-functions": "^4.0.2",
 		"postcss-import": "^16.1.1",
 		"postcss-nested-ancestors": "^3.0.0",
 		"sanity": "^6.7.0",
 		"tailwindcss": "^4.3.3",
-		"typescript": "^6.0.3"
+		"typescript": "^7.0.2"
 	}
 }

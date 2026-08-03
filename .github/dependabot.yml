@@ -46,6 +46,14 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # TypeScript 7 (the native compiler rewrite) breaks `next build` on
+      # Next 16: `tsc --noEmit` passes, but Next's own TypeScript detection
+      # fails ("do not have the required package(s) installed") because the
+      # package layout changed. Next's transitive @module-federation/dts-plugin
+      # also still pins `typescript@^4.9 || ^5`. Drop this entry once Next
+      # supports TS 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
 
@@ -72,6 +80,14 @@ updates:
           - "major"
     ignore:
       - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 (the native compiler rewrite) breaks `next build` on
+      # Next 16: `tsc --noEmit` passes, but Next's own TypeScript detection
+      # fails ("do not have the required package(s) installed") because the
+      # package layout changed. Next's transitive @module-federation/dts-plugin
+      # also still pins `typescript@^4.9 || ^5`. Drop this entry once Next
+      # supports TS 7.
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"

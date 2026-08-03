@@ -36,3 +36,29 @@
 		transition: none;
 	}
 }
+
+/*
+ * ── Route-loading skeleton delay ────────────────────────────────────────────
+ *
+ * `app/[locale]/loading.tsx` renders while a route segment loads. All content
+ * routes are prerendered (ISR) and prefetched, so navigations usually resolve
+ * well under 300 ms — flashing the skeleton for those meant every transition
+ * painted skeleton → content, a visible layout shift.
+ *
+ * Hold the skeleton invisible for 300 ms (`both` keeps opacity 0 during the
+ * delay), then fade it in. Fast navigations never show it; genuinely slow loads
+ * (draft mode, cold cache) still get feedback. Opacity-only, so it needs no
+ * `prefers-reduced-motion` carve-out.
+ */
+@keyframes route-loading-appear {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.route-loading {
+	animation: route-loading-appear 0.15s ease-out 0.3s both;
+}

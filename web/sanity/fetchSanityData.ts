@@ -1,3 +1,4 @@
+import { draftMode } from "next/headers";
 import { cache } from "react";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { cachedSiteLanguageSettingsPublished } from "./cachedSanityQuery";
@@ -186,22 +187,41 @@ function draftClientForSiteLanguageSettings(token: string) {
 }
 
 /**
+ * `draftMode()` throws outside a request scope (`generateStaticParams`, build-time
+ * prerender collection) — treat that as "not in draft mode".
+ */
+async function isDraftModeEnabled(): Promise<boolean> {
+	try {
+		return (await draftMode()).isEnabled;
+	} catch {
+		return false;
+	}
+}
+
+/**
  * Document id: `siteLanguageSettings` — the global locale registry. Drives routing
  * (default + available locales) and is NOT itself per-language.
  *
- * Uses `client.fetch` (not `sanityFetch`) so `generateStaticParams` can run at build
- * time without `draftMode()`. The published path is wrapped in `unstable_cache` (tag
- * `site-language-settings`) so cross-request reads are deduped — Sanity webhooks for
- * `siteLanguageSettings` invalidate the tag through `/api/revalidate`.
+ * Uses `client.fetch` (not `sanityFetch`) so `generateStaticParams` can run at build time.
+ * The published path is wrapped in `unstable_cache` (tag `site-language-settings`) so
+ * cross-request reads are deduped — Sanity webhooks for `siteLanguageSettings` invalidate
+ * the tag through `/api/revalidate`.
  *
- * With `SANITY_API_READ_TOKEN`, uses **drafts** perspective so unpublished language
- * changes show in dev. Token-mode skips `unstable_cache` (drafts must always be fresh).
+ * The **drafts** perspective (uncached, no CDN) is reserved for renders that actually need
+ * it: dev, and Draft Mode / Presentation requests. A production deploy sets
+ * `SANITY_API_READ_TOKEN` for Visual Editing, and gating on the token alone made every
+ * visitor-facing render pay an uncached Sanity API round trip before anything else.
  */
 export const fetchSiteLanguageSettings = cache(
 	async (_options?: LiveFetchOptions): Promise<SiteLocaleConfig> => {
 		if (!isSanityConfigured) return cachedSiteLanguageSettingsPublished();
 		const token = process.env.SANITY_API_READ_TOKEN?.trim();
 		if (!token) {
+			return cachedSiteLanguageSettingsPublished();
+		}
+		const useDrafts =
+			process.env.NODE_ENV === "development" || (await isDraftModeEnabled());
+		if (!useDrafts) {
 			return cachedSiteLanguageSettingsPublished();
 		}
 		const data = await draftClientForSiteLanguageSettings(

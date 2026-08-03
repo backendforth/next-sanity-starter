@@ -4,10 +4,17 @@ import { NextResponse } from "next/server";
 import { LOCALE_HEADER_NAME } from "@/src/i18n/config";
 import { fetchSiteLocaleConfigForProxy } from "@/src/i18n/proxyLocaleFetch";
 
+/** Cookie set by Next.js Draft Mode (`/api/draft-mode/enable`, Presentation preview). */
+const DRAFT_MODE_COOKIE = "__prerender_bypass";
+
 /**
  * - **Default locale** (from Sanity `siteLanguageSettings`): `/`, `/foo` — rewritten internally to `/{defaultLocale}`, `/{defaultLocale}/foo`.
  * - **Other locales**: `/{locale}`, `/{locale}/foo` — no rewrite.
  * - `/{defaultLocale}` and `/{defaultLocale}/*` redirect to unprefixed URLs (canonical).
+ *
+ * Locale config comes from the published (CDN-cached) `siteLanguageSettings` for
+ * regular traffic; only Draft Mode requests (and dev) pay for a drafts-perspective
+ * read so unpublished language changes stay previewable.
  */
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
@@ -20,7 +27,12 @@ export async function proxy(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	const { defaultLocale, localeIds } = await fetchSiteLocaleConfigForProxy();
+	const preferDrafts =
+		process.env.NODE_ENV === "development" ||
+		request.cookies.has(DRAFT_MODE_COOKIE);
+	const { defaultLocale, localeIds } = await fetchSiteLocaleConfigForProxy({
+		preferDrafts,
+	});
 	const localeSet = new Set(localeIds);
 	const isKnownLocale = (v: string) => localeSet.has(v);
 	const defaultPrefix = `/${defaultLocale}`;

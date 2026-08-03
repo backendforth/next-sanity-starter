@@ -6,10 +6,14 @@ version: 2
 # only (`main`); the `target-branch` field is what fans updates out.
 #
 # Both entries share the same shape:
-#   - monthly schedule (first Monday 06:00 CET)
-#   - one catch-all `all-non-major` group bundles every minor + patch
-#     across the workspace into a single PR per run; majors stay
-#     individual for manual review (e.g. Next 16→17, React 19→20)
+#   - monthly schedule — Dependabot's `monthly` interval always runs on the
+#     1st of the month (`day` is only honored for `weekly`). The PR→Slack
+#     monthly digest runs on the 2nd on purpose, so the channel never gets
+#     bundles + digest on the same day.
+#   - two catch-all groups per run instead of one PR per dependency:
+#     `all-non-major` bundles every minor + patch into one auto-mergeable
+#     PR (see dependabot-auto-merge.yml); `all-major` bundles every major
+#     into one PR that waits for manual review (e.g. Next 16→17).
 #   - `@types/node` major bumps ignored (pinned to Node 22 LTS)
 #
 # Keep the two entries in lockstep — when editing either, mirror the
@@ -24,8 +28,7 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-      day: monday
-      time: "06:00"
+      time: "13:00"
       timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:
@@ -35,8 +38,21 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      all-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
     ignore:
       - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 (the native compiler rewrite) breaks `next build` on
+      # Next 16: `tsc --noEmit` passes, but Next's own TypeScript detection
+      # fails ("do not have the required package(s) installed") because the
+      # package layout changed. Next's transitive @module-federation/dts-plugin
+      # also still pins `typescript@^4.9 || ^5`. Drop this entry once Next
+      # supports TS 7.
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"
@@ -47,8 +63,7 @@ updates:
     target-branch: "variant/document-level"
     schedule:
       interval: monthly
-      day: monday
-      time: "06:00"
+      time: "13:00"
       timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     groups:
@@ -58,8 +73,21 @@ updates:
         update-types:
           - "minor"
           - "patch"
+      all-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
     ignore:
       - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # TypeScript 7 (the native compiler rewrite) breaks `next build` on
+      # Next 16: `tsc --noEmit` passes, but Next's own TypeScript detection
+      # fails ("do not have the required package(s) installed") because the
+      # package layout changed. Next's transitive @module-federation/dts-plugin
+      # also still pins `typescript@^4.9 || ^5`. Drop this entry once Next
+      # supports TS 7.
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
     labels:
       - "dependencies"

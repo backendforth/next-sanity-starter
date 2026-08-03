@@ -10,7 +10,7 @@
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy",
-    "generate": "sanity schema extract --enforce-required-fields && sanity typegen generate",
+    "generate": "sanity schema extract --enforce-required-fields --force && sanity typegen generate",
     "lint": "pnpm --workspace-root exec biome check studio",
     "format": "pnpm --workspace-root exec biome format --write studio",
     "typecheck": "tsc --noEmit"

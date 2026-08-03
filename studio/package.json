@@ -26,8 +26,8 @@
     "rxjs": "^7.8.2",
     "sanity": "^6.3.0",
     "sanity-plugin-internationalized-array": "^5.1.15",
-    "sanity-plugin-media": "^5.0.10",
-    "sanity-plugin-mux-input": "^4.1.5",
+    "sanity-plugin-media": "^6.0.9",
+    "sanity-plugin-mux-input": "^5.0.7",
     "sanity-plugin-netlify": "^1.4.0",
     "styled-components": "^6.4.3"
   },

@@ -15,6 +15,11 @@ type Props = {
 	module: ModuleContentRefsData;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+	/**
+	 * First module on the page — its first card image is the LCP candidate and
+	 * loads eagerly. Set by `ModulesRenderer` for index 0.
+	 */
+	priority?: boolean;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -24,7 +29,12 @@ type Props = {
  * Document-level i18n: references are GROQ-filtered to the active locale and
  * carry plain `title` / `slug` strings (no locale picking needed).
  */
-export function ModuleContentRefs({ module, locale, siteLocale }: Props) {
+export function ModuleContentRefs({
+	module,
+	locale,
+	siteLocale,
+	priority = false,
+}: Props) {
 	const heading =
 		typeof module.heading === "string" ? module.heading.trim() : "";
 	const { localePath } = createLanguagePathUtils(siteLocale);
@@ -51,6 +61,7 @@ export function ModuleContentRefs({ module, locale, siteLocale }: Props) {
 				items={items}
 				isProjectList={isProjectList}
 				showCategoryFilters={showCategoryFilters}
+				priority={priority}
 			/>
 		</section>
 	);

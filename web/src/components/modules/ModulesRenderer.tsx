@@ -61,12 +61,16 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	);
 }
 
-function renderModuleChild(mod: ContentModule, ctx: ModuleContextProps) {
+function renderModuleChild(
+	mod: ContentModule,
+	ctx: ModuleContextProps,
+	priority: boolean,
+) {
 	if (mod._type === "module.text") {
 		return <ModuleText module={mod as ModuleTextData} />;
 	}
 	if (mod._type === "module.media") {
-		return <ModuleMedia module={mod as ModuleMediaData} />;
+		return <ModuleMedia module={mod as ModuleMediaData} priority={priority} />;
 	}
 	if (mod._type === "module.carousel") {
 		return <ModuleCarousel module={mod as ModuleCarouselData} />;
@@ -77,6 +81,7 @@ function renderModuleChild(mod: ContentModule, ctx: ModuleContextProps) {
 				module={mod as ModuleContentRefsData}
 				locale={ctx.locale}
 				siteLocale={ctx.siteLocale}
+				priority={priority}
 			/>
 		);
 	}
@@ -122,7 +127,8 @@ export function ModulesRenderer({
 		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
 		return {
 			_key: key,
-			rendered: renderModuleChild(mod, ctx),
+			// The first module is the LCP candidate — its media loads eagerly.
+			rendered: renderModuleChild(mod, ctx, index === 0),
 		};
 	});
 

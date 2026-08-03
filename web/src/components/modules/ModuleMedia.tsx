@@ -13,6 +13,12 @@ type Props = {
 	module: ModuleMediaData;
 	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
 	variant?: "module" | "embed";
+	/**
+	 * First module on the page — the LCP candidate. Eager-loads the image /
+	 * video poster (`fetchpriority=high`, no lazy fade-in). Set by
+	 * `ModulesRenderer` for index 0; leave unset everywhere else.
+	 */
+	priority?: boolean;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -44,13 +50,17 @@ function MediaFigure({
 	);
 }
 
-function renderModuleMediaFigure(module: ModuleMediaData) {
+function renderModuleMediaFigure(module: ModuleMediaData, priority: boolean) {
 	const rm = module.resolvedMedia;
 
 	if (rm?.kind === "image" && rm.media) {
 		return (
 			<MediaFigure caption={rm.caption}>
-				<MediaImage imagePayload={rm.media} caption={rm.caption} />
+				<MediaImage
+					imagePayload={rm.media}
+					caption={rm.caption}
+					priority={priority}
+				/>
 			</MediaFigure>
 		);
 	}
@@ -63,6 +73,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 					caption={rm.caption}
 					posterPayload={rm.poster}
 					allowUnmute={rm.allowUnmute === true}
+					posterPriority={priority}
 				/>
 			</MediaFigure>
 		);
@@ -76,6 +87,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 						media={rm.media}
 						caption={rm.caption}
 						posterPayload={rm.poster}
+						posterPriority={priority}
 					/>
 				) : (
 					<MediaVideo
@@ -83,6 +95,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 						caption={rm.caption}
 						posterPayload={rm.poster}
 						videoSettings={rm.videoSettings}
+						priority={priority}
 					/>
 				)}
 			</MediaFigure>
@@ -97,6 +110,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 				<MediaImage
 					imagePayload={imagePayload}
 					caption={module.imageContent?.caption}
+					priority={priority}
 				/>
 			</MediaFigure>
 		);
@@ -112,6 +126,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 					caption={module.videoLoopContent.caption}
 					posterPayload={module.videoLoopContent.poster}
 					allowUnmute={module.videoLoopContent.allowUnmute === true}
+					posterPriority={priority}
 				/>
 			</MediaFigure>
 		);
@@ -126,6 +141,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 						media={muxField}
 						caption={module.videoContent.caption}
 						posterPayload={module.videoContent.poster}
+						posterPriority={priority}
 					/>
 				) : (
 					<MediaVideo
@@ -133,6 +149,7 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
 						caption={module.videoContent.caption}
 						posterPayload={module.videoContent.poster}
 						videoSettings={module.videoContent.videoSettings}
+						priority={priority}
 					/>
 				)}
 			</MediaFigure>
@@ -148,8 +165,12 @@ function renderModuleMediaFigure(module: ModuleMediaData) {
  * `module.media` — image, video (MuxPlayer), or silent loop. GROQ resolves per-kind
  * payloads into `resolvedMedia`; raw `*Content` fields remain as fallbacks.
  */
-export function ModuleMedia({ module, variant = "module" }: Props) {
-	const figure = renderModuleMediaFigure(module);
+export function ModuleMedia({
+	module,
+	variant = "module",
+	priority = false,
+}: Props) {
+	const figure = renderModuleMediaFigure(module, priority);
 	if (!figure) return null;
 
 	if (variant === "embed") return figure;

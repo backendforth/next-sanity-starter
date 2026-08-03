@@ -29,6 +29,8 @@ type Props = {
 	items: ModuleContentRefListItem[];
 	isProjectList: boolean;
 	showCategoryFilters: boolean;
+	/** First module on the page — eager-load the first card image (LCP candidate). */
+	priority?: boolean;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -86,6 +88,7 @@ export function ModuleContentRefsClient({
 	items,
 	isProjectList,
 	showCategoryFilters,
+	priority = false,
 }: Props) {
 	const [categoryId, setCategoryId] = useState<string | null>(null);
 	const [sort, setSort] = useState<SortMode>("newest");
@@ -183,7 +186,7 @@ export function ModuleContentRefsClient({
 				<p className="text-small text-color-text-muted">No items to show.</p>
 			) : (
 				<ul className="content-refs-grid grid list-none gap-xs p-0 sm:grid-cols-2 lg:grid-cols-3">
-					{visibleItems.map((item) => {
+					{visibleItems.map((item, index) => {
 						const href = item.href;
 						const label = targetTitle(item);
 						const key = item?._id ?? `${item?._type}-${item?.slug ?? label}`;
@@ -200,6 +203,7 @@ export function ModuleContentRefsClient({
 									srcsetWidths={PREVIEW_SRCSET_WIDTHS}
 									quality={75}
 									sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+									priority={priority && index === 0}
 								/>
 							</div>
 						) : null;

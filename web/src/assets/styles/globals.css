@@ -20,6 +20,16 @@
 @import "vanilla-cookieconsent/dist/cookieconsent.css";
 @import "./components/cookieConsent.css";
 
+/*
+ * Reserve the scrollbar gutter permanently. Without it, navigating between a
+ * short page (or the route-loading skeleton) and a scrollable page makes the
+ * classic scrollbar appear/disappear — shifting the whole layout horizontally
+ * on every transition (Windows/Linux; macOS overlay scrollbars are unaffected).
+ */
+html {
+	scrollbar-gutter: stable;
+}
+
 body {
 	@apply font-text;
 	background: var(--color-bg);

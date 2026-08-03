@@ -67,6 +67,7 @@ function renderModuleChild(
 	mod: ContentModule,
 	locale: string,
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
+	priority: boolean,
 ) {
 	if (mod._type === "module.text") {
 		return (
@@ -78,7 +79,7 @@ function renderModuleChild(
 		);
 	}
 	if (mod._type === "module.media") {
-		return <ModuleMedia module={mod as ModuleMediaData} />;
+		return <ModuleMedia module={mod as ModuleMediaData} priority={priority} />;
 	}
 	if (mod._type === "module.carousel") {
 		return (
@@ -95,6 +96,7 @@ function renderModuleChild(
 				module={mod as ModuleContentRefsData}
 				locale={locale}
 				siteLocale={siteLocale}
+				priority={priority}
 			/>
 		);
 	}
@@ -135,7 +137,8 @@ export function ModulesRenderer({
 			_key: key,
 			rendered: (
 				<div data-sanity={sanityAttr}>
-					{renderModuleChild(mod, locale, siteLocale)}
+					{/* The first module is the LCP candidate — its media loads eagerly. */}
+					{renderModuleChild(mod, locale, siteLocale, index === 0)}
 				</div>
 			),
 		};

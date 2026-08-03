@@ -14,12 +14,22 @@ type Props = {
 	module: ModuleContentRefsData;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+	/**
+	 * First module on the page — its first card image is the LCP candidate and
+	 * loads eagerly. Set by `ModulesRenderer` for index 0.
+	 */
+	priority?: boolean;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /** `module.contentRefs` — resolved reference list with optional project filters. */
-export function ModuleContentRefs({ module, locale, siteLocale }: Props) {
+export function ModuleContentRefs({
+	module,
+	locale,
+	siteLocale,
+	priority = false,
+}: Props) {
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 	const { localePath } = createLanguagePathUtils(siteLocale);
 	const items: ModuleContentRefListItem[] = (module.references ?? [])
@@ -46,6 +56,7 @@ export function ModuleContentRefs({ module, locale, siteLocale }: Props) {
 				items={items}
 				isProjectList={isProjectList}
 				showCategoryFilters={showCategoryFilters}
+				priority={priority}
 			/>
 		</section>
 	);

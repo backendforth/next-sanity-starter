@@ -4,6 +4,8 @@ export const trackerPlausible = defineType({
   name: "trackerPlausible",
   title: "Plausible Analytics",
   type: "object",
+  description:
+    "Least intrusive third-party option: no cookies, no cross-site identifiers, and Plausible Cloud is EU-hosted. Because it counts as cookie-free it loads before the visitor answers the banner. It does still process the IP address server-side to derive a daily visitor hash, so it needs a lawful basis — usually legitimate interest — and a mention in your privacy policy. Regulators generally accept this for plain audience measurement, but the assessment is yours to make and record.",
   fields: [
     defineField({
       name: "enabled",
@@ -43,7 +45,7 @@ export const trackerPlausible = defineType({
       name: "cookieFree",
       title: "Cookie-free mode",
       description:
-        "Plausible is cookie-free by default. This option is enabled automatically.",
+        "Always on — Plausible is cookie-free by design, which is why it loads without waiting for analytics consent. Locked so it cannot be switched off and misrepresent the provider in the cookie banner.",
       type: "boolean",
       initialValue: true,
       readOnly: true,

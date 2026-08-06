@@ -1,9 +1,12 @@
 import { defineField, defineType } from "sanity";
+import { COOKIE_FREE_NOTE } from "./complianceNotes";
 
 export const trackerMatomo = defineType({
   name: "trackerMatomo",
   title: "Matomo (self-hosted)",
   type: "object",
+  description:
+    "Lowest-risk option here: self-hosted, so the analytics data stays with you and there is no third-party processor or transfer to account for. You are the controller for it. Two things to set on the Matomo side: anonymise IP addresses (Administration → Privacy → Anonymize data) and set a data retention period. Still name it in your privacy policy.",
   fields: [
     defineField({
       name: "enabled",
@@ -40,8 +43,7 @@ export const trackerMatomo = defineType({
     defineField({
       name: "cookieFree",
       title: "Cookie-free mode",
-      description:
-        "Calls Matomo disableCookies — tracking without first-party analytics cookies.",
+      description: `Calls Matomo's disableCookies, so no first-party analytics cookies are set. ${COOKIE_FREE_NOTE}`,
       type: "boolean",
       initialValue: false,
     }),

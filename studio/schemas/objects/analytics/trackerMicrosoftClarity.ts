@@ -1,13 +1,19 @@
 import { defineField, defineType } from "sanity";
+import { CONTROLLER_CHECKLIST } from "./complianceNotes";
 
 export const trackerMicrosoftClarity = defineType({
   name: "trackerMicrosoftClarity",
   title: "Microsoft Clarity",
   type: "object",
+  description:
+    "Highest-risk provider here. Clarity records sessions — pointer movement, clicks, scrolls, and DOM snapshots of what the visitor sees — so anything on screen can end up in a recording, including text typed into a form. Mask every input and any element that can display personal data in Clarity's settings first. Systematic monitoring of visitor behaviour is one of the GDPR Art. 35 criteria, so consider whether a data protection impact assessment is needed. Data goes to Microsoft in the US. " +
+    CONTROLLER_CHECKLIST,
   fields: [
     defineField({
       name: "enabled",
       title: "Enabled",
+      description:
+        "Known limitation on withdrawal: when a visitor revokes analytics consent the site stops further Clarity API calls, but the already-loaded Clarity script is not torn down and its cookies are not removed until the visitor reloads the page.",
       type: "boolean",
       initialValue: true,
     }),
@@ -28,7 +34,7 @@ export const trackerMicrosoftClarity = defineType({
       name: "cookieFree",
       title: "Cookie-free mode",
       description:
-        "Clarity does not offer a fully cookie-free mode. When enabled, tracking still uses Clarity cookies — keep this off unless you accept reduced functionality.",
+        "Not available — Clarity has no cookie-free mode, so it must never load before consent. Locked off deliberately: the site treats cookie-free trackers as safe to start early, and Clarity does not qualify.",
       type: "boolean",
       initialValue: false,
       readOnly: true,

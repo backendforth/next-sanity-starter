@@ -5,9 +5,18 @@ type LoadedTracker = {
 };
 
 const loadedTrackers = new Map<string, LoadedTracker>();
+const trackerLoadGenerations = new Map<string, number>();
 
 export function isTrackerLoaded(key: string): boolean {
 	return loadedTrackers.has(key);
+}
+
+export function getTrackerLoadGeneration(key: string): number {
+	return trackerLoadGenerations.get(key) ?? 0;
+}
+
+export function invalidateTrackerLoad(key: string): void {
+	trackerLoadGenerations.set(key, (trackerLoadGenerations.get(key) ?? 0) + 1);
 }
 
 export function registerLoadedTracker(tracker: AnalyticsTracker): void {
@@ -71,7 +80,44 @@ export function trackPageView(pathname: string, search = ""): void {
 	}
 }
 
+export function reEnableTracker(tracker: AnalyticsTracker): void {
+	switch (tracker._type) {
+		case "trackerGoogleAnalytics": {
+			const id = tracker.measurementId?.trim();
+			if (id) {
+				(window as unknown as Record<string, boolean | undefined>)[
+					`ga-disable-${id}`
+				] = false;
+			}
+			break;
+		}
+		case "trackerMatomo": {
+			const _paq = (
+				window as Window & {
+					_paq?: unknown[][];
+				}
+			)._paq;
+			_paq?.push(["forgetUserOptOut"]);
+			break;
+		}
+		case "trackerPostHog": {
+			const posthog = (
+				window as Window & {
+					posthog?: { opt_in_capturing?: () => void };
+				}
+			).posthog;
+			posthog?.opt_in_capturing?.();
+			break;
+		}
+		default:
+			break;
+	}
+
+	registerLoadedTracker(tracker);
+}
+
 export function unloadTracker(tracker: AnalyticsTracker): void {
+	invalidateTrackerLoad(tracker._key);
 	switch (tracker._type) {
 		case "trackerGoogleAnalytics": {
 			const id = tracker.measurementId?.trim();

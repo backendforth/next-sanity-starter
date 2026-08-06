@@ -1,6 +1,8 @@
 import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import {
+	getTrackerLoadGeneration,
 	isTrackerLoaded,
+	reEnableTracker,
 	registerLoadedTracker,
 } from "@/src/components/tracking/lib/trackingRuntime";
 
@@ -25,6 +27,11 @@ function loadGoogleAnalytics(tracker: AnalyticsTracker): void {
 	const id = tracker.measurementId?.trim();
 	if (!id || isTrackerLoaded(tracker._key)) return;
 
+	if ((window as Window & { gtag?: (...args: unknown[]) => void }).gtag) {
+		reEnableTracker(tracker);
+		return;
+	}
+
 	appendScript(
 		`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`,
 	);
@@ -46,6 +53,11 @@ function loadMatomo(tracker: AnalyticsTracker): void {
 	const baseUrl = tracker.url?.trim();
 	const siteId = tracker.siteId?.trim();
 	if (!baseUrl || !siteId || isTrackerLoaded(tracker._key)) return;
+
+	if ((window as Window & { _paq?: unknown[][] })._paq) {
+		reEnableTracker(tracker);
+		return;
+	}
 
 	const normalizedUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 	const cookieFree = tracker.cookieFree === true;
@@ -106,11 +118,23 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 	const apiHost = tracker.apiHost?.trim();
 	if (!apiKey || !apiHost || isTrackerLoaded(tracker._key)) return;
 
+	const existingPostHog = (
+		window as Window & {
+			posthog?: { init?: (...args: unknown[]) => void };
+		}
+	).posthog;
+	if (existingPostHog?.init) {
+		reEnableTracker(tracker);
+		return;
+	}
+
 	const cookieFree = tracker.cookieFree === true;
+	const generation = getTrackerLoadGeneration(tracker._key);
 	const script = appendScript(`${posthogAssetHost(apiHost)}/static/array.js`);
 
 	let attempts = 0;
 	const tryInit = () => {
+		if (getTrackerLoadGeneration(tracker._key) !== generation) return;
 		// tryInit runs immediately, on script load, and on a retry timer — without
 		// this the pending timer re-initialises after the load handler succeeded.
 		if (isTrackerLoaded(tracker._key)) return;
@@ -150,6 +174,13 @@ function loadPlausible(tracker: AnalyticsTracker): void {
 	const domain = tracker.domain?.trim();
 	const scriptUrl = tracker.scriptUrl?.trim();
 	if (!domain || !scriptUrl || isTrackerLoaded(tracker._key)) return;
+
+	if (
+		(window as Window & { plausible?: (...args: unknown[]) => void }).plausible
+	) {
+		reEnableTracker(tracker);
+		return;
+	}
 
 	appendScript(scriptUrl, {
 		defer: "",

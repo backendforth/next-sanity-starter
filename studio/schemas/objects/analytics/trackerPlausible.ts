@@ -30,7 +30,7 @@ export const trackerPlausible = defineType({
       name: "scriptUrl",
       title: "Script URL",
       description:
-        "Plausible script URL (default: https://plausible.io/js/script.js). Use your self-hosted URL if applicable.",
+        "Default https://plausible.io/js/script.js. Self-hosted URLs need adding to Content-Security-Policy in netlify.toml.",
       type: "url",
       initialValue: "https://plausible.io/js/script.js",
       validation: (rule) =>

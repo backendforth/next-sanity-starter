@@ -56,7 +56,7 @@ export const siteAnalyticsSettings = defineType({
       name: "loadMode",
       title: "Loading mode",
       description:
-        "Respect cookie banner (recommended): cookie-based trackers wait for consent, cookie-free ones load immediately. Load on page load: everything runs before consent — unlawful in the EEA/UK for any tracker using cookies or device storage (ePrivacy Art. 5(3)).",
+        "Respect cookie banner (recommended): cookie-based trackers wait for consent, cookie-free ones load immediately. Load on page load: everything runs before consent — unlawful in the EEA/UK for anything using cookies or storage.",
       type: "string",
       options: {
         list: [

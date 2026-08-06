@@ -130,7 +130,7 @@ export const siteCookieBanner = defineType({
           title: "Sections",
           name: "sections",
           description:
-            "Analytics rows are appended automatically from the enabled trackers. Generated rows show the provider domain, not the actual cookie host, and no durations — add exact names and retention here if your jurisdiction expects them.",
+            "Analytics rows are appended from the enabled trackers. Generated rows show the provider domain, not the real cookie host, and no durations — add exact names and retention if your jurisdiction expects them.",
           type: "code",
           options: {
             language: "json",

@@ -6,14 +6,14 @@ export const trackerMicrosoftClarity = defineType({
   title: "Microsoft Clarity",
   type: "object",
   description:
-    "Session recording: pointer, clicks, and DOM snapshots — can capture form input. Mask inputs in Clarity first. Data goes to Microsoft in the US. Systematic monitoring, so a DPIA may be required (GDPR Art. 35). " +
+    "Session recording: pointer, clicks, and DOM snapshots — can capture form input. Mask inputs in Clarity first. Microsoft (US). Systematic monitoring, so may need a DPIA (Art. 35). " +
     CONTROLLER_CHECKLIST,
   fields: [
     defineField({
       name: "enabled",
       title: "Enabled",
       description:
-        "On withdrawal the loaded script is not torn down and its cookies remain until the next page load.",
+        "Withdrawing consent reloads the page — Clarity's recorder cannot be stopped in place.",
       type: "boolean",
       initialValue: true,
     }),

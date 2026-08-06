@@ -142,6 +142,42 @@ export function buildCookieSections(
 	];
 }
 
+const HTML_ESCAPES: Record<string, string> = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#39;",
+};
+
+function escapeHtml(value: string): string {
+	return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
+}
+
+/**
+ * Banner description as HTML.
+ *
+ * vanilla-cookieconsent assigns this with `innerHTML`, so editor text is
+ * escaped rather than trusted — otherwise anyone with Studio write access has a
+ * stored-XSS path, and the CSP still allows inline script. The policy link is
+ * the one bit of markup, built here from a URL field with a protocol allowlist
+ * so `javascript:` cannot slip through.
+ */
+export function consentDescriptionHtml(
+	consent: SiteCookieBannerDocument["consentModal"] | null | undefined,
+): string {
+	const text = escapeHtml(
+		consent?.description?.trim() || DEFAULT_CONSENT_DESCRIPTION,
+	);
+	const url = consent?.privacyPolicyUrl?.trim();
+	if (!url || !/^(https?:\/\/|\/)/i.test(url)) return text;
+
+	const label = escapeHtml(
+		consent?.privacyPolicyLabel?.trim() || "Privacy policy",
+	);
+	return `${text} <a href="${escapeHtml(url)}">${label}</a>`;
+}
+
 export function buildCookieConsentTranslations(
 	cookieBanner: SiteCookieBannerDocument | null,
 	trackers: AnalyticsTracker[],
@@ -152,7 +188,7 @@ export function buildCookieConsentTranslations(
 	return {
 		en: {
 			consentModal: {
-				description: consent?.description ?? DEFAULT_CONSENT_DESCRIPTION,
+				description: consentDescriptionHtml(consent),
 				acceptAllBtn: consent?.acceptAllBtn ?? "Accept",
 				acceptNecessaryBtn: consent?.acceptNecessaryBtn ?? "Reject",
 				showPreferencesBtn: consent?.showPreferencesBtn ?? "Manage preferences",

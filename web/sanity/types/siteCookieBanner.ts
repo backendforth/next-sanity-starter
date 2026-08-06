@@ -1,5 +1,8 @@
 export type CookieConsentModalCopy = {
+	/** Plain text — escaped before rendering, so markup here will not run. */
 	description?: string | null;
+	privacyPolicyUrl?: string | null;
+	privacyPolicyLabel?: string | null;
 	acceptAllBtn?: string | null;
 	acceptNecessaryBtn?: string | null;
 	showPreferencesBtn?: string | null;

@@ -56,7 +56,7 @@ export const siteCookieBanner = defineType({
             'Must name the controller and link to your privacy policy (GDPR Art. 13) — HTML is rendered, so `<a href="/privacy">Privacy policy</a>` works. Note any provider outside the EEA.',
           type: "string",
           initialValue:
-            "Our website uses essential cookies to ensure proper operation and tracking cookies to understand your interaction. Tracking is only activated after consent.",
+            "Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.",
           validation: (rule) =>
             rule.warning().custom((value) => {
               if (typeof value !== "string" || value.includes("href=")) {

@@ -30,6 +30,23 @@ function parseSectionsJson(raw: string | null | undefined): Section[] {
 	}
 }
 
+/**
+ * Never throws. These values come from the CMS, and `new URL` on a relative or
+ * malformed one would take down the whole consent banner — leaving no way to
+ * give or withdraw consent at all.
+ */
+function hostnameOf(
+	value: string | null | undefined,
+	fallback: string,
+): string {
+	if (!value) return fallback;
+	try {
+		return new URL(value).hostname;
+	} catch {
+		return fallback;
+	}
+}
+
 function trackerCookieRow(tracker: AnalyticsTracker): CookieTableRow {
 	const label = tracker.cookieBannerLabel?.trim() || tracker._type;
 	const baseDescription =
@@ -45,20 +62,16 @@ function trackerCookieRow(tracker: AnalyticsTracker): CookieTableRow {
 			domain = "google-analytics.com";
 			break;
 		case "trackerMatomo":
-			domain = tracker.url ? new URL(tracker.url).hostname : "matomo";
+			domain = hostnameOf(tracker.url, "matomo");
 			break;
 		case "trackerMicrosoftClarity":
 			domain = "clarity.ms";
 			break;
 		case "trackerPostHog":
-			domain = tracker.apiHost
-				? new URL(tracker.apiHost).hostname
-				: "posthog.com";
+			domain = hostnameOf(tracker.apiHost, "posthog.com");
 			break;
 		case "trackerPlausible":
-			domain = tracker.scriptUrl
-				? new URL(tracker.scriptUrl).hostname
-				: "plausible.io";
+			domain = hostnameOf(tracker.scriptUrl, "plausible.io");
 			break;
 	}
 
@@ -86,6 +99,10 @@ function withTrackerRows(
 
 	return {
 		...section,
+		// A section identified only by `id` still needs the link: consent
+		// categories are derived from `linkedCategory`, so without it there is no
+		// `analytics` category to grant and gated trackers can never load.
+		linkedCategory: "analytics",
 		cookieTable: {
 			...cookieTable,
 			body: [...(cookieTable.body ?? []), ...trackers.map(trackerCookieRow)],

@@ -17,8 +17,27 @@ const loadedTrackers = new Map<string, LoadedTracker>();
  */
 const loadGenerations = new Map<string, number>();
 
+/** Script tags a loader injected, so a re-grant does not stack duplicates. */
+const injectedScripts = new Map<string, HTMLScriptElement[]>();
+
 export function isTrackerLoaded(key: string): boolean {
 	return loadedTrackers.has(key);
+}
+
+export function registerInjectedScript(
+	key: string,
+	script: HTMLScriptElement,
+): void {
+	const scripts = injectedScripts.get(key);
+	if (scripts) scripts.push(script);
+	else injectedScripts.set(key, [script]);
+}
+
+function removeInjectedScripts(key: string): void {
+	for (const script of injectedScripts.get(key) ?? []) {
+		script.remove();
+	}
+	injectedScripts.delete(key);
 }
 
 /** Claim a load attempt; the returned generation guards async continuations. */
@@ -38,6 +57,7 @@ export function registerLoadedTracker(tracker: AnalyticsTracker): void {
 
 export function unregisterLoadedTracker(key: string): void {
 	loadedTrackers.delete(key);
+	removeInjectedScripts(key);
 	// Invalidates any load still in flight for this key.
 	beginTrackerLoad(key);
 }
@@ -96,17 +116,29 @@ export function trackPageView(pathname: string, search = ""): void {
 }
 
 /**
- * Best-effort cookie removal. The same name can exist on both the host and the
- * dot-prefixed domain, and we cannot know which the provider used, so clear
- * every plausible scope.
+ * Every domain a cookie on this page could have been scoped to.
+ *
+ * A cookie can only be deleted from the exact domain that set it, and analytics
+ * usually writes to the registrable domain rather than the host — on
+ * `www.example.com`, GA sets `_ga` for `.example.com`. So walk the hostname
+ * suffixes down to two labels and try each, dot-prefixed and not.
  */
+function cookieDomainScopes(): string[] {
+	const labels = window.location.hostname.split(".");
+	const scopes = [""]; // host-only cookie, no domain attribute
+	for (let i = 0; labels.length - i >= 2; i++) {
+		const domain = labels.slice(i).join(".");
+		scopes.push(`; domain=${domain}`, `; domain=.${domain}`);
+	}
+	return scopes;
+}
+
+/** Best-effort cookie removal across every scope the provider might have used. */
 function deleteCookies(matches: (name: string) => boolean): void {
-	const { hostname } = window.location;
-	const scopes = ["", `; domain=${hostname}`, `; domain=.${hostname}`];
 	for (const entry of document.cookie.split(";")) {
 		const name = entry.split("=")[0]?.trim();
 		if (!name || !matches(name)) continue;
-		for (const scope of scopes) {
+		for (const scope of cookieDomainScopes()) {
 			// biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is Chromium-only and cannot target a parent domain, which is where analytics cookies usually live.
 			document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${scope}`;
 		}

@@ -3,12 +3,19 @@ import {
 	beginTrackerLoad,
 	isCurrentTrackerLoad,
 	isTrackerLoaded,
+	registerInjectedScript,
 	registerLoadedTracker,
 } from "@/src/components/tracking/lib/trackingRuntime";
 
 const POSTHOG_INIT_MAX_ATTEMPTS = 40;
 
+/**
+ * Every injected tag is registered against the tracker so `unloadTracker` can
+ * remove it — otherwise withdrawing and re-granting consent stacks a duplicate
+ * copy of each provider's script on every cycle.
+ */
 function appendScript(
+	key: string,
 	src: string,
 	attributes?: Record<string, string>,
 ): HTMLScriptElement {
@@ -19,6 +26,15 @@ function appendScript(
 		script.setAttribute(name, value);
 	}
 	document.head.appendChild(script);
+	registerInjectedScript(key, script);
+	return script;
+}
+
+function appendInlineScript(key: string, source: string): HTMLScriptElement {
+	const script = document.createElement("script");
+	script.textContent = source;
+	document.head.appendChild(script);
+	registerInjectedScript(key, script);
 	return script;
 }
 
@@ -34,18 +50,20 @@ function loadGoogleAnalytics(tracker: AnalyticsTracker): void {
 	] = false;
 
 	appendScript(
+		tracker._key,
 		`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`,
 	);
 
-	const inline = document.createElement("script");
 	const cookieFree = tracker.cookieFree === true;
-	inline.textContent = `
+	appendInlineScript(
+		tracker._key,
+		`
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', ${JSON.stringify(id)}, ${cookieFree ? "{ client_storage: 'none', anonymize_ip: true }" : "{}"});
-`;
-	document.head.appendChild(inline);
+`,
+	);
 	registerLoadedTracker(tracker);
 }
 
@@ -58,22 +76,21 @@ function loadMatomo(tracker: AnalyticsTracker): void {
 	const normalizedUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 	const cookieFree = tracker.cookieFree === true;
 
-	const inline = document.createElement("script");
-	inline.textContent = `
+	// Same queue order as Matomo's official snippet; only the script insertion is
+	// hoisted out so the tag can be removed again on withdrawal.
+	appendInlineScript(
+		tracker._key,
+		`
 var _paq = window._paq = window._paq || [];
 _paq.push(['forgetUserOptOut']);
 ${cookieFree ? "_paq.push(['disableCookies']);" : ""}
 _paq.push(['trackPageView']);
 _paq.push(['enableLinkTracking']);
-(function() {
-  var u=${JSON.stringify(normalizedUrl)};
-  _paq.push(['setTrackerUrl', u+'matomo.php']);
-  _paq.push(['setSiteId', ${JSON.stringify(siteId)}]);
-  var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-  g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-})();
-`;
-	document.head.appendChild(inline);
+_paq.push(['setTrackerUrl', ${JSON.stringify(`${normalizedUrl}matomo.php`)}]);
+_paq.push(['setSiteId', ${JSON.stringify(siteId)}]);
+`,
+	);
+	appendScript(tracker._key, `${normalizedUrl}matomo.js`);
 	registerLoadedTracker(tracker);
 }
 
@@ -82,15 +99,16 @@ function loadMicrosoftClarity(tracker: AnalyticsTracker): void {
 	const projectId = tracker.projectId?.trim();
 	if (!projectId || isTrackerLoaded(tracker._key)) return;
 
-	const inline = document.createElement("script");
-	inline.textContent = `
-(function(c,l,a,r,i,t,y){
-  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-})(window, document, "clarity", "script", ${JSON.stringify(projectId)});
-`;
-	document.head.appendChild(inline);
+	appendInlineScript(
+		tracker._key,
+		`
+window.clarity = window.clarity || function(){(window.clarity.q=window.clarity.q||[]).push(arguments)};
+`,
+	);
+	appendScript(
+		tracker._key,
+		`https://www.clarity.ms/tag/${encodeURIComponent(projectId)}`,
+	);
 	registerLoadedTracker(tracker);
 }
 
@@ -117,7 +135,10 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 
 	const cookieFree = tracker.cookieFree === true;
 	const generation = beginTrackerLoad(tracker._key);
-	const script = appendScript(`${posthogAssetHost(apiHost)}/static/array.js`);
+	const script = appendScript(
+		tracker._key,
+		`${posthogAssetHost(apiHost)}/static/array.js`,
+	);
 
 	let attempts = 0;
 	const tryInit = () => {
@@ -169,7 +190,7 @@ function loadPlausible(tracker: AnalyticsTracker): void {
 	const scriptUrl = tracker.scriptUrl?.trim();
 	if (!domain || !scriptUrl || isTrackerLoaded(tracker._key)) return;
 
-	appendScript(scriptUrl, {
+	appendScript(tracker._key, scriptUrl, {
 		defer: "",
 		"data-domain": domain,
 	});

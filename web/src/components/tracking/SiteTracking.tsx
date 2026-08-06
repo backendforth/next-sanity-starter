@@ -40,7 +40,7 @@ function trackersForConsent(
 }
 
 export function SiteTracking({ config }: Props) {
-	const consentLoaded = useRef(new Set<string>());
+	const loaded = useRef(new Map<string, AnalyticsTracker>());
 	const initialPageView = useRef(true);
 	const pathname = usePathname();
 
@@ -52,23 +52,24 @@ export function SiteTracking({ config }: Props) {
 	const showBanner = bannerGatesLoading(config);
 
 	useEffect(() => {
-		if (trackers.length === 0) return;
-
 		const syncConsent = (analyticsAccepted: boolean) => {
 			const allowed = trackersForConsent(trackers, config, analyticsAccepted);
-			const allowedKeys = new Set(allowed.map((tracker) => tracker._key));
-
-			// Withdrawal has to stop collection, not just stop new loads — so tear
-			// down anything already running that consent no longer covers.
-			const revoked = trackers.filter(
-				(tracker) =>
-					consentLoaded.current.has(tracker._key) &&
-					!allowedKeys.has(tracker._key),
+			const allowedByKey = new Map(
+				allowed.map((tracker) => [tracker._key, tracker]),
 			);
-			if (revoked.length > 0) {
-				const needsReload = unloadTrackers(revoked);
-				for (const tracker of revoked) {
-					consentLoaded.current.delete(tracker._key);
+
+			// Reconcile against what is running, not against the current document.
+			// A tracker disabled or deleted in Sanity vanishes from `trackers`
+			// entirely, so comparing the two would leave it collecting; a tracker
+			// edited in place keeps its `_key`, so compare the value too.
+			const stale = Array.from(loaded.current.values()).filter((tracker) => {
+				const next = allowedByKey.get(tracker._key);
+				return !next || JSON.stringify(next) !== JSON.stringify(tracker);
+			});
+			if (stale.length > 0) {
+				const needsReload = unloadTrackers(stale);
+				for (const tracker of stale) {
+					loaded.current.delete(tracker._key);
 				}
 				// Clarity's recorder cannot be torn down in place, so a reload is the
 				// only thing that genuinely stops it. Safe from looping: after the
@@ -80,11 +81,13 @@ export function SiteTracking({ config }: Props) {
 			}
 
 			const pending = allowed.filter(
-				(tracker) => !consentLoaded.current.has(tracker._key),
+				(tracker) => !loaded.current.has(tracker._key),
 			);
 			if (pending.length === 0) return;
+			// Recorded before loading, not after: PostHog initialises
+			// asynchronously, so waiting would let a re-run inject it twice.
 			for (const tracker of pending) {
-				consentLoaded.current.add(tracker._key);
+				loaded.current.set(tracker._key, tracker);
 			}
 			loadTrackers(pending);
 		};
@@ -108,6 +111,7 @@ export function SiteTracking({ config }: Props) {
 			initialPageView.current = false;
 			return;
 		}
+		if (loaded.current.size === 0) return;
 		trackPageView(pathname, window.location.search);
 	}, [pathname]);
 

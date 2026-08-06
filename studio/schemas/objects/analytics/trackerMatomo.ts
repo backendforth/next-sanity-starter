@@ -6,7 +6,7 @@ export const trackerMatomo = defineType({
   title: "Matomo (self-hosted)",
   type: "object",
   description:
-    "Lowest-risk option here: self-hosted, so the analytics data stays with you and there is no third-party processor or transfer to account for. You are the controller for it. Two things to set on the Matomo side: anonymise IP addresses (Administration → Privacy → Anonymize data) and set a data retention period. Still name it in your privacy policy.",
+    "Self-hosted — you are the controller and there is no third-party transfer. Set IP anonymisation and a retention period in Matomo, and name it in your privacy policy.",
   fields: [
     defineField({
       name: "enabled",
@@ -43,7 +43,7 @@ export const trackerMatomo = defineType({
     defineField({
       name: "cookieFree",
       title: "Cookie-free mode",
-      description: `Calls Matomo's disableCookies, so no first-party analytics cookies are set. ${COOKIE_FREE_NOTE}`,
+      description: `Calls disableCookies, so no analytics cookies are set. ${COOKIE_FREE_NOTE}`,
       type: "boolean",
       initialValue: false,
     }),

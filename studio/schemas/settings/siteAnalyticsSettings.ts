@@ -56,7 +56,7 @@ export const siteAnalyticsSettings = defineType({
       name: "loadMode",
       title: "Loading mode",
       description:
-        "Respect cookie banner (recommended): cookie-based trackers wait for analytics consent; trackers marked cookie-free still load immediately. Load on page load: every enabled tracker runs before the visitor has answered the banner — for EEA/UK visitors that is generally unlawful for any tracker that sets cookies or reads device storage (ePrivacy Art. 5(3)), so use it only after your own legal review.",
+        "Respect cookie banner (recommended): cookie-based trackers wait for consent, cookie-free ones load immediately. Load on page load: everything runs before consent — unlawful in the EEA/UK for any tracker using cookies or device storage (ePrivacy Art. 5(3)).",
       type: "string",
       options: {
         list: [
@@ -74,7 +74,7 @@ export const siteAnalyticsSettings = defineType({
             (context.document as { trackers?: unknown })?.trackers,
           );
           if (count === 0) return true;
-          return `"Load on page load" starts ${count === 1 ? "this tracker" : `all ${count} enabled trackers`} before the visitor consents, and the cookie banner is bypassed entirely. Unless legal has signed off on this specific setup, switch to "Respect cookie banner".`;
+          return `Runs ${count === 1 ? "1 tracker" : `${count} trackers`} before consent and bypasses the banner.`;
         }),
       ],
     }),
@@ -82,14 +82,14 @@ export const siteAnalyticsSettings = defineType({
       name: "trackers",
       title: "Tracking providers",
       description:
-        "Add one entry per provider. Only enabled providers with valid configuration are loaded on the site. Each provider carries its own privacy obligations — open the entry and read the notes there before switching it on.",
+        "One entry per provider. Only enabled, fully configured providers load. Each has its own privacy notes — read them before enabling.",
       type: "array",
       validation: (rule) =>
         rule.warning().custom(async (trackers, context) => {
           const count = enabledTrackerCount(trackers);
           if (count === 0) return true;
           if (await cookieBannerIsActive(context)) return true;
-          return `The cookie banner is switched off in Cookie Banner settings, so ${count === 1 ? "this tracker runs" : `all ${count} enabled trackers run`} with no consent at all — the loading mode above has no effect without a banner to wait for. Switch "Use Cookie Banner" on, or disable the trackers.`;
+          return `Cookie banner is off, so ${count === 1 ? "1 tracker runs" : `${count} trackers run`} with no consent. Loading mode has no effect without a banner.`;
         }),
       of: [
         defineArrayMember({ type: "trackerGoogleAnalytics" }),

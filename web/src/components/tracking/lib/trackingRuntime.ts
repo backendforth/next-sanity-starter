@@ -95,14 +95,31 @@ export function trackPageView(pathname: string, search = ""): void {
 	}
 }
 
+function cookieDomainScopes(hostname: string): string[] {
+	const scopes = new Set(["", `; domain=${hostname}`, `; domain=.${hostname}`]);
+	if (
+		hostname !== "localhost" &&
+		!hostname.includes(":") &&
+		!/^\d+\.\d+\.\d+\.\d+$/.test(hostname)
+	) {
+		const parts = hostname.split(".");
+		for (let index = 1; index < parts.length; index += 1) {
+			const parent = parts.slice(index).join(".");
+			if (!parent.includes(".")) continue;
+			scopes.add(`; domain=${parent}`);
+			scopes.add(`; domain=.${parent}`);
+		}
+	}
+	return [...scopes];
+}
+
 /**
  * Best-effort cookie removal. The same name can exist on both the host and the
  * dot-prefixed domain, and we cannot know which the provider used, so clear
  * every plausible scope.
  */
 function deleteCookies(matches: (name: string) => boolean): void {
-	const { hostname } = window.location;
-	const scopes = ["", `; domain=${hostname}`, `; domain=.${hostname}`];
+	const scopes = cookieDomainScopes(window.location.hostname);
 	for (const entry of document.cookie.split(";")) {
 		const name = entry.split("=")[0]?.trim();
 		if (!name || !matches(name)) continue;

@@ -33,6 +33,16 @@ function loadGoogleAnalytics(tracker: AnalyticsTracker): void {
 		`ga-disable-${id}`
 	] = false;
 
+	const gtag = (
+		window as Window & {
+			gtag?: (...args: unknown[]) => void;
+		}
+	).gtag;
+	if (gtag) {
+		registerLoadedTracker(tracker);
+		return;
+	}
+
 	appendScript(
 		`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`,
 	);
@@ -57,6 +67,18 @@ function loadMatomo(tracker: AnalyticsTracker): void {
 
 	const normalizedUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 	const cookieFree = tracker.cookieFree === true;
+
+	const _paq = (
+		window as Window & {
+			_paq?: unknown[][];
+		}
+	)._paq;
+	if (_paq) {
+		_paq.push(["forgetUserOptOut"]);
+		if (cookieFree) _paq.push(["disableCookies"]);
+		registerLoadedTracker(tracker);
+		return;
+	}
 
 	const inline = document.createElement("script");
 	inline.textContent = `
@@ -116,6 +138,21 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 	if (!apiKey || !apiHost || isTrackerLoaded(tracker._key)) return;
 
 	const cookieFree = tracker.cookieFree === true;
+
+	const existingPostHog = (
+		window as Window & {
+			posthog?: {
+				capture?: (event: string) => void;
+				opt_in_capturing?: () => void;
+			};
+		}
+	).posthog;
+	if (existingPostHog?.capture) {
+		existingPostHog.opt_in_capturing?.();
+		registerLoadedTracker(tracker);
+		return;
+	}
+
 	const generation = beginTrackerLoad(tracker._key);
 	const script = appendScript(`${posthogAssetHost(apiHost)}/static/array.js`);
 

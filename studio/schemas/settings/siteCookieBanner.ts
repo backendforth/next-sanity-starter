@@ -22,7 +22,7 @@ export const siteCookieBanner = defineType({
       title: "Use Cookie Banner",
       name: "useCookieBanner",
       description:
-        "Turning this off does not stop tracking — it removes the gate. With no banner there is no consent to wait for, so every tracker enabled under Analytics & Tracking loads immediately regardless of its loading mode. Keep this on whenever a tracker is enabled and the site has EEA/UK visitors.",
+        "Off does not stop tracking — it removes the gate. Every tracker enabled under Analytics & Tracking then loads with no consent, whatever its loading mode.",
       type: "boolean",
       initialValue: false,
       validation: (rule) =>
@@ -40,7 +40,7 @@ export const siteCookieBanner = defineType({
             (tracker) => tracker?.enabled !== false,
           ).length;
           if (count === 0) return true;
-          return `${count === 1 ? "A tracker is" : `${count} trackers are`} enabled under Analytics & Tracking and will run with no consent while the banner is off.`;
+          return `${count === 1 ? "1 tracker is" : `${count} trackers are`} enabled under Analytics & Tracking and will run with no consent.`;
         }),
     },
     {
@@ -53,7 +53,7 @@ export const siteCookieBanner = defineType({
           title: "Description",
           name: "description",
           description:
-            'Shown in the banner. To be transparent under GDPR Art. 13 this should say who is collecting the data and why, and link to your privacy or cookie policy — HTML is rendered here, so `<a href="/privacy">Privacy policy</a>` works. If a provider sends data outside the EEA (Google Analytics, Microsoft Clarity), say so.',
+            'Must name the controller and link to your privacy policy (GDPR Art. 13) — HTML is rendered, so `<a href="/privacy">Privacy policy</a>` works. Note any provider outside the EEA.',
           type: "string",
           initialValue:
             "Our website uses essential cookies to ensure proper operation and tracking cookies to understand your interaction. Tracking is only activated after consent.",
@@ -62,7 +62,7 @@ export const siteCookieBanner = defineType({
               if (typeof value !== "string" || value.includes("href=")) {
                 return true;
               }
-              return "No link found. The banner should link to your privacy or cookie policy so visitors can see what they are consenting to.";
+              return "No link — should link to your privacy or cookie policy.";
             }),
         },
         {
@@ -75,15 +75,13 @@ export const siteCookieBanner = defineType({
           title: "Accept Necessary Button",
           name: "acceptNecessaryBtn",
           description:
-            "The reject button. Must stay filled in: the banner library only renders this button when the label is non-empty, so clearing it leaves Accept as the only option — refusing consent has to be as easy as giving it, and regulators treat a missing reject button as invalid consent.",
+            "Reject button. An empty label removes the button entirely, leaving Accept as the only option — which invalidates the consent.",
           type: "string",
           initialValue: "Reject",
           validation: (rule) =>
             rule
               .required()
-              .error(
-                "Required — an empty label hides the reject button entirely, which makes the consent invalid.",
-              ),
+              .error("Required — an empty label hides the reject button."),
         },
         {
           title: "Show Preferences Button",
@@ -114,16 +112,13 @@ export const siteCookieBanner = defineType({
         {
           title: "Accept Necessary Button",
           name: "acceptNecessaryBtn",
-          description:
-            "The reject button in the preferences dialog. As above, an empty label removes the button.",
+          description: "Reject button. An empty label removes it entirely.",
           type: "string",
           initialValue: "Reject all",
           validation: (rule) =>
             rule
               .required()
-              .error(
-                "Required — an empty label hides the reject button entirely, which makes the consent invalid.",
-              ),
+              .error("Required — an empty label hides the reject button."),
         },
         {
           title: "Save Preferences Button",
@@ -135,7 +130,7 @@ export const siteCookieBanner = defineType({
           title: "Sections",
           name: "sections",
           description:
-            "Rows for the analytics category are appended automatically from the enabled trackers. Two caveats if your jurisdiction expects an exact cookie disclosure: the generated rows show the provider's own domain, whereas cookies like _ga are actually set on your domain, and no retention period is shown. Add precise names and durations here when that matters.",
+            "Analytics rows are appended automatically from the enabled trackers. Generated rows show the provider domain, not the actual cookie host, and no durations — add exact names and retention here if your jurisdiction expects them.",
           type: "code",
           options: {
             language: "json",

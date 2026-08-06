@@ -26,16 +26,51 @@ const injectedScripts = new Map<string, HTMLScriptElement[]>();
  * Matomo's and PostHog's opt-outs persist in storage and can also be set by the
  * visitor through the provider's own mechanism. Clearing them unconditionally on
  * load would silently re-enable tracking for someone who opted out elsewhere.
+ *
+ * Persisted in sessionStorage so a Clarity-driven reload (or any full reload
+ * before consent is re-granted) does not lose the marker while the provider
+ * opt-out remains in cookies/storage.
  */
-const selfOptedOut = new Set<string>();
+const SELF_OPTED_OUT_STORAGE_KEY = "tracking:self-opted-out";
+
+function readPersistedSelfOptedOut(): Set<string> {
+	if (typeof sessionStorage === "undefined") return new Set();
+	try {
+		const raw = sessionStorage.getItem(SELF_OPTED_OUT_STORAGE_KEY);
+		if (!raw) return new Set();
+		const parsed: unknown = JSON.parse(raw);
+		return new Set(
+			Array.isArray(parsed)
+				? parsed.filter((key): key is string => typeof key === "string")
+				: [],
+		);
+	} catch {
+		return new Set();
+	}
+}
+
+function writePersistedSelfOptedOut(keys: Set<string>): void {
+	if (typeof sessionStorage === "undefined") return;
+	if (keys.size === 0) sessionStorage.removeItem(SELF_OPTED_OUT_STORAGE_KEY);
+	else
+		sessionStorage.setItem(
+			SELF_OPTED_OUT_STORAGE_KEY,
+			JSON.stringify([...keys]),
+		);
+}
 
 export function markSelfOptedOut(key: string): void {
-	selfOptedOut.add(key);
+	const keys = readPersistedSelfOptedOut();
+	keys.add(key);
+	writePersistedSelfOptedOut(keys);
 }
 
 /** True once, if this integration was what opted the visitor out. */
 export function consumeSelfOptOut(key: string): boolean {
-	return selfOptedOut.delete(key);
+	const keys = readPersistedSelfOptedOut();
+	if (!keys.delete(key)) return false;
+	writePersistedSelfOptedOut(keys);
+	return true;
 }
 
 export function isTrackerLoaded(key: string): boolean {

@@ -53,6 +53,7 @@ export const SANITY_CACHE_TAGS = {
 	siteSettings: "site-settings",
 	siteNav: "site-nav",
 	siteCookieBanner: "site-cookie-banner",
+	siteAnalyticsSettings: "site-analytics-settings",
 	errorSettings: "error-settings",
 } as const;
 

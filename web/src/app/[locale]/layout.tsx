@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
+	fetchSiteAnalyticsSettings,
 	fetchSiteCookieBanner,
 	fetchSiteLanguageSettings,
 	fetchSiteNavMenus,
@@ -10,6 +11,8 @@ import {
 import { CookieConsentBanner } from "@/src/components/cookies/CookieConsent";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
+import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
+import { SiteTrackingShell } from "@/src/components/tracking/SiteTrackingShell";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
@@ -50,12 +53,15 @@ export default async function LocaleLayout({ children, params }: Props) {
 	const locale = raw;
 
 	// `siteLocale` is shared by all locales (single doc) — the per-locale fetches
-	// run in parallel once we know the locale is valid.
-	const [siteNav, cookieBanner, siteBrand] = await Promise.all([
+	// run in parallel once we know the locale is valid. Analytics settings are
+	// language-agnostic (one singleton) and join the same round.
+	const [siteNav, cookieBanner, siteBrand, analytics] = await Promise.all([
 		fetchSiteNavMenus(locale),
 		fetchSiteCookieBanner(locale),
 		fetchSiteSettingsTitle(locale),
+		fetchSiteAnalyticsSettings(),
 	]);
+	const enabledTrackers = getEnabledTrackers(analytics);
 
 	return (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
@@ -79,7 +85,12 @@ export default async function LocaleLayout({ children, params }: Props) {
 				pathUtils={pathUtils}
 				siteLocale={siteLocale}
 			/>
-			<CookieConsentBanner doc={cookieBanner} locale={locale} />
+			<CookieConsentBanner
+				doc={cookieBanner}
+				locale={locale}
+				trackers={enabledTrackers}
+			/>
+			<SiteTrackingShell />
 		</LanguageProvider>
 	);
 }

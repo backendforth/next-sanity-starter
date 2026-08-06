@@ -85,6 +85,21 @@ function loadMicrosoftClarity(tracker: AnalyticsTracker): void {
 	registerLoadedTracker(tracker);
 }
 
+/**
+ * PostHog Cloud serves the SDK from a separate assets host — the ingest host
+ * has no `/static/array.js`, so the default EU config would never load. Only
+ * the two known cloud hosts are rewritten; self-hosted instances serve both
+ * from the same origin and are left alone.
+ */
+function posthogAssetHost(apiHost: string): string {
+	return apiHost
+		.replace(/\/$/, "")
+		.replace(
+			/^(https?:\/\/)(us|eu)\.i\.posthog\.com$/i,
+			"$1$2-assets.i.posthog.com",
+		);
+}
+
 function loadPostHog(tracker: AnalyticsTracker): void {
 	if (tracker._type !== "trackerPostHog") return;
 	const apiKey = tracker.apiKey?.trim();
@@ -92,11 +107,13 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 	if (!apiKey || !apiHost || isTrackerLoaded(tracker._key)) return;
 
 	const cookieFree = tracker.cookieFree === true;
-	const scriptHost = apiHost.replace(/\/$/, "");
-	const script = appendScript(`${scriptHost}/static/array.js`);
+	const script = appendScript(`${posthogAssetHost(apiHost)}/static/array.js`);
 
 	let attempts = 0;
 	const tryInit = () => {
+		// tryInit runs immediately, on script load, and on a retry timer — without
+		// this the pending timer re-initialises after the load handler succeeded.
+		if (isTrackerLoaded(tracker._key)) return;
 		attempts += 1;
 		const posthog = (
 			window as Window & {

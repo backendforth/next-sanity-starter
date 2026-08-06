@@ -31,5 +31,14 @@ export function hasConsent(category: string): boolean {
 
 /** Open the preferences modal — wired to the `open-cookie-preferences` linkFunction. */
 export function showCookiePreferences(): void {
-	CookieConsent.showPreferences();
+	// The link can be placed in navigation regardless of settings, but
+	// showPreferences() has nothing to show unless run() started the banner.
+	try {
+		CookieConsent.showPreferences();
+	} catch (err) {
+		console.warn(
+			"[CookieConsent] Preferences unavailable — the banner is not enabled.",
+			err,
+		);
+	}
 }

@@ -87,6 +87,31 @@ export function bannerGatesLoading(config: {
 	);
 }
 
+/**
+ * The fields that actually change how a tracker loads.
+ *
+ * Reconciliation compares this rather than the whole document: an edit to a
+ * display-only field like `cookieBannerLabel` would otherwise count as a config
+ * change and tear the provider down — and for Clarity a teardown means a full
+ * page reload, which is not something a copy edit should cause.
+ */
+export function trackerLoadSignature(tracker: AnalyticsTracker): string {
+	switch (tracker._type) {
+		case "trackerGoogleAnalytics":
+			return `ga:${tracker.measurementId}:${tracker.cookieFree}`;
+		case "trackerMatomo":
+			return `matomo:${tracker.url}:${tracker.siteId}:${tracker.cookieFree}`;
+		case "trackerMicrosoftClarity":
+			return `clarity:${tracker.projectId}`;
+		case "trackerPostHog":
+			return `posthog:${tracker.apiKey}:${tracker.apiHost}:${tracker.cookieFree}`;
+		case "trackerPlausible":
+			return `plausible:${tracker.domain}:${tracker.scriptUrl}`;
+		default:
+			return JSON.stringify(tracker);
+	}
+}
+
 export function trackerRequiresConsent(
 	tracker: AnalyticsTracker,
 	loadMode: AnalyticsLoadMode | null | undefined,

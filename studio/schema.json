@@ -624,6 +624,20 @@
               },
               "optional": true
             },
+            "privacyPolicyUrl": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "string"
+              },
+              "optional": false
+            },
+            "privacyPolicyLabel": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "string"
+              },
+              "optional": true
+            },
             "acceptAllBtn": {
               "type": "objectAttribute",
               "value": {

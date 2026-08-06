@@ -7,6 +7,7 @@ import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
 import {
 	buildCookieSections,
+	consentDescriptionHtml,
 	sectionsJsonFromSanity,
 } from "@/src/components/tracking/lib/cookieConsentConfig";
 import { notifyAnalyticsConsentChange } from "./cookieConsentApi";
@@ -77,7 +78,7 @@ function buildConfig(
 				[locale]: {
 					consentModal: {
 						title: "",
-						description: doc.consentModal?.description ?? "",
+						description: consentDescriptionHtml(doc.consentModal),
 						acceptAllBtn: doc.consentModal?.acceptAllBtn ?? "Accept",
 						acceptNecessaryBtn:
 							doc.consentModal?.acceptNecessaryBtn ?? "Reject",

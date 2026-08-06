@@ -53,17 +53,30 @@ export const siteCookieBanner = defineType({
           title: "Description",
           name: "description",
           description:
-            'Must name the controller and link to your privacy policy (GDPR Art. 13) — HTML is rendered, so `<a href="/privacy">Privacy policy</a>` works. Note any provider outside the EEA.',
+            "Must name the controller and say why (GDPR Art. 13). Plain text — it is escaped before rendering; use the policy link fields below rather than HTML. Note any provider outside the EEA.",
           type: "string",
           initialValue:
             "Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.",
+        },
+        {
+          title: "Privacy Policy URL",
+          name: "privacyPolicyUrl",
+          description:
+            "Linked from the banner. Visitors must be able to read what they are agreeing to before they agree.",
+          type: "url",
+          options: { allowRelative: true },
+          initialValue: "/privacy",
           validation: (rule) =>
-            rule.warning().custom((value) => {
-              if (typeof value !== "string" || value.includes("href=")) {
-                return true;
-              }
-              return "No link — should link to your privacy or cookie policy.";
-            }),
+            rule
+              .warning()
+              .required()
+              .error("Without this the banner has no policy link."),
+        },
+        {
+          title: "Privacy Policy Link Label",
+          name: "privacyPolicyLabel",
+          type: "string",
+          initialValue: "Privacy policy",
         },
         {
           title: "Accept All Button",

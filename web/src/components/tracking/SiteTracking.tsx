@@ -13,6 +13,7 @@ import {
 	bannerGatesLoading,
 	getEnabledTrackers,
 	type TrackingConfig,
+	trackerLoadSignature,
 	trackerRequiresConsent,
 } from "@/src/components/tracking/lib/trackingConfig";
 import {
@@ -61,10 +62,12 @@ export function SiteTracking({ config }: Props) {
 			// Reconcile against what is running, not against the current document.
 			// A tracker disabled or deleted in Sanity vanishes from `trackers`
 			// entirely, so comparing the two would leave it collecting; a tracker
-			// edited in place keeps its `_key`, so compare the value too.
+			// edited in place keeps its `_key`, so compare what affects loading.
 			const stale = Array.from(loaded.current.values()).filter((tracker) => {
 				const next = allowedByKey.get(tracker._key);
-				return !next || JSON.stringify(next) !== JSON.stringify(tracker);
+				return (
+					!next || trackerLoadSignature(next) !== trackerLoadSignature(tracker)
+				);
 			});
 			if (stale.length > 0) {
 				const needsReload = unloadTrackers(stale);

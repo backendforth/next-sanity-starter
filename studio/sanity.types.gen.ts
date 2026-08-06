@@ -140,6 +140,8 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: string;
+    privacyPolicyUrl: string;
+    privacyPolicyLabel?: string;
     acceptAllBtn?: string;
     acceptNecessaryBtn: string;
     showPreferencesBtn?: string;

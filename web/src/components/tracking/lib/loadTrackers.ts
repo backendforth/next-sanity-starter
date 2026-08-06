@@ -1,6 +1,7 @@
 import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import {
 	beginTrackerLoad,
+	consumeSelfOptOut,
 	isCurrentTrackerLoad,
 	isTrackerLoaded,
 	registerInjectedScript,
@@ -75,6 +76,9 @@ function loadMatomo(tracker: AnalyticsTracker): void {
 
 	const normalizedUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
 	const cookieFree = tracker.cookieFree === true;
+	// Only reverse an opt-out this integration set. A visitor who opted out
+	// through Matomo's own mechanism stays opted out.
+	const reverseOwnOptOut = consumeSelfOptOut(tracker._key);
 
 	// Same queue order as Matomo's official snippet; only the script insertion is
 	// hoisted out so the tag can be removed again on withdrawal.
@@ -82,7 +86,7 @@ function loadMatomo(tracker: AnalyticsTracker): void {
 		tracker._key,
 		`
 var _paq = window._paq = window._paq || [];
-_paq.push(['forgetUserOptOut']);
+${reverseOwnOptOut ? "_paq.push(['forgetUserOptOut']);" : ""}
 ${cookieFree ? "_paq.push(['disableCookies']);" : ""}
 _paq.push(['trackPageView']);
 _paq.push(['enableLinkTracking']);
@@ -166,9 +170,9 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 				api_host: apiHost,
 				persistence: cookieFree ? "memory" : "localStorage+cookie",
 			});
-			// A previous withdrawal's `opt_out_capturing` persists in storage, so
-			// without this a re-grant would init an opted-out instance.
-			posthog.opt_in_capturing?.();
+			// A withdrawal *we* made persists in storage, so a re-grant has to
+			// reverse it — but a provider-side opt-out is left alone.
+			if (consumeSelfOptOut(tracker._key)) posthog.opt_in_capturing?.();
 			registerLoadedTracker(tracker);
 			return;
 		}

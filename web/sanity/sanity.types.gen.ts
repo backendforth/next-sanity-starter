@@ -140,6 +140,8 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: string;
+    privacyPolicyUrl: string;
+    privacyPolicyLabel?: string;
     acceptAllBtn?: string;
     acceptNecessaryBtn: string;
     showPreferencesBtn?: string;
@@ -944,6 +946,8 @@ export type SiteCookieBannerLayoutQueryResult =
       useCookieBanner: boolean | null;
       consentModal: {
         description?: string;
+        privacyPolicyUrl: string;
+        privacyPolicyLabel?: string;
         acceptAllBtn?: string;
         acceptNecessaryBtn: string;
         showPreferencesBtn?: string;

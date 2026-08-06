@@ -20,6 +20,24 @@ const loadGenerations = new Map<string, number>();
 /** Script tags a loader injected, so a re-grant does not stack duplicates. */
 const injectedScripts = new Map<string, HTMLScriptElement[]>();
 
+/**
+ * Trackers *we* opted out of, so a later grant only reverses our own decision.
+ *
+ * Matomo's and PostHog's opt-outs persist in storage and can also be set by the
+ * visitor through the provider's own mechanism. Clearing them unconditionally on
+ * load would silently re-enable tracking for someone who opted out elsewhere.
+ */
+const selfOptedOut = new Set<string>();
+
+export function markSelfOptedOut(key: string): void {
+	selfOptedOut.add(key);
+}
+
+/** True once, if this integration was what opted the visitor out. */
+export function consumeSelfOptOut(key: string): boolean {
+	return selfOptedOut.delete(key);
+}
+
 export function isTrackerLoaded(key: string): boolean {
 	return loadedTrackers.has(key);
 }
@@ -180,6 +198,7 @@ export function unloadTracker(tracker: AnalyticsTracker): void {
 			)._paq;
 			_paq?.push(["optUserOut"]);
 			_paq?.push(["deleteCookies"]);
+			markSelfOptedOut(tracker._key);
 			break;
 		}
 		case "trackerMicrosoftClarity": {
@@ -208,6 +227,7 @@ export function unloadTracker(tracker: AnalyticsTracker): void {
 			).posthog;
 			posthog?.opt_out_capturing?.();
 			posthog?.reset?.();
+			markSelfOptedOut(tracker._key);
 			deleteCookies((name) => name.startsWith("ph_"));
 			break;
 		}

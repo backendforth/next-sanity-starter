@@ -9,7 +9,7 @@ type CookieTableRow = Record<string, string>;
 const DEFAULT_CONSENT_DESCRIPTION =
 	"Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.";
 
-function sectionsJsonFromSanity(
+export function sectionsJsonFromSanity(
 	sections: string | { code?: string | null } | null | undefined,
 ): string | null {
 	if (typeof sections === "string") return sections;
@@ -69,6 +69,30 @@ function trackerCookieRow(tracker: AnalyticsTracker): CookieTableRow {
 	};
 }
 
+function isAnalyticsSection(section: Section): boolean {
+	const sectionId = (section as Section & { id?: string }).id;
+	return section.linkedCategory === "analytics" || sectionId === "analytics";
+}
+
+/** Append one disclosure row per tracker to an analytics section. */
+function withTrackerRows(
+	section: Section,
+	trackers: AnalyticsTracker[],
+): Section {
+	const cookieTable = section.cookieTable ?? {
+		headers: { name: "Name", domain: "Domain", desc: "Description" },
+		body: [] as CookieTableRow[],
+	};
+
+	return {
+		...section,
+		cookieTable: {
+			...cookieTable,
+			body: [...(cookieTable.body ?? []), ...trackers.map(trackerCookieRow)],
+		},
+	};
+}
+
 export function buildCookieSections(
 	cookieBanner: SiteCookieBannerDocument | null,
 	trackers: AnalyticsTracker[],
@@ -80,27 +104,25 @@ export function buildCookieSections(
 	const fallback = parseSectionsJson(defaultCookieSections);
 	const sections = base.length > 0 ? base : fallback;
 
-	return sections.map((section) => {
-		const sectionId = (section as Section & { id?: string }).id;
-		if (section.linkedCategory !== "analytics" && sectionId !== "analytics") {
-			return section;
-		}
+	const withRows = sections.map((section) =>
+		isAnalyticsSection(section) ? withTrackerRows(section, trackers) : section,
+	);
 
-		const cookieTable = section.cookieTable ?? {
-			headers: { name: "Name", domain: "Domain", desc: "Description" },
-			body: [] as CookieTableRow[],
-		};
+	if (trackers.length === 0 || withRows.some(isAnalyticsSection)) {
+		return withRows;
+	}
 
-		const trackerRows = trackers.map(trackerCookieRow);
-
-		return {
-			...section,
-			cookieTable: {
-				...cookieTable,
-				body: [...(cookieTable.body ?? []), ...trackerRows],
-			},
-		};
-	});
+	// The editor-authored JSON is free-form, so the analytics section can be
+	// renamed or deleted. Without one there is no `analytics` category to grant,
+	// which both hides the disclosure and leaves consent-gated trackers unable to
+	// ever load — so synthesise it rather than silently dropping both.
+	return [
+		...withRows,
+		withTrackerRows(
+			{ title: "Analytics", linkedCategory: "analytics" },
+			trackers,
+		),
+	];
 }
 
 export function buildCookieConsentTranslations(

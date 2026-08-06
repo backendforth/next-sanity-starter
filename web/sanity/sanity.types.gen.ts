@@ -931,7 +931,7 @@ export type SiteSettingsSeoFallbackQueryResult =
 
 // Source: sanity/queries/snippets/settings.ts
 // Variable: siteCookieBannerLayoutQuery
-// Query: *[_id == "siteCookieBanner"][0]{  _id,  useCookieBanner,  consentModal,  preferencesModal}
+// Query: *[_id == "siteCookieBanner"][0]{  _id,  useCookieBanner,  consentModal,  preferencesModal {    title,    acceptAllBtn,    acceptNecessaryBtn,    savePreferencesBtn,    "sections": sections.code  }}
 export type SiteCookieBannerLayoutQueryResult =
   | {
       _id: "siteCookieBanner";
@@ -949,11 +949,11 @@ export type SiteCookieBannerLayoutQueryResult =
         showPreferencesBtn?: string;
       } | null;
       preferencesModal: {
-        title?: string;
-        acceptAllBtn?: string;
+        title: string | null;
+        acceptAllBtn: string | null;
         acceptNecessaryBtn: string;
-        savePreferencesBtn?: string;
-        sections?: Code;
+        savePreferencesBtn: string | null;
+        sections: string | null;
       } | null;
     }
   | null;
@@ -1099,7 +1099,7 @@ declare module "@sanity/client" {
     '*[_id == "siteSettings"][0]{title}': SiteSettingsTitleQueryResult;
     '*[_id == "siteSettings"][0]{\n  "faviconUrl": favicon.asset->url\n}': SiteSettingsFaviconQueryResult;
     '*[_id == "siteSettings"][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
-    '*[_id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal,\n  preferencesModal\n}': SiteCookieBannerLayoutQueryResult;
+    '*[_id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal,\n  preferencesModal {\n    title,\n    acceptAllBtn,\n    acceptNecessaryBtn,\n    savePreferencesBtn,\n    "sections": sections.code\n  }\n}': SiteCookieBannerLayoutQueryResult;
     '*[_id == "siteAnalyticsSettings"][0]{\n  _id,\n  title,\n  loadMode,\n  trackers[]{\n    _key,\n    _type,\n    enabled,\n    cookieFree,\n    cookieBannerLabel,\n    cookieBannerDescription,\n    _type == "trackerGoogleAnalytics" => {\n      measurementId\n    },\n    _type == "trackerMatomo" => {\n      url,\n      siteId\n    },\n    _type == "trackerMicrosoftClarity" => {\n      projectId\n    },\n    _type == "trackerPostHog" => {\n      apiKey,\n      apiHost\n    },\n    _type == "trackerPlausible" => {\n      domain,\n      scriptUrl\n    }\n  }\n}': SiteAnalyticsSettingsQueryResult;
     '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current\n}': PageSlugsQueryResult;
     '*[_type == "project" && defined(slug.current)]{\n  "slug": slug.current\n}': ProjectSlugsQueryResult;

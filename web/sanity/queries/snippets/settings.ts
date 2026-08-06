@@ -116,7 +116,13 @@ export const siteCookieBannerLayoutQuery =
   _id,
   useCookieBanner,
   consentModal,
-  preferencesModal
+  preferencesModal {
+    title,
+    acceptAllBtn,
+    acceptNecessaryBtn,
+    savePreferencesBtn,
+    "sections": sections.code
+  }
 }`);
 
 /** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */

@@ -51,10 +51,40 @@ export function shouldRespectCookieBanner(
 	return isCookieBannerActive(cookieBanner);
 }
 
+/**
+ * Providers that never qualify as cookie-free, whatever the document says.
+ *
+ * Clarity has no cookie-free mode, and its Studio field is `readOnly` — but
+ * that is a UI affordance, not a data invariant. An imported or API-written
+ * document carrying `cookieFree: true` would otherwise load Clarity before
+ * consent, which is exactly the case that must never happen.
+ */
+const NEVER_COOKIE_FREE: ReadonlySet<AnalyticsTracker["_type"]> = new Set([
+	"trackerMicrosoftClarity",
+]);
+
 /** Cookie-free trackers may load without analytics consent when the banner is active. */
 export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
+	if (NEVER_COOKIE_FREE.has(tracker._type)) return false;
 	if (tracker._type === "trackerPlausible") return true;
 	return tracker.cookieFree === true;
+}
+
+/**
+ * Whether the banner gates loading for this document.
+ *
+ * Derived from `shouldRespectCookieBanner` rather than an equality check on
+ * `loadMode`, so a document missing that field (legacy or API-written) still
+ * waits for consent instead of failing open.
+ */
+export function bannerGatesLoading(config: {
+	analytics: SiteAnalyticsSettingsDocument | null;
+	cookieBanner: SiteCookieBannerDocument | null;
+}): boolean {
+	return shouldRespectCookieBanner(
+		config.analytics?.loadMode,
+		config.cookieBanner,
+	);
 }
 
 export function trackerRequiresConsent(

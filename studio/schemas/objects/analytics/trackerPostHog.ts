@@ -31,7 +31,7 @@ export const trackerPostHog = defineType({
       name: "apiHost",
       title: "API host",
       description:
-        "Ingest host. Keep on the EU cloud (https://eu.i.posthog.com) or self-hosted; us.i.posthog.com is a US transfer.",
+        "Ingest host. Keep on the EU cloud (https://eu.i.posthog.com) or self-hosted; us.i.posthog.com is a US transfer. Self-hosted hosts need adding to Content-Security-Policy in netlify.toml.",
       type: "url",
       initialValue: "https://eu.i.posthog.com",
       validation: (rule) =>

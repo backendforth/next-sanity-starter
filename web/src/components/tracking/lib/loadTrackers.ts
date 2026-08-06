@@ -1,5 +1,7 @@
 import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import {
+	beginTrackerLoad,
+	isCurrentTrackerLoad,
 	isTrackerLoaded,
 	registerLoadedTracker,
 } from "@/src/components/tracking/lib/trackingRuntime";
@@ -24,6 +26,12 @@ function loadGoogleAnalytics(tracker: AnalyticsTracker): void {
 	if (tracker._type !== "trackerGoogleAnalytics") return;
 	const id = tracker.measurementId?.trim();
 	if (!id || isTrackerLoaded(tracker._key)) return;
+
+	// A previous withdrawal set `ga-disable-<id>` on window, and that outlives the
+	// script — without clearing it, re-granting consent loads a disabled GA.
+	(window as unknown as Record<string, boolean | undefined>)[
+		`ga-disable-${id}`
+	] = false;
 
 	appendScript(
 		`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(id)}`,
@@ -53,6 +61,7 @@ function loadMatomo(tracker: AnalyticsTracker): void {
 	const inline = document.createElement("script");
 	inline.textContent = `
 var _paq = window._paq = window._paq || [];
+_paq.push(['forgetUserOptOut']);
 ${cookieFree ? "_paq.push(['disableCookies']);" : ""}
 _paq.push(['trackPageView']);
 _paq.push(['enableLinkTracking']);
@@ -107,10 +116,15 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 	if (!apiKey || !apiHost || isTrackerLoaded(tracker._key)) return;
 
 	const cookieFree = tracker.cookieFree === true;
+	const generation = beginTrackerLoad(tracker._key);
 	const script = appendScript(`${posthogAssetHost(apiHost)}/static/array.js`);
 
 	let attempts = 0;
 	const tryInit = () => {
+		// Consent can be withdrawn while the script or the retry timer is still in
+		// flight; without this the pending callback initialises PostHog *after* the
+		// withdrawal and starts collecting again.
+		if (!isCurrentTrackerLoad(tracker._key, generation)) return;
 		// tryInit runs immediately, on script load, and on a retry timer — without
 		// this the pending timer re-initialises after the load handler succeeded.
 		if (isTrackerLoaded(tracker._key)) return;
@@ -122,6 +136,7 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 						key: string,
 						options: { api_host: string; persistence: string },
 					) => void;
+					opt_in_capturing?: () => void;
 				};
 			}
 		).posthog;
@@ -130,6 +145,9 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 				api_host: apiHost,
 				persistence: cookieFree ? "memory" : "localStorage+cookie",
 			});
+			// A previous withdrawal's `opt_out_capturing` persists in storage, so
+			// without this a re-grant would init an opted-out instance.
+			posthog.opt_in_capturing?.();
 			registerLoadedTracker(tracker);
 			return;
 		}

@@ -10,6 +10,7 @@ import {
 } from "@/src/components/cookies/cookieConsentApi";
 import { loadTrackers } from "@/src/components/tracking/lib/loadTrackers";
 import {
+	bannerGatesLoading,
 	getEnabledTrackers,
 	type TrackingConfig,
 	trackerRequiresConsent,
@@ -48,9 +49,7 @@ export function SiteTracking({ config }: Props) {
 		[config.analytics],
 	);
 
-	const showBanner =
-		config.cookieBanner?.useCookieBanner === true &&
-		config.analytics?.loadMode === "respectCookieBanner";
+	const showBanner = bannerGatesLoading(config);
 
 	useEffect(() => {
 		if (trackers.length === 0) return;
@@ -67,9 +66,16 @@ export function SiteTracking({ config }: Props) {
 					!allowedKeys.has(tracker._key),
 			);
 			if (revoked.length > 0) {
-				unloadTrackers(revoked);
+				const needsReload = unloadTrackers(revoked);
 				for (const tracker of revoked) {
 					consentLoaded.current.delete(tracker._key);
+				}
+				// Clarity's recorder cannot be torn down in place, so a reload is the
+				// only thing that genuinely stops it. Safe from looping: after the
+				// reload consent is already withdrawn, so it never loads again.
+				if (needsReload) {
+					window.location.reload();
+					return;
 				}
 			}
 

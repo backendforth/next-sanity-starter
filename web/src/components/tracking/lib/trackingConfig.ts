@@ -95,3 +95,28 @@ export function trackerRequiresConsent(
 	if (!shouldRespectCookieBanner(loadMode, cookieBanner)) return false;
 	return !isCookieFreeTracker(tracker);
 }
+
+/** Whether two tracker configs would load the same runtime integration. */
+export function trackerRuntimeConfigEqual(
+	a: AnalyticsTracker,
+	b: AnalyticsTracker,
+): boolean {
+	return trackerRuntimeFingerprint(a) === trackerRuntimeFingerprint(b);
+}
+
+function trackerRuntimeFingerprint(tracker: AnalyticsTracker): string {
+	const cookieFree = tracker.cookieFree === true;
+
+	switch (tracker._type) {
+		case "trackerGoogleAnalytics":
+			return `${tracker._type}|${cookieFree}|${tracker.measurementId?.trim() ?? ""}`;
+		case "trackerMatomo":
+			return `${tracker._type}|${cookieFree}|${tracker.url?.trim() ?? ""}|${tracker.siteId?.trim() ?? ""}`;
+		case "trackerMicrosoftClarity":
+			return `${tracker._type}|${cookieFree}|${tracker.projectId?.trim() ?? ""}`;
+		case "trackerPostHog":
+			return `${tracker._type}|${cookieFree}|${tracker.apiKey?.trim() ?? ""}|${tracker.apiHost?.trim() ?? ""}`;
+		case "trackerPlausible":
+			return `${tracker._type}|${cookieFree}|${tracker.domain?.trim() ?? ""}|${tracker.scriptUrl?.trim() ?? ""}`;
+	}
+}

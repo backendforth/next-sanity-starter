@@ -14,6 +14,7 @@ import {
 	getEnabledTrackers,
 	type TrackingConfig,
 	trackerRequiresConsent,
+	trackerRuntimeConfigEqual,
 } from "@/src/components/tracking/lib/trackingConfig";
 import {
 	trackPageView,
@@ -64,7 +65,7 @@ export function SiteTracking({ config }: Props) {
 			// edited in place keeps its `_key`, so compare the value too.
 			const stale = Array.from(loaded.current.values()).filter((tracker) => {
 				const next = allowedByKey.get(tracker._key);
-				return !next || JSON.stringify(next) !== JSON.stringify(tracker);
+				return !next || !trackerRuntimeConfigEqual(next, tracker);
 			});
 			if (stale.length > 0) {
 				const needsReload = unloadTrackers(stale);

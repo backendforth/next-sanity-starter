@@ -141,13 +141,13 @@ export type SiteCookieBanner = {
   consentModal?: {
     description?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
+    acceptNecessaryBtn: string;
     showPreferencesBtn?: string;
   };
   preferencesModal?: {
     title?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
+    acceptNecessaryBtn: string;
     savePreferencesBtn?: string;
     sections?: Code;
   };

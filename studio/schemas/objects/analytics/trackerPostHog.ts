@@ -1,9 +1,13 @@
 import { defineField, defineType } from "sanity";
+import { CONTROLLER_CHECKLIST, COOKIE_FREE_NOTE } from "./complianceNotes";
 
 export const trackerPostHog = defineType({
   name: "trackerPostHog",
   title: "PostHog",
   type: "object",
+  description:
+    "Important: session replay, autocapture, and heatmaps are switched on in the PostHog project settings, not here. If replay is enabled there, PostHog records visitor sessions with the same risks as Microsoft Clarity — and nothing in this document will tell you, so the banner description you write below can understate what is actually collected. Check the PostHog project before enabling. " +
+    CONTROLLER_CHECKLIST,
   fields: [
     defineField({
       name: "enabled",
@@ -27,7 +31,7 @@ export const trackerPostHog = defineType({
       name: "apiHost",
       title: "API host",
       description:
-        "PostHog ingest host (e.g. https://eu.i.posthog.com or your self-hosted URL).",
+        "PostHog ingest host. Keep this on the EU cloud (https://eu.i.posthog.com) or your own self-hosted instance — pointing it at the US cloud (us.i.posthog.com) turns every event into a third-country transfer that needs its own basis.",
       type: "url",
       initialValue: "https://eu.i.posthog.com",
       validation: (rule) =>
@@ -41,8 +45,7 @@ export const trackerPostHog = defineType({
     defineField({
       name: "cookieFree",
       title: "Cookie-free mode",
-      description:
-        "Uses in-memory persistence only — no PostHog cookies stored in the browser.",
+      description: `Uses in-memory persistence only, so no PostHog cookies or localStorage entries are written, and every page load counts as a new anonymous user. ${COOKIE_FREE_NOTE}`,
       type: "boolean",
       initialValue: false,
     }),

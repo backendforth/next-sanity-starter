@@ -141,13 +141,13 @@ export type SiteCookieBanner = {
   consentModal?: {
     description?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
+    acceptNecessaryBtn: string;
     showPreferencesBtn?: string;
   };
   preferencesModal?: {
     title?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
+    acceptNecessaryBtn: string;
     savePreferencesBtn?: string;
     sections?: Code;
   };
@@ -159,6 +159,81 @@ export type Code = {
   filename?: string;
   code?: string;
   highlightedLines?: Array<number>;
+};
+
+export type TrackerPlausible = {
+  _type: "trackerPlausible";
+  enabled?: boolean;
+  domain?: string;
+  scriptUrl?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerPostHog = {
+  _type: "trackerPostHog";
+  enabled?: boolean;
+  apiKey?: string;
+  apiHost?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerMicrosoftClarity = {
+  _type: "trackerMicrosoftClarity";
+  enabled?: boolean;
+  projectId?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerMatomo = {
+  _type: "trackerMatomo";
+  enabled?: boolean;
+  url?: string;
+  siteId?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerGoogleAnalytics = {
+  _type: "trackerGoogleAnalytics";
+  enabled?: boolean;
+  measurementId?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type SiteAnalyticsSettings = {
+  _id: string;
+  _type: "siteAnalyticsSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  loadMode: "onPageLoad" | "respectCookieBanner";
+  trackers?: Array<
+    | ({
+        _key: string;
+      } & TrackerGoogleAnalytics)
+    | ({
+        _key: string;
+      } & TrackerMatomo)
+    | ({
+        _key: string;
+      } & TrackerMicrosoftClarity)
+    | ({
+        _key: string;
+      } & TrackerPostHog)
+    | ({
+        _key: string;
+      } & TrackerPlausible)
+  >;
 };
 
 export type ErrorSettings = {
@@ -736,6 +811,12 @@ export type AllSanitySchemaTypes =
   | Work
   | SiteCookieBanner
   | Code
+  | TrackerPlausible
+  | TrackerPostHog
+  | TrackerMicrosoftClarity
+  | TrackerMatomo
+  | TrackerGoogleAnalytics
+  | SiteAnalyticsSettings
   | ErrorSettings
   | InternationalizedArrayRichText
   | SiteNav
@@ -864,16 +945,101 @@ export type SiteCookieBannerLayoutQueryResult =
       consentModal: {
         description?: string;
         acceptAllBtn?: string;
-        acceptNecessaryBtn?: string;
+        acceptNecessaryBtn: string;
         showPreferencesBtn?: string;
       } | null;
       preferencesModal: {
         title?: string;
         acceptAllBtn?: string;
-        acceptNecessaryBtn?: string;
+        acceptNecessaryBtn: string;
         savePreferencesBtn?: string;
         sections?: Code;
       } | null;
+    }
+  | null;
+
+// Source: sanity/queries/snippets/settings.ts
+// Variable: siteAnalyticsSettingsQuery
+// Query: *[_id == "siteAnalyticsSettings"][0]{  _id,  title,  loadMode,  trackers[]{    _key,    _type,    enabled,    cookieFree,    cookieBannerLabel,    cookieBannerDescription,    _type == "trackerGoogleAnalytics" => {      measurementId    },    _type == "trackerMatomo" => {      url,      siteId    },    _type == "trackerMicrosoftClarity" => {      projectId    },    _type == "trackerPostHog" => {      apiKey,      apiHost    },    _type == "trackerPlausible" => {      domain,      scriptUrl    }  }}
+export type SiteAnalyticsSettingsQueryResult =
+  | {
+      _id: "siteAnalyticsSettings";
+      title: InternationalizedArrayString;
+      loadMode: null;
+      trackers: null;
+    }
+  | {
+      _id: "siteAnalyticsSettings";
+      title: null;
+      loadMode: null;
+      trackers: null;
+    }
+  | {
+      _id: "siteAnalyticsSettings";
+      title: string;
+      loadMode: null;
+      trackers: null;
+    }
+  | {
+      _id: "siteAnalyticsSettings";
+      title: string | null;
+      loadMode: null;
+      trackers: null;
+    }
+  | {
+      _id: "siteAnalyticsSettings";
+      title: string | null;
+      loadMode: "onPageLoad" | "respectCookieBanner";
+      trackers: Array<
+        | {
+            _key: string;
+            _type: "trackerGoogleAnalytics";
+            enabled: boolean | null;
+            cookieFree: boolean | null;
+            cookieBannerLabel: string | null;
+            cookieBannerDescription: string | null;
+            measurementId: string | null;
+          }
+        | {
+            _key: string;
+            _type: "trackerMatomo";
+            enabled: boolean | null;
+            cookieFree: boolean | null;
+            cookieBannerLabel: string | null;
+            cookieBannerDescription: string | null;
+            url: string | null;
+            siteId: string | null;
+          }
+        | {
+            _key: string;
+            _type: "trackerMicrosoftClarity";
+            enabled: boolean | null;
+            cookieFree: boolean | null;
+            cookieBannerLabel: string | null;
+            cookieBannerDescription: string | null;
+            projectId: string | null;
+          }
+        | {
+            _key: string;
+            _type: "trackerPlausible";
+            enabled: boolean | null;
+            cookieFree: boolean | null;
+            cookieBannerLabel: string | null;
+            cookieBannerDescription: string | null;
+            domain: string | null;
+            scriptUrl: string | null;
+          }
+        | {
+            _key: string;
+            _type: "trackerPostHog";
+            enabled: boolean | null;
+            cookieFree: boolean | null;
+            cookieBannerLabel: string | null;
+            cookieBannerDescription: string | null;
+            apiKey: string | null;
+            apiHost: string | null;
+          }
+      > | null;
     }
   | null;
 
@@ -934,6 +1100,7 @@ declare module "@sanity/client" {
     '*[_id == "siteSettings"][0]{\n  "faviconUrl": favicon.asset->url\n}': SiteSettingsFaviconQueryResult;
     '*[_id == "siteSettings"][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
     '*[_id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal,\n  preferencesModal\n}': SiteCookieBannerLayoutQueryResult;
+    '*[_id == "siteAnalyticsSettings"][0]{\n  _id,\n  title,\n  loadMode,\n  trackers[]{\n    _key,\n    _type,\n    enabled,\n    cookieFree,\n    cookieBannerLabel,\n    cookieBannerDescription,\n    _type == "trackerGoogleAnalytics" => {\n      measurementId\n    },\n    _type == "trackerMatomo" => {\n      url,\n      siteId\n    },\n    _type == "trackerMicrosoftClarity" => {\n      projectId\n    },\n    _type == "trackerPostHog" => {\n      apiKey,\n      apiHost\n    },\n    _type == "trackerPlausible" => {\n      domain,\n      scriptUrl\n    }\n  }\n}': SiteAnalyticsSettingsQueryResult;
     '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current\n}': PageSlugsQueryResult;
     '*[_type == "project" && defined(slug.current)]{\n  "slug": slug.current\n}': ProjectSlugsQueryResult;
     '*[\n  _type == "home" ||\n  _type == "work" ||\n  (_type == "page" && defined(slug.current)) ||\n  (_type == "project" && defined(slug.current))\n]{\n  _id,\n  _type,\n  _updatedAt,\n  "slug": select(\n    _type in ["home", "work"] => null,\n    slug.current\n  ),\n  "path": select(\n    _type == "home" => "/",\n    _type == "work" => "/work",\n    _type == "project" => "/work/" + slug.current,\n    "/" + slug.current\n  )\n}': SitemapPagesQueryResult;

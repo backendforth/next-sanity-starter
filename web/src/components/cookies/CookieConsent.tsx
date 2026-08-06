@@ -3,38 +3,50 @@
 import { useEffect } from "react";
 import * as CookieConsent from "vanilla-cookieconsent";
 
+import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
-
+import { buildCookieSections } from "@/src/components/tracking/lib/cookieConsentConfig";
+import { notifyAnalyticsConsentChange } from "./cookieConsentApi";
 import { defaultSectionsFor } from "./defaultSections";
 
 type Props = {
 	doc: SiteCookieBannerDocument | null;
 	locale: string;
+	trackers?: AnalyticsTracker[];
 };
 
 function parseSections(
-	raw: string | null | undefined,
+	doc: SiteCookieBannerDocument,
 	locale: string,
+	trackers: AnalyticsTracker[],
 ): CookieConsent.Section[] {
-	if (typeof raw !== "string" || raw.trim().length === 0) {
-		return defaultSectionsFor(locale);
-	}
-	try {
-		const parsed = JSON.parse(raw);
-		if (Array.isArray(parsed)) {
-			return parsed as CookieConsent.Section[];
+	const raw = doc.preferencesModal?.sections;
+	if (typeof raw === "string" && raw.trim().length > 0) {
+		try {
+			JSON.parse(raw);
+			return buildCookieSections(doc, trackers);
+		} catch (err) {
+			console.warn("[CookieConsent] Failed to parse `sections` JSON:", err);
 		}
-	} catch (err) {
-		console.warn("[CookieConsent] Failed to parse `sections` JSON:", err);
 	}
-	return defaultSectionsFor(locale);
+	return buildCookieSections(
+		{
+			...doc,
+			preferencesModal: {
+				...doc.preferencesModal,
+				sections: JSON.stringify(defaultSectionsFor(locale)),
+			},
+		},
+		trackers,
+	);
 }
 
 function buildConfig(
 	doc: SiteCookieBannerDocument,
 	locale: string,
+	trackers: AnalyticsTracker[],
 ): CookieConsent.CookieConsentConfig {
-	const sections = parseSections(doc.preferencesModal?.sections, locale);
+	const sections = parseSections(doc, locale, trackers);
 
 	const categoryKeys = new Set<string>(["necessary"]);
 	for (const section of sections) {
@@ -79,16 +91,22 @@ function buildConfig(
 				},
 			},
 		},
+		onConsent: () => {
+			notifyAnalyticsConsentChange();
+		},
+		onChange: () => {
+			notifyAnalyticsConsentChange();
+		},
 	};
 }
 
-export function CookieConsentBanner({ doc, locale }: Props) {
+export function CookieConsentBanner({ doc, locale, trackers = [] }: Props) {
 	useEffect(() => {
 		if (!doc?.useCookieBanner) return;
-		CookieConsent.run(buildConfig(doc, locale)).catch((err) => {
+		CookieConsent.run(buildConfig(doc, locale, trackers)).catch((err) => {
 			console.warn("[CookieConsent] run() failed:", err);
 		});
-	}, [doc, locale]);
+	}, [doc, locale, trackers]);
 
 	return null;
 }

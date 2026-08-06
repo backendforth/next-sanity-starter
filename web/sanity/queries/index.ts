@@ -28,6 +28,7 @@ export { pageSeoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
 	navMenusQuery,
+	siteAnalyticsSettingsQuery,
 	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,

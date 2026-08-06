@@ -97,6 +97,7 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 
 	let attempts = 0;
 	const tryInit = () => {
+		if (isTrackerLoaded(tracker._key)) return;
 		attempts += 1;
 		const posthog = (
 			window as Window & {

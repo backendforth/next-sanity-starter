@@ -9,7 +9,7 @@ type CookieTableRow = Record<string, string>;
 const DEFAULT_CONSENT_DESCRIPTION =
 	"Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.";
 
-function sectionsJsonFromSanity(
+export function sectionsJsonFromSanity(
 	sections: string | { code?: string | null } | null | undefined,
 ): string | null {
 	if (typeof sections === "string") return sections;

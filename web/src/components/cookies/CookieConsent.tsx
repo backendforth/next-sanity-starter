@@ -5,7 +5,10 @@ import * as CookieConsent from "vanilla-cookieconsent";
 
 import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
-import { buildCookieSections } from "@/src/components/tracking/lib/cookieConsentConfig";
+import {
+	buildCookieSections,
+	sectionsJsonFromSanity,
+} from "@/src/components/tracking/lib/cookieConsentConfig";
 import { notifyAnalyticsConsentChange } from "./cookieConsentApi";
 import { defaultSectionsFor } from "./defaultSections";
 
@@ -20,10 +23,10 @@ function parseSections(
 	locale: string,
 	trackers: AnalyticsTracker[],
 ): CookieConsent.Section[] {
-	const raw = doc.preferencesModal?.sections;
-	if (typeof raw === "string" && raw.trim().length > 0) {
+	const sectionsJson = sectionsJsonFromSanity(doc.preferencesModal?.sections);
+	if (sectionsJson) {
 		try {
-			JSON.parse(raw);
+			JSON.parse(sectionsJson);
 			return buildCookieSections(doc, trackers);
 		} catch (err) {
 			console.warn("[CookieConsent] Failed to parse `sections` JSON:", err);

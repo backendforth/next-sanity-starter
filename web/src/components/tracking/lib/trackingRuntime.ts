@@ -1,0 +1,264 @@
+import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
+
+type LoadedTracker = {
+	tracker: AnalyticsTracker;
+};
+
+const loadedTrackers = new Map<string, LoadedTracker>();
+
+/**
+ * Monotonic counter per tracker key, bumped on every load and unload.
+ *
+ * PostHog initialises asynchronously (script load plus a retry timer). If
+ * consent is withdrawn while that is in flight, the pending callback would
+ * otherwise still run `posthog.init` and start collecting *after* the
+ * withdrawal. A loader captures the generation it started under and bails when
+ * it no longer matches.
+ */
+const loadGenerations = new Map<string, number>();
+
+/** Script tags a loader injected, so a re-grant does not stack duplicates. */
+const injectedScripts = new Map<string, HTMLScriptElement[]>();
+
+/**
+ * Marks a tracker *we* opted out of, so a later grant only reverses our own
+ * decision — a visitor who opted out through Matomo's or PostHog's own
+ * mechanism must stay opted out.
+ *
+ * Persisted rather than held in memory: the provider opt-outs this mirrors live
+ * in cookies and localStorage and survive reloads, so an in-memory marker would
+ * be lost on the next page load — including the reload withdrawal triggers for
+ * Clarity — leaving those providers permanently opted out. Storing a consent
+ * decision is strictly necessary processing, so it needs no consent of its own.
+ */
+const SELF_OPT_OUT_PREFIX = "analytics-self-opt-out:";
+
+export function markSelfOptedOut(key: string): void {
+	try {
+		window.localStorage.setItem(`${SELF_OPT_OUT_PREFIX}${key}`, "1");
+	} catch {
+		// Private browsing or storage disabled — nothing to reverse later either.
+	}
+}
+
+/** True once, if this integration was what opted the visitor out. */
+export function consumeSelfOptOut(key: string): boolean {
+	try {
+		const storageKey = `${SELF_OPT_OUT_PREFIX}${key}`;
+		if (window.localStorage.getItem(storageKey) === null) return false;
+		window.localStorage.removeItem(storageKey);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+export function isTrackerLoaded(key: string): boolean {
+	return loadedTrackers.has(key);
+}
+
+export function registerInjectedScript(
+	key: string,
+	script: HTMLScriptElement,
+): void {
+	const scripts = injectedScripts.get(key);
+	if (scripts) scripts.push(script);
+	else injectedScripts.set(key, [script]);
+}
+
+function removeInjectedScripts(key: string): void {
+	for (const script of injectedScripts.get(key) ?? []) {
+		script.remove();
+	}
+	injectedScripts.delete(key);
+}
+
+/** Claim a load attempt; the returned generation guards async continuations. */
+export function beginTrackerLoad(key: string): number {
+	const generation = (loadGenerations.get(key) ?? 0) + 1;
+	loadGenerations.set(key, generation);
+	return generation;
+}
+
+export function isCurrentTrackerLoad(key: string, generation: number): boolean {
+	return loadGenerations.get(key) === generation;
+}
+
+export function registerLoadedTracker(tracker: AnalyticsTracker): void {
+	loadedTrackers.set(tracker._key, { tracker });
+}
+
+export function unregisterLoadedTracker(key: string): void {
+	loadedTrackers.delete(key);
+	removeInjectedScripts(key);
+	// Invalidates any load still in flight for this key.
+	beginTrackerLoad(key);
+}
+
+export function trackPageView(pathname: string, search = ""): void {
+	const url = `${pathname}${search}`;
+
+	for (const { tracker } of loadedTrackers.values()) {
+		switch (tracker._type) {
+			case "trackerGoogleAnalytics": {
+				const id = tracker.measurementId?.trim();
+				if (!id) break;
+				const gtag = (
+					window as Window & {
+						gtag?: (...args: unknown[]) => void;
+					}
+				).gtag;
+				gtag?.("event", "page_view", {
+					page_path: url,
+					send_to: id,
+				});
+				break;
+			}
+			case "trackerMatomo": {
+				const _paq = (
+					window as Window & {
+						_paq?: unknown[][];
+					}
+				)._paq;
+				_paq?.push(["setCustomUrl", url]);
+				_paq?.push(["trackPageView"]);
+				break;
+			}
+			case "trackerPostHog": {
+				const posthog = (
+					window as Window & {
+						posthog?: { capture?: (event: string) => void };
+					}
+				).posthog;
+				posthog?.capture?.("$pageview");
+				break;
+			}
+			case "trackerPlausible": {
+				const plausible = (
+					window as Window & {
+						plausible?: (event: string, options?: { u: string }) => void;
+					}
+				).plausible;
+				plausible?.("pageview", { u: url });
+				break;
+			}
+			default:
+				break;
+		}
+	}
+}
+
+/**
+ * Every domain a cookie on this page could have been scoped to.
+ *
+ * A cookie can only be deleted from the exact domain that set it, and analytics
+ * usually writes to the registrable domain rather than the host — on
+ * `www.example.com`, GA sets `_ga` for `.example.com`. So walk the hostname
+ * suffixes down to two labels and try each, dot-prefixed and not.
+ */
+function cookieDomainScopes(): string[] {
+	const labels = window.location.hostname.split(".");
+	const scopes = [""]; // host-only cookie, no domain attribute
+	for (let i = 0; labels.length - i >= 2; i++) {
+		const domain = labels.slice(i).join(".");
+		scopes.push(`; domain=${domain}`, `; domain=.${domain}`);
+	}
+	return scopes;
+}
+
+/** Best-effort cookie removal across every scope the provider might have used. */
+function deleteCookies(matches: (name: string) => boolean): void {
+	for (const entry of document.cookie.split(";")) {
+		const name = entry.split("=")[0]?.trim();
+		if (!name || !matches(name)) continue;
+		for (const scope of cookieDomainScopes()) {
+			// biome-ignore lint/suspicious/noDocumentCookie: the Cookie Store API is Chromium-only and cannot target a parent domain, which is where analytics cookies usually live.
+			document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${scope}`;
+		}
+	}
+}
+
+/**
+ * Providers with no in-page teardown. Clarity's recorder keeps its own
+ * references and listeners, so replacing the global only blocks new API calls —
+ * a reload is the only thing that actually stops it collecting.
+ */
+function requiresReloadToStop(tracker: AnalyticsTracker): boolean {
+	return tracker._type === "trackerMicrosoftClarity";
+}
+
+export function unloadTracker(tracker: AnalyticsTracker): void {
+	switch (tracker._type) {
+		case "trackerGoogleAnalytics": {
+			const id = tracker.measurementId?.trim();
+			if (id) {
+				(window as unknown as Record<string, boolean | undefined>)[
+					`ga-disable-${id}`
+				] = true;
+			}
+			deleteCookies(
+				(name) =>
+					name === "_ga" ||
+					name === "_gid" ||
+					name.startsWith("_ga_") ||
+					name.startsWith("_gac_"),
+			);
+			break;
+		}
+		case "trackerMatomo": {
+			const _paq = (
+				window as Window & {
+					_paq?: unknown[][];
+				}
+			)._paq;
+			_paq?.push(["optUserOut"]);
+			_paq?.push(["deleteCookies"]);
+			markSelfOptedOut(tracker._key);
+			break;
+		}
+		case "trackerMicrosoftClarity": {
+			const clarity = (
+				window as Window & {
+					clarity?: ((...args: unknown[]) => void) & { q?: unknown[] };
+				}
+			).clarity;
+			if (clarity) {
+				clarity.q = [];
+				(
+					window as Window & { clarity?: (...args: unknown[]) => void }
+				).clarity = () => {};
+			}
+			deleteCookies((name) => name === "_clck" || name === "_clsk");
+			break;
+		}
+		case "trackerPostHog": {
+			const posthog = (
+				window as Window & {
+					posthog?: {
+						opt_out_capturing?: () => void;
+						reset?: () => void;
+					};
+				}
+			).posthog;
+			posthog?.opt_out_capturing?.();
+			posthog?.reset?.();
+			markSelfOptedOut(tracker._key);
+			deleteCookies((name) => name.startsWith("ph_"));
+			break;
+		}
+		case "trackerPlausible":
+			break;
+	}
+
+	unregisterLoadedTracker(tracker._key);
+}
+
+/** Returns true when a provider was stopped that only a reload fully tears down. */
+export function unloadTrackers(trackers: AnalyticsTracker[]): boolean {
+	let needsReload = false;
+	for (const tracker of trackers) {
+		unloadTracker(tracker);
+		if (requiresReloadToStop(tracker)) needsReload = true;
+	}
+	return needsReload;
+}

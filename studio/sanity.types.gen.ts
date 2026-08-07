@@ -140,14 +140,16 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: string;
+    privacyPolicyUrl: string;
+    privacyPolicyLabel?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
+    acceptNecessaryBtn: string;
     showPreferencesBtn?: string;
   };
   preferencesModal?: {
     title?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
+    acceptNecessaryBtn: string;
     savePreferencesBtn?: string;
     sections?: Code;
   };
@@ -159,6 +161,81 @@ export type Code = {
   filename?: string;
   code?: string;
   highlightedLines?: Array<number>;
+};
+
+export type TrackerPlausible = {
+  _type: "trackerPlausible";
+  enabled?: boolean;
+  domain?: string;
+  scriptUrl?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerPostHog = {
+  _type: "trackerPostHog";
+  enabled?: boolean;
+  apiKey?: string;
+  apiHost?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerMicrosoftClarity = {
+  _type: "trackerMicrosoftClarity";
+  enabled?: boolean;
+  projectId?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerMatomo = {
+  _type: "trackerMatomo";
+  enabled?: boolean;
+  url?: string;
+  siteId?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type TrackerGoogleAnalytics = {
+  _type: "trackerGoogleAnalytics";
+  enabled?: boolean;
+  measurementId?: string;
+  cookieFree?: boolean;
+  cookieBannerLabel?: string;
+  cookieBannerDescription?: string;
+};
+
+export type SiteAnalyticsSettings = {
+  _id: string;
+  _type: "siteAnalyticsSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  loadMode: "onPageLoad" | "respectCookieBanner";
+  trackers?: Array<
+    | ({
+        _key: string;
+      } & TrackerGoogleAnalytics)
+    | ({
+        _key: string;
+      } & TrackerMatomo)
+    | ({
+        _key: string;
+      } & TrackerMicrosoftClarity)
+    | ({
+        _key: string;
+      } & TrackerPostHog)
+    | ({
+        _key: string;
+      } & TrackerPlausible)
+  >;
 };
 
 export type ErrorSettings = {
@@ -736,6 +813,12 @@ export type AllSanitySchemaTypes =
   | Work
   | SiteCookieBanner
   | Code
+  | TrackerPlausible
+  | TrackerPostHog
+  | TrackerMicrosoftClarity
+  | TrackerMatomo
+  | TrackerGoogleAnalytics
+  | SiteAnalyticsSettings
   | ErrorSettings
   | InternationalizedArrayRichText
   | SiteNav

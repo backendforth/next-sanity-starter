@@ -19,6 +19,7 @@ export const SINGLETON_PREVIEW_ROLE = {
   siteLanguageSettings: "none",
   siteNav: "none",
   siteCookieBanner: "none",
+  siteAnalyticsSettings: "none",
   errorSettings: "custom",
 } as const satisfies Record<string, "root" | "none" | "custom">;
 

@@ -13,6 +13,7 @@ import {
 	homeQuery,
 	pageBySlugQuery,
 	projectBySlugQuery,
+	siteAnalyticsSettingsQuery,
 	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,
@@ -31,6 +32,7 @@ import type {
 	ProjectDocument,
 	WorkDocument,
 } from "./types/pages";
+import type { SiteAnalyticsSettingsDocument } from "./types/siteAnalyticsSettings";
 import type { SiteCookieBannerDocument } from "./types/siteCookieBanner";
 import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
@@ -182,6 +184,22 @@ export const fetchSiteCookieBanner = cache(
 			...options,
 		});
 		return data as SiteCookieBannerDocument | null;
+	},
+);
+
+/** Analytics & tracking providers — document id `siteAnalyticsSettings`. */
+export const fetchSiteAnalyticsSettings = cache(
+	async (
+		options?: LiveFetchOptions,
+	): Promise<SiteAnalyticsSettingsDocument | null> => {
+		if (!isSanityConfigured) return null;
+		const { data } = await sanityFetch({
+			query: siteAnalyticsSettingsQuery,
+			tags: [SANITY_CACHE_TAGS.siteAnalyticsSettings],
+			stega: false,
+			...options,
+		});
+		return data as SiteAnalyticsSettingsDocument | null;
 	},
 );
 

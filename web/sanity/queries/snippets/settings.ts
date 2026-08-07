@@ -116,5 +116,45 @@ export const siteCookieBannerLayoutQuery =
   _id,
   useCookieBanner,
   consentModal,
-  preferencesModal
+  preferencesModal {
+    title,
+    acceptAllBtn,
+    acceptNecessaryBtn,
+    savePreferencesBtn,
+    "sections": sections.code
+  }
+}`);
+
+/** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */
+export const siteAnalyticsSettingsQuery =
+	defineQuery(`*[_id == "siteAnalyticsSettings"][0]{
+  _id,
+  title,
+  loadMode,
+  trackers[]{
+    _key,
+    _type,
+    enabled,
+    cookieFree,
+    cookieBannerLabel,
+    cookieBannerDescription,
+    _type == "trackerGoogleAnalytics" => {
+      measurementId
+    },
+    _type == "trackerMatomo" => {
+      url,
+      siteId
+    },
+    _type == "trackerMicrosoftClarity" => {
+      projectId
+    },
+    _type == "trackerPostHog" => {
+      apiKey,
+      apiHost
+    },
+    _type == "trackerPlausible" => {
+      domain,
+      scriptUrl
+    }
+  }
 }`);

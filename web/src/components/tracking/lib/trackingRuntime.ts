@@ -21,21 +21,36 @@ const loadGenerations = new Map<string, number>();
 const injectedScripts = new Map<string, HTMLScriptElement[]>();
 
 /**
- * Trackers *we* opted out of, so a later grant only reverses our own decision.
+ * Marks a tracker *we* opted out of, so a later grant only reverses our own
+ * decision — a visitor who opted out through Matomo's or PostHog's own
+ * mechanism must stay opted out.
  *
- * Matomo's and PostHog's opt-outs persist in storage and can also be set by the
- * visitor through the provider's own mechanism. Clearing them unconditionally on
- * load would silently re-enable tracking for someone who opted out elsewhere.
+ * Persisted rather than held in memory: the provider opt-outs this mirrors live
+ * in cookies and localStorage and survive reloads, so an in-memory marker would
+ * be lost on the next page load — including the reload withdrawal triggers for
+ * Clarity — leaving those providers permanently opted out. Storing a consent
+ * decision is strictly necessary processing, so it needs no consent of its own.
  */
-const selfOptedOut = new Set<string>();
+const SELF_OPT_OUT_PREFIX = "analytics-self-opt-out:";
 
 export function markSelfOptedOut(key: string): void {
-	selfOptedOut.add(key);
+	try {
+		window.localStorage.setItem(`${SELF_OPT_OUT_PREFIX}${key}`, "1");
+	} catch {
+		// Private browsing or storage disabled — nothing to reverse later either.
+	}
 }
 
 /** True once, if this integration was what opted the visitor out. */
 export function consumeSelfOptOut(key: string): boolean {
-	return selfOptedOut.delete(key);
+	try {
+		const storageKey = `${SELF_OPT_OUT_PREFIX}${key}`;
+		if (window.localStorage.getItem(storageKey) === null) return false;
+		window.localStorage.removeItem(storageKey);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 export function isTrackerLoaded(key: string): boolean {

@@ -7,6 +7,7 @@ import {
 	fetchSiteSettingsFavicon,
 } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
+import { siteFaviconIcons } from "@/sanity/seo";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
@@ -36,14 +37,21 @@ const geistMono = Geist_Mono({
 
 /**
  * Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template).
- * The favicon comes from `siteSettings.favicon`; the static `app/favicon.ico`
- * remains the fallback when the field is unset (Next emits it automatically).
+ *
+ * The icons come from `siteSettings.favicon`, with every size derived from that
+ * one asset on the Sanity CDN (`siteFaviconIcons`). Declaring them here covers
+ * every route below — route metadata merges field by field, so no page has to
+ * repeat them. With the field unset the key stays absent and `public/favicon.ico`
+ * is picked up by the browser's implicit `/favicon.ico` probe; it lives in
+ * `public/` rather than `app/` because the file convention beats the metadata
+ * object, and with both in place two icons stood in the head.
  */
 export async function generateMetadata(): Promise<Metadata> {
-	const faviconUrl = await fetchSiteSettingsFavicon({ stega: false });
+	const favicon = await fetchSiteSettingsFavicon({ stega: false });
+	const icons = siteFaviconIcons(favicon);
 	return {
 		metadataBase: new URL(SITE_BASE_URL),
-		...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
+		...(icons ? { icons } : {}),
 	};
 }
 

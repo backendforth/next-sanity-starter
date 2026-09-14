@@ -23,6 +23,7 @@ import {
 } from "./queries";
 import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
 import type { ErrorSettingsDocument } from "./types/errorSettings";
+import type { SanityImageField } from "./types/modules";
 import type { SiteNavMenusDocument } from "./types/nav";
 import type {
 	HomeDocument,
@@ -141,22 +142,24 @@ export const fetchSettingsSeoFallback = cache(
 	},
 );
 
+/** Result of `siteSettingsFaviconQuery` — typegen cannot evaluate that query (interpolation). */
+export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
+
 /**
- * `siteSettings.favicon` URL for root metadata icons.
- * Returns `null` when unset — the static `app/favicon.ico` then applies.
+ * `siteSettings.favicon` for root metadata icons. The image field travels whole
+ * (crop + hotspot); `siteFaviconIcons` derives the sizes on the Sanity CDN.
+ * Returns `null` when unset — the browser's implicit `/favicon.ico` probe then
+ * reaches the static `public/favicon.ico`.
  */
 export const fetchSiteSettingsFavicon = cache(
-	async (options?: LiveFetchOptions): Promise<string | null> => {
+	async (options?: LiveFetchOptions): Promise<SanityImageField | null> => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: siteSettingsFaviconQuery,
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		const row = data as { faviconUrl?: string | null } | null;
-		const url =
-			typeof row?.faviconUrl === "string" ? row.faviconUrl.trim() : "";
-		return url || null;
+		return (data as SiteFaviconData)?.favicon ?? null;
 	},
 );
 

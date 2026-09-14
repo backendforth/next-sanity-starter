@@ -14,6 +14,8 @@ import type {
 
 type ImageFit = "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
 type ImageAuto = "format";
+/** Explicit output format — use instead of `auto` where the consumer cannot content-negotiate (browser icons). */
+type ImageFormat = "png" | "jpg" | "webp";
 type ImageOrientation = "portrait" | "landscape" | "square" | "unknown";
 
 type BuildImageUrlOptions = {
@@ -22,6 +24,7 @@ type BuildImageUrlOptions = {
 	quality?: number;
 	fit?: ImageFit;
 	auto?: ImageAuto;
+	format?: ImageFormat;
 	dpr?: 1 | 2 | 3;
 };
 
@@ -227,6 +230,9 @@ export function buildFetchedImageUrl(
 	}
 	if (options.auto) {
 		imageBuilder = imageBuilder.auto(options.auto);
+	}
+	if (options.format) {
+		imageBuilder = imageBuilder.format(options.format);
 	}
 	if (options.dpr) {
 		imageBuilder = imageBuilder.dpr(options.dpr);

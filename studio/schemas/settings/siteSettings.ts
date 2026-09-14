@@ -34,6 +34,12 @@ export const siteSettings = defineType({
       name: "favicon",
       type: "image",
       group: "site",
+      /* Crop + hotspot are the whole point here: the browser icons are derived
+         from this one asset (`siteFaviconIcons`), so squaring a wide logo down
+         to the part that still reads at 32 px happens in this UI. */
+      options: { hotspot: true },
+      description:
+        "Browser tab icon. Square PNG, at least 512×512. The 32 px, 180 px and 192 px icons are generated from this file, so crop it down to the signet — a full wordmark is unreadable in a tab.",
     },
     {
       title: "SEO",

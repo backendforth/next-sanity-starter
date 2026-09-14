@@ -7,6 +7,7 @@ import {
 	fetchSiteSettingsFavicon,
 } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
+import { siteFaviconIcons } from "@/sanity/seo";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { DocumentBootScript } from "@/src/components/theme/DocumentBootScript";
@@ -82,18 +83,26 @@ import "../assets/styles/globals.css";
 
 /**
  * Root shell metadata. The tab title (`siteSettings.title` + `%s | …` template)
- * is owned by `app/[locale]/layout.tsx`; the favicon comes from
- * `siteSettings.favicon` for the default locale, with the static
- * `app/favicon.ico` as the fallback when unset (Next emits it automatically).
+ * is owned by `app/[locale]/layout.tsx`.
+ *
+ * The icons come from `siteSettings.favicon` for the default locale, with every
+ * size derived from that one asset on the Sanity CDN (`siteFaviconIcons`).
+ * Declaring them here covers every route below — route metadata merges field by
+ * field, so no page has to repeat them. With the field unset the key stays
+ * absent and `public/favicon.ico` is picked up by the browser's implicit
+ * `/favicon.ico` probe; it lives in `public/` rather than `app/` because the
+ * file convention beats the metadata object, and with both in place two icons
+ * stood in the head.
  */
 export async function generateMetadata(): Promise<Metadata> {
 	const siteLocale = await fetchSiteLanguageSettings();
-	const faviconUrl = await fetchSiteSettingsFavicon(siteLocale.defaultLocale, {
+	const favicon = await fetchSiteSettingsFavicon(siteLocale.defaultLocale, {
 		stega: false,
 	});
+	const icons = siteFaviconIcons(favicon);
 	return {
 		metadataBase: new URL(SITE_BASE_URL),
-		...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
+		...(icons ? { icons } : {}),
 	};
 }
 

@@ -1,6 +1,7 @@
 import { defineQuery } from "next-sanity";
 
 import { linkQuery } from "./link";
+import { imageQuery } from "./media";
 
 /**
  * Portable Text `body[]` projection for plain `richText` fields (no embedded
@@ -85,12 +86,20 @@ export const siteSettingsTitleQuery = defineQuery(
 	`*[_type == "siteSettings" && language == $locale][0]{title}`,
 );
 
-/** `siteSettings.favicon` for root metadata icons — `app/favicon.ico` is the static fallback. */
-export const siteSettingsFaviconQuery = defineQuery(
-	`*[_type == "siteSettings" && language == $locale][0]{
-  "faviconUrl": favicon.asset->url
-}`,
-);
+/**
+ * `siteSettings.favicon` — the raw image field, `crop` and `hotspot` included:
+ * the browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`),
+ * so whatever an editor uploads is squared and resized on the fly. Cropping
+ * the source in the Studio is what makes a wide logo usable at 32 px, which is
+ * why those two fields have to travel with the asset.
+ *
+ * Not `defineQuery`: the interpolation keeps typegen from evaluating it
+ * (same as `siteNavMenusQuery`); `SiteFaviconData` in `fetchSanityData.ts` is
+ * authoritative.
+ */
+export const siteSettingsFaviconQuery = `*[_type == "siteSettings" && language == $locale][0]{
+  "favicon": favicon${imageQuery}
+}`;
 
 /** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
 export const siteSettingsSeoFallbackQuery =

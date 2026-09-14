@@ -4,3 +4,4 @@ export {
 	type ResolveSanityMetadataInput,
 	resolveSanityMetadata,
 } from "./resolveSanityMetadata";
+export { siteFaviconIcons } from "./siteFaviconIcons";

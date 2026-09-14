@@ -11,6 +11,7 @@ import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { DocumentBootScript } from "@/src/components/theme/DocumentBootScript";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
+import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -91,9 +92,7 @@ export async function generateMetadata(): Promise<Metadata> {
 		stega: false,
 	});
 	return {
-		metadataBase: new URL(
-			process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
-		),
+		metadataBase: new URL(SITE_BASE_URL),
 		...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
 	};
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
 import type {
 	HomeDocument,
@@ -10,10 +11,6 @@ import type {
 	ProjectDocument,
 	WorkDocument,
 } from "../types/pages";
-
-const SITE_BASE_URL = (
-	process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
-).replace(/\/$/, "");
 
 function firstNonEmpty(
 	...values: (string | null | undefined)[]

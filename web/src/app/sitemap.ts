@@ -2,10 +2,7 @@ import type { MetadataRoute } from "next";
 import { cachedSitemapPages } from "@/sanity/cachedSanityQuery";
 import { fetchSiteLanguageSettings } from "@/sanity/fetchSanityData";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
-
-const BASE_URL = (
-	process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
-).replace(/\/$/, "");
+import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
 /**
  * Refresh on tag invalidation (`pages`, `site-pages`, `site-language-settings`)
@@ -36,7 +33,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 				? page.language.trim()
 				: siteLocale.defaultLocale;
 		const pathname = pathUtils.localePath(page.path, language);
-		const url = `${BASE_URL}${pathname === "/" ? "" : pathname}` || BASE_URL;
+		const url =
+			`${SITE_BASE_URL}${pathname === "/" ? "" : pathname}` || SITE_BASE_URL;
 
 		entries.push({
 			url,

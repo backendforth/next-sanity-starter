@@ -98,13 +98,6 @@ export type MediaVideoLoopProps = {
 	 * immediately when the visibility gate clears.
 	 */
 	hlsAttachDelayMs?: number;
-	/**
-	 * Apply the SVG sharpen + contrast filter on the `<video>` element. Default
-	 * `true`. `ModuleIntro` flips this to `false` while the loading-bridge logo
-	 * is still covering the video, so the shader-compile cost doesn't compete
-	 * with all the other first-paint work.
-	 */
-	enableFilter?: boolean;
 };
 
 /** Widths used for the poster `srcset` when coming from Sanity. */
@@ -169,7 +162,6 @@ export function MediaVideoLoop({
 	stackedSlide = false,
 	isNextSlide = false,
 	hlsAttachDelayMs = 0,
-	enableFilter = true,
 }: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(media);
 	const [containerRef, slotWidthPx, slotHeightPx] =
@@ -498,11 +490,46 @@ export function MediaVideoLoop({
 		});
 	}, [tryPlay]);
 
+	/* Poster fade gated on the first PAINTED frame, not on `loadeddata` /
+	 * `playing`: both events can fire before the element has composited a
+	 * single video frame (an hls.js MSE append counts as "loaded", Safari's
+	 * decoder warms up after `playing`). Hiding the poster then fades it into
+	 * a still-black element — a visible dark flash, most jarring on a
+	 * fullscreen hero where the poster IS the entrance. With
+	 * `requestVideoFrameCallback` the crossfade always lands frame-on-frame;
+	 * browsers without rVFC keep the previous event-driven behaviour. */
+	const posterHideFrameHandle = useRef<number | undefined>(undefined);
 	const hidePosterWhenReady = useCallback(() => {
 		if (stackedSlide && !isActiveRef.current) return;
-		setPosterHidden(true);
-		emitLoadedOnce();
+		const el = videoRef.current;
+		const supportsRVFC =
+			el &&
+			typeof (el as HTMLVideoElement & { requestVideoFrameCallback?: unknown })
+				.requestVideoFrameCallback === "function";
+		if (!el || !supportsRVFC) {
+			setPosterHidden(true);
+			emitLoadedOnce();
+			return;
+		}
+		if (posterHideFrameHandle.current !== undefined) return;
+		posterHideFrameHandle.current = el.requestVideoFrameCallback(() => {
+			posterHideFrameHandle.current = undefined;
+			/* Activation may have changed between arming and the frame paint
+			 * (stacked slide deactivated → its pending callback fires on the
+			 * next play) — re-check so a background slide keeps its poster. */
+			if (stackedSlide && !isActiveRef.current) return;
+			setPosterHidden(true);
+			emitLoadedOnce();
+		});
 	}, [emitLoadedOnce, stackedSlide]);
+	useEffect(() => {
+		const el = videoRef.current;
+		return () => {
+			if (el && posterHideFrameHandle.current !== undefined) {
+				el.cancelVideoFrameCallback?.(posterHideFrameHandle.current);
+			}
+		};
+	}, []);
 
 	const tryPlayIfActive = useCallback(() => {
 		if (stackedSlide && !isActiveRef.current) return;
@@ -626,24 +653,16 @@ export function MediaVideoLoop({
 					 * always crops from both opposite edges equally — the middle
 					 * of the frame stays put when the viewport resizes. */
 					"absolute inset-0 z-0 h-full w-full object-cover object-center",
-					/* Perceptual sharpening: unsharp-mask SVG filter + a touch more
-					 * contrast/saturation. GPU-side, zero bandwidth on desktop
-					 * GPUs. Skipped under prefers-reduced-motion AND under the
-					 * `md` breakpoint — phones get the raw video. Their GPUs are
-					 * smaller, their pixels are denser (less softness to fight),
-					 * and the convolution pass on a 1440p frame at 30 fps is real
-					 * battery. The `will-change: filter` hint promotes the video
-					 * to its own composite layer so the filter pass stays off
-					 * the main paint.
-					 *
-					 * `enableFilter` defers the shader-compile cost out of the
-					 * busy first-paint window. `ModuleIntro` flips this `true`
-					 * only after the loading-bridge logo dismisses — by then
-					 * HLS init and decode startup are settled, the GPU isn't
-					 * competing with anyone for resources. */
-					!reducedMotion &&
-						enableFilter &&
-						"md:[filter:url(#mvl-sharpen)_contrast(1.04)_saturate(1.03)] md:[will-change:filter]",
+					/* Perceptual polish: a touch more contrast/saturation as a plain
+					 * CSS filter — compositor-applied, cheap at any resolution.
+					 * Sharpening is NOT done here: an SVG feConvolveMatrix runs a
+					 * 9-tap convolution over the full video layer on every frame
+					 * (8.3 Mpx at 4K, 25x/s), and SVG reference filters on video are
+					 * not reliably GPU-composited — it stuttered playback on exactly
+					 * the machines a fullscreen loop targets. Sharpening belongs in
+					 * the graded master export. `md`+ only: phones keep the raw video
+					 * (denser pixels, less softness to fight). */
+					"md:[filter:contrast(1.04)_saturate(1.03)]",
 				)}
 				muted
 				playsInline
@@ -663,6 +682,10 @@ export function MediaVideoLoop({
 				disablePictureInPicture
 				aria-label={caption || undefined}
 				onLoadedData={hidePosterWhenReady}
+				/* Native HLS (iPhone) reaches a playable state at `loadedmetadata`
+				 * — attempting there keeps the attempt inside the autoplay window
+				 * instead of waiting for `canplay`. */
+				onLoadedMetadata={tryPlayIfActive}
 				onCanPlay={tryPlayIfActive}
 				onPlaying={hidePosterWhenReady}
 				onTimeUpdate={

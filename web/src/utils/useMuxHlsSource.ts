@@ -240,9 +240,20 @@ export function useMuxHlsSource(
 						: {}),
 					...(loopTuned
 						? {
-								maxBufferLength: 3,
-								maxMaxBufferLength: 6,
-								maxBufferSize: 8 * 1000 * 1000,
+								/* Loops must replay from MSE, not the network. Budgets are
+								 * sized against the heaviest real rendition (Mux premium
+								 * 2160p H.264: ~31 Mbps in 4 s segments ~ 20 MB each): a
+								 * ~2-segment lookahead absorbs bandwidth dips, and the back
+								 * buffer keeps the whole clip so the loop wrap (and carousel
+								 * A -> B -> A re-activation) costs zero bytes. With budgets
+								 * below one segment (the previous 3 s / 8 MB) hls.js fetched
+								 * just-in-time and `backBufferLength: 0` evicted behind the
+								 * playhead — every cycle re-downloaded the entire clip
+								 * (~30 Mbps per visitor, forever). */
+								maxBufferLength: 8,
+								maxMaxBufferLength: 16,
+								maxBufferSize: 64 * 1000 * 1000,
+								backBufferLength: 30,
 								abrEwmaDefaultEstimate: 4_000_000,
 								startFragPrefetch: false,
 								abrBandWidthFactor: 0,
@@ -253,8 +264,10 @@ export function useMuxHlsSource(
 								maxBufferLength: 20,
 								maxBufferSize: 100 * 1000 * 1000,
 								progressive: true,
+								/* Long-form playback seeks; a back buffer would pin memory
+								 * for footage the viewer has moved past. */
+								backBufferLength: 0,
 							}),
-					backBufferLength: 0,
 					fragLoadingMaxRetry: 6,
 					levelLoadingMaxRetry: 4,
 				});

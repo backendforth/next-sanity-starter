@@ -490,11 +490,46 @@ export function MediaVideoLoop({
 		});
 	}, [tryPlay]);
 
+	/* Poster fade gated on the first PAINTED frame, not on `loadeddata` /
+	 * `playing`: both events can fire before the element has composited a
+	 * single video frame (an hls.js MSE append counts as "loaded", Safari's
+	 * decoder warms up after `playing`). Hiding the poster then fades it into
+	 * a still-black element — a visible dark flash, most jarring on a
+	 * fullscreen hero where the poster IS the entrance. With
+	 * `requestVideoFrameCallback` the crossfade always lands frame-on-frame;
+	 * browsers without rVFC keep the previous event-driven behaviour. */
+	const posterHideFrameHandle = useRef<number | undefined>(undefined);
 	const hidePosterWhenReady = useCallback(() => {
 		if (stackedSlide && !isActiveRef.current) return;
-		setPosterHidden(true);
-		emitLoadedOnce();
+		const el = videoRef.current;
+		const supportsRVFC =
+			el &&
+			typeof (el as HTMLVideoElement & { requestVideoFrameCallback?: unknown })
+				.requestVideoFrameCallback === "function";
+		if (!el || !supportsRVFC) {
+			setPosterHidden(true);
+			emitLoadedOnce();
+			return;
+		}
+		if (posterHideFrameHandle.current !== undefined) return;
+		posterHideFrameHandle.current = el.requestVideoFrameCallback(() => {
+			posterHideFrameHandle.current = undefined;
+			/* Activation may have changed between arming and the frame paint
+			 * (stacked slide deactivated → its pending callback fires on the
+			 * next play) — re-check so a background slide keeps its poster. */
+			if (stackedSlide && !isActiveRef.current) return;
+			setPosterHidden(true);
+			emitLoadedOnce();
+		});
 	}, [emitLoadedOnce, stackedSlide]);
+	useEffect(() => {
+		const el = videoRef.current;
+		return () => {
+			if (el && posterHideFrameHandle.current !== undefined) {
+				el.cancelVideoFrameCallback?.(posterHideFrameHandle.current);
+			}
+		};
+	}, []);
 
 	const tryPlayIfActive = useCallback(() => {
 		if (stackedSlide && !isActiveRef.current) return;
@@ -647,6 +682,10 @@ export function MediaVideoLoop({
 				disablePictureInPicture
 				aria-label={caption || undefined}
 				onLoadedData={hidePosterWhenReady}
+				/* Native HLS (iPhone) reaches a playable state at `loadedmetadata`
+				 * — attempting there keeps the attempt inside the autoplay window
+				 * instead of waiting for `canplay`. */
+				onLoadedMetadata={tryPlayIfActive}
 				onCanPlay={tryPlayIfActive}
 				onPlaying={hidePosterWhenReady}
 				onTimeUpdate={

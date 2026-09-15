@@ -136,22 +136,6 @@ export default async function RootLayout({
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<svg
-					aria-hidden="true"
-					focusable="false"
-					width="0"
-					height="0"
-					style={{ position: "absolute" }}
-				>
-					<title>Video sharpen filter</title>
-					<filter id="mvl-sharpen" colorInterpolationFilters="sRGB">
-						<feConvolveMatrix
-							order="3"
-							preserveAlpha="true"
-							kernelMatrix="0 -0.35 0  -0.35 2.4 -0.35  0 -0.35 0"
-						/>
-					</filter>
-				</svg>
 				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />

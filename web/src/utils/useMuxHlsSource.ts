@@ -23,6 +23,56 @@ function muxCodecFamilyToHlsPreference(
 
 type HlsInstance = InstanceType<typeof import("hls.js")["default"]>;
 
+/**
+ * Must this browser play HLS from a plain `<video src>` — i.e. is there no
+ * Media Source Extensions for hls.js to drive?
+ *
+ * hls.js is the preferred backend EVERYWHERE it can run, desktop Safari
+ * included: it is the only path with level control under our own pick
+ * ({@link pickMuxHlsLevelIndex}), a bounded buffer budget, and the
+ * `loadingPaused` lever carousel slides depend on. Native HLS has none of
+ * that — Safari's own ABR decides the ramp and `preload` is the only knob.
+ * So native is the fallback ONLY where classic `MediaSource` is missing:
+ * iPhone (`ManagedMediaSource` alone is deliberately not enough — see
+ * `preferManagedMediaSource` below) and very old engines.
+ *
+ * `canPlayType("application/vnd.apple.mpegurl")` alone is NOT the signal:
+ * Chromium returns the truthy `"maybe"` for the HLS MIME types (verified on
+ * Chrome 151, macOS — it answers `"maybe"` for `video/mp4` just as readily)
+ * while it cannot play the stream. A truthy result sent every Chrome visitor
+ * down the native path, where `video.src = <m3u8>` ends in
+ * `MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED` (code 4) and no loop ever played.
+ * Checking for the absence of `MediaSource` first keeps Chromium (and
+ * desktop Safari) on hls.js regardless of what `canPlayType` says.
+ */
+function needsNativeHlsPlayback(video: HTMLVideoElement): boolean {
+	if (typeof window === "undefined") return false;
+	if (typeof window.MediaSource !== "undefined") return false;
+	return Boolean(video.canPlayType("application/vnd.apple.mpegurl"));
+}
+
+/**
+ * Warm-up: start fetching the hls.js chunk the moment this module evaluates —
+ * while React is still hydrating — instead of first inside the attach effect.
+ * That effect fires only after hydration + container measurement, so the chunk
+ * download sat serially in front of the manifest/segment fetches; with the
+ * warm-up it overlaps hydration and the attach path's `import("hls.js")`
+ * resolves from the in-flight request.
+ *
+ * Mirrors the attach path's native fallback ({@link needsNativeHlsPlayback}):
+ * native HLS never touches hls.js, so those browsers skip the download
+ * entirely. Module scope only runs in the browser bundle of pages that render
+ * video components.
+ */
+if (
+	typeof window !== "undefined" &&
+	!needsNativeHlsPlayback(document.createElement("video"))
+) {
+	void import("hls.js").catch(() => {
+		/* Fetch hiccup — the attach effect's own import retries. */
+	});
+}
+
 type UseMuxHlsSourceOptions = {
 	/**
 	 * When `false`, deselects the active audio track via `hls.audioTrack = -1`.
@@ -59,8 +109,9 @@ type UseMuxHlsSourceOptions = {
 /**
  * Attach a Mux HLS (`.m3u8`) source to a `<video>` element.
  *
- * Prefers **`hls.js`** (MSE, level cap to player size, tuned ABR). Falls back to **native HLS**
- * (Safari / iOS). `hls.js` is imported lazily so it only ships when a loop video is used.
+ * Prefers **`hls.js`** (MSE, level cap to player size, tuned ABR) — on desktop Safari too.
+ * Falls back to **native HLS** only where MSE is missing (iPhone). `hls.js` is imported
+ * lazily so it only ships when a loop video is used.
  *
  * @see https://docs.mux.com/guides/control-playback-resolution — rationale for
  *   `rendition_order=desc` used in {@link muxHlsSrc}.
@@ -129,15 +180,18 @@ export function useMuxHlsSource(
 			}
 		};
 
-		/* Safari native-HLS fast path. Skips the hls.js dynamic import (~50–100 KB
-		 * the browser would never use anyway) AND the MediaCapabilities codec
-		 * probe (only relevant for hls.js level picking — Safari does its own
-		 * rendition selection internally). Setting `video.src` synchronously
-		 * inside this effect means it lands inside the page-load autoplay
-		 * window; the previous async path delayed src by 200–500 ms, often
-		 * past the window — Safari then denied muted-autoplay silently and the
-		 * loading bridge waited for frames that never arrived. */
-		if (video.canPlayType("application/vnd.apple.mpegurl")) {
+		/* Native-HLS fallback (iPhone — no MSE). Skips the hls.js dynamic import
+		 * (~50–100 KB the browser would never use anyway) AND the
+		 * MediaCapabilities codec probe (only relevant for hls.js level picking
+		 * — the native player does its own rendition selection internally).
+		 * Setting `video.src` synchronously inside this effect means it lands
+		 * inside the page-load autoplay window; an async src delayed it by
+		 * 200–500 ms, often past the window — iOS then denied muted-autoplay
+		 * silently and the element waited for frames that never arrived.
+		 *
+		 * Gated on {@link needsNativeHlsPlayback}, NOT on `canPlayType` alone —
+		 * Chromium answers `"maybe"` without being able to play the stream. */
+		if (needsNativeHlsPlayback(video)) {
 			video.src = src;
 			/* Register the same cleanup as the hls.js path. Without this, an
 			 * effect re-run (StrictMode double-mount in dev, `src`-memo change
@@ -167,6 +221,13 @@ export function useMuxHlsSource(
 			if (Hls.isSupported()) {
 				const loopTuned = tuneForShortLoopRef.current;
 				hls = new Hls({
+					/* Classic MSE, also on Safari 17+ where `ManagedMediaSource`
+					 * exists: MMS lets the browser gate segment loading
+					 * (`startstreaming` / `endstreaming`), which would undercut the
+					 * deterministic level pin and the `loadingPaused` lever below.
+					 * Desktop Safari has plain `MediaSource`; iPhone has only MMS and
+					 * takes the native path above anyway. */
+					preferManagedMediaSource: false,
 					capLevelToPlayerSize: true,
 					ignoreDevicePixelRatio: !loopTuned,
 					...(preferModern && preferredCodec

@@ -156,6 +156,7 @@ export function useMuxHlsSource(
 		let cancelled = false;
 		let hls: HlsInstance | null = null;
 		let mediaErrorRecoveryAttempted = false;
+		let fatalNetworkRetries = 0;
 		const excludedCodecFamilies = new Set<MuxLevelCodecFamily>();
 
 		const detach = () => {
@@ -352,7 +353,17 @@ export function useMuxHlsSource(
 				hls.on(Hls.Events.ERROR, (_, data) => {
 					if (!data.fatal || !hls) return;
 					if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-						hls.startLoad();
+						/* hls.js already retried per-request (fragLoadingMaxRetry /
+						 * levelLoadingMaxRetry) before escalating to fatal — a bounded
+						 * number of full restarts is the last resort, not an infinite
+						 * hammer against a dead endpoint (ad-blocker, offline). Paused
+						 * slides don't restart loading at all: that would reintroduce
+						 * exactly the parallel-fetch contention `stopLoad()` prevents;
+						 * their `loadingPaused` effect calls `startLoad()` on activation. */
+						if (fatalNetworkRetries < 3 && !loadingPausedRef.current) {
+							fatalNetworkRetries += 1;
+							hls.startLoad();
+						}
 					} else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
 						if (!mediaErrorRecoveryAttempted) {
 							mediaErrorRecoveryAttempted = true;
@@ -370,8 +381,13 @@ export function useMuxHlsSource(
 						}
 						hls.recoverMediaError();
 					} else {
+						/* Unrecoverable (KEY/MUX/OTHER): tear down hls and fall back to a
+						 * native src. Clear the shared refs too — the audio and
+						 * loading-pause effects must not poke the destroyed instance. */
 						hls.destroy();
 						hls = null;
+						hlsRef.current = null;
+						applyPickRef.current = null;
 						if (!cancelled) {
 							video.src = src;
 						}

@@ -1,20 +1,22 @@
 "use client";
 
 import { useIsPresentationTool } from "next-sanity/hooks";
+import { useEffect } from "react";
 
+/**
+ * Drafts are for the Presentation preview only. Once the page is confirmed to run outside the
+ * Presentation tool (`false`, not the `null` "still detecting" state), Draft Mode is switched
+ * off through a full navigation, so the page re-renders on the server with published content.
+ * Inside Presentation (iframe or "open preview" window) nothing happens.
+ */
 export function DisableDraftMode() {
 	const isPresentationTool = useIsPresentationTool();
 
-	if (isPresentationTool) {
-		return null;
-	}
+	useEffect(() => {
+		if (isPresentationTool !== false) return;
+		const target = `${window.location.pathname}${window.location.search}`;
+		window.location.href = `/api/draft-mode/disable?redirect=${encodeURIComponent(target)}`;
+	}, [isPresentationTool]);
 
-	return (
-		<a
-			href="/api/draft-mode/disable"
-			className="fixed right-sm bottom-sm z-50 rounded-full bg-color-text px-sm py-xs text-sm text-color-bg"
-		>
-			Disable Draft Mode
-		</a>
-	);
+	return null;
 }

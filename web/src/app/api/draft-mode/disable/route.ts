@@ -2,7 +2,7 @@ import { draftMode } from "next/headers";
 import { NextResponse } from "next/server";
 
 /**
- * Returns the user to wherever the editor was when they clicked "Disable Draft Mode".
+ * Returns the visitor to the page they were on when `DisableDraftMode` left Draft Mode.
  * Only same-origin pathnames are honored — anything else falls back to "/".
  */
 function safeRedirectTarget(rawTarget: string | null, requestUrl: URL): URL {

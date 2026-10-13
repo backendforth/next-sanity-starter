@@ -3,9 +3,8 @@ import { notFound } from "next/navigation";
 
 import {
 	fetchSiteAnalyticsSettings,
-	fetchSiteCookieBanner,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteNavMenus,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { LazyCookieConsentBanner } from "@/src/components/cookies/LazyCookieConsentBanner";
@@ -66,15 +65,17 @@ export default async function LocaleLayout({ children, params }: Props) {
 	}
 	const locale = raw;
 
-	// `siteLocale` is shared by all locales (single doc) — the per-locale fetches
-	// run in parallel once we know the locale is valid. Analytics settings are
-	// language-agnostic (one singleton) and join the same round.
-	const [siteNav, cookieBanner, siteBrand, analytics] = await Promise.all([
-		fetchSiteNavMenus(locale),
-		fetchSiteCookieBanner(locale),
-		fetchSiteSettingsTitle(locale),
+	// `siteLocale` is shared by all locales (single doc). The chrome bundle (nav,
+	// cookie banner, title in one query) is per language, so it waits for the
+	// validated locale; analytics (one singleton) joins the same round.
+	const [chrome, analytics] = await Promise.all([
+		fetchSiteChrome(locale),
 		fetchSiteAnalyticsSettings(),
 	]);
+	const siteNav = chrome?.nav ?? null;
+	const cookieBanner = chrome?.cookieBanner ?? null;
+	/* Same fallback as `fetchSiteSettingsTitle`: the header brand is never empty. */
+	const siteBrand = chrome?.title?.trim() || "Site";
 	const enabledTrackers = getEnabledTrackers(analytics);
 
 	const site = (

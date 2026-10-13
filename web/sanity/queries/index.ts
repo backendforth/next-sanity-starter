@@ -22,6 +22,7 @@ export {
 	errorSettingsQuery,
 	navMenusQuery,
 	siteAnalyticsSettingsQuery,
+	siteChromeQuery,
 	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
 	siteNavMenusQuery,

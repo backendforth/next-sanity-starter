@@ -1,16 +1,18 @@
 import {
 	fetchSiteAnalyticsSettings,
-	fetchSiteCookieBanner,
+	fetchSiteChrome,
 } from "@/sanity/fetchSanityData";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
 import { SiteTracking } from "@/src/components/tracking/SiteTracking";
 
-/** `locale` picks the cookie-banner document — one per language on this branch. */
+/** `locale` picks the chrome's cookie-banner document — one per language on this branch. */
 export async function SiteTrackingShell({ locale }: { locale: string }) {
-	const [analytics, cookieBanner] = await Promise.all([
+	/* Both calls dedupe against the layout's (React `cache`), no extra fetch. */
+	const [analytics, chrome] = await Promise.all([
 		fetchSiteAnalyticsSettings(),
-		fetchSiteCookieBanner(locale),
+		fetchSiteChrome(locale),
 	]);
+	const cookieBanner = chrome?.cookieBanner ?? null;
 
 	if (getEnabledTrackers(analytics).length === 0) return null;
 

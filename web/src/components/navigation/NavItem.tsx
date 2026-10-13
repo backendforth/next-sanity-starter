@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useReducer } from "react";
+import { useSyncExternalStore } from "react";
 
 import { isCurrentNavHref } from "@/src/i18n/paths";
 import { cn } from "@/src/utils/cn";
@@ -21,14 +21,34 @@ type Props = {
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
+/* `useSyncExternalStore` instead of reading `window.location` during render: the hydration
+ * render uses the server snapshot (""), so server and client markup agree even when the URL
+ * carries a #hash. The render-time read produced `aria-current` hydration mismatches for
+ * scroll-to links; the real value applies right after hydration. */
+
+function subscribeToHashChange(callback: () => void): () => void {
+	window.addEventListener("hashchange", callback);
+	return () => window.removeEventListener("hashchange", callback);
+}
+
 /** Hash fragment; updates on `hashchange`. Path changes re-read via `usePathname()` rerenders. */
 function useLocationHash(): string {
-	const [, bumpHash] = useReducer((n: number) => n + 1, 0);
-	useEffect(() => {
-		window.addEventListener("hashchange", bumpHash);
-		return () => window.removeEventListener("hashchange", bumpHash);
-	}, []);
-	return typeof window !== "undefined" ? window.location.hash : "";
+	return useSyncExternalStore(
+		subscribeToHashChange,
+		() => window.location.hash,
+		() => "",
+	);
+}
+
+const subscribeNever = () => () => {};
+
+/** Current origin, hydration-safe (`""` on the server and during hydration). */
+function useLocationOrigin(): string {
+	return useSyncExternalStore(
+		subscribeNever,
+		() => window.location.origin,
+		() => "",
+	);
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -36,9 +56,10 @@ function useLocationHash(): string {
 export function NavItem({ row, onNavigate, className }: Props) {
 	const pathname = usePathname() ?? "/";
 	const hash = useLocationHash();
+	const origin = useLocationOrigin();
 
 	const isActive =
-		row.kind === "link" && isCurrentNavHref(pathname, row.href, hash);
+		row.kind === "link" && isCurrentNavHref(pathname, row.href, hash, origin);
 
 	const linkClassName = cn(navLinkButtonClass(isActive), className);
 

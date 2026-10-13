@@ -57,7 +57,7 @@ type LiveFetchOptions = {
  * `<SanityLive />` ever revalidates. Adding our webhook tags means
  * `/api/revalidate` invalidates these entries too, so published content stays
  * fresh without streaming live events to every anonymous visitor
- * (see `shouldMountSanityLive` in `app/layout.tsx`).
+ * (see `shouldMountSanityLive` in `src/components/layout/DocumentShell.tsx`).
  */
 
 /** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
@@ -288,5 +288,23 @@ export const fetchErrorSettings = cache(
 			...options,
 		});
 		return data as ErrorSettingsDocument | null;
+	},
+);
+
+/**
+ * `errorSettings` for every site locale. The 404 pages fetch all of them because they resolve
+ * the URL's language on the client (`LocaleNotFoundContent`): reading it on the server would
+ * make the `[locale]` segment dynamic.
+ */
+export const fetchErrorSettingsByLocale = cache(
+	async (): Promise<Record<string, ErrorSettingsDocument | null>> => {
+		const siteLocale = await fetchSiteLanguageSettings();
+		return Object.fromEntries(
+			await Promise.all(
+				siteLocale.localeIds.map(
+					async (locale) => [locale, await fetchErrorSettings(locale)] as const,
+				),
+			),
+		);
 	},
 );

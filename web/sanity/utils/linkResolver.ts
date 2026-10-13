@@ -7,13 +7,13 @@
  * (`NavMenuLink`) and handles `route` / function actions specific to nav rows.
  */
 
+import type { IntlStringEntry } from "./sanityLocalizedText";
+
 export type LinkResolvedRef = {
 	_type?: string;
 	slug?: string | null;
 	title?: IntlStringEntry[] | string | null;
 };
-
-import type { IntlStringEntry } from "./sanityLocalizedText";
 
 /** Portable Text `link` mark — aligned with GROQ `linkQuery` / `studio/schemas/objects/link.ts`. */
 export type LinkMark = {
@@ -21,6 +21,7 @@ export type LinkMark = {
 	type?: "internal" | "external" | "function" | string;
 	title?: IntlStringEntry[] | string | null;
 	url?: string | null;
+	href?: string | null;
 	blank?: boolean | null;
 	resolvedReference?: LinkResolvedRef | null;
 	func?: { key?: string; params?: string | null } | null;
@@ -37,7 +38,7 @@ export type ResolvedLink =
 	| null;
 
 /**
- * URL for a polymorphic document reference (`home`, `page`, `project`). Returns
+ * URL for a polymorphic document reference (`home`, `page`, `work`, `project`). Returns
  * `undefined` for unknown ref shapes so callers can skip rendering the link.
  *
  * Pass `locale` to prefix the path (e.g. `/de/about`); leave it undefined
@@ -66,7 +67,7 @@ export function resolveLinkMark(
 	mark: LinkMark | null | undefined,
 	options?: { locale?: string },
 ): ResolvedLink {
-	if (!mark || mark._type !== "link") return null;
+	if (mark?._type !== "link") return null;
 
 	if (mark.type === "external" && mark.url) {
 		const blank = mark.blank !== false;

@@ -119,9 +119,8 @@ async function writeNewFile(target, content, label) {
 /**
  * Replace the first match of `search` with `replacement` in the given file.
  * Returns true if a replacement was made. When `optional` is true, a missing
- * file is treated as a skip (used for branch-specific files like the
- * components/modules barrel that exists on `main` but not on
- * `variant/document-level`).
+ * file is treated as a skip; otherwise the script aborts with a clear error
+ * instead of an ENOENT stack trace.
  */
 async function patch(file, search, replacement, description, optional = false) {
 	if (!existsSync(file)) {
@@ -219,14 +218,13 @@ if (inline) {
 	);
 }
 
-// ── 7: web/src/components/modules/index.ts barrel (optional — variant/document-level has no barrel) ──
+// ── 7: web/src/components/modules/index.ts barrel ─────────────────────────
 const webBarrel = join(root, "web/src/components/modules/index.ts");
 await patch(
 	webBarrel,
 	`export { ModuleText } from "./ModuleText";\n`,
 	`export { ModuleText } from "./ModuleText";\nexport { ${componentName} } from "./${componentName}";\n`,
 	"components/modules barrel",
-	true,
 );
 
 // ── 8: web/sanity/queries/components/modules/index.ts barrel ──────────────
@@ -285,15 +283,10 @@ YOU MUST add the following by hand to web/src/components/modules/ModulesRenderer
 2. Add the import:
      import { ${componentName} } from "./${componentName}";
 
-3. Add a branch inside renderModuleChild():
+3. Add a branch inside renderModuleChild() (fields are plain values on this
+   branch; pass ctx.locale / ctx.siteLocale only if the module builds hrefs):
      if (mod._type === "${moduleId}") {
-       return (
-         <${componentName}
-           module={mod as ${moduleDataType}}
-           locale={locale}
-           siteLocale={siteLocale}
-         />
-       );
+       return <${componentName} module={mod as ${moduleDataType}} />;
      }
 
 After editing, run:

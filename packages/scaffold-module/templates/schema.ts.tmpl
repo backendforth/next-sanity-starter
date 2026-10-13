@@ -1,8 +1,6 @@
 import { ComposeIcon } from "@sanity/icons/Compose";
 import { defineType } from "sanity";
 
-import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
-
 export const __MODULE_VAR__ = defineType({
   name: "__MODULE_NAME__",
   title: "__MODULE_TITLE__",
@@ -12,16 +10,17 @@ export const __MODULE_VAR__ = defineType({
     {
       name: "title",
       title: "Title",
-      type: "internationalizedArrayString",
+      type: "string",
     },
   ],
   preview: {
     select: {
-      titleEntries: "title",
+      title: "title",
     },
-    prepare({ titleEntries }) {
+    prepare({ title }) {
       return {
-        title: firstLocalizedLabel(titleEntries, "__MODULE_TITLE__"),
+        title:
+          typeof title === "string" && title.trim() ? title : "__MODULE_TITLE__",
         subtitle: "__MODULE_TITLE__ module",
       };
     },

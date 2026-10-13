@@ -44,7 +44,13 @@ export const EMBEDDED_CONTENT_TAGS: readonly string[] = [
  * ignored by `/api/revalidate`, so forged payloads cannot force cache churn.
  */
 const WEBHOOK_TAG_MAP: Record<string, (slug?: string) => string[]> = {
-	home: () => [SANITY_CACHE_TAGS.home, SANITY_CACHE_TAGS.sitemap],
+	/* `home` is a page reference too (`PAGE_REFERENCES`): content-refs lists and internal links
+	 * embed its title, so it purges the embedding entries like a page does. */
+	home: () => [
+		SANITY_CACHE_TAGS.home,
+		SANITY_CACHE_TAGS.pages,
+		SANITY_CACHE_TAGS.sitemap,
+	],
 	work: () => [SANITY_CACHE_TAGS.work, SANITY_CACHE_TAGS.sitemap],
 	page: (slug) => [
 		SANITY_CACHE_TAGS.pages,

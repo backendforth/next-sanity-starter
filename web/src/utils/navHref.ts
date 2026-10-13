@@ -39,7 +39,7 @@ function rowId(link: NavMenuLink, index: number, idPrefix: string): string {
 function labelFor(
 	link: NavMenuLink,
 	locale: string,
-	siteLocale?: SiteLocaleSlice | null,
+	siteLocale: SiteLocaleSlice | null | undefined,
 ): string {
 	if (link.type === "internal" && link.linkType === "linkInternal") {
 		return resolveLinkLabel({
@@ -52,14 +52,15 @@ function labelFor(
 	if (link.type === "external" && link.linkType === "linkExternal") {
 		return resolveLinkLabel({
 			linkTitle: link.title,
+			externalUrl: link.href,
 			locale,
 			siteLocale,
-			externalUrl: link.href,
 		});
 	}
 	if (link.type === "function" && link.linkType === "linkFunction") {
 		return resolveLinkLabel({
 			linkTitle: link.title,
+			functionKey: link.func?.key,
 			locale,
 			siteLocale,
 		});

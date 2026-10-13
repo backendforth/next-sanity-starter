@@ -10,6 +10,11 @@ import {
 	getCroppedImageDisplayDimensions,
 	resolveSanityImageFieldForUrl,
 } from "@/sanity/utils/sanityImageBuilder";
+import {
+	getMuxDisplayDimensions,
+	muxThumbnailRequestWidthPx,
+} from "@/src/utils/muxPlayback";
+import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 
 /** Sanity CDN `w=` bounds — not layout breakpoints. */
 const SANITY_IMAGE_MIN_WIDTH = 320;
@@ -22,6 +27,11 @@ export const PREVIEW_MAX_SRC_WIDTH = 768;
 
 export type MediaImageProps = {
 	imagePayload: unknown;
+	/**
+	 * Mux video payload — when `imagePayload` holds no Sanity image, the Mux thumbnail is shown
+	 * instead (asset `thumbTime`, else the first frame). Used for video slides without a poster.
+	 */
+	muxFallbackMedia?: unknown;
 	alt?: string;
 	caption?: string | null;
 	className?: string;
@@ -102,6 +112,7 @@ function buildSrcSet(
  */
 export function MediaImage({
 	imagePayload,
+	muxFallbackMedia,
 	alt,
 	caption,
 	className,
@@ -140,7 +151,18 @@ export function MediaImage({
 		};
 	}, [priority]);
 
-	if (!image) return null;
+	if (!image) {
+		return muxFallbackMedia ? (
+			<MuxThumbnailImage
+				media={muxFallbackMedia}
+				alt={imageAltFromField(undefined, alt, caption)}
+				className={className}
+				fillParent={fillParent}
+				objectFit={objectFit}
+				sizes={sizes}
+			/>
+		) : null;
+	}
 
 	const cropped = getCroppedImageDisplayDimensions(image);
 	/** Source image width caps the largest srcset candidate we request. */
@@ -197,6 +219,67 @@ export function MediaImage({
 					!priority && loaded && "img-loaded",
 				)}
 				style={imgStyle}
+			/>
+		</div>
+	);
+}
+
+/**
+ * Mux thumbnail fallback for {@link MediaImage}. Requests up to the asset width (2× retina for an
+ * unmeasured slot) and lets `srcset` + `sizes` pick the variant, so no container measurement and
+ * no URL swap after mount.
+ */
+function MuxThumbnailImage({
+	media,
+	alt,
+	className,
+	fillParent,
+	objectFit,
+	sizes,
+}: {
+	media: unknown;
+	alt: string;
+	className?: string;
+	fillParent: boolean;
+	objectFit: CSSProperties["objectFit"];
+	sizes: string;
+}) {
+	const dims = getMuxDisplayDimensions(media);
+	const poster = resolveMediaPosterUrls({
+		muxMedia: media,
+		thumbWidthPx: muxThumbnailRequestWidthPx({
+			containerWidthPx: undefined,
+			assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
+		}),
+	});
+	if (!poster) return null;
+
+	return (
+		<div
+			className={clsx(
+				"relative w-full overflow-hidden",
+				fillParent &&
+					"h-full min-h-[100dvh] w-full [&_img]:h-full [&_img]:w-full",
+				className,
+			)}
+			style={
+				fillParent
+					? undefined
+					: { aspectRatio: `${poster.width} / ${poster.height}` }
+			}
+		>
+			{/* biome-ignore lint/performance/noImgElement: deterministic Mux URLs, same reason as above */}
+			<img
+				src={poster.src}
+				srcSet={poster.srcSet}
+				sizes={poster.srcSet ? sizes : undefined}
+				alt={alt}
+				width={poster.width}
+				height={poster.height}
+				loading="lazy"
+				decoding="async"
+				className="absolute inset-0 block h-full w-full max-w-none"
+				style={{ objectFit: objectFit ?? "cover" }}
 			/>
 		</div>
 	);

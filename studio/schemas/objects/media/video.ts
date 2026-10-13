@@ -15,6 +15,12 @@ export const mediaVideo = defineType({
       name: "video",
       type: "mux.video",
       /** Required when this object is used as the active video block; enforced on `module.media` / callers, not here (hidden field + `enforce-required-fields`). */
+      /**
+       * Encoding ceiling for full-player videos: 4K, so the fullscreen button has a
+       * rendition that covers a 4K display. Overrides the plugin default in
+       * `sanity.config.ts`; also the preset and the maximum in the upload dialog.
+       */
+      options: { max_resolution_tier: "2160p" },
     },
     {
       name: "poster",

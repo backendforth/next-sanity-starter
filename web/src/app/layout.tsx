@@ -41,10 +41,10 @@ const geistMono = Geist_Mono({
  * The icons come from `siteSettings.favicon`, with every size derived from that
  * one asset on the Sanity CDN (`siteFaviconIcons`). Declaring them here covers
  * every route below — route metadata merges field by field, so no page has to
- * repeat them. With the field unset the key stays absent and `public/favicon.ico`
- * is picked up by the browser's implicit `/favicon.ico` probe; it lives in
- * `public/` rather than `app/` because the file convention beats the metadata
- * object, and with both in place two icons stood in the head.
+ * repeat them. There is deliberately no static fallback: browsers, bookmarks
+ * and search crawlers probe `/favicon.ico` regardless of the `<link>` tags, so
+ * the Next.js default icon that used to sit in `public/` showed up beside or
+ * instead of the Sanity one. With the field unset the site has no favicon.
  */
 export async function generateMetadata(): Promise<Metadata> {
 	const favicon = await fetchSiteSettingsFavicon({ stega: false });

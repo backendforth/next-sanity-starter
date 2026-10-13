@@ -25,8 +25,8 @@ const APPLE_ICON_SIZE = 180;
  * crop in the Studio: crop the source down to the part that should survive
  * (the signet, a single letter) and every size below follows.
  *
- * Returns `undefined` when nothing is set, so `generateMetadata` can fall
- * through to the static icon in `app/`.
+ * Returns `undefined` when nothing is set, so `generateMetadata` leaves
+ * `icons` out — there is no static fallback icon.
  */
 export function siteFaviconIcons(
 	favicon: SanityImageField | null | undefined,

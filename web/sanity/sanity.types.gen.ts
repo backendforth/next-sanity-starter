@@ -484,7 +484,7 @@ export type Home = {
 
 export type LinkFunctions = {
   _type: "linkFunctions";
-  key: "scroll-to" | "open-modal" | "open-cookie-preferences";
+  key: "scroll-to" | "open-cookie-preferences";
   params?: string;
 };
 

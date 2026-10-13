@@ -70,30 +70,15 @@ export function NavItem({ row, onNavigate, className }: Props) {
 			: ("page" as const);
 
 	if (row.kind === "button") {
-		if (row.action === "open-cookie-preferences") {
-			return (
-				<button
-					type="button"
-					className={cn(navLinkButtonClass(false), className)}
-					onClick={() => {
-						showCookiePreferences();
-						onNavigate?.();
-					}}
-				>
-					{row.label}
-				</button>
-			);
-		}
+		/* The only button action is the cookie-preferences opener. */
 		return (
 			<button
 				type="button"
-				className={cn(
-					navLinkButtonClass(false),
-					"cursor-not-allowed opacity-60",
-					className,
-				)}
-				disabled
-				title="Modal link — not connected yet"
+				className={cn(navLinkButtonClass(false), className)}
+				onClick={() => {
+					showCookiePreferences();
+					onNavigate?.();
+				}}
 			>
 				{row.label}
 			</button>

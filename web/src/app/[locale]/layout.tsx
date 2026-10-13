@@ -61,7 +61,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
 			<a
 				href="#main-content"
-				className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-color-bg focus:px-3 focus:py-2 focus:text-color-text focus:shadow-md focus:outline-2 focus:outline-offset-2 focus:outline-color-accent"
+				className="sr-only focus:not-sr-only focus:fixed focus:top-xs focus:left-xs focus:z-50 focus:rounded focus:bg-color-bg focus:px-sm focus:py-xs focus:text-color-text focus:shadow-md focus:outline-2 focus:outline-offset-2 focus:outline-color-accent"
 			>
 				{skipLinkLabel(locale)}
 			</a>

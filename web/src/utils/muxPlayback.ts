@@ -31,7 +31,10 @@ export type MuxThumbnailFormat = "webp" | "jpg";
 export type MuxThumbnailOptions = {
 	/** CSS-pixel width; Mux downscales from source. Callers should cap to retina × container. */
 	width?: number;
-	/** @default "jpg" — loops use `"webp"` for smaller posters at equal quality. */
+	/**
+	 * @default "webp" — about a third of the JPG's bytes. Mux delivers both untagged (no ICC
+	 * profile), so the browser treats both as sRGB and the format cannot shift colour.
+	 */
 	format?: MuxThumbnailFormat;
 };
 
@@ -40,7 +43,7 @@ export function muxThumbnailUrl(
 	timeSec = 0,
 	opts?: MuxThumbnailOptions,
 ): string {
-	const format = opts?.format ?? "jpg";
+	const format = opts?.format ?? "webp";
 	const u = new URL(`https://image.mux.com/${playbackId}/thumbnail.${format}`);
 	u.searchParams.set("time", String(timeSec));
 	if (opts?.width !== undefined && opts.width > 0) {
@@ -168,16 +171,25 @@ export function muxHlsSrc(
 }
 
 /**
- * DPR cap for loop renditions. 2.0 honors retina (effective 2× CSS pixels)
- * so a 1920×1080 retina hero targets 2160p and gets served 4K; phones with
- * DPR=3 are clamped to 2× so they don't accidentally pull 4K just because
- * the OS reports a high density screen. Drop to 1.5 if 4K turns out too
- * heavy network-wise even on retina.
+ * DPR cap for tier selection (loops and the full player). 2.0 honors retina (effective 2× CSS
+ * pixels) so a 1920×1080 retina hero targets 2160p; phones with DPR=3 are clamped to 2× so
+ * they don't pull 4K just because the OS reports a high density screen.
  */
 export const LOOP_VIDEO_DPR_CAP = 2.0;
 
-/** Hard manifest ceiling for silent loops (2160p / 4K UHD). */
-export const LOOP_VIDEO_MAX_TIER: MuxResolutionTier = "2160p";
+/**
+ * Hard manifest ceiling for all site playback (loops and the full player). What a visitor
+ * actually gets is capped by the asset's encoding ladder, which Studio sets per field
+ * (`max_resolution_tier` on `media.video` / `media.videoLoop`) — encoding is the one knob,
+ * this ceiling only keeps the web side from cutting the ladder short.
+ */
+export const MUX_PLAYBACK_MAX_TIER = "2160p" satisfies MuxResolutionTier;
+
+/**
+ * Desktop-class display query: a fine pointer that can hover means a laptop/desktop panel
+ * viewed at arm's length, where upscaling one rung is visible.
+ */
+const FINE_POINTER_DISPLAY_QUERY = "(hover: hover) and (pointer: fine)";
 
 /** Poster width cap — hero loops; `srcset` tops out here (still retina-sharp at ~1 MB WebP). */
 export const LOOP_POSTER_MAX_WIDTH_PX = 1920;
@@ -194,6 +206,7 @@ const TIER_RANK: Record<MuxResolutionTier, number> = {
 	"240p": 0,
 };
 
+/** The lower of two tiers. */
 function minResolutionTier(
 	a: MuxResolutionTier,
 	b: MuxResolutionTier,
@@ -201,13 +214,15 @@ function minResolutionTier(
 	return TIER_RANK[a] <= TIER_RANK[b] ? a : b;
 }
 
-/** Target pixels + Mux tier for loop playback (DPR-capped, 1440p ceiling). */
+/** Target pixels + Mux tier for loop playback (DPR-capped, {@link MUX_PLAYBACK_MAX_TIER} ceiling). */
 export function computeLoopVideoTarget(args: {
 	containerWidthPx: number;
 	containerHeightPx: number;
 	devicePixelRatio?: number;
 	videoWidthPx: number;
 	videoHeightPx: number;
+	/** Pick the covering tier (round up) instead of the floor — see {@link isFinePointerDisplay}. */
+	roundTierUp?: boolean;
 }): { targetW: number; targetH: number; maxResolutionTier: MuxResolutionTier } {
 	const rawDpr =
 		typeof args.devicePixelRatio === "number" && args.devicePixelRatio > 0
@@ -219,13 +234,20 @@ export function computeLoopVideoTarget(args: {
 		devicePixelRatio: dpr,
 	});
 	const tier = minResolutionTier(
-		muxResolutionTierFromHeight(targetH),
-		LOOP_VIDEO_MAX_TIER,
+		args.roundTierUp
+			? muxCoveringResolutionTierFromHeight(targetH)
+			: muxResolutionTierFromHeight(targetH),
+		MUX_PLAYBACK_MAX_TIER,
 	);
 	return { targetW, targetH, maxResolutionTier: tier };
 }
 
-/** Map a pixel height to the nearest Mux `*_resolution` tier (round up). */
+/**
+ * Largest Mux `*_resolution` tier ≤ `heightPx` (round DOWN — the rendition may be upscaled by up
+ * to one rung). Used on touch displays, where the pixel density hides a one-rung upscale and
+ * cellular data is precious; desktop-class displays use
+ * {@link muxCoveringResolutionTierFromHeight}.
+ */
 export function muxResolutionTierFromHeight(
 	heightPx: number,
 ): MuxResolutionTier {
@@ -237,6 +259,35 @@ export function muxResolutionTierFromHeight(
 	if (heightPx >= 480) return "480p";
 	if (heightPx >= 360) return "360p";
 	return "270p";
+}
+
+/**
+ * Smallest Mux `*_resolution` tier ≥ `heightPx` (round UP, capped at 2160p) — the rendition
+ * fully covers the target and is only ever downscaled. With browser chrome, nearly every laptop
+ * viewport lands between two rungs (a DPR-2 MacBook hero needs ~1700–2000 px), so the floor
+ * mapper served one rung below the display there.
+ */
+export function muxCoveringResolutionTierFromHeight(
+	heightPx: number,
+): MuxResolutionTier {
+	if (heightPx <= 270) return "270p";
+	if (heightPx <= 360) return "360p";
+	if (heightPx <= 480) return "480p";
+	if (heightPx <= 540) return "540p";
+	if (heightPx <= 720) return "720p";
+	if (heightPx <= 1080) return "1080p";
+	if (heightPx <= 1440) return "1440p";
+	return "2160p";
+}
+
+/**
+ * Desktop-class display check for tier rounding: those displays get the covering tier
+ * (upscaling is visible at arm's length), touch displays keep the floor tier (invisible at
+ * phone pixel density, and one rung can double the bitrate over cellular). SSR-safe: `false`.
+ */
+export function isFinePointerDisplay(): boolean {
+	if (typeof window === "undefined" || !window.matchMedia) return false;
+	return window.matchMedia(FINE_POINTER_DISPLAY_QUERY).matches;
 }
 
 /**
@@ -271,33 +322,27 @@ export function computeObjectCoverTargetPx(args: {
  *
  * Only Chromium-family browsers expose `navigator.connection`; Safari and
  * Firefox return `undefined`, and we then fall back to the hard ceiling
- * ({@link LOOP_VIDEO_MAX_TIER}) so the container-size signal alone decides
+ * ({@link MUX_PLAYBACK_MAX_TIER}) so the container-size signal alone decides
  * the tier — i.e. on Safari we **assume a good connection** rather than
  * pessimise. Users on bad connections + Safari + a large screen will see
  * the loop stall instead of degrade; accepted trade-off.
  *
- * `effectiveType` is a coarse synthetic bucket the browser updates
- * conservatively; `downlink` is the raw Mbps estimate. We honour
- * `saveData` (the explicit user opt-in to data-frugality) above both.
- *
- * Thresholds are set against the real bitrates of the Mux `premium` H.264
- * ladder (2160p ~ 31 Mbps, 1440p ~ 19, 1080p ~ 13, 720p ~ 5) — but note
- * Chrome **caps the reported `downlink` at 10 Mbps** (fingerprinting
- * mitigation), so any threshold above the cap can never trigger and "at the
- * cap" cannot be told apart from a gigabit line. Everything >= 8 therefore
- * gets the hard ceiling; a line that is genuinely too slow for the pinned
- * tier stalls rather than degrades, same as on Safari above.
+ * Only `saveData` (the explicit user opt-in to data-frugality) and the
+ * `effectiveType` cellular buckets are honoured. `downlink` is deliberately
+ * **ignored**: Chrome's estimate decays toward ~1.5 Mbps on idle connections
+ * and is capped at 10 Mbps (fingerprinting mitigation), so on real fiber
+ * lines it routinely reported < 2 Mbps and pinned fullscreen heroes to 720p.
+ * The full player's stall rescue (`MediaVideo`) catches genuinely slow lines.
  */
 export function getNetworkAwareTierCeiling(): MuxResolutionTier {
-	if (typeof navigator === "undefined") return LOOP_VIDEO_MAX_TIER;
+	if (typeof navigator === "undefined") return MUX_PLAYBACK_MAX_TIER;
 	type NetworkInformation = {
 		effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
-		downlink?: number;
 		saveData?: boolean;
 	};
 	const conn = (navigator as Navigator & { connection?: NetworkInformation })
 		.connection;
-	if (!conn) return LOOP_VIDEO_MAX_TIER;
+	if (!conn) return MUX_PLAYBACK_MAX_TIER;
 
 	if (conn.saveData === true) return "720p";
 
@@ -305,20 +350,13 @@ export function getNetworkAwareTierCeiling(): MuxResolutionTier {
 	if (eff === "slow-2g" || eff === "2g") return "480p";
 	if (eff === "3g") return "720p";
 
-	const dl = conn.downlink;
-	if (typeof dl === "number") {
-		if (dl < 2) return "720p";
-		if (dl < 5) return "1080p";
-		if (dl < 8) return "1440p";
-	}
-
-	return LOOP_VIDEO_MAX_TIER;
+	return MUX_PLAYBACK_MAX_TIER;
 }
 
 /**
  * HLS URL tuned for silent loops: container-aware tier (DPR-capped, up to
- * 4K) combined with a network-aware ceiling, then pinned as both min and
- * max in the manifest so ABR has nothing to ramp through.
+ * {@link MUX_PLAYBACK_MAX_TIER}) combined with a network-aware ceiling, then
+ * pinned as both min and max in the manifest so ABR has nothing to ramp through.
  *
  * Why a single-tier manifest: Safari's native HLS picks conservatively from
  * the lowest available rendition and ramps up over several segments. For a
@@ -328,16 +366,17 @@ export function getNetworkAwareTierCeiling(): MuxResolutionTier {
  *
  * Tier selection takes the minimum of:
  *  - **Container tier** — derived from container width × height × capped DPR
- *    (see {@link computeLoopVideoTarget}). A 1920×1080 retina hero targets
- *    2160p; an iPhone hero with portrait container + landscape video math
- *    targets 1440p; tiny inline loops target 720p or below.
+ *    (see {@link computeLoopVideoTarget}). Desktop-class displays round up to
+ *    the covering rung, touch displays round down ({@link isFinePointerDisplay}).
+ *    A fullscreen retina hero targets up to the ceiling; small inline loops
+ *    target 720p or below.
  *  - **Network tier** — from {@link getNetworkAwareTierCeiling}. On Chrome
- *    this throttles back for cellular / slow connections; on Safari this
- *    is always {@link LOOP_VIDEO_MAX_TIER} (no API), so the container size
+ *    this throttles back for cellular / save-data connections; on Safari this
+ *    is always {@link MUX_PLAYBACK_MAX_TIER} (no API), so the container size
  *    is the sole signal.
  *
- * Result: a desktop retina visitor on home wifi sees 4K, a phone on LTE
- * sees 1080p–1440p, a phone on 3G sees 720p — all without ramp-up.
+ * Result: a desktop visitor on wifi sees up to the asset's top rendition, a
+ * phone on LTE sees 1080p–1440p, a phone on 3G sees 720p — all without ramp-up.
  */
 export function muxLoopHlsSrc(
 	playbackId: string,
@@ -347,6 +386,8 @@ export function muxLoopHlsSrc(
 		containerWidthPx?: number;
 		containerHeightPx?: number;
 		devicePixelRatio?: number;
+		/** Override the rounding rule; defaults to {@link isFinePointerDisplay}. */
+		roundTierUp?: boolean;
 	},
 ): string {
 	const cw = args.containerWidthPx ?? 0;
@@ -354,7 +395,7 @@ export function muxLoopHlsSrc(
 	const vw = args.videoWidthPx ?? 16;
 	const vh = args.videoHeightPx ?? 9;
 
-	let containerTier: MuxResolutionTier = LOOP_VIDEO_MAX_TIER;
+	let containerTier: MuxResolutionTier = MUX_PLAYBACK_MAX_TIER;
 	if (cw > 0 && ch > 0) {
 		containerTier = computeLoopVideoTarget({
 			containerWidthPx: cw,
@@ -362,6 +403,7 @@ export function muxLoopHlsSrc(
 			devicePixelRatio: args.devicePixelRatio,
 			videoWidthPx: vw,
 			videoHeightPx: vh,
+			roundTierUp: args.roundTierUp ?? isFinePointerDisplay(),
 		}).maxResolutionTier;
 	}
 
@@ -373,6 +415,91 @@ export function muxLoopHlsSrc(
 		minResolutionTier: resolutionTier,
 		maxResolutionTier: resolutionTier,
 	});
+}
+
+/**
+ * Tiers the full player can pin — the intersection of Mux Player's
+ * `minResolution` (480p–2160p) and `maxResolution` (720p–2160p) domains.
+ */
+export type MuxPlayerResolutionTier = "720p" | "1080p" | "1440p" | "2160p";
+
+export type MuxPlayerResolution = {
+	minResolution?: MuxPlayerResolutionTier;
+	maxResolution: MuxPlayerResolutionTier;
+};
+
+/** Floor a ladder tier into the player-pinnable domain (720p is also the visual-cliff floor). */
+function playerTierFloor(tier: MuxResolutionTier): MuxPlayerResolutionTier {
+	return TIER_RANK[tier] <= TIER_RANK["720p"]
+		? "720p"
+		: (tier as MuxPlayerResolutionTier);
+}
+
+/**
+ * Resolution bounds for the full player (`MediaVideo`) — quality-first.
+ *
+ * The tier is keyed to the **display**, not the inline slot: the fullscreen
+ * button is one click away, and an ABR ramp is visible exactly when the
+ * viewer leans in. `min` = `max` pins the manifest to one rendition (same
+ * mechanism as {@link muxLoopHlsSrc}), so playback starts at the best tier
+ * for this display from the first segment; without the pin, hls.js / Safari
+ * start conservatively and a 2K display sits on 720p for several segments.
+ *
+ * The pin is dropped in one case: {@link getNetworkAwareTierCeiling} reports
+ * a degraded connection (save-data, cellular `effectiveType`). Then the
+ * ceiling caps `max` and `min` stays unset so ABR can step down instead of
+ * stalling. Browsers without the API assume a good connection; `MediaVideo`'s
+ * stall rescue drops the pin if that guess is wrong.
+ *
+ * Client-only — returns `null` during SSR; callers keep the unpinned
+ * {@link MUX_PLAYBACK_MAX_TIER} default until mounted.
+ */
+export function resolveMuxPlayerResolution(args: {
+	videoWidthPx?: number;
+	videoHeightPx?: number;
+}): MuxPlayerResolution | null {
+	if (typeof window === "undefined") return null;
+
+	const dpr = Math.min(window.devicePixelRatio || 1, LOOP_VIDEO_DPR_CAP);
+	const rawW = (window.screen?.width || window.innerWidth || 0) * dpr;
+	const rawH = (window.screen?.height || window.innerHeight || 0) * dpr;
+	const vw =
+		args.videoWidthPx && args.videoWidthPx > 0 ? args.videoWidthPx : 16;
+	const vh =
+		args.videoHeightPx && args.videoHeightPx > 0 ? args.videoHeightPx : 9;
+
+	/* Orient the screen box to the video (fullscreen playback rotates on
+	 * phones), then take the `object-fit: contain` rendered height — the
+	 * resolution the ladder must actually cover. */
+	const landscapeVideo = vw >= vh;
+	const sw = landscapeVideo ? Math.max(rawW, rawH) : Math.min(rawW, rawH);
+	const sh = landscapeVideo ? Math.min(rawW, rawH) : Math.max(rawW, rawH);
+	const renderedH = sw > 0 && sh > 0 ? Math.min(sh, (sw * vh) / vw) : 0;
+
+	/* Same rounding split as the loops: desktop-class displays get the covering
+	 * tier, touch keeps the floor. */
+	const displayTier =
+		renderedH > 0
+			? minResolutionTier(
+					isFinePointerDisplay()
+						? muxCoveringResolutionTierFromHeight(renderedH)
+						: muxResolutionTierFromHeight(renderedH),
+					MUX_PLAYBACK_MAX_TIER,
+				)
+			: MUX_PLAYBACK_MAX_TIER;
+
+	const networkTier = getNetworkAwareTierCeiling();
+	if (networkTier !== MUX_PLAYBACK_MAX_TIER) {
+		/* Degraded-connection signal: cap the ladder, leave `min` unset. */
+		return {
+			maxResolution: playerTierFloor(
+				minResolutionTier(networkTier, displayTier),
+			),
+		};
+	}
+
+	const pinned = playerTierFloor(displayTier);
+	return { minResolution: pinned, maxResolution: pinned };
 }
 
 /**

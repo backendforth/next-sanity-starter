@@ -5,15 +5,7 @@ import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-	resolveSanityImageFieldForUrl,
-	urlForFetchedImage,
-} from "@/sanity/utils/sanityImageBuilder";
-import {
-	extractMuxPlaybackId,
-	muxThumbnailTimeSec,
-	muxThumbnailUrl,
-} from "@/src/utils/muxPlayback";
+import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
 
 import { CarouselSlide, type NormalizedSlide } from "./CarouselSlide";
 import {
@@ -37,21 +29,14 @@ type Props = {
 
 const THUMBNAIL_WIDTH_PX = 160;
 
+/** Image slides use the image; video and loop slides their poster, else the Mux thumbnail. */
 function thumbnailUrlForSlide(slide: NormalizedSlide): string | null {
-	const imageSource = slide.kind === "image" ? slide.media : slide.poster;
-	const img = resolveSanityImageFieldForUrl(imageSource);
-	if (img) {
-		return urlForFetchedImage(img, THUMBNAIL_WIDTH_PX);
-	}
-	if (slide.kind === "video") {
-		const playbackId = extractMuxPlaybackId(slide.media);
-		if (playbackId) {
-			return muxThumbnailUrl(playbackId, muxThumbnailTimeSec(slide.media), {
-				width: THUMBNAIL_WIDTH_PX,
-			});
-		}
-	}
-	return null;
+	const isImage = slide.kind === "image";
+	return resolveMediaPosterUrl({
+		posterPayload: isImage ? slide.media : slide.poster,
+		muxMedia: isImage ? undefined : slide.media,
+		thumbWidthPx: THUMBNAIL_WIDTH_PX,
+	});
 }
 
 /**

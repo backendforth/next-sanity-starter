@@ -107,6 +107,7 @@ export function CarouselSlide({
 		return (
 			<MediaImage
 				imagePayload={slide.poster}
+				muxFallbackMedia={slide.media}
 				caption={slide.caption ?? undefined}
 				fillParent
 				objectFit="cover"

@@ -95,25 +95,18 @@ export function unregisterLoadedTracker(key: string): void {
 	beginTrackerLoad(key);
 }
 
+/**
+ * Page view for a client-side navigation, for the providers that need one.
+ *
+ * GA4 (enhanced measurement, on by default) and Plausible's default script
+ * listen for History API changes and send their own page view, so sending one
+ * here would count every navigation twice. Clarity records sessions, not views.
+ */
 export function trackPageView(pathname: string, search = ""): void {
 	const url = `${pathname}${search}`;
 
 	for (const { tracker } of loadedTrackers.values()) {
 		switch (tracker._type) {
-			case "trackerGoogleAnalytics": {
-				const id = tracker.measurementId?.trim();
-				if (!id) break;
-				const gtag = (
-					window as Window & {
-						gtag?: (...args: unknown[]) => void;
-					}
-				).gtag;
-				gtag?.("event", "page_view", {
-					page_path: url,
-					send_to: id,
-				});
-				break;
-			}
 			case "trackerMatomo": {
 				const _paq = (
 					window as Window & {
@@ -131,15 +124,6 @@ export function trackPageView(pathname: string, search = ""): void {
 					}
 				).posthog;
 				posthog?.capture?.("$pageview");
-				break;
-			}
-			case "trackerPlausible": {
-				const plausible = (
-					window as Window & {
-						plausible?: (event: string, options?: { u: string }) => void;
-					}
-				).plausible;
-				plausible?.("pageview", { u: url });
 				break;
 			}
 			default:

@@ -137,6 +137,21 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 	const apiHost = tracker.apiHost?.trim();
 	if (!apiKey || !apiHost || isTrackerLoaded(tracker._key)) return;
 
+	// A re-grant within the same page finds the SDK still in memory, only opted
+	// out. Injecting `array.js` again would start a second instance next to it,
+	// and both would collect once opted back in. PostHog cannot re-initialise in
+	// place, so a changed key or host takes effect on the next page load.
+	const live = (
+		window as Window & {
+			posthog?: { __loaded?: boolean; opt_in_capturing?: () => void };
+		}
+	).posthog;
+	if (live?.__loaded) {
+		if (consumeSelfOptOut(tracker._key)) live.opt_in_capturing?.();
+		registerLoadedTracker(tracker);
+		return;
+	}
+
 	const cookieFree = tracker.cookieFree === true;
 	const generation = beginTrackerLoad(tracker._key);
 	const script = appendScript(

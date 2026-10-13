@@ -3,9 +3,8 @@ import { notFound } from "next/navigation";
 
 import {
 	fetchSiteAnalyticsSettings,
-	fetchSiteCookieBanner,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteNavMenus,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { CookieConsentBanner } from "@/src/components/cookies/CookieConsent";
@@ -46,18 +45,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
-	// Parallelize: locale config (for validation + LanguageProvider) and nav
-	// menus are independent. The nav fetch when `raw` ends up invalid is
-	// wasted effort but the path is rare (404s only); the common case saves a
-	// roundtrip.
-	const [siteLocale, siteNav, cookieBanner, siteBrand, analytics] =
-		await Promise.all([
-			fetchSiteLanguageSettings(),
-			fetchSiteNavMenus(),
-			fetchSiteCookieBanner(),
-			fetchSiteSettingsTitle(),
-			fetchSiteAnalyticsSettings(),
-		]);
+	// Parallelize: locale config (for validation + LanguageProvider), the chrome
+	// bundle (nav, cookie banner, title in one query) and analytics are
+	// independent. The fetches when `raw` ends up invalid are wasted effort but
+	// the path is rare (404s only); the common case saves a roundtrip.
+	const [siteLocale, chrome, analytics] = await Promise.all([
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(),
+		fetchSiteAnalyticsSettings(),
+	]);
+	const siteNav = chrome?.nav ?? null;
+	const cookieBanner = chrome?.cookieBanner ?? null;
+	/* Same fallback as `fetchSiteSettingsTitle`: the header brand is never empty. */
+	const siteBrand = chrome?.title?.trim() || "Site";
 	const enabledTrackers = getEnabledTrackers(analytics);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 

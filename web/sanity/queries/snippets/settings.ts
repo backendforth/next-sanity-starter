@@ -134,6 +134,22 @@ export const siteCookieBannerLayoutQuery =
   }
 }`);
 
+/**
+ * App shell for `app/[locale]/layout.tsx` in one fetch: nav menus, cookie banner copy and the
+ * site title. Each `sanityFetch` is two roundtrips (sync-tags probe + data), so three separate
+ * fetches cost six requests per uncached render, the bundle two. Live invalidation still works:
+ * the bundle's sync tags cover every member document. `siteAnalyticsSettings` stays separate,
+ * it is fetched with `stega: false`.
+ *
+ * Not `defineQuery`: the interpolations keep typegen from evaluating it; `SiteChromeData` in
+ * `fetchSanityData.ts` is authoritative.
+ */
+export const siteChromeQuery = `{
+  "nav": ${siteNavMenusQuery},
+  "cookieBanner": ${siteCookieBannerLayoutQuery},
+  "title": *[_id == "siteSettings"][0].title
+}`;
+
 /** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */
 export const siteAnalyticsSettingsQuery =
 	defineQuery(`*[_id == "siteAnalyticsSettings"][0]{

@@ -1,5 +1,8 @@
 export type { ModuleCarouselData } from "./carousel";
 export type {
+	ContentRefRoute,
+	ModuleContentRefCategory,
+	ModuleContentRefListItem,
 	ModuleContentRefsData,
 	ModuleContentRefTarget,
 } from "./contentRefs";

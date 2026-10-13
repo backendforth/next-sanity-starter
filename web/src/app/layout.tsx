@@ -7,9 +7,11 @@ import {
 	fetchSiteSettingsFavicon,
 } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
+import { siteFaviconIcons } from "@/sanity/seo";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
+import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -35,16 +37,21 @@ const geistMono = Geist_Mono({
 
 /**
  * Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template).
- * The favicon comes from `siteSettings.favicon`; the static `app/favicon.ico`
- * remains the fallback when the field is unset (Next emits it automatically).
+ *
+ * The icons come from `siteSettings.favicon`, with every size derived from that
+ * one asset on the Sanity CDN (`siteFaviconIcons`). Declaring them here covers
+ * every route below — route metadata merges field by field, so no page has to
+ * repeat them. With the field unset the key stays absent and `public/favicon.ico`
+ * is picked up by the browser's implicit `/favicon.ico` probe; it lives in
+ * `public/` rather than `app/` because the file convention beats the metadata
+ * object, and with both in place two icons stood in the head.
  */
 export async function generateMetadata(): Promise<Metadata> {
-	const faviconUrl = await fetchSiteSettingsFavicon({ stega: false });
+	const favicon = await fetchSiteSettingsFavicon({ stega: false });
+	const icons = siteFaviconIcons(favicon);
 	return {
-		metadataBase: new URL(
-			process.env.NEXT_PUBLIC_SITE_URL || "https://example.com",
-		),
-		...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
+		metadataBase: new URL(SITE_BASE_URL),
+		...(icons ? { icons } : {}),
 	};
 }
 
@@ -129,22 +136,6 @@ export default async function RootLayout({
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<svg
-					aria-hidden="true"
-					focusable="false"
-					width="0"
-					height="0"
-					style={{ position: "absolute" }}
-				>
-					<title>Video sharpen filter</title>
-					<filter id="mvl-sharpen" colorInterpolationFilters="sRGB">
-						<feConvolveMatrix
-							order="3"
-							preserveAlpha="true"
-							kernelMatrix="0 -0.35 0  -0.35 2.4 -0.35  0 -0.35 0"
-						/>
-					</filter>
-				</svg>
 				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />

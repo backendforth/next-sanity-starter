@@ -1,8 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const BASE_URL = (
-	process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
-).replace(/\/$/, "");
+import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
 /**
  * Production-only crawling. Deploy previews and staging environments are
@@ -31,6 +28,6 @@ export default function robots(): MetadataRoute.Robots {
 			allow: "/",
 			disallow: ["/api/"],
 		},
-		sitemap: `${BASE_URL}/sitemap.xml`,
+		sitemap: `${SITE_BASE_URL}/sitemap.xml`,
 	};
 }

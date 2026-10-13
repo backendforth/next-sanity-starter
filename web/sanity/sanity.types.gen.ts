@@ -693,6 +693,23 @@ export type MuxTrack = {
   text_type?: string;
 };
 
+export type MediaFolderReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "media.folder";
+};
+
+export type MediaFolder = {
+  _id: string;
+  _type: "media.folder";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  parent?: MediaFolderReference;
+};
+
 export type MediaTag = {
   _id: string;
   _type: "media.tag";
@@ -856,6 +873,8 @@ export type AllSanitySchemaTypes =
   | MuxStaticRenditionFile
   | MuxPlaybackId
   | MuxTrack
+  | MediaFolderReference
+  | MediaFolder
   | MediaTag
   | SanityImagePaletteSwatch
   | SanityImagePalette
@@ -900,18 +919,6 @@ export type SiteSettingsTitleQueryResult =
     }
   | {
       title: string | null;
-    }
-  | null;
-
-// Source: sanity/queries/snippets/settings.ts
-// Variable: siteSettingsFaviconQuery
-// Query: *[_id == "siteSettings"][0]{  "faviconUrl": favicon.asset->url}
-export type SiteSettingsFaviconQueryResult =
-  | {
-      faviconUrl: null;
-    }
-  | {
-      faviconUrl: string | null;
     }
   | null;
 
@@ -1096,12 +1103,10 @@ export type SitemapPagesQueryResult = Array<
 >;
 
 // Query TypeMap
-import "@sanity/client";
-declare module "@sanity/client" {
+declare global {
   interface SanityQueries {
     '*[_id == "siteLanguageSettings"][0]{\n  _id,\n  availableLanguages[]{id, title},\n  defaultLanguageId\n}': SiteLanguageSettingsQueryResult;
     '*[_id == "siteSettings"][0]{title}': SiteSettingsTitleQueryResult;
-    '*[_id == "siteSettings"][0]{\n  "faviconUrl": favicon.asset->url\n}': SiteSettingsFaviconQueryResult;
     '*[_id == "siteSettings"][0]{\n  "title": seo.title,\n  "description": seo.description,\n  "imageUrl": seo.image.asset->url\n}': SiteSettingsSeoFallbackQueryResult;
     '*[_id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal,\n  preferencesModal {\n    title,\n    acceptAllBtn,\n    acceptNecessaryBtn,\n    savePreferencesBtn,\n    "sections": sections.code\n  }\n}': SiteCookieBannerLayoutQueryResult;
     '*[_id == "siteAnalyticsSettings"][0]{\n  _id,\n  title,\n  loadMode,\n  trackers[]{\n    _key,\n    _type,\n    enabled,\n    cookieFree,\n    cookieBannerLabel,\n    cookieBannerDescription,\n    _type == "trackerGoogleAnalytics" => {\n      measurementId\n    },\n    _type == "trackerMatomo" => {\n      url,\n      siteId\n    },\n    _type == "trackerMicrosoftClarity" => {\n      projectId\n    },\n    _type == "trackerPostHog" => {\n      apiKey,\n      apiHost\n    },\n    _type == "trackerPlausible" => {\n      domain,\n      scriptUrl\n    }\n  }\n}': SiteAnalyticsSettingsQueryResult;
@@ -1109,4 +1114,8 @@ declare module "@sanity/client" {
     '*[_type == "project" && defined(slug.current)]{\n  "slug": slug.current\n}': ProjectSlugsQueryResult;
     '*[\n  _type == "home" ||\n  _type == "work" ||\n  (_type == "page" && defined(slug.current)) ||\n  (_type == "project" && defined(slug.current))\n]{\n  _id,\n  _type,\n  _updatedAt,\n  "slug": select(\n    _type in ["home", "work"] => null,\n    slug.current\n  ),\n  "path": select(\n    _type == "home" => "/",\n    _type == "work" => "/work",\n    _type == "project" => "/work/" + slug.current,\n    "/" + slug.current\n  )\n}': SitemapPagesQueryResult;
   }
+}
+// Lets @sanity/client releases that predate the global registry read it too
+declare module "@sanity/client" {
+  interface SanityQueries extends globalThis.SanityQueries {}
 }

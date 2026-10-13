@@ -7,7 +7,15 @@ name: Dependabot review
 # SECURITY: the review is DIFF-ONLY. We check out the BASE branch (never the PR
 # head), and Claude is instructed to read the diff + changelogs only — never to
 # install, build, or execute the PR's dependency code. So no untrusted code runs
-# with secrets present.
+# with secrets present. The `--allowedTools` list below enforces this: Claude can
+# only read the PR, its diff, and the web, and post the comment.
+#
+# AUTH: Claude posts with the workflow's own GITHUB_TOKEN, not the Claude GitHub
+# App token. The action normally swaps an OIDC token for the App token, but
+# Anthropic's exchange rejects OIDC tokens from `pull_request_target` runs
+# ("401 Invalid OIDC token", anthropics/claude-code-action#713). Passing
+# `github_token` skips that exchange, so no `id-token` permission is needed.
+# Drop the override once #713 is fixed if the comment should come from claude[bot].
 #
 # Advisory only: posts a review comment with a recommendation; humans merge.
 # (Trivial patch/minor still auto-merge via dependabot-auto-merge.yml.)
@@ -20,7 +28,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  id-token: write # claude-code-action fetches its GitHub App token via OIDC
 
 jobs:
   review:
@@ -36,7 +43,13 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--max-turns 25"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Agent mode rejects bot actors unless they are allow-listed; the job
+          # `if` above already limits this workflow to Dependabot PRs.
+          allowed_bots: "dependabot[bot]"
+          claude_args: |
+            --max-turns 25
+            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),WebFetch"
           prompt: |
             Auto-review Dependabot PR #${{ github.event.pull_request.number }}
             ("${{ github.event.pull_request.title }}") in this repository.

@@ -118,9 +118,23 @@ async function writeNewFile(target, content, label) {
 
 /**
  * Replace the first match of `search` with `replacement` in the given file.
- * Returns true if a replacement was made.
+ * Returns true if a replacement was made. When `optional` is true, a missing
+ * file is treated as a skip; otherwise the script aborts with a clear error
+ * instead of an ENOENT stack trace.
  */
-async function patch(file, search, replacement, description) {
+async function patch(file, search, replacement, description, optional = false) {
+	if (!existsSync(file)) {
+		if (optional) {
+			skipped.push(
+				`${rel(file)} — ${description} (file does not exist on this branch)`,
+			);
+			return false;
+		}
+		console.error(
+			`error: required file missing: ${rel(file)} (${description}).`,
+		);
+		process.exit(1);
+	}
 	const original = await readFile(file, "utf8");
 	if (original.includes(replacement)) {
 		skipped.push(`${rel(file)} — ${description} (entry already present)`);

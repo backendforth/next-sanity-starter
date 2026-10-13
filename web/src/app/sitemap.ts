@@ -2,10 +2,7 @@ import type { MetadataRoute } from "next";
 import { cachedSitemapPages } from "@/sanity/cachedSanityQuery";
 import { fetchSiteLanguageSettings } from "@/sanity/fetchSanityData";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
-
-const BASE_URL = (
-	process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"
-).replace(/\/$/, "");
+import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
 /**
  * Refresh on tag invalidation (`pages`, `home`, `site-language-settings`, `site-pages`)
@@ -26,20 +23,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	for (const page of pages) {
 		for (const locale of siteLocale.localeIds) {
 			const pathname = pathUtils.localePath(page.path, locale);
-			const url = `${BASE_URL}${pathname === "/" ? "" : pathname}` || BASE_URL;
+			const url =
+				`${SITE_BASE_URL}${pathname === "/" ? "" : pathname}` || SITE_BASE_URL;
 
 			const languages: Record<string, string> = {};
 			for (const altLocale of siteLocale.localeIds) {
 				const altPath = pathUtils.localePath(page.path, altLocale);
 				languages[altLocale] =
-					`${BASE_URL}${altPath === "/" ? "" : altPath}` || BASE_URL;
+					`${SITE_BASE_URL}${altPath === "/" ? "" : altPath}` || SITE_BASE_URL;
 			}
 			const xDefaultPath = pathUtils.localePath(
 				page.path,
 				siteLocale.defaultLocale,
 			);
 			languages["x-default"] =
-				`${BASE_URL}${xDefaultPath === "/" ? "" : xDefaultPath}` || BASE_URL;
+				`${SITE_BASE_URL}${xDefaultPath === "/" ? "" : xDefaultPath}` ||
+				SITE_BASE_URL;
 
 			entries.push({
 				url,

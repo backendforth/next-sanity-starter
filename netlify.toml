@@ -29,6 +29,24 @@
   # Raise if the Next.js build runs out of memory on Netlify.
   NODE_OPTIONS = "--max-old-space-size=8192"
 
+# Canonical origin for `metadataBase`, canonical/hreflang links, `og:url`,
+# `sitemap.xml` and the sitemap reference in `robots.txt` — resolved in
+# `web/src/utils/siteUrl.ts`.
+#
+# Left unset, the resolver falls back to Netlify's own `URL` on a production
+# build, which is the site's primary domain and usually right. Set it once the
+# site has its real domain, so the canonical never depends on which domain
+# Netlify considers primary.
+#
+# Production context only, on purpose: `NEXT_PUBLIC_*` is inlined at BUILD time,
+# so a deploy preview built with this value would claim to be canonical for the
+# live domain. Previews instead fall through to `DEPLOY_PRIME_URL` and are
+# canonical to themselves; a deploy that resolves neither fails the build rather
+# than shipping a placeholder.
+#
+# [context.production.environment]
+#   NEXT_PUBLIC_SITE_URL = "https://your-domain.tld"
+
 # ── Security headers (baseline) ──────────────────────────────────────────────
 #
 # `X-Frame-Options` is intentionally NOT set: Sanity Presentation embeds the

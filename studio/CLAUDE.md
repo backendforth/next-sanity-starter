@@ -4,7 +4,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds Studio-specific gotchas
 
 ## Studio quirks (non-obvious)
 
-- Sanity Studio v5. Biome enforces **2 spaces + double quotes** in `studio/` (overriding the root tabs default).
+- Sanity Studio v6. Biome enforces **2 spaces + double quotes** in `studio/` (overriding the root tabs default).
 - `schemas/index.ts` is the gate — any new type is **invisible** to Studio and APIs until exported and added to `schemaTypes`. **YOU MUST** register every new schema there.
 - The sidebar does **NOT** auto-populate from `schemaTypes`. New document types need a structure item under `config/structure/items/` and registration in `config/structure/index.ts`.
 - `pnpm studio:generate` runs `sanity schema extract` AND `sanity typegen generate`. CI fails if either produces a diff. **Commit** `studio/schema.json` + `studio/sanity.types.gen.ts` in the same commit as the schema change.

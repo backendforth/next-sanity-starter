@@ -314,11 +314,13 @@ Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.
 
 ### Updating conventions on both branches
 
-1. Edit `AGENTS.md` (+ mirrors) on `main`.
-2. Commit and merge.
-3. `git checkout variant/document-level && git checkout main -- AGENTS.md CLAUDE.md web/CLAUDE.md studio/CLAUDE.md studio/schemas/objects/modules/CLAUDE.md web/src/components/modules/CLAUDE.md web/sanity/CLAUDE.md .cursor/rules/ .github/copilot-instructions.md`.
-4. Re-read this section and adjust if a real divergence appeared.
-5. Commit on `variant/document-level`.
+`AGENTS.md` and `.github/copilot-instructions.md` are identical on both branches — the notes above describe both. The other mirrors are not: the root and subtree `CLAUDE.md` files and `.cursor/rules/*.mdc` carry the variant's document-level i18n rules on `variant/document-level`. Carry a change over by cherry-picking it, never by copying files from `main` — a copy silently overwrites those variant rules.
+
+1. Edit `AGENTS.md` (+ mirrors) on `main` and commit.
+2. On `variant/document-level`: `git cherry-pick -x <commit>`.
+3. Resolve conflicts in the mirrors by keeping the variant's i18n lines and taking everything else from `main`. A conflict outside the i18n lines is drift — reconcile it.
+4. Re-read the notes above and fix a row if the branch contradicts it.
+5. Once both are merged, `git diff main variant/document-level -- AGENTS.md .github/copilot-instructions.md` must be empty.
 
 ## Definition of done
 

@@ -391,7 +391,7 @@ export function MediaVideoLoop({
 		/* Container-aware tier selection: `muxLoopHlsSrc` combines the DPR-
 		 * capped container size with `getNetworkAwareTierCeiling()` to pick
 		 * the highest tier this device + connection can comfortably serve,
-		 * up to the {@link LOOP_VIDEO_MAX_TIER} = 2160p ceiling, and pins
+		 * up to the {@link MUX_PLAYBACK_MAX_TIER} = 2160p ceiling, and pins
 		 * the manifest's min and max to that single tier so ABR can't ramp
 		 * up from a lower rendition. The first render (before the
 		 * ResizeObserver fires and `devicePixelRatio` snapshots) passes

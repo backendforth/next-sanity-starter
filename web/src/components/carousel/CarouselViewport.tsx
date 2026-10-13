@@ -9,6 +9,9 @@ import {
 	resolveSanityImageFieldForUrl,
 	urlForFetchedImage,
 } from "@/sanity/utils/sanityImageBuilder";
+import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
+import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
 import {
 	extractMuxPlaybackId,
 	muxThumbnailTimeSec,
@@ -59,6 +62,9 @@ function thumbnailUrlForSlide(slide: NormalizedSlide): string | null {
  * Reduced-motion users get a still carousel: autoplay is suspended but interaction works.
  */
 export function CarouselViewport({ slides, options }: Props) {
+	const locale =
+		useOptionalLanguage()?.currentLocale ??
+		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
 	const [reducedMotion, setReducedMotion] = useState(false);
 
 	useEffect(() => {
@@ -215,7 +221,7 @@ export function CarouselViewport({ slides, options }: Props) {
 						type="button"
 						onClick={scrollPrev}
 						disabled={!options.loop && !canScrollPrev}
-						aria-label="Previous slide"
+						aria-label={uiLabel("carouselPrev", locale)}
 						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
 					>
 						<svg
@@ -236,7 +242,7 @@ export function CarouselViewport({ slides, options }: Props) {
 						type="button"
 						onClick={scrollNext}
 						disabled={!options.loop && !canScrollNext}
-						aria-label="Next slide"
+						aria-label={uiLabel("carouselNext", locale)}
 						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
 					>
 						<svg
@@ -265,7 +271,7 @@ export function CarouselViewport({ slides, options }: Props) {
 								key={`dot-${slide.key}`}
 								type="button"
 								onClick={() => scrollTo(index)}
-								aria-label={`Go to slide ${index + 1}`}
+								aria-label={uiLabel("carouselGoTo", locale, { n: index + 1 })}
 								aria-current={isActive ? "true" : undefined}
 								className={clsx(
 									"h-2 w-2 rounded-full transition",
@@ -290,7 +296,7 @@ export function CarouselViewport({ slides, options }: Props) {
 									key={`thumb-${slide.key}`}
 									type="button"
 									onClick={() => scrollTo(index)}
-									aria-label={`Show slide ${index + 1}`}
+									aria-label={uiLabel("carouselShow", locale, { n: index + 1 })}
 									aria-current={isActive ? "true" : undefined}
 									className={clsx(
 										"relative aspect-video w-24 shrink-0 overflow-hidden rounded border transition",

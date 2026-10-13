@@ -2,6 +2,7 @@ import { ImageIcon } from "@sanity/icons/Image";
 import { defineType } from "sanity";
 
 import { MediaImagePreview } from "../../../components/previews/MediaImagePreview";
+import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const mediaImage = defineType({
   name: "media.image",
@@ -13,6 +14,7 @@ export const mediaImage = defineType({
       name: "image",
       title: "Image",
       type: "image",
+      description: IMAGE_COLOR_PROFILE_HINT,
       options: { hotspot: true },
       /** Requiredness is enforced by parents (e.g. `module.media` when `type === "image"`), not here — hidden nested fields would otherwise validate when the sibling mode is active. */
     },

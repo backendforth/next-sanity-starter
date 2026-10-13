@@ -18,7 +18,7 @@ export const trackerMatomo = defineType({
       name: "url",
       title: "Matomo URL",
       description:
-        "Base URL of your Matomo instance (e.g. https://analytics.example.com/). Add this host to Content-Security-Policy in netlify.toml.",
+        "Base URL of your Matomo instance (e.g. https://analytics.example.com/). Add its origin to the CSP_ANALYTICS_ORIGINS build variable of the web app, or the browser blocks it.",
       type: "url",
       validation: (rule) =>
         rule.custom((value, context) => {

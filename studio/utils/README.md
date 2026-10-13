@@ -8,7 +8,7 @@ This file **re-exports** **`PAGE_REFERENCES`** from **`schemas/constants/referen
 
 ## Multi-language setup
 
-1. **Languages** — Edit the **`siteLanguageSettings`** singleton (Settings → Site languages) in the Studio. Creating it the first time uses the schema **`initialValue`** (e.g. `en` + `de`, default `en`). If the document is missing or invalid, **`internationalizedArrayLanguagesFromClient`** falls back to a minimal **`en`** list only — keep that in sync with `web/src/i18n/fallbackSiteLocales.ts`. The **`internationalizedArray`** plugin reads languages live via **`config/sync/internationalizedArrayLanguages.ts`** (`sanity.config.ts`).
+1. **Languages** — Edit the **`siteLanguageSettings`** singleton (Settings → Site languages) in the Studio. Creating it the first time uses the schema **`initialValue`** (e.g. `en` + `de`, default `en`). If the document is missing or lists no language ids, **`internationalizedArrayLanguagesFromClient`** falls back to a minimal **`en`** list only — keep that in sync with `web/src/i18n/fallbackSiteLocales.ts`. The **`internationalizedArray`** plugin reads languages live via **`config/sync/internationalizedArrayLanguages.ts`** (`sanity.config.ts`), draft first, so a newly added language gets its tab before you publish the singleton (reload the Studio to pick it up).
 
 2. **Plugin** — `internationalizedArray` in **`sanity.config.ts`** lists which **field types** get the language UI (`string`, `richText`, `richTextMedia`, …). Add new field type names there if you introduce another translatable custom type.
 
@@ -37,3 +37,4 @@ To **copy content from production into development** on demand (e.g. refresh you
 - **`env.ts`** — wraps `projectId` and the resolved **`studioDataset`** for image URLs and similar.
 - **`imageUrl.ts`** — `@sanity/image-url` builder using `getStudioEnv()`.
 - **`validateSlug.ts`**, **`helpers.ts`**, **`defaultCookieSections.ts`** — validation and small helpers as used by schemas or structure.
+- **`titleSlugSource.ts`** — slug `options.source` that uses the first non-empty localized `title` (via **`firstLocalizedLabel.ts`**), so the slug's Generate button works on `internationalizedArrayString` titles.

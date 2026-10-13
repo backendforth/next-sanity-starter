@@ -15,6 +15,7 @@ import {
 	contentRefsFilterGroupClass,
 } from "@/src/components/navigation/navControlStyles";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
 import { cn } from "@/src/utils/cn";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -145,7 +146,7 @@ export function ModuleContentRefsClient({
 				<div className="flex flex-col gap-md sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
 					{showFilters ? (
 						<fieldset
-							aria-label="Filter by category"
+							aria-label={uiLabel("filterByCategory", locale)}
 							className={cn(
 								contentRefsFilterGroupClass,
 								"m-0 min-w-0 border-0 p-0",
@@ -157,7 +158,7 @@ export function ModuleContentRefsClient({
 								aria-pressed={categoryId === null}
 								onClick={() => setCategoryId(null)}
 							>
-								All
+								{uiLabel("filterAll", locale)}
 							</button>
 							{categoryOptions.map((cat) => (
 								<button
@@ -176,7 +177,7 @@ export function ModuleContentRefsClient({
 					) : null}
 					{showSort ? (
 						<fieldset
-							aria-label="Sort projects"
+							aria-label={uiLabel("sortProjects", locale)}
 							className={cn(
 								contentRefsFilterGroupClass,
 								"m-0 min-w-0 border-0 p-0",
@@ -188,7 +189,7 @@ export function ModuleContentRefsClient({
 								aria-pressed={sort === "newest"}
 								onClick={() => setSort("newest")}
 							>
-								Newest
+								{uiLabel("sortNewest", locale)}
 							</button>
 							<button
 								type="button"
@@ -196,7 +197,7 @@ export function ModuleContentRefsClient({
 								aria-pressed={sort === "az"}
 								onClick={() => setSort("az")}
 							>
-								A–Z
+								{uiLabel("sortAz", locale)}
 							</button>
 						</fieldset>
 					) : null}
@@ -204,7 +205,9 @@ export function ModuleContentRefsClient({
 			) : null}
 
 			{visibleItems.length === 0 ? (
-				<p className="text-small text-color-text-muted">No items to show.</p>
+				<p className="text-small text-color-text-muted">
+					{uiLabel("noItems", locale)}
+				</p>
 			) : (
 				<ul className="content-refs-grid grid list-none gap-xs p-0 sm:grid-cols-2 lg:grid-cols-3">
 					{visibleItems.map((item, index) => {

@@ -13,6 +13,9 @@ import type {
 } from "../types/pages";
 import { pickLocalizedString } from "../utils/sanityLocalizedText";
 
+type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+type SeoText = NonNullable<PageSeo>["title"];
+
 function firstNonEmpty(
 	...values: (string | null | undefined)[]
 ): string | undefined {
@@ -24,20 +27,44 @@ function firstNonEmpty(
 }
 
 /**
- * Merges local page `seo` with Sanity **site settings** fallback (`settingsSeo` from GROQ).
- * Empty strings are treated as missing so fallbacks apply.
+ * One SEO text field in `locale`. Plain strings predate the i18n SEO fields
+ * and apply to every locale until `migrate:seo-i18n` has run; any other shape
+ * resolves to nothing instead of breaking metadata (and with it prerender).
+ */
+function localizedSeoText(
+	value: SeoText | undefined,
+	locale: string | undefined,
+	siteLocale: SiteLocaleSlice | null | undefined,
+): string | undefined {
+	if (typeof value === "string") return value;
+	if (!Array.isArray(value)) return undefined;
+	return pickLocalizedString(value, locale, siteLocale);
+}
+
+/**
+ * Merges local page `seo` with Sanity **site settings** fallback (`settingsSeo` from GROQ),
+ * title and description resolved for `locale`. Empty strings are treated as
+ * missing so fallbacks apply.
  */
 export function mergePageAndSettingsSeo(
 	pageSeo: PageSeo,
 	settingsSeo: PageSeo,
+	locale?: string,
+	siteLocale?: SiteLocaleSlice | null,
 ): {
 	title?: string;
 	description?: string;
 	imageUrl?: string;
 } {
 	return {
-		title: firstNonEmpty(pageSeo?.title, settingsSeo?.title),
-		description: firstNonEmpty(pageSeo?.description, settingsSeo?.description),
+		title: firstNonEmpty(
+			localizedSeoText(pageSeo?.title, locale, siteLocale),
+			localizedSeoText(settingsSeo?.title, locale, siteLocale),
+		),
+		description: firstNonEmpty(
+			localizedSeoText(pageSeo?.description, locale, siteLocale),
+			localizedSeoText(settingsSeo?.description, locale, siteLocale),
+		),
 		imageUrl: firstNonEmpty(pageSeo?.imageUrl, settingsSeo?.imageUrl),
 	};
 }
@@ -55,19 +82,16 @@ export type ResolveSanityMetadataInput = {
 	siteName?: string;
 	/** Locale-agnostic path for the document (e.g. `"/"`, `"/about"`). Required for `alternates`. */
 	path?: string;
-	/** Active locale id for canonical URL. */
+	/** Active locale id for canonical URL and the localized SEO fields. */
 	currentLocale?: string;
 	/** Site locale config used to build `hreflang` entries for every available language. */
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+	siteLocale?: SiteLocaleSlice | null;
 };
 
 function buildAlternates(
 	path: string | undefined,
 	currentLocale: string | undefined,
-	siteLocale:
-		| Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">
-		| null
-		| undefined,
+	siteLocale: SiteLocaleSlice | null | undefined,
 ): Metadata["alternates"] | undefined {
 	if (!path || !currentLocale || !siteLocale) return undefined;
 	const pathUtils = createLanguagePathUtils(siteLocale);
@@ -97,7 +121,12 @@ export function resolveSanityMetadata({
 	currentLocale,
 	siteLocale,
 }: ResolveSanityMetadataInput): Metadata {
-	const merged = mergePageAndSettingsSeo(seo ?? null, settingsSeo ?? null);
+	const merged = mergePageAndSettingsSeo(
+		seo ?? null,
+		settingsSeo ?? null,
+		currentLocale,
+		siteLocale,
+	);
 	const metaTitle =
 		merged.title?.trim() || titleFallback.trim() || siteTitleFallback;
 	const description = merged.description?.trim() || undefined;
@@ -136,8 +165,8 @@ export type MetadataFromSanityPageDataInput = {
 	segmentFallback: string;
 	/** Site-wide SEO fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
 	settingsSeo?: PageSeo;
-	/** Locale config for `hreflang` alternates. */
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+	/** Locale config for `hreflang` alternates and SEO-field fallback order. */
+	siteLocale?: SiteLocaleSlice | null;
 	/** Locale-agnostic path (`/` for home, `/{slug}` for pages) — required for canonical + alternates. */
 	path?: string;
 	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */

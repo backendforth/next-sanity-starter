@@ -3,6 +3,7 @@ import { PlayIcon } from "@sanity/icons/Play";
 import { defineType, type PreviewValue } from "sanity";
 
 import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
+import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const moduleCarousel = defineType({
   name: "module.carousel",
@@ -34,6 +35,7 @@ export const moduleCarousel = defineType({
       name: "slides",
       title: "Slides",
       type: "array",
+      description: IMAGE_COLOR_PROFILE_HINT,
       hidden: ({ parent }) => parent?.imagesOnly === false,
       of: [
         {

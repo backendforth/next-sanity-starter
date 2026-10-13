@@ -3,8 +3,10 @@ import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
+import { titleSlugSource } from "../../utils/titleSlugSource";
 import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
 import { validateSlug } from "../../utils/validateSlug";
+import { NEWEST_FIRST_SUGGESTIONS } from "../constants/references";
 
 export const project = defineType({
   name: "project",
@@ -42,7 +44,15 @@ export const project = defineType({
       name: "categories",
       title: "Categories",
       type: "array",
-      of: [{ type: "reference", to: [{ type: "projectCategory" }] }],
+      of: [
+        {
+          type: "reference",
+          to: [{ type: "projectCategory" }],
+          options: {
+            ...NEWEST_FIRST_SUGGESTIONS,
+          },
+        },
+      ],
       group: "editorial",
     },
     {
@@ -53,6 +63,7 @@ export const project = defineType({
       type: "slug",
       options: {
         maxLength: 96,
+        source: titleSlugSource,
       },
       validation: validateSlug,
       group: "editorial",

@@ -12,6 +12,21 @@ export type TrackingConfig = {
 
 export type { AnalyticsLoadMode, AnalyticsTracker };
 
+/**
+ * Loaders turn these CMS values into script URLs, so a relative one would load
+ * from the site's own origin. Studio validation only runs in the editor; an
+ * imported or API-written document skips it.
+ */
+function isAbsoluteHttpUrl(value: string | null | undefined): boolean {
+	if (!value?.trim()) return false;
+	try {
+		const { protocol } = new URL(value.trim());
+		return protocol === "https:" || protocol === "http:";
+	} catch {
+		return false;
+	}
+}
+
 export function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
 	if (tracker.enabled === false) return false;
 
@@ -19,13 +34,17 @@ export function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
 		case "trackerGoogleAnalytics":
 			return Boolean(tracker.measurementId?.trim());
 		case "trackerMatomo":
-			return Boolean(tracker.url?.trim() && tracker.siteId?.trim());
+			return isAbsoluteHttpUrl(tracker.url) && Boolean(tracker.siteId?.trim());
 		case "trackerMicrosoftClarity":
 			return Boolean(tracker.projectId?.trim());
 		case "trackerPostHog":
-			return Boolean(tracker.apiKey?.trim() && tracker.apiHost?.trim());
+			return (
+				Boolean(tracker.apiKey?.trim()) && isAbsoluteHttpUrl(tracker.apiHost)
+			);
 		case "trackerPlausible":
-			return Boolean(tracker.domain?.trim() && tracker.scriptUrl?.trim());
+			return (
+				Boolean(tracker.domain?.trim()) && isAbsoluteHttpUrl(tracker.scriptUrl)
+			);
 		default:
 			return false;
 	}

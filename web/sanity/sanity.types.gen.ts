@@ -327,7 +327,7 @@ export type SeoPage = {
 
 export type LinkFunctions = {
   _type: "linkFunctions";
-  key: "scroll-to" | "open-modal" | "open-cookie-preferences";
+  key: "scroll-to" | "open-cookie-preferences";
   params?: string;
 };
 
@@ -1251,7 +1251,7 @@ export type ProjectBySlugQueryResult = {
               url?: string;
               blank?: boolean;
               func: {
-                key: "open-cookie-preferences" | "open-modal" | "scroll-to";
+                key: "open-cookie-preferences" | "scroll-to";
                 params: string | null;
               } | null;
               linkType: "linkFunction";
@@ -1282,7 +1282,7 @@ export type ProjectBySlugQueryResult = {
               url?: string;
               blank?: boolean;
               func: {
-                key: "open-cookie-preferences" | "open-modal" | "scroll-to";
+                key: "open-cookie-preferences" | "scroll-to";
                 params: string | null;
               } | null;
               linkType: "linkFunction";
@@ -1297,7 +1297,7 @@ export type ProjectBySlugQueryResult = {
               url?: string;
               blank?: boolean;
               func: {
-                key: "open-cookie-preferences" | "open-modal" | "scroll-to";
+                key: "open-cookie-preferences" | "scroll-to";
                 params: string | null;
               } | null;
               linkType: "linkFunction";
@@ -1327,7 +1327,7 @@ export type ProjectBySlugQueryResult = {
               url?: string;
               blank?: boolean;
               func: {
-                key: "open-cookie-preferences" | "open-modal" | "scroll-to";
+                key: "open-cookie-preferences" | "scroll-to";
                 params: string | null;
               } | null;
               linkType: "linkFunction";

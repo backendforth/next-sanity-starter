@@ -18,8 +18,7 @@ export type ResolvedNavRow =
 			id: string;
 			label: string;
 			kind: "button";
-			action: "open-modal" | "open-cookie-preferences";
-			params?: string | null;
+			action: "open-cookie-preferences";
 	  };
 
 /** Main menu row, inline language switch (`nav.languageSwitch`), or theme toggle (`nav.themeToggle`) from Studio. */
@@ -151,23 +150,12 @@ export function resolveNavMenuLink(
 			};
 		}
 
-		if (key === "open-modal") {
-			return {
-				id: rowId(link, index, idPrefix),
-				label,
-				kind: "button",
-				action: "open-modal",
-				params,
-			};
-		}
-
 		if (key === "open-cookie-preferences") {
 			return {
 				id: rowId(link, index, idPrefix),
 				label,
 				kind: "button",
 				action: "open-cookie-preferences",
-				params: null,
 			};
 		}
 

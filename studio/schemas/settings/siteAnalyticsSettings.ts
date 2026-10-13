@@ -17,25 +17,23 @@ function enabledTrackerCount(trackers: unknown): number {
 }
 
 /**
- * Whether the cookie banner is switched on, read from its singleton.
+ * Whether the cookie banner is switched on in any language.
  *
  * The two settings that decide whether anything is gated by consent live in
  * separate documents, so an editor can leave tracking completely ungated
  * without ever seeing the other half of the configuration. Reading across lets
- * us warn where the mistake is actually made.
+ * us warn where the mistake is actually made. On this branch the banner is one
+ * document per language (no fixed `_id`), so any draft or published variant
+ * with the banner on counts.
  */
 async function cookieBannerIsActive(
   context: ValidationContext,
 ): Promise<boolean> {
   const client = context.getClient({ apiVersion: "2024-01-01" });
-  const useCookieBanner = await client.fetch<boolean | null>(
-    `coalesce(
-      *[_id == "drafts.siteCookieBanner"][0].useCookieBanner,
-      *[_id == "siteCookieBanner"][0].useCookieBanner,
-      false
-    )`,
+  const activeBanners = await client.fetch<number>(
+    `count(*[_type == "siteCookieBanner" && useCookieBanner == true])`,
   );
-  return useCookieBanner === true;
+  return activeBanners > 0;
 }
 
 /** Analytics & tracking providers. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`). */

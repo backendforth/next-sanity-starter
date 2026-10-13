@@ -90,7 +90,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				locale={locale}
 				trackers={enabledTrackers}
 			/>
-			<SiteTrackingShell />
+			<SiteTrackingShell locale={locale} />
 		</LanguageProvider>
 	);
 }

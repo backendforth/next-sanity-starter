@@ -23,7 +23,6 @@ export type SanityDatasetResolveEnv = {
 	/** Web: inlined at build when prefixed with `NEXT_PUBLIC_`. */
 	NEXT_PUBLIC_SANITY_DATASET?: string | undefined;
 	SANITY_STUDIO_PROJECT_ID?: string | undefined;
-	NEXT_PUBLIC_SANITY_PROJECT_ID?: string | undefined;
 	SANITY_STUDIO_DATASET_DEVELOPMENT?: string | undefined;
 	SANITY_STUDIO_DATASET_PRODUCTION?: string | undefined;
 	SANITY_STUDIO_DEPLOYMENT_TARGET?: string | undefined;

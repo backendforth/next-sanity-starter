@@ -29,8 +29,11 @@ import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
 	LOOP_POSTER_MAX_WIDTH_PX,
+	type MuxResolutionTier,
 	muxLoopHlsSrc,
 	muxThumbnailRequestWidthPx,
+	muxTierBelow,
+	resolveMuxLoopTier,
 } from "@/src/utils/muxPlayback";
 import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
@@ -101,6 +104,13 @@ export type MediaVideoLoopProps = {
  * this deadline the loop attaches with the ceiling URL anyway.
  */
 const ATTACH_WITHOUT_MEASUREMENT_MS = 300;
+
+/**
+ * Stall rescue deadline: a `waiting` stall longer than this means the pinned tier outruns the
+ * connection (Safari has no Network Information API to pre-throttle the pick, and Chrome's
+ * `downlink` is ignored). The loop then re-attaches one tier lower, per window, down to 720p.
+ */
+const LOOP_STALL_RESCUE_MS = 4000;
 
 export function MediaVideoLoop({
 	media,
@@ -343,6 +353,11 @@ export function MediaVideoLoop({
 		[playbackId, posterPayload, media, thumbWidthPx],
 	);
 
+	/* Stall rescue ceiling (see {@link LOOP_STALL_RESCUE_MS}): absolute, so a later resize
+	 * can't undo a downgrade by re-picking against a bigger container. */
+	const [rescueTierCeiling, setRescueTierCeiling] = useState<
+		MuxResolutionTier | undefined
+	>(undefined);
 	const hlsSrc = useMemo(() => {
 		if (!playbackId) return "";
 		const vw = dims && !dims.isFallback ? dims.width : 16;
@@ -362,8 +377,51 @@ export function MediaVideoLoop({
 			containerWidthPx: slotWidthPx,
 			containerHeightPx: slotHeightPx,
 			devicePixelRatio,
+			tierCeiling: rescueTierCeiling,
 		});
-	}, [playbackId, dims, slotWidthPx, slotHeightPx, devicePixelRatio]);
+	}, [
+		playbackId,
+		dims,
+		slotWidthPx,
+		slotHeightPx,
+		devicePixelRatio,
+		rescueTierCeiling,
+	]);
+
+	const stallTimerRef = useRef<number | undefined>(undefined);
+	const disarmStallTimer = useCallback(() => {
+		if (stallTimerRef.current !== undefined) {
+			window.clearTimeout(stallTimerRef.current);
+			stallTimerRef.current = undefined;
+		}
+	}, []);
+	useEffect(() => disarmStallTimer, [disarmStallTimer]);
+	/* `waiting` arms the deadline, `playing` / `pause` disarm it. On expiry the pinned tier
+	 * steps one rung down; the new `hlsSrc` goes through `useMuxHlsSource`'s normal re-attach,
+	 * and the loop restarts from its first frame at the lighter tier. */
+	const onVideoWaiting = useCallback(() => {
+		if (stallTimerRef.current !== undefined || !playbackId) return;
+		stallTimerRef.current = window.setTimeout(() => {
+			stallTimerRef.current = undefined;
+			const current = resolveMuxLoopTier({
+				videoWidthPx: dims && !dims.isFallback ? dims.width : 16,
+				videoHeightPx: dims && !dims.isFallback ? dims.height : 9,
+				containerWidthPx: slotWidthPx,
+				containerHeightPx: slotHeightPx,
+				devicePixelRatio,
+				tierCeiling: rescueTierCeiling,
+			});
+			const below = muxTierBelow(current);
+			if (below !== current) setRescueTierCeiling(below);
+		}, LOOP_STALL_RESCUE_MS);
+	}, [
+		playbackId,
+		dims,
+		slotWidthPx,
+		slotHeightPx,
+		devicePixelRatio,
+		rescueTierCeiling,
+	]);
 
 	const objectCoverVideoPx =
 		dims && !dims.isFallback
@@ -604,10 +662,18 @@ export function MediaVideoLoop({
 		let removed = false;
 		const onGesture = () => {
 			if (!el.paused) return;
-			if (stackedSlide && !isActiveRef.current) return;
-			/* Off-screen loops stay paused on purpose (IntersectionObserver). */
+			/* Inactive loops (carousel slides) and off-screen loops stay paused on purpose. */
+			if (!isActiveRef.current) return;
 			const r = el.getBoundingClientRect();
-			if (r.width === 0 || r.bottom <= 0 || r.top >= window.innerHeight) return;
+			if (
+				r.width === 0 ||
+				r.bottom <= 0 ||
+				r.top >= window.innerHeight ||
+				r.right <= 0 ||
+				r.left >= window.innerWidth
+			) {
+				return;
+			}
 			/* Same engagement guard as `tryPlay`. */
 			if (!el.currentSrc && !el.src) return;
 			if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
@@ -626,7 +692,7 @@ export function MediaVideoLoop({
 		document.addEventListener("touchend", onGesture);
 		document.addEventListener("keydown", onGesture);
 		return remove;
-	}, [reducedMotion, playbackId, stackedSlide]);
+	}, [reducedMotion, playbackId]);
 
 	if (!playbackId || !poster) {
 		return null;
@@ -704,7 +770,12 @@ export function MediaVideoLoop({
 				 * instead of waiting for `canplay`. */
 				onLoadedMetadata={tryPlayIfActive}
 				onCanPlay={tryPlayIfActive}
-				onPlaying={hidePosterWhenReady}
+				onPlaying={() => {
+					disarmStallTimer();
+					hidePosterWhenReady();
+				}}
+				onWaiting={onVideoWaiting}
+				onPause={disarmStallTimer}
 				onTimeUpdate={
 					onTimeUpdate
 						? (e) => {

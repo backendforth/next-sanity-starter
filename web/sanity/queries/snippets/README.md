@@ -42,7 +42,7 @@ export const myQuery = `*[_type == "article" && slug.current == $slug][0]{
 const doc = await client.fetch(myQuery, { slug: "hello" });
 ```
 
-Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, LQIP, playback ids).
+Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, playback ids, Studio poster frame).
 
 ## Singleton settings
 

@@ -206,6 +206,27 @@ const TIER_RANK: Record<MuxResolutionTier, number> = {
 	"240p": 0,
 };
 
+/** Rank → tier, aligned with {@link TIER_RANK}. */
+const TIER_LADDER: readonly MuxResolutionTier[] = [
+	"270p",
+	"360p",
+	"480p",
+	"540p",
+	"720p",
+	"1080p",
+	"1440p",
+	"2160p",
+];
+
+/** A stall rescue never steps below this rung — the visual cliff for a full-width video. */
+const TIER_BELOW_FLOOR: MuxResolutionTier = "720p";
+
+/** One rung below `tier`; a tier at or below {@link TIER_BELOW_FLOOR} is returned unchanged. */
+export function muxTierBelow(tier: MuxResolutionTier): MuxResolutionTier {
+	if (TIER_RANK[tier] <= TIER_RANK[TIER_BELOW_FLOOR]) return tier;
+	return TIER_LADDER[TIER_RANK[tier] - 1] ?? tier;
+}
+
 /** The lower of two tiers. */
 function minResolutionTier(
 	a: MuxResolutionTier,
@@ -332,7 +353,9 @@ export function computeObjectCoverTargetPx(args: {
  * **ignored**: Chrome's estimate decays toward ~1.5 Mbps on idle connections
  * and is capped at 10 Mbps (fingerprinting mitigation), so on real fiber
  * lines it routinely reported < 2 Mbps and pinned fullscreen heroes to 720p.
- * The full player's stall rescue (`MediaVideo`) catches genuinely slow lines.
+ * Genuinely slow lines are caught by the stall rescues instead: `MediaVideo`
+ * unpins its resolution, `MediaVideoLoop` steps its pinned tier down
+ * ({@link muxTierBelow}).
  */
 export function getNetworkAwareTierCeiling(): MuxResolutionTier {
 	if (typeof navigator === "undefined") return MUX_PLAYBACK_MAX_TIER;
@@ -378,18 +401,20 @@ export function getNetworkAwareTierCeiling(): MuxResolutionTier {
  * Result: a desktop visitor on wifi sees up to the asset's top rendition, a
  * phone on LTE sees 1080p–1440p, a phone on 3G sees 720p — all without ramp-up.
  */
-export function muxLoopHlsSrc(
-	playbackId: string,
-	args: {
-		videoWidthPx?: number;
-		videoHeightPx?: number;
-		containerWidthPx?: number;
-		containerHeightPx?: number;
-		devicePixelRatio?: number;
-		/** Override the rounding rule; defaults to {@link isFinePointerDisplay}. */
-		roundTierUp?: boolean;
-	},
-): string {
+export type MuxLoopTierArgs = {
+	videoWidthPx?: number;
+	videoHeightPx?: number;
+	containerWidthPx?: number;
+	containerHeightPx?: number;
+	devicePixelRatio?: number;
+	/** Override the rounding rule; defaults to {@link isFinePointerDisplay}. */
+	roundTierUp?: boolean;
+	/** Extra ceiling min-ed into the pick — the loop's stall rescue. */
+	tierCeiling?: MuxResolutionTier;
+};
+
+/** The single pinned tier {@link muxLoopHlsSrc} resolves for these args. */
+export function resolveMuxLoopTier(args: MuxLoopTierArgs): MuxResolutionTier {
 	const cw = args.containerWidthPx ?? 0;
 	const ch = args.containerHeightPx ?? 0;
 	const vw = args.videoWidthPx ?? 16;
@@ -407,9 +432,15 @@ export function muxLoopHlsSrc(
 		}).maxResolutionTier;
 	}
 
-	const networkTier = getNetworkAwareTierCeiling();
-	const resolutionTier = minResolutionTier(containerTier, networkTier);
+	const tier = minResolutionTier(containerTier, getNetworkAwareTierCeiling());
+	return args.tierCeiling ? minResolutionTier(tier, args.tierCeiling) : tier;
+}
 
+export function muxLoopHlsSrc(
+	playbackId: string,
+	args: MuxLoopTierArgs,
+): string {
+	const resolutionTier = resolveMuxLoopTier(args);
 	return muxHlsSrc(playbackId, {
 		renditionOrderDesc: true,
 		minResolutionTier: resolutionTier,
@@ -468,12 +499,16 @@ export function resolveMuxPlayerResolution(args: {
 	const vh =
 		args.videoHeightPx && args.videoHeightPx > 0 ? args.videoHeightPx : 9;
 
-	/* Orient the screen box to the video (fullscreen playback rotates on
-	 * phones), then take the `object-fit: contain` rendered height — the
-	 * resolution the ladder must actually cover. */
+	/* Touch devices rotate for fullscreen playback, so orient their screen box
+	 * to the video. Desktop screens stay as they are: a portrait video on a
+	 * landscape monitor is contained by the monitor's height. Then take the
+	 * `object-fit: contain` rendered height — what the ladder must cover. */
+	const finePointer = isFinePointerDisplay();
 	const landscapeVideo = vw >= vh;
-	const sw = landscapeVideo ? Math.max(rawW, rawH) : Math.min(rawW, rawH);
-	const sh = landscapeVideo ? Math.min(rawW, rawH) : Math.max(rawW, rawH);
+	const longSide = Math.max(rawW, rawH);
+	const shortSide = Math.min(rawW, rawH);
+	const sw = finePointer ? rawW : landscapeVideo ? longSide : shortSide;
+	const sh = finePointer ? rawH : landscapeVideo ? shortSide : longSide;
 	const renderedH = sw > 0 && sh > 0 ? Math.min(sh, (sw * vh) / vw) : 0;
 
 	/* Same rounding split as the loops: desktop-class displays get the covering
@@ -481,7 +516,7 @@ export function resolveMuxPlayerResolution(args: {
 	const displayTier =
 		renderedH > 0
 			? minResolutionTier(
-					isFinePointerDisplay()
+					finePointer
 						? muxCoveringResolutionTierFromHeight(renderedH)
 						: muxResolutionTierFromHeight(renderedH),
 					MUX_PLAYBACK_MAX_TIER,

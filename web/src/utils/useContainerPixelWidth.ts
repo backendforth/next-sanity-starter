@@ -31,12 +31,10 @@ export function useContainerPixelWidth<T extends HTMLElement>(): [
 
 		measure();
 
-		const ro = new ResizeObserver((entries) => {
-			const rect = entries[0]?.contentRect;
-			if (!rect) return;
-			if (rect.width > 0) setWidthPx(Math.ceil(rect.width));
-			if (rect.height > 0) setHeightPx(Math.ceil(rect.height));
-		});
+		/* Re-measure with the same `getBoundingClientRect` box instead of the observer's
+		 * `contentRect` (which excludes padding and ignores transforms), so the first observer
+		 * callback reports the same size and doesn't flip a consumer's derived URL. */
+		const ro = new ResizeObserver(measure);
 		ro.observe(el);
 		return () => ro.disconnect();
 	}, []);

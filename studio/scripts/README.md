@@ -88,7 +88,7 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 **What it does**
 
-Wraps plain-string `seo.title` / `seo.description` (on `seo.page` and `seo.fallback`) into one `internationalizedArrayString` / `internationalizedArrayText` entry for the site's default language (`siteLanguageSettings.defaultLanguageId`; override with `--language <id>`). Empty strings are unset; values that are already arrays are skipped, so re-running is safe. Uses the `raw` perspective, so drafts are migrated too, and writes everything in one transaction.
+Wraps plain-string `seo.title` / `seo.description` (on `seo.page` and `seo.fallback`) into one `internationalizedArrayString` / `internationalizedArrayText` entry for the site's default language (`siteLanguageSettings.defaultLanguageId`; override with `--language <id>`). Empty strings are unset; values that are already arrays are skipped, so re-running is safe. Uses the `raw` perspective, so drafts are migrated too, and writes everything in one transaction. Each patch is tied to the revision that was read: if an editor changes a document while the prompt is open, nothing is written and the script asks you to run it again. `--language` must name an id from `siteLanguageSettings.availableLanguages`.
 
 **Why**
 

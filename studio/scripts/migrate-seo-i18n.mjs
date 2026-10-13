@@ -8,6 +8,8 @@
  * (`siteLanguageSettings.defaultLanguageId`, override with `--language <id>`).
  * Empty strings are unset. Values that are already arrays are skipped, so the
  * script is safe to re-run. Drafts are migrated alongside published documents.
+ * Every patch is tied to the revision that was read, so a concurrent edit
+ * aborts the run instead of being overwritten.
  *
  * Usage:
  *   pnpm run migrate:seo-i18n
@@ -34,6 +36,13 @@ const skipConfirm = args.includes("--yes") || args.includes("-y");
 const languageArgIndex = args.indexOf("--language");
 const languageArg =
   languageArgIndex >= 0 ? args[languageArgIndex + 1]?.trim() : undefined;
+
+/* A bare `--language` would otherwise take the next flag as the language
+ * (`--language --dry-run`) or, at the end, silently fall back to the default. */
+if (languageArgIndex >= 0 && (!languageArg || languageArg.startsWith("-"))) {
+  console.error("--language needs a language id, e.g. `--language de`.");
+  process.exit(1);
+}
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID?.trim();
 const dataset =
@@ -95,12 +104,13 @@ function ask(question) {
 }
 
 const languageSettings = await readClient.fetch(
-  `*[_id == "siteLanguageSettings"][0]{ defaultLanguageId, "first": availableLanguages[0].id }`,
+  `*[_id == "siteLanguageSettings"][0]{ defaultLanguageId, "available": availableLanguages[].id }`,
 );
+const availableLanguages = (languageSettings?.available ?? []).filter(Boolean);
 const language =
   languageArg ||
   languageSettings?.defaultLanguageId?.trim() ||
-  languageSettings?.first?.trim();
+  availableLanguages[0]?.trim();
 
 if (!language) {
   console.error(
@@ -109,9 +119,22 @@ if (!language) {
   process.exit(1);
 }
 
+/* An id the Studio does not know would write entries no language tab shows. */
+if (
+  languageArg &&
+  availableLanguages.length > 0 &&
+  !availableLanguages.includes(languageArg)
+) {
+  console.error(
+    `Unknown language "${languageArg}". siteLanguageSettings has: ${availableLanguages.join(", ")}.`,
+  );
+  process.exit(1);
+}
+
 const documents = await readClient.fetch(
   `*[defined(seo.title) || defined(seo.description)]{
     _id,
+    _rev,
     _type,
     "title": seo.title,
     "description": seo.description
@@ -183,10 +206,13 @@ if (!skipConfirm) {
   }
 }
 
+/* Each patch only applies to the revision that was read. An edit made while
+ * the confirmation prompt was open fails the whole transaction instead of
+ * being overwritten with the stale string read above. */
 const transaction = writeClient.transaction();
 for (const { doc, patch } of pending) {
   transaction.patch(doc._id, (p) => {
-    let next = p;
+    let next = p.ifRevisionId(doc._rev);
     if (Object.keys(patch.set).length > 0) next = next.set(patch.set);
     if (patch.unset.length > 0) next = next.unset(patch.unset);
     return next;
@@ -198,6 +224,12 @@ try {
 } catch (error) {
   const message = error instanceof Error ? error.message : "Unknown error";
   console.error(`\nMigration failed, nothing was written: ${message}`);
+  if (error?.statusCode === 409 || /revision/i.test(message)) {
+    console.error(
+      "\nA document changed after it was read. Run the script again to migrate the current values.",
+    );
+    process.exit(1);
+  }
   console.error(
     "\nNeed write access:\n" +
       "  • `sanity login` in studio/ (uses CLI session, not SANITY_AUTH_TOKEN from .env)\n" +

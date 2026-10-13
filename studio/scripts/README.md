@@ -84,6 +84,27 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 ---
 
+## `migrate-seo-i18n.mjs`
+
+**What it does**
+
+Wraps plain-string `seo.title` / `seo.description` (on `seo.page` and `seo.fallback`) into one `internationalizedArrayString` / `internationalizedArrayText` entry for the site's default language (`siteLanguageSettings.defaultLanguageId`; override with `--language <id>`). Empty strings are unset; values that are already arrays are skipped, so re-running is safe. Uses the `raw` perspective, so drafts are migrated too, and writes everything in one transaction.
+
+**Why**
+
+- The SEO fields were plain strings, so meta title and description could not be translated. Datasets created before the switch hold strings the Studio now flags as invalid; the web resolver still reads them until you migrate.
+
+**Commands**
+
+| Where | Command |
+|-------|---------|
+| `studio/` | `pnpm run migrate:seo-i18n -- --dry-run` (preview) |
+| `studio/` | `pnpm run migrate:seo-i18n` (asks before writing; `--yes` skips the prompt) |
+
+Targets `SANITY_STUDIO_DATASET` from `studio/.env` (else `development`) — run it once per dataset.
+
+---
+
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary

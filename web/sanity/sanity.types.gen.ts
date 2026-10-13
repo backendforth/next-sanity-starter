@@ -75,8 +75,8 @@ export type SanityImageAssetReference = {
 
 export type SeoPage = {
   _type: "seo.page";
-  title?: string;
-  description?: string;
+  title?: InternationalizedArrayString;
+  description?: InternationalizedArrayText;
   image?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -239,8 +239,8 @@ export type SiteSettings = {
 
 export type SeoFallback = {
   _type: "seo.fallback";
-  title?: string;
-  description?: string;
+  title?: InternationalizedArrayString;
+  description?: InternationalizedArrayText;
   image?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -482,6 +482,12 @@ export type Home = {
   seo?: SeoPage;
 };
 
+export type InternationalizedArrayText = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayTextValue
+>;
+
 export type LinkFunctions = {
   _type: "linkFunctions";
   key: "scroll-to" | "open-modal" | "open-cookie-preferences";
@@ -497,6 +503,12 @@ export type InternationalizedArrayRichTextMediaValue = {
 export type InternationalizedArrayRichTextValue = {
   _type: "internationalizedArrayRichTextValue";
   value?: RichText;
+  language: string;
+};
+
+export type InternationalizedArrayTextValue = {
+  _type: "internationalizedArrayTextValue";
+  value?: string;
   language: string;
 };
 
@@ -777,9 +789,11 @@ export type AllSanitySchemaTypes =
   | Link
   | Page
   | Home
+  | InternationalizedArrayText
   | LinkFunctions
   | InternationalizedArrayRichTextMediaValue
   | InternationalizedArrayRichTextValue
+  | InternationalizedArrayTextValue
   | InternationalizedArrayStringValue
   | MuxVideoAssetReference
   | MuxVideo
@@ -849,8 +863,8 @@ export type SiteSettingsSeoFallbackQueryResult =
       imageUrl: null;
     }
   | {
-      title: string | null;
-      description: string | null;
+      title: InternationalizedArrayString | null;
+      description: InternationalizedArrayText | null;
       imageUrl: string | null;
     }
   | null;

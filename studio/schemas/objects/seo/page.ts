@@ -1,4 +1,25 @@
-import { defineType } from "sanity";
+import { defineType, type Rule } from "sanity";
+
+type LocalizedEntry = { _key?: string; language?: string; value?: unknown };
+
+/**
+ * Length warning for `internationalizedArray*` fields: names the first
+ * language whose value runs over `max` (search engines truncate beyond it).
+ */
+function localizedMaxLengthWarning(max: number, label: string) {
+  return (rule: Rule) =>
+    rule
+      .custom((entries: LocalizedEntry[] | undefined) => {
+        for (const entry of entries ?? []) {
+          const value = typeof entry?.value === "string" ? entry.value : "";
+          if (value.length <= max) continue;
+          const language = entry.language || entry._key || "?";
+          return `${label} (${language}) is ${value.length} characters — keep it under ${max}.`;
+        }
+        return true;
+      })
+      .warning();
+}
 
 export const seoPage = defineType({
   name: "seo.page",
@@ -8,16 +29,15 @@ export const seoPage = defineType({
     {
       name: "title",
       title: "Meta title",
-      type: "string",
+      type: "internationalizedArrayString",
       description: "Override for <title> and Open Graph title.",
-      validation: (rule) => rule.warning().max(60),
+      validation: localizedMaxLengthWarning(60, "Meta title"),
     },
     {
       name: "description",
       title: "Meta description",
-      type: "text",
-      rows: 3,
-      validation: (rule) => rule.warning().max(160),
+      type: "internationalizedArrayText",
+      validation: localizedMaxLengthWarning(160, "Meta description"),
     },
     {
       name: "image",
@@ -38,16 +58,15 @@ export const seoFallback = defineType({
     {
       name: "title",
       title: "Meta title",
-      type: "string",
+      type: "internationalizedArrayString",
       description: "Default <title> and Open Graph title.",
-      validation: (rule) => rule.warning().max(60),
+      validation: localizedMaxLengthWarning(60, "Meta title"),
     },
     {
       name: "description",
       title: "Meta description",
-      type: "text",
-      rows: 3,
-      validation: (rule) => rule.warning().max(160),
+      type: "internationalizedArrayText",
+      validation: localizedMaxLengthWarning(160, "Meta description"),
     },
     {
       name: "image",

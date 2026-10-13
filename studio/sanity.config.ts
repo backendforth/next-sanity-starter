@@ -88,7 +88,7 @@ export default defineConfig({
       languages: internationalizedArrayLanguagesFromClient,
       /** Plugin only accepts a static list; runtime default comes from `siteLanguageSettings` in the fetch above. */
       defaultLanguages: [],
-      fieldTypes: ["string", "richText", "richTextMedia"],
+      fieldTypes: ["string", "text", "richText", "richTextMedia"],
       /** Hide bulk “Add missing languages”; languages come only from Site languages (`siteLanguageSettings`). */
       buttonAddAll: false,
     }),

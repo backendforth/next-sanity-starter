@@ -6,10 +6,15 @@
 import type { IntlRichTextEntry, IntlStringEntry } from "../utils";
 import type { ContentModule, ModuleMediaData } from "./modules";
 
-/** Resolved seo / seo.fallback projection from GROQ (snippets/seo.ts). */
+/**
+ * Resolved seo / seo.fallback projection from GROQ (snippets/seo.ts). Title
+ * and description are `internationalizedArray*` — resolve them per locale in
+ * `resolveSanityMetadata`. A plain string is pre-migration data
+ * (`pnpm --filter studio migrate:seo-i18n`) and is used as-is for every locale.
+ */
 export type PageSeo = {
-	title?: string | null;
-	description?: string | null;
+	title?: IntlStringEntry[] | string | null;
+	description?: IntlStringEntry[] | string | null;
 	imageUrl?: string | null;
 } | null;
 

@@ -15,7 +15,7 @@ export default function ErrorBoundary({
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
 				<h2 className="page-title">Something went wrong</h2>
 				<p className="text-color-text-muted">
 					An unexpected error occurred. Please try again.
@@ -35,7 +35,7 @@ export default function ErrorBoundary({
 						Back to home
 					</a>
 				</div>
-			</main>
+			</div>
 		</div>
 	);
 }

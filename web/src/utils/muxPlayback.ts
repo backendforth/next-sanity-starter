@@ -279,6 +279,14 @@ export function computeObjectCoverTargetPx(args: {
  * `effectiveType` is a coarse synthetic bucket the browser updates
  * conservatively; `downlink` is the raw Mbps estimate. We honour
  * `saveData` (the explicit user opt-in to data-frugality) above both.
+ *
+ * Thresholds are set against the real bitrates of the Mux `premium` H.264
+ * ladder (2160p ~ 31 Mbps, 1440p ~ 19, 1080p ~ 13, 720p ~ 5) — but note
+ * Chrome **caps the reported `downlink` at 10 Mbps** (fingerprinting
+ * mitigation), so any threshold above the cap can never trigger and "at the
+ * cap" cannot be told apart from a gigabit line. Everything >= 8 therefore
+ * gets the hard ceiling; a line that is genuinely too slow for the pinned
+ * tier stalls rather than degrades, same as on Safari above.
  */
 export function getNetworkAwareTierCeiling(): MuxResolutionTier {
 	if (typeof navigator === "undefined") return LOOP_VIDEO_MAX_TIER;
@@ -301,7 +309,7 @@ export function getNetworkAwareTierCeiling(): MuxResolutionTier {
 	if (typeof dl === "number") {
 		if (dl < 2) return "720p";
 		if (dl < 5) return "1080p";
-		if (dl < 15) return "1440p";
+		if (dl < 8) return "1440p";
 	}
 
 	return LOOP_VIDEO_MAX_TIER;

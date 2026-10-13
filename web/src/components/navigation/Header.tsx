@@ -10,6 +10,7 @@ import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { isCurrentNavHref } from "@/src/i18n/paths";
+import { uiLabel } from "@/src/i18n/uiLabels";
 import {
 	type MainMenuEntry,
 	resolveMainMenuEntries,
@@ -97,22 +98,25 @@ function MainMenuItems({
 function MobileMenuButton({
 	open,
 	menuId,
+	locale,
 	onToggle,
 }: {
 	open: boolean;
 	menuId: string;
+	locale: string;
 	onToggle: () => void;
 }) {
+	const label = uiLabel(open ? "menuClose" : "menuOpen", locale);
 	return (
 		<button
 			type="button"
 			className="inline-flex items-center justify-center rounded-sm p-xs text-color-text hover:bg-color-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent md:hidden"
 			aria-expanded={open}
 			aria-controls={menuId}
-			aria-label={open ? "Close menu" : "Open menu"}
+			aria-label={label}
 			onClick={onToggle}
 		>
-			<span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+			<span className="sr-only">{label}</span>
 			{open ? <CloseIcon /> : <HamburgerIcon />}
 		</button>
 	);
@@ -161,7 +165,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-xs sm:gap-sm">
 					<nav
 						className="hidden flex-wrap items-center justify-end gap-md md:flex"
-						aria-label="Main"
+						aria-label={uiLabel("mainNav", currentLocale)}
 					>
 						<MainMenuItems
 							entries={entries}
@@ -171,7 +175,12 @@ export function Header({ mainMenu, siteTitle }: Props) {
 					</nav>
 
 					<div className="flex md:hidden">
-						<MobileMenuButton open={open} menuId={menuId} onToggle={toggle} />
+						<MobileMenuButton
+							open={open}
+							menuId={menuId}
+							locale={currentLocale}
+							onToggle={toggle}
+						/>
 					</div>
 				</div>
 			</div>
@@ -183,7 +192,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				>
 					<nav
 						className="mx-auto flex max-w-container flex-col gap-md px-md py-sm sm:px-container"
-						aria-label="Main"
+						aria-label={uiLabel("mainNav", currentLocale)}
 					>
 						<MainMenuItems
 							entries={entries}

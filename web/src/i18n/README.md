@@ -22,6 +22,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 | **`config.ts`** | `AppLocale` (string), `LOCALE_HEADER_NAME`. |
 | **`site-locales.ts`** | `LOCALE_HEADER_NAME` for `proxy.ts` / headers. |
 | **`paths.ts`** | `isCurrentNavHref`, path normalization (no locale coupling). |
+| **`skipLinkLabel.ts`**, **`uiLabels.ts`** | Fixed UI copy not authored in Sanity (skip link, `aria-label`s, error / 404 fallback, content-refs controls) per locale, English fallback. Add a locale here when you add one in `siteLanguageSettings`. |
 | **`../proxy.ts`** (`web/src/proxy.ts`) | Rewrites unprefixed URLs to `/{defaultLocale}/…`, sets `LOCALE_HEADER_NAME`. Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. |
 
 ## Flow

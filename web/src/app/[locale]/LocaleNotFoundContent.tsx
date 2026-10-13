@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import type { ErrorSettingsDocument } from "@/sanity/types/errorSettings";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import { useLanguage } from "@/src/contexts/LanguageContext";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
 	/** `errorSettings` per locale id — one document per language. */
@@ -21,7 +22,8 @@ export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {
 		errorSettingsByLocale[defaultLocale] ??
 		null;
 
-	const title = errorSettings?.notFoundTitle?.trim() || "Page not found";
+	const title =
+		errorSettings?.notFoundTitle?.trim() || uiLabel("notFoundTitle", locale);
 	const body = errorSettings?.notFoundBody ?? [];
 
 	return (
@@ -32,14 +34,14 @@ export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {
 					<RichTextMedia value={body} />
 				) : (
 					<p className="text-color-text-muted">
-						The page you are looking for does not exist or has been moved.
+						{uiLabel("notFoundBody", locale)}
 					</p>
 				)}
 				<Link
 					href={localePath("/", locale)}
 					className="inline-flex items-center gap-xs text-color-link hover:text-color-hover"
 				>
-					Back to home
+					{uiLabel("backHome", locale)}
 				</Link>
 			</div>
 		</div>

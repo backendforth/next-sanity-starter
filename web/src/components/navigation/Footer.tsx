@@ -10,7 +10,7 @@ type Props = {
 	locale: string;
 	footerMenu?: NavMenuLink[] | null;
 	pathUtils: Pick<LanguagePathUtils, "localePath">;
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -24,9 +24,9 @@ export function Footer({ locale, footerMenu, pathUtils, siteLocale }: Props) {
 
 	return (
 		<footer className="mt-auto border-t border-color-border-subtle bg-color-bg">
-			<div className="mx-auto flex w-full max-w-container flex-col gap-4 px-6 py-8 sm:px-8">
+			<div className="mx-auto flex w-full max-w-container flex-col gap-sm px-md py-md sm:px-container">
 				<nav
-					className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2"
+					className="flex flex-col gap-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-sm sm:gap-y-xs"
 					aria-label="Footer"
 				>
 					{rows.map((row) => (

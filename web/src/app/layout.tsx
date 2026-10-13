@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
-// import localFont from "next/font/local";
 import {
 	fetchSiteLanguageSettings,
 	fetchSiteSettingsFavicon,
@@ -10,80 +10,33 @@ import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
 import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
-import { DocumentBootScript } from "@/src/components/theme/DocumentBootScript";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
-// ── Fonts ─────────────────────────────────────────────────────────────────────
-//
-// next/font/local handles subsetting, preload, and font-face injection
-// automatically — no manual @font-face or <link rel="preload"> needed.
-//
-// Setup (once real woff2 files are placed in `web/src/assets/fonts/`):
-//   1. Drop in your font files, e.g.:
-//        web/src/assets/fonts/YourSans-Regular.woff2
-//        web/src/assets/fonts/YourSans-Bold.woff2
-//        web/src/assets/fonts/YourSerif-Regular.woff2
-//   2. Uncomment the block below and update paths + weights.
-//   3. Add the .variable classes to <html> (see below).
-//   4. Remove @font-face rules from fonts.css — next/font replaces them.
-//
-// `display` trade-offs (CSS Fonts spec):
-//   - "swap"     → ~100 ms block, then fallback, swap to custom font when ready.
-//                  Always shows the custom font on the first visit. `next/font`
-//                  generates a metrics-matched fallback (`adjustFontFallback`,
-//                  on by default), so the swap costs no layout shift and text
-//                  paints straight away. Recommended default.
-//   - "block"    → up to ~3 s invisible text (FOIT), then fallback, swap to
-//                  custom font when it arrives. No FOUT, no fallback flash.
-//                  With preload + same-origin WOFF2 the invisible window is
-//                  often <200 ms — but it is a real hold on first paint, and on
-//                  a cold cache or slow link it is very perceivable. `main` ran
-//                  "block" and moved off it for exactly that reason (a5d9827).
-//   - "auto"     → browser decides; Chrome / Firefox / Safari currently behave
-//                  like "block" but the spec leaves room. Set an explicit value
-//                  for deterministic behavior.
-//   - "optional" → ~100 ms block, then fallback for the WHOLE page session if
-//                  the font is not ready. Font is fetched in the background and
-//                  cached for subsequent visits. Zero CLS, but on a cold cache
-//                  the custom font typically only shows starting from the
-//                  second page load — even with preload.
-//   - "fallback" → 100 ms block + 3 s swap window, then locks fallback for the
-//                  rest of the session. Middle ground.
-//
-// To keep the fallback→custom swap unnoticeable with "swap":
-//   - Subset the font to the glyphs you actually use (Latin / Latin-Ext).
-//   - Prefer a variable font (1 file covers all weights → 1 preload).
-//   - Only set `preload: true` for above-the-fold weights; italic / display
-//     cuts that are not in the first viewport should use `preload: false`.
-//   - Leave `adjustFontFallback` on (the next/font default) — it generates the
-//     metrics-matched fallback that makes the swap cost no layout shift.
-//
-// const sans = localFont({
-//   src: [
-//     { path: "../../assets/fonts/YourSans-Regular.woff2", weight: "400", style: "normal" },
-//     { path: "../../assets/fonts/YourSans-Bold.woff2",    weight: "700", style: "normal" },
-//   ],
-//   variable: "--font-family-sans",
-//   display: "swap",
-//   preload: true,    // emits <link rel="preload"> for the first weight in `src`
-// });
-//
-// const serif = localFont({
-//   src: "../../assets/fonts/YourSerif-Regular.woff2",
-//   variable: "--font-family-serif",
-//   display: "swap",
-//   preload: false,   // serif headlines are usually not above-the-fold
-// });
-//
-// Usage on <html>: className={`... ${sans.variable} ${serif.variable}`}
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`).
+ *
+ * `display: "swap"` paints text immediately in the metrics-adjusted fallback that
+ * `next/font` generates (`adjustFontFallback`), so first paint isn't held for up
+ * to 3s of invisible text (`block`) and the swap itself causes no layout shift.
+ */
+const geistSans = Geist({
+	subsets: ["latin"],
+	variable: "--font-family-sans",
+	display: "swap",
+});
+
+/** Tags, buttons, inline code — `font-mono` utilities. */
+const geistMono = Geist_Mono({
+	subsets: ["latin"],
+	variable: "--font-family-mono",
+	display: "swap",
+});
 
 /**
- * Root shell metadata. The tab title (`siteSettings.title` + `%s | …` template)
- * is owned by `app/[locale]/layout.tsx`.
+ * Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template).
  *
  * The icons come from `siteSettings.favicon` for the default locale, with every
  * size derived from that one asset on the Sanity CDN (`siteFaviconIcons`).
@@ -105,6 +58,31 @@ export async function generateMetadata(): Promise<Metadata> {
 		...(icons ? { icons } : {}),
 	};
 }
+
+/**
+ * Tiny blocking inline script — runs synchronously before hydration.
+ *
+ * 1. Applies the stored theme override (`localStorage["color-scheme"]`) as
+ *    `data-theme="light" | "dark"` on <html> **before** the first paint.
+ *    Without JS, `<html>` carries no attribute and the `:root` light defaults
+ *    in `variables/colors.css` apply — OS preference is deliberately ignored.
+ * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
+ *
+ * The lazy-image `img-loaded` class is added by `MediaImage` itself via
+ * `useEffect` — managing it from this inline script raced React 19 streaming
+ * hydration on cached images and produced "tree hydrated but attributes didn't
+ * match" warnings. Doing it through React's render flow keeps SSR and the
+ * first client paint identical.
+ *
+ * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
+ */
+const bootScript = `(function(){
+  try{
+    var t=localStorage.getItem('color-scheme');
+    document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');
+  }catch(e){}
+  document.documentElement.classList.add('js-enabled');
+})();`;
 
 /**
  * Root shell only — avoid `headers()` here (keeps static routes static where possible).
@@ -140,12 +118,14 @@ export default async function RootLayout({
 	return (
 		<html
 			lang={siteLocale.defaultLocale}
-			// Add font variables here once next/font/local is wired up:
-			// className={`h-full antialiased ${sans.variable} ${serif.variable}`}
-			className="h-full antialiased"
+			className={`h-full antialiased ${geistSans.variable} ${geistMono.variable}`}
 			suppressHydrationWarning
 		>
 			<head>
+				{/* Theme class + lazy-image fade-in — must run before first paint */}
+				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: controlled inline script, no user input */}
+				<script dangerouslySetInnerHTML={{ __html: bootScript }} />
+
 				{/* ── Resource Hints ─────────────────────────────────────────────────── */}
 				{/* Sanity image CDN — used by every MediaImage */}
 				<link rel="preconnect" href="https://cdn.sanity.io" />
@@ -157,11 +137,9 @@ export default async function RootLayout({
 				<link rel="preconnect" href="https://image.mux.com" />
 				<link rel="dns-prefetch" href="https://image.mux.com" />
 
-				{/* Font preloads are emitted automatically by next/font/local — nothing to add here. */}
+				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				{/* Theme + js-enabled — injected in <head> via useServerInsertedHTML */}
-				<DocumentBootScript />
 				<ThemeProvider>{children}</ThemeProvider>
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />

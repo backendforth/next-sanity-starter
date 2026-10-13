@@ -75,8 +75,7 @@ export default async function Home({ params }: PageProps) {
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{data.modules?.length ? (
-					<section className="flex flex-col gap-4">
-						<h2>Modules</h2>
+					<section className="flex flex-col gap-sm">
 						<ModulesRenderer
 							modules={data.modules}
 							documentId={data._id}

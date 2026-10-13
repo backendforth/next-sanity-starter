@@ -25,6 +25,8 @@ const ModuleCarousel = dynamic(() =>
 	import("./ModuleCarousel").then((m) => m.ModuleCarousel),
 );
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 type ModuleContextProps = {
 	/** Active route locale id — required for `module.contentRefs` href building. */
 	locale: string;
@@ -43,6 +45,8 @@ type Props = ModuleContextProps & {
 
 const IS_DEV = process.env.NODE_ENV === "development";
 
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
 function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	if (!IS_DEV) {
 		console.warn(
@@ -52,7 +56,7 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 		return null;
 	}
 	return (
-		<div className="rounded-md border border-dashed border-color-warning p-4 text-sm text-color-warning">
+		<div className="rounded-md border border-dashed border-color-warning p-sm text-sm text-color-warning">
 			<strong className="block">{getSanityModuleLabel(moduleType)}</strong>
 			<span className="block">
 				No frontend renderer for this module type yet.
@@ -60,6 +64,8 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 		</div>
 	);
 }
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 function renderModuleChild(
 	mod: ContentModule,

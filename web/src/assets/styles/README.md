@@ -21,7 +21,8 @@ It is **imported twice**: in **`tokens.css`** (before sizes/typography) and in *
 |---------------|------|
 | `variables/colors.css` | `--color-*`; dark via `prefers-color-scheme` |
 | `variables/sizes.css` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
-| `variables/typography.css` | type scale; same `theme(--breakpoint-*)` tiers |
+| `typography/fonts.css` | Geist / Geist Mono stacks (`next/font/google` in `app/layout.tsx`) |
+| `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`); tiers via `theme(--breakpoint-*)` |
 | `variables/typography-clamp.css` | optional fluid `clamp()` — import manually if needed |
 | `variables/typography-variable-fonts.css` | optional variable-font axes (`--font-variation-settings-*`, `--font-feature-settings-*`) — import manually if needed |
 | `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); **screens** from `breakpoints.css` `@theme` |

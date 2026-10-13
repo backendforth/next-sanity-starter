@@ -1,55 +1,71 @@
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+/**
+ * Resolve a human-readable label for a Sanity `link` object (Nav, Portable Text).
+ *
+ * `link.title` is now an `internationalizedArrayString` (per-locale entries). For internal
+ * links we fall back to the referenced document title (also localized). External links fall
+ * back to the URL, function links to the function key — both as a last resort before the
+ * literal "Link" placeholder.
+ *
+ * Plain `string` is accepted on both fields for forward-compat with the document-level i18n
+ * variant (one document per language → `reference->title` is a plain string).
+ */
 
-import {
-	type IntlStringEntry,
-	pickLocalizedString,
-} from "./sanityLocalizedText";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import type { IntlStringEntry } from "./sanityLocalizedText";
+import { pickLocalizedString } from "./sanityLocalizedText";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
-function localizedOrPlainTitle(
-	value: IntlStringEntry[] | string | null | undefined,
-	locale: string,
-	siteLocale?: SiteLocaleSlice | null,
+type LocalizableLabel = IntlStringEntry[] | string | null | undefined;
+
+function trimToUndefined(value: string | undefined): string | undefined {
+	if (!value) return undefined;
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function pickLabel(
+	value: LocalizableLabel,
+	locale: string | undefined,
+	siteLocale: SiteLocaleSlice | null | undefined,
 ): string | undefined {
-	if (typeof value === "string") {
-		const t = value.trim();
-		return t.length > 0 ? t : undefined;
+	if (Array.isArray(value)) {
+		return trimToUndefined(pickLocalizedString(value, locale, siteLocale));
 	}
-	return pickLocalizedString(value, locale, siteLocale);
+	if (typeof value === "string") {
+		return trimToUndefined(value);
+	}
+	return undefined;
 }
 
 export type ResolveLinkLabelInput = {
-	/** Link override (`internationalizedArrayString` or legacy plain string). */
-	linkTitle?: IntlStringEntry[] | string | null;
-	/** Referenced document title (i18n array or plain string on document-level variant). */
-	referenceTitle?: IntlStringEntry[] | string | null;
-	locale: string;
-	siteLocale?: SiteLocaleSlice | null;
-	/** External URL when link title is empty. */
+	linkTitle?: LocalizableLabel;
+	referenceTitle?: LocalizableLabel;
 	externalUrl?: string | null;
+	functionKey?: string | null;
+	locale?: string;
+	siteLocale?: SiteLocaleSlice | null;
+	/** Last-resort literal when no other source produced a usable label. */
 	literalFallback?: string;
 };
 
 /**
- * Nav / link label: localized link title, then referenced page title, then URL or fallback.
+ * Order: explicit link title → referenced document title → external URL → function key → fallback.
  */
 export function resolveLinkLabel({
 	linkTitle,
 	referenceTitle,
+	externalUrl,
+	functionKey,
 	locale,
 	siteLocale,
-	externalUrl,
 	literalFallback = "Link",
 }: ResolveLinkLabelInput): string {
-	const override = localizedOrPlainTitle(linkTitle, locale, siteLocale);
-	if (override) return override;
-
-	const ref = localizedOrPlainTitle(referenceTitle, locale, siteLocale);
-	if (ref) return ref;
-
-	const url = typeof externalUrl === "string" ? externalUrl.trim() : "";
-	if (url.length > 0) return url;
-
-	return literalFallback;
+	return (
+		pickLabel(linkTitle, locale, siteLocale) ??
+		pickLabel(referenceTitle, locale, siteLocale) ??
+		trimToUndefined(externalUrl ?? undefined) ??
+		trimToUndefined(functionKey ?? undefined) ??
+		literalFallback
+	);
 }

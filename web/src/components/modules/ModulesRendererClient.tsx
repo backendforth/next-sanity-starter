@@ -57,7 +57,7 @@ export function ModulesRendererClient({
 	);
 
 	return (
-		<div className="flex flex-col gap-10" data-sanity={containerSanityAttr}>
+		<div className="flex flex-col gap-lg" data-sanity={containerSanityAttr}>
 			{modules.map((m) => (
 				<div key={m._key}>{m.rendered}</div>
 			))}

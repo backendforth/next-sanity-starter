@@ -15,14 +15,14 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 | File | Export | Content |
 |------|--------|---------|
 | `modules/index.ts` | `modulesQuery` | Full `modules[]{ ... }` |
-| `modules/text.ts` | `moduleTextQuery` | `module.text` (i18n title + body using `richTextMediaQuery`) |
+| `modules/text.ts` | `moduleTextQuery` | `module.text` (title + body using `richTextMediaQuery`) |
 | `modules/media.ts` | `moduleMediaQuery` | `module.media` |
 | `modules/carousel.ts` | `moduleCarouselQuery` | `module.carousel` |
-| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` |
+| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, `selection`, resolved `references`) |
 
 ## Usage
 
-- **Ready-made page queries:** `queries/pages/` — `homeQuery`, `pageBySlugQuery` embed `modulesQuery`.
+- **Ready-made page queries:** `queries/pages/` — `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery` embed `modulesQuery`.
 - **Snippets:** `queries/snippets/` — `linkQuery`, `pageSeoQuery`, settings, …
 
 ## Adding a new module in Studio

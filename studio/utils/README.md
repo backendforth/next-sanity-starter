@@ -37,3 +37,4 @@ To **copy content from production into development** on demand (e.g. refresh you
 - **`env.ts`** — wraps `projectId` and the resolved **`studioDataset`** for image URLs and similar.
 - **`imageUrl.ts`** — `@sanity/image-url` builder using `getStudioEnv()`.
 - **`validateSlug.ts`**, **`helpers.ts`**, **`defaultCookieSections.ts`** — validation and small helpers as used by schemas or structure.
+- **`titleSlugSource.ts`** — slug `options.source` that uses the first non-empty localized `title` (via **`firstLocalizedLabel.ts`**), so the slug's Generate button works on `internationalizedArrayString` titles.

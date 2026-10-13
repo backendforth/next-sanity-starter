@@ -72,6 +72,8 @@ Reusable **`type: "object"`** types for image and Mux video live under **`object
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
 
+Fields that take an image upload (the `media.image` image, both video posters, `module.carousel` slides) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
+
 ## 8. Content modules (`module.*`)
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:

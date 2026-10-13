@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
-import { VisualEditing } from "next-sanity/visual-editing";
 import {
 	fetchSiteLanguageSettings,
 	fetchSiteSettingsFavicon,
 } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
-import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
@@ -140,12 +139,7 @@ export default async function RootLayout({
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />
 				) : null}
-				{isDraft ? (
-					<>
-						<VisualEditing />
-						<DisableDraftMode />
-					</>
-				) : null}
+				{isDraft ? <LazyDraftModeOverlays /> : null}
 			</body>
 		</html>
 	);

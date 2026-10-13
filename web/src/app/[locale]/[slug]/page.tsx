@@ -10,6 +10,7 @@ import {
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
+import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
@@ -75,6 +76,11 @@ export default async function Page({ params }: PageProps) {
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
+			<LocaleAlternates
+				locale={locale}
+				path={`/${slug}`}
+				translations={data.translations}
+			/>
 			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-sm">

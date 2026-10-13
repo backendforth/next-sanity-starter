@@ -64,7 +64,7 @@ export const fetchHomeDocument = cache(
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: homeQuery,
-			tags: [SANITY_CACHE_TAGS.home(locale)],
+			tags: [SANITY_CACHE_TAGS.home(locale), SANITY_CACHE_TAGS.homeAll],
 			params: { locale },
 			...options,
 		});
@@ -92,7 +92,7 @@ export const fetchWorkDocument = cache(
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: workQuery,
-			tags: [SANITY_CACHE_TAGS.work(locale)],
+			tags: [SANITY_CACHE_TAGS.work(locale), SANITY_CACHE_TAGS.workAll],
 			params: { locale },
 			...options,
 		});

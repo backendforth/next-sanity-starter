@@ -113,7 +113,7 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
 
 ## 9. Mux / media
 

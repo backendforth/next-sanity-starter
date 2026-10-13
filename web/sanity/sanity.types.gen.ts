@@ -918,7 +918,7 @@ export type ProjectSlugsQueryResult = Array<{
 
 // Source: sanity/queries/snippets/sitemap.ts
 // Variable: sitemapPagesQuery
-// Query: *[  _type == "home" ||  _type == "work" ||  (_type == "page" && defined(slug.current)) ||  (_type == "project" && defined(slug.current))]{  _id,  _type,  _updatedAt,  language,  "slug": select(    _type in ["home", "work"] => null,    slug.current  ),  "path": select(    _type == "home" => "/",    _type == "work" => "/work",    _type == "project" => "/work/" + slug.current,    "/" + slug.current  )}
+// Query: *[  _type == "home" ||  _type == "work" ||  (_type == "page" && defined(slug.current)) ||  (_type == "project" && defined(slug.current))]{  _id,  _type,  _updatedAt,  language,  "slug": select(    _type in ["home", "work"] => null,    slug.current  ),  "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" => "/work/" + slug.current,  "/" + slug.current),  "translations": select(  _type in ["home", "work"] => *[_type == ^._type && defined(language)]{    language,    "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" => "/work/" + slug.current,  "/" + slug.current)  },  *[_type == "translation.metadata" && references(^._id)][0].translations[].value->{    language,    "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" => "/work/" + slug.current,  "/" + slug.current)  })}
 export type SitemapPagesQueryResult = Array<
   | {
       _id: string;
@@ -927,6 +927,31 @@ export type SitemapPagesQueryResult = Array<
       language: string | null;
       slug: null;
       path: "/";
+      translations:
+        | Array<{
+            language: string;
+            path: "/";
+          }>
+        | Array<
+            | {
+                language: string | null;
+                path: null;
+              }
+            | {
+                language: string | null;
+                path: "/";
+              }
+            | {
+                language: string | null;
+                path: "/work";
+              }
+            | {
+                language: string | null;
+                path: string;
+              }
+            | null
+          >
+        | null;
     }
   | {
       _id: string;
@@ -935,6 +960,25 @@ export type SitemapPagesQueryResult = Array<
       language: string | null;
       slug: string;
       path: string;
+      translations: Array<
+        | {
+            language: string | null;
+            path: null;
+          }
+        | {
+            language: string | null;
+            path: "/";
+          }
+        | {
+            language: string | null;
+            path: "/work";
+          }
+        | {
+            language: string | null;
+            path: string;
+          }
+        | null
+      > | null;
     }
   | {
       _id: string;
@@ -943,6 +987,25 @@ export type SitemapPagesQueryResult = Array<
       language: string | null;
       slug: string;
       path: string;
+      translations: Array<
+        | {
+            language: string | null;
+            path: null;
+          }
+        | {
+            language: string | null;
+            path: "/";
+          }
+        | {
+            language: string | null;
+            path: "/work";
+          }
+        | {
+            language: string | null;
+            path: string;
+          }
+        | null
+      > | null;
     }
   | {
       _id: string;
@@ -951,6 +1014,31 @@ export type SitemapPagesQueryResult = Array<
       language: string | null;
       slug: null;
       path: "/work";
+      translations:
+        | Array<{
+            language: string;
+            path: "/work";
+          }>
+        | Array<
+            | {
+                language: string | null;
+                path: null;
+              }
+            | {
+                language: string | null;
+                path: "/";
+              }
+            | {
+                language: string | null;
+                path: "/work";
+              }
+            | {
+                language: string | null;
+                path: string;
+              }
+            | null
+          >
+        | null;
     }
 >;
 
@@ -963,7 +1051,7 @@ declare global {
     '*[_type == "siteCookieBanner" && language == $locale][0]{\n  _id,\n  language,\n  useCookieBanner,\n  consentModal,\n  preferencesModal\n}': SiteCookieBannerLayoutQueryResult;
     '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current,\n  language\n}': PageSlugsQueryResult;
     '*[_type == "project" && defined(slug.current)]{\n  "slug": slug.current,\n  language\n}': ProjectSlugsQueryResult;
-    '*[\n  _type == "home" ||\n  _type == "work" ||\n  (_type == "page" && defined(slug.current)) ||\n  (_type == "project" && defined(slug.current))\n]{\n  _id,\n  _type,\n  _updatedAt,\n  language,\n  "slug": select(\n    _type in ["home", "work"] => null,\n    slug.current\n  ),\n  "path": select(\n    _type == "home" => "/",\n    _type == "work" => "/work",\n    _type == "project" => "/work/" + slug.current,\n    "/" + slug.current\n  )\n}': SitemapPagesQueryResult;
+    '*[\n  _type == "home" ||\n  _type == "work" ||\n  (_type == "page" && defined(slug.current)) ||\n  (_type == "project" && defined(slug.current))\n]{\n  _id,\n  _type,\n  _updatedAt,\n  language,\n  "slug": select(\n    _type in ["home", "work"] => null,\n    slug.current\n  ),\n  "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" => "/work/" + slug.current,\n  "/" + slug.current\n),\n  "translations": select(\n  _type in ["home", "work"] => *[_type == ^._type && defined(language)]{\n    language,\n    "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" => "/work/" + slug.current,\n  "/" + slug.current\n)\n  },\n  *[_type == "translation.metadata" && references(^._id)][0].translations[].value->{\n    language,\n    "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" => "/work/" + slug.current,\n  "/" + slug.current\n)\n  }\n)\n}': SitemapPagesQueryResult;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

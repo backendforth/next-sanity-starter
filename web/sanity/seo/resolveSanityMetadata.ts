@@ -1,16 +1,23 @@
 import type { Metadata } from "next";
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import {
+	createLanguagePathUtils,
+	type TranslationPath,
+	translationPathsByLocale,
+} from "@/src/i18n/siteLocalePathUtils";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
 import type {
+	DocumentTranslation,
 	HomeDocument,
 	PageDocument,
 	PageSeo,
 	ProjectDocument,
 	WorkDocument,
 } from "../types/pages";
+
+type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
 function firstNonEmpty(
 	...values: (string | null | undefined)[]
@@ -56,30 +63,52 @@ export type ResolveSanityMetadataInput = {
 	path?: string;
 	/** Active locale id for canonical URL. */
 	currentLocale?: string;
-	/** Site locale config used to build `hreflang` entries for every available language. */
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+	/** Site locale config — which `hreflang` ids are valid and which is `x-default`. */
+	siteLocale?: SiteLocaleSlice | null;
+	/** Published language variants of the document (`translationsQuery`) for `hreflang`. */
+	translations?: readonly DocumentTranslation[] | null;
 };
+
+/**
+ * `hreflang` map for one document: an absolute URL per published language
+ * variant, plus `x-default` → the default-language variant when there is one.
+ * Each language has its own document and slug here, so only variants that
+ * exist are listed — never the current path under every prefix. `self` always
+ * counts, so a document without linked translations still points at itself.
+ */
+export function hreflangLanguages(
+	self: { language: string; path: string },
+	translations: readonly TranslationPath[] | null | undefined,
+	siteLocale: SiteLocaleSlice,
+): Record<string, string> {
+	const byLocale = translationPathsByLocale(
+		[self, ...(translations ?? [])],
+		createLanguagePathUtils(siteLocale),
+	);
+	const languages: Record<string, string> = {};
+	for (const [id, path] of Object.entries(byLocale)) {
+		languages[id] = `${SITE_BASE_URL}${path}`;
+	}
+	const defaultPath = byLocale[siteLocale.defaultLocale];
+	if (defaultPath) languages["x-default"] = `${SITE_BASE_URL}${defaultPath}`;
+	return languages;
+}
 
 function buildAlternates(
 	path: string | undefined,
 	currentLocale: string | undefined,
-	siteLocale:
-		| Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">
-		| null
-		| undefined,
+	siteLocale: SiteLocaleSlice | null | undefined,
+	translations: readonly DocumentTranslation[] | null | undefined,
 ): Metadata["alternates"] | undefined {
 	if (!path || !currentLocale || !siteLocale) return undefined;
 	const pathUtils = createLanguagePathUtils(siteLocale);
-	const canonicalPath = pathUtils.localePath(path, currentLocale);
-	const languages: Record<string, string> = {};
-	for (const id of siteLocale.localeIds) {
-		languages[id] = `${SITE_BASE_URL}${pathUtils.localePath(path, id)}`;
-	}
-	languages["x-default"] =
-		`${SITE_BASE_URL}${pathUtils.localePath(path, siteLocale.defaultLocale)}`;
 	return {
-		canonical: `${SITE_BASE_URL}${canonicalPath}`,
-		languages,
+		canonical: `${SITE_BASE_URL}${pathUtils.localePath(path, currentLocale)}`,
+		languages: hreflangLanguages(
+			{ language: currentLocale, path },
+			translations,
+			siteLocale,
+		),
 	};
 }
 
@@ -95,6 +124,7 @@ export function resolveSanityMetadata({
 	path,
 	currentLocale,
 	siteLocale,
+	translations,
 }: ResolveSanityMetadataInput): Metadata {
 	const merged = mergePageAndSettingsSeo(seo ?? null, settingsSeo ?? null);
 	const metaTitle =
@@ -102,7 +132,12 @@ export function resolveSanityMetadata({
 	const description = merged.description?.trim() || undefined;
 	const ogImage = merged.imageUrl?.trim() || undefined;
 	const resolvedSiteName = siteName || siteTitleFallback;
-	const alternates = buildAlternates(path, currentLocale, siteLocale);
+	const alternates = buildAlternates(
+		path,
+		currentLocale,
+		siteLocale,
+		translations,
+	);
 
 	return {
 		title: metaTitle,
@@ -136,7 +171,7 @@ export type MetadataFromSanityPageDataInput = {
 	/** Site-wide SEO fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
 	settingsSeo?: PageSeo;
 	/** Locale config for `hreflang` alternates. */
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+	siteLocale?: SiteLocaleSlice | null;
 	/** Locale-agnostic path (`/` for home, `/{slug}` for pages) — required for canonical + alternates. */
 	path?: string;
 	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */
@@ -167,6 +202,7 @@ export function metadataFromSanityPageData({
 		path,
 		currentLocale: locale,
 		siteLocale: siteLocale ?? null,
+		translations: data.translations,
 		...(brand ? { siteTitleFallback: brand, siteName: brand } : {}),
 	});
 }

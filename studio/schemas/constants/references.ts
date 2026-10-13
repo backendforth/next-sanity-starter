@@ -1,3 +1,5 @@
+import type { ReferenceFilterResolverContext } from "sanity";
+
 /**
  * Routable document types for internal links. Extend when adding new page types.
  */
@@ -11,6 +13,28 @@ export const PROJECT_REFERENCES = [{ type: "project" }] as const;
 
 export const PROJECT_REFERENCE_FILTER =
   '_type == "project" && defined(slug.current)';
+
+export const PROJECT_CATEGORY_REFERENCE_FILTER = '_type == "projectCategory"';
+
+/**
+ * Narrows a reference picker to the language of the document being edited.
+ * Every translatable type carries `language` (`TRANSLATABLE_SCHEMA_TYPES` in
+ * `sanity.config.ts`), so without this a German nav or page body could link
+ * the English variant of a page. Documents without a language keep `filter`.
+ */
+export function sameLanguageReferenceFilter(
+  filter: string | ((context: ReferenceFilterResolverContext) => string),
+) {
+  return (context: ReferenceFilterResolverContext) => {
+    const base = typeof filter === "function" ? filter(context) : filter;
+    const language = (context.document as { language?: unknown }).language;
+    if (typeof language !== "string" || !language) return { filter: base };
+    return {
+      filter: `(${base}) && language == $language`,
+      params: { language },
+    };
+  };
+}
 
 export const CONTENT_REF_SOURCE_SCOPES = ["all", "pages", "projects"] as const;
 export type ContentRefSourceScope = (typeof CONTENT_REF_SOURCE_SCOPES)[number];

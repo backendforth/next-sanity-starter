@@ -4,6 +4,7 @@ import {
 	FALLBACK_SITE_LOCALE_CONFIG,
 	type SiteLocaleConfig,
 } from "@/src/i18n/fallbackSiteLocales";
+import { EMBEDDED_CONTENT_TAGS, SANITY_CACHE_TAGS } from "./cacheTags";
 import { client, isSanityConfigured } from "./client";
 import { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
@@ -39,24 +40,6 @@ export const cachedSanityQuery = cache(async <T>(query: string) => {
 	return { data };
 });
 
-// ── Tag constants (kept in sync with `/api/revalidate`) ─────────────────────
-
-export const SANITY_CACHE_TAGS = {
-	home: "home",
-	work: "work",
-	pages: "pages",
-	projects: "projects",
-	pageSlug: (slug: string) => `page-${slug}`,
-	projectSlug: (slug: string) => `project-${slug}`,
-	sitemap: "site-pages",
-	siteLanguageSettings: "site-language-settings",
-	siteSettings: "site-settings",
-	siteNav: "site-nav",
-	siteCookieBanner: "site-cookie-banner",
-	siteAnalyticsSettings: "site-analytics-settings",
-	errorSettings: "error-settings",
-} as const;
-
 // ── Page-by-slug ────────────────────────────────────────────────────────────
 
 /**
@@ -75,7 +58,7 @@ export const cachedPageDocumentBySlug = cache(async (slug: string) => {
 		[`page-${slug}`],
 		{
 			revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-			tags: [`page-${slug}`, SANITY_CACHE_TAGS.pages],
+			tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 		},
 	);
 	const data = await fetchPage();
@@ -89,7 +72,7 @@ const fetchHomeDocumentCached = unstable_cache(
 	["home-document"],
 	{
 		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-		tags: [SANITY_CACHE_TAGS.home],
+		tags: [SANITY_CACHE_TAGS.home, ...EMBEDDED_CONTENT_TAGS],
 	},
 );
 

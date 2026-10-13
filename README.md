@@ -187,7 +187,7 @@ Set on the host: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` (optional),
 
 `pnpm studio:deploy` ships to Sanity's hosted Studio (`*.sanity.studio`). The deploy script forces `SANITY_STUDIO_DEPLOYMENT_TARGET=production`.
 
-Configure the **Revalidate webhook** in Sanity Manage → API → Webhooks, targeting `https://<your-site>/api/revalidate` with the same `SANITY_REVALIDATE_SECRET` (signed delivery).
+Configure the **Revalidate webhook** in Sanity Manage → API → Webhooks, targeting `https://<your-site>/api/revalidate` with the same `SANITY_REVALIDATE_SECRET` (signed delivery). Projection `{_id, _type, slug}`; the document types it acts on (and which cache tags each one purges) are `WEBHOOK_DOCUMENT_TYPES` in `web/sanity/cacheTags.ts`.
 
 ### Any other host (Vercel, Docker, …)
 

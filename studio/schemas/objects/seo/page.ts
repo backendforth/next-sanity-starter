@@ -1,4 +1,5 @@
 import { defineType } from "sanity";
+import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const seoPage = defineType({
   name: "seo.page",
@@ -23,6 +24,7 @@ export const seoPage = defineType({
       name: "image",
       title: "Social / OG image",
       type: "image",
+      description: IMAGE_COLOR_PROFILE_HINT,
       options: {
         hotspot: true,
       },
@@ -53,6 +55,7 @@ export const seoFallback = defineType({
       name: "image",
       title: "Social / OG image",
       type: "image",
+      description: IMAGE_COLOR_PROFILE_HINT,
       options: {
         hotspot: true,
       },

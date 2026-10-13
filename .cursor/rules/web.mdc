@@ -8,12 +8,12 @@ Next.js 16 App Router. RSC by default; `"use client"` only when needed (state, e
 
 Hard rules:
 
-- Thread `{ locale, siteLocale }` through every render path that touches Sanity content.
-- Resolve translatable fields via `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`. Never index i18n arrays.
-- No locale filtering inside GROQ — projections return full `{ _key, _type, language, value }` arrays.
+- Pass the route `locale` to every fetch of a per-language document (`$locale` in GROQ), and `{ locale, siteLocale }` to anything that builds hrefs.
+- Select per-language documents in GROQ with `language == $locale`; only the global `siteLanguageSettings` is fetched by `_id`. This is the design on `variant/document-level`, not the "no locale in GROQ" anti-pattern from `main`.
+- Fields are plain values in the route's language — render them directly. `web/sanity/utils/sanityLocalizedText.ts` is only used by `resolveLinkLabel` for link titles that arrive as arrays.
 - Content blocks are **modules** (see `.cursor/rules/modules.mdc`). No ad-hoc `<section>` in route files.
 - `web/sanity/types/*` are hand-maintained. Update them in the same commit as the GROQ projection.
-- Set `data-sanity` attrs on Sanity-rendered roots (copy from `ModuleText.tsx` / `MediaImage.tsx`) — Visual Editing depends on it.
+- Don't set `data-sanity` in module components — `ModulesRenderer` sets one on the module container, and Visual Editing depends on rendering modules through it.
 - Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
 - No hardcoded locale codes outside `web/src/i18n/`.
 

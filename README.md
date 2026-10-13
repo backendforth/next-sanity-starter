@@ -31,7 +31,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). `SanityLive` only mounts when it's actually useful (read token present or draft mode active).
 
-**Sanity Studio v5** — Vision, Dashboard, Presentation with configurable preview origin, runtime language tabs driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
+**Sanity Studio v5** — Vision, Dashboard, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position`, LQIP and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
@@ -129,7 +129,7 @@ The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)
 
 - **Data access** — `web/sanity/fetchSanityData.ts` is the only place React talks to Sanity; it wraps `sanityFetch` from `defineLive` for Draft Mode / Presentation. Published-only reads (sitemap, `generateStaticParams`, no-token paths) go through `web/sanity/cachedSanityQuery.ts` (`unstable_cache` + cache tags).
 - **GROQ** — strings live under `web/sanity/queries/` (snippets, page-level queries, component projections). The final queries are wrapped in `defineQuery` so `sanity typegen` emits result types.
-- **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the language tabs in Studio. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
+- **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the Studio's document languages. Each language is its own document; queries select it with `language == $locale`. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
 - **Media** — `<MediaImage />`, `<MediaVideo />`, `<MediaVideoLoop />` share container measurement, hydration-safe URLs, and viewport-deferred JS.
 
 ---

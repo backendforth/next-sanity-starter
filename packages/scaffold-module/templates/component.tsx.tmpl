@@ -22,7 +22,7 @@ export function __MODULE_COMPONENT__({ module, locale, siteLocale }: Props) {
 	const title = pickLocalizedString(module.title, locale, siteLocale);
 
 	return (
-		<section className={moduleSectionClassName} data-sanity={module._key}>
+		<section className={moduleSectionClassName}>
 			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
 			{/* TODO: render the rest of the module data */}
 		</section>

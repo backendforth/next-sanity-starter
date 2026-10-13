@@ -106,7 +106,7 @@ function MobileMenuButton({
 	return (
 		<button
 			type="button"
-			className="inline-flex items-center justify-center rounded-sm p-min text-color-text hover:bg-color-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent md:hidden"
+			className="inline-flex items-center justify-center rounded-sm p-xs text-color-text hover:bg-color-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent md:hidden"
 			aria-expanded={open}
 			aria-controls={menuId}
 			aria-label={open ? "Close menu" : "Open menu"}

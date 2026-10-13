@@ -56,7 +56,7 @@ type LiveFetchOptions = {
  * `<SanityLive />` ever revalidates. Adding our webhook tags means
  * `/api/revalidate` invalidates these entries too, so published content stays
  * fresh without streaming live events to every anonymous visitor
- * (see `shouldMountSanityLive` in `app/layout.tsx`).
+ * (see `shouldMountSanityLive` in `src/components/layout/DocumentShell.tsx`).
  */
 
 /** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */

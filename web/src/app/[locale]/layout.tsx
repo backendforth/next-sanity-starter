@@ -8,6 +8,10 @@ import {
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { CookieConsentBanner } from "@/src/components/cookies/CookieConsent";
+import {
+	DocumentShell,
+	documentMetadata,
+} from "@/src/components/layout/DocumentShell";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
@@ -24,11 +28,18 @@ type Props = {
 /** New locales from Sanity after deploy are still routable (not limited to `generateStaticParams` at build). */
 export const dynamicParams = true;
 
+/*
+ * This is the root layout: it renders `<html lang={locale}>` through `DocumentShell`, so the
+ * server markup carries the route's language. See `DocumentShell` for why, and for the root
+ * `app/not-found.tsx` that this layout cannot wrap.
+ */
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale: raw } = await params;
-	const [siteLocale, siteTitle] = await Promise.all([
+	const [siteLocale, siteTitle, documentMeta] = await Promise.all([
 		fetchSiteLanguageSettings({ stega: false }),
 		fetchSiteSettingsTitle({ stega: false }),
+		documentMetadata(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	if (!pathUtils.isAppLocale(raw)) {
@@ -36,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	}
 	const suffix = siteTitle.trim() || "Site";
 	return {
+		...documentMeta,
 		title: {
 			default: suffix,
 			template: `%s | ${suffix}`,
@@ -66,7 +78,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 	}
 	const locale = raw;
 
-	return (
+	const site = (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
 			<a
 				href="#main-content"
@@ -96,4 +108,6 @@ export default async function LocaleLayout({ children, params }: Props) {
 			<SiteTrackingShell />
 		</LanguageProvider>
 	);
+
+	return <DocumentShell lang={locale}>{site}</DocumentShell>;
 }

@@ -1,6 +1,6 @@
 # `src/assets/fonts`
 
-The web app loads **Geist** and **Geist Mono** via **`next/font/google`** in [`app/layout.tsx`](../../app/layout.tsx) — no local files are required.
+The web app loads **Geist** and **Geist Mono** via **`next/font/google`** in [`components/layout/DocumentShell.tsx`](../../components/layout/DocumentShell.tsx) — no local files are required.
 
 - **Geist Sans regular** — `text` (md), `big-text` (lg), `heading-2` (2lg), `heading-1` / `content-title` (3lg)
 - **Geist Mono semibold** — `heading-3` (lg), `heading-4` (md); tags, buttons, code; `strong` / `em` in body

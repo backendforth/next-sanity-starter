@@ -4,6 +4,7 @@ import { defineType } from "sanity";
 import {
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
+  sameLanguageReferenceFilter,
 } from "../constants/references";
 
 export const link = defineType({
@@ -51,7 +52,7 @@ export const link = defineType({
       weak: true,
       to: [...PAGE_REFERENCES],
       options: {
-        filter: PAGE_REFERENCE_FILTER,
+        filter: sameLanguageReferenceFilter(PAGE_REFERENCE_FILTER),
       },
       hidden: ({ parent }) => parent?.type !== "internal",
       validation: (rule) =>

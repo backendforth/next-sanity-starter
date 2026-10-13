@@ -7,6 +7,7 @@ import {
   contentRefReferenceFilter,
   PAGE_REFERENCES,
   PROJECT_REFERENCES,
+  sameLanguageReferenceFilter,
 } from "../../constants/references";
 
 type ContentRefsParent = {
@@ -91,16 +92,11 @@ export const moduleContentRefs = defineType({
           weak: true,
           to: [...PAGE_REFERENCES, ...PROJECT_REFERENCES],
           options: {
-            filter: ({ parent, document }) => {
-              const scope = scopeFromParent(parent as ContentRefsParent);
-              const language = (document as { language?: string } | null)
-                ?.language;
-              const base = contentRefReferenceFilter(scope);
-              return {
-                filter: `(${base}) && language == $language`,
-                params: { language: language ?? "" },
-              };
-            },
+            filter: sameLanguageReferenceFilter(({ parent }) =>
+              contentRefReferenceFilter(
+                scopeFromParent(parent as ContentRefsParent),
+              ),
+            ),
           },
         },
       ],

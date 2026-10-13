@@ -174,7 +174,11 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 				posthog?: {
 					init?: (
 						key: string,
-						options: { api_host: string; persistence: string },
+						options: {
+							api_host: string;
+							persistence: string;
+							opt_out_persistence_by_default: boolean;
+						},
 					) => void;
 					opt_in_capturing?: () => void;
 				};
@@ -184,6 +188,9 @@ function loadPostHog(tracker: AnalyticsTracker): void {
 			posthog.init(apiKey, {
 				api_host: apiHost,
 				persistence: cookieFree ? "memory" : "localStorage+cookie",
+				// Opting out then removes PostHog's cookie and localStorage entry;
+				// without it they stay behind after consent is withdrawn.
+				opt_out_persistence_by_default: true,
 			});
 			// A withdrawal *we* made persists in storage, so a re-grant has to
 			// reverse it — but a provider-side opt-out is left alone.

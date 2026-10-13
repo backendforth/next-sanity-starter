@@ -232,8 +232,11 @@ export function unloadTracker(tracker: AnalyticsTracker): void {
 					};
 				}
 			).posthog;
-			posthog?.opt_out_capturing?.();
+			// Reset first: it mints fresh IDs and persists them. The opt-out that
+			// follows then removes that storage (`opt_out_persistence_by_default`),
+			// so nothing identifying outlives the withdrawal.
 			posthog?.reset?.();
+			posthog?.opt_out_capturing?.();
 			markSelfOptedOut(tracker._key);
 			deleteCookies((name) => name.startsWith("ph_"));
 			break;

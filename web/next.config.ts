@@ -136,7 +136,16 @@ function contentSecurityPolicy(): string {
 			...analyticsSources.connect,
 			...(isDev ? ["ws://localhost:*", "wss://localhost:*"] : []),
 		],
-		"frame-src": ["'self'", "https://*.mux.com", "https://*.sanity.studio"],
+		"frame-src": [
+			"'self'",
+			"https://*.mux.com",
+			"https://*.sanity.studio",
+			/* Netlify injects its collaboration drawer into deploy previews as an
+			 * `app.netlify.com` iframe. `CONTEXT` is Netlify's build context. */
+			...(process.env.CONTEXT === "deploy-preview"
+				? ["https://app.netlify.com"]
+				: []),
+		],
 		"frame-ancestors": [
 			"'self'",
 			"http://localhost:3333",

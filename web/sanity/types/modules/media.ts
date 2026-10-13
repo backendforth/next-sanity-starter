@@ -1,4 +1,8 @@
-import type { SanityImageAssetRef, SanityImageField } from "./shared";
+import type {
+	MuxVideoPayload,
+	SanityImageAssetRef,
+	SanityImageField,
+} from "./shared";
 
 /** Unified shape from `mediaQuery` / `resolvedMedia.media`. */
 export type ResolvedMediaPayload = {
@@ -21,15 +25,7 @@ export type ModuleMediaData = {
 			autoplay?: boolean | null;
 			controls?: boolean | null;
 		} | null;
-		video?: {
-			asset?: {
-				playbackId?: string | null;
-				data?: {
-					playbackId?: string | null;
-					playback_ids?: Array<{ id?: string | null } | null> | null;
-				} | null;
-			} | null;
-		} | null;
+		video?: MuxVideoPayload | null;
 		media?: ResolvedMediaPayload | null;
 		poster?: {
 			crop?: unknown;
@@ -40,15 +36,7 @@ export type ModuleMediaData = {
 	videoLoopContent?: {
 		caption?: string | null;
 		allowUnmute?: boolean | null;
-		video?: {
-			asset?: {
-				playbackId?: string | null;
-				data?: {
-					playbackId?: string | null;
-					playback_ids?: Array<{ id?: string | null } | null> | null;
-				} | null;
-			} | null;
-		} | null;
+		video?: MuxVideoPayload | null;
 		media?: ResolvedMediaPayload | null;
 		poster?: {
 			crop?: unknown;

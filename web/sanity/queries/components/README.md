@@ -6,7 +6,7 @@ GROQ building blocks for **page modules** and **Portable Text** (rich text with 
 
 | File | Export | Purpose |
 |------|--------|---------|
-| `text/richTextMedia.ts` | `richTextMediaQuery` | Projection for `internationalizedArrayRichTextMedia` / schema `richTextMedia`: blocks, links, embedded `module.*` including nested `module.text` (with depth limit). |
+| `text/richTextMedia.ts` | `richTextMediaQuery` | Projection for schema `richTextMedia`: blocks, links, embedded `module.media` and `module.carousel` (the editor's whole `of` set). Flat, no recursion. |
 
 ## `modules/`
 

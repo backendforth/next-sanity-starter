@@ -14,7 +14,8 @@ export function DisableDraftMode() {
 
 	useEffect(() => {
 		if (isPresentationTool !== false) return;
-		const target = `${window.location.pathname}${window.location.search}`;
+		const { pathname, search, hash } = window.location;
+		const target = `${pathname}${search}${hash}`;
 		window.location.href = `/api/draft-mode/disable?redirect=${encodeURIComponent(target)}`;
 	}, [isPresentationTool]);
 

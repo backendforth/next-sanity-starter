@@ -2,8 +2,11 @@ import { TranslateIcon } from "@sanity/icons/Translate";
 import { defineType } from "sanity";
 
 /**
- * Defines which language ids exist on the site (URLs, Studio `internationalizedArray*`, web fallbacks).
- * Next.js and Studio `internationalized-array` read this at runtime (see `config/sync/internationalizedArrayLanguages.ts`).
+ * Defines the site's languages: URL segments, the `language` values on
+ * translated documents, and the default (unprefixed) locale. Global singleton
+ * (fixed `_id`, no `language` field). Next.js reads it at runtime; the Studio's
+ * `@sanity/document-internationalization` loads it via
+ * `config/sync/supportedLanguages.ts`.
  */
 export const siteLanguageSettings = defineType({
   name: "siteLanguageSettings",

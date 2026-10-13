@@ -22,18 +22,20 @@ export function isCurrentNavHref(
 	pathname: string,
 	href: string,
 	locationHash: string,
+	/** `window.location.origin`, or `""` on the server — absolute URLs never match then. */
+	locationOrigin: string,
 ): boolean {
 	const h = href.trim();
 	if (h.startsWith("#")) {
 		return locationHash === h;
 	}
 	if (/^https?:\/\//i.test(h)) {
-		if (typeof window === "undefined") {
+		if (!locationOrigin) {
 			return false;
 		}
 		try {
 			const url = new URL(h);
-			if (url.origin !== window.location.origin) {
+			if (url.origin !== locationOrigin) {
 				return false;
 			}
 			return (

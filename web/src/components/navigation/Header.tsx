@@ -49,7 +49,7 @@ function SiteTitle({
 	onClick?: () => void;
 }) {
 	const pathname = usePathname() ?? "/";
-	const isHome = isCurrentNavHref(pathname, href, "");
+	const isHome = isCurrentNavHref(pathname, href, "", "");
 
 	return (
 		<h1 className="m-0 shrink-0 font-[inherit] text-[length:inherit] leading-[inherit]">

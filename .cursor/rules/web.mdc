@@ -13,7 +13,7 @@ Hard rules:
 - No locale filtering inside GROQ — projections return full `{ _key, _type, language, value }` arrays.
 - Content blocks are **modules** (see `.cursor/rules/modules.mdc`). No ad-hoc `<section>` in route files.
 - `web/sanity/types/*` are hand-maintained. Update them in the same commit as the GROQ projection.
-- Set `data-sanity` attrs on Sanity-rendered roots (copy from `ModuleText.tsx` / `MediaImage.tsx`) — Visual Editing depends on it.
+- Don't set `data-sanity` in module components — `ModulesRenderer` wraps every module with its field-level path, and Visual Editing depends on rendering modules through it.
 - Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
 - No hardcoded locale codes outside `web/src/i18n/`.
 

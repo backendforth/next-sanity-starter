@@ -1,6 +1,6 @@
 # @repo/scaffold-module
 
-Scaffolds a new content module across **all 8 wiring points** of the module pattern documented in [`/AGENTS.md`](../../AGENTS.md).
+Scaffolds a new content module across the **8 wiring points** of the module pattern documented in [`/AGENTS.md`](../../AGENTS.md).
 
 ## Usage
 
@@ -25,7 +25,7 @@ Creates four new files:
 | `web/sanity/queries/components/modules/<name>.ts` | 7 |
 | `web/sanity/types/modules/<name>.ts` | 8 |
 
-Patches four existing files (using exact-string anchors near the existing module entries):
+Patches five existing files (using exact-string anchors near the existing module entries):
 
 | File | Wiring point |
 |---|---|
@@ -39,13 +39,13 @@ Optionally patches `studio/schemas/objects/editors/richTextMedia.ts` (wiring poi
 
 ## What it does NOT do
 
-`web/src/components/modules/ModulesRenderer.tsx` is **not** auto-edited because its dispatch logic is bespoke. The script prints the exact snippet to paste in.
+`web/src/components/modules/ModulesRenderer.tsx` is **not** auto-edited because its dispatch logic is bespoke. The script prints the exact snippet to paste in. Until the `_type` branch is there the module renders as `UnknownModule` (nothing in production), and `pnpm check:wiring` fails.
 
 ## After running
 
 ```bash
 pnpm studio:generate     # regenerate schema.json + sanity.types.gen.ts
-pnpm check:wiring        # verify all 8 points
+pnpm check:wiring        # verify all 8 points, incl. the ModulesRenderer branch
 pnpm typecheck
 pnpm format
 ```

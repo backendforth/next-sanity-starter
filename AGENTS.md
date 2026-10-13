@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v5) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `@sanity/internationalized-array` — locales are resolved at **render time**, never inside GROQ.
+This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v6) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `sanity-plugin-internationalized-array` — locales are resolved at **render time**, never inside GROQ.
 
 Before writing code:
 
@@ -26,7 +26,7 @@ Before writing code:
 | Path | Purpose |
 |---|---|
 | `web/` | Next.js 16 app (App Router). User-facing site. |
-| `studio/` | Sanity Studio v5. Editorial UI + schemas. |
+| `studio/` | Sanity Studio v6. Editorial UI + schemas. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
@@ -52,7 +52,7 @@ When you add or rename a module, **touch all eight** files. Skipping any one sil
 | 2 | `studio/schemas/index.ts` | Import + add to `schemaTypes` array. Group with other `module.*`. |
 | 3 | `studio/schemas/objects/editors/richTextMedia.ts` | Append `{ type: "module.<id>" }` to the `of` array so the module is insertable in Portable Text. |
 | 4 | `studio/schemas/fields/modulesArrayField.ts` | Append `{ type: "module.<id>" }` to `moduleTypes` so the module is insertable in document-level `modules[]` fields. |
-| 5 | `web/src/components/modules/Module<Name>.tsx` | React component. Accept `{ data, locale, siteLocale }` (and any module-specific props). Use `data-sanity` attrs for Visual Editing. |
+| 5 | `web/src/components/modules/Module<Name>.tsx` | React component. Accept `{ module, locale, siteLocale }` (and any module-specific props), and add its `_type` branch to `renderModuleChild()` in `ModulesRenderer.tsx` — without it the module renders as `UnknownModule` (nothing in production). No `data-sanity` in the component: `ModulesRenderer` sets it. |
 | 6 | `web/src/components/modules/index.ts` | Re-export the component from the barrel. |
 | 7 | `web/sanity/queries/components/modules/<name>.ts` | GROQ projection for the module (`_key, _type, ...fields`). Re-export from `web/sanity/queries/components/modules/index.ts`. |
 | 8 | `web/sanity/types/modules/<name>.ts` | Hand-written TS type matching the GROQ projection. Re-export from `web/sanity/types/modules/index.ts`. |
@@ -130,7 +130,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm typecheck` | `tsc --noEmit` across web + studio. |
 | `pnpm lint` | `biome check .` (no writes). |
 | `pnpm format` | `biome check --write .` (auto-fix). |
-| `pnpm gen:module <Name>` | Scaffold a new module (all 8 wiring points). PascalCase name. Add `--dry-run` to preview. |
+| `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component, query and type files and patches `schemaTypes`, `moduleTypes` and the barrels (`--inline` also registers it in `richTextMedia.ts`). Prints the `ModulesRenderer.tsx` branch to paste by hand. PascalCase name. Add `--dry-run` to preview. |
 | `pnpm check:wiring` | Validate all 8 module wiring points across the monorepo. CI gate. |
 | `pnpm strip-readmes` | Remove nested READMEs after forking the starter. The root `README.md` is preserved. |
 | `pnpm strip-readmes:dry-run` | Preview what `strip-readmes` would delete. |

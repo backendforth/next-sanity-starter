@@ -6,7 +6,7 @@ This folder holds the **component half** of every module. You are touching point
 
 ## YOU MUST
 
-1. Prefer `pnpm gen:module <Name>` over hand-writing — it scaffolds all 8 points atomically.
+1. Prefer `pnpm gen:module <Name>` over hand-writing — it creates the module's files and patches the registries and barrels. It does not edit `ModulesRenderer.tsx`; it prints the `_type` branch for you to paste, and `pnpm check:wiring` fails until it is there.
 2. Name the file `Module<Name>.tsx` (PascalCase). The Sanity schema `name` must be `module.<name>` (dot-lowercase). 1:1 correspondence.
 3. Accept `{ module, locale, siteLocale }` props — even if the module doesn't read i18n today. `ModulesRenderer` always passes them; consistency matters when fields become translatable.
 4. Resolve i18n via `pickLocalizedString` / `pickLocalizedPortableTextBlocks` / `parseLocalizedText` from `@/sanity/utils/sanityLocalizedText`. **NEVER** index arrays directly or call `.find(t => t.language === locale)`.

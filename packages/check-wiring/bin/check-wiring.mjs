@@ -16,7 +16,9 @@
  *   2. studio/schemas/index.ts                          (import + schemaTypes entry)
  *   3. studio/schemas/objects/editors/richTextMedia.ts  (OPTIONAL inline registration — warned, not failed)
  *   4. studio/schemas/fields/modulesArrayField.ts       (moduleTypes entry)
- *   5. web/src/components/modules/Module<Name>.tsx      (component file exists)
+ *   5. web/src/components/modules/Module<Name>.tsx      (component file exists, and
+ *      ModulesRenderer.tsx dispatches the `_type` — `pnpm gen:module` only
+ *      prints that branch, so a forgotten paste is caught here)
  *   6. web/src/components/modules/index.ts              (barrel export, if a barrel exists on this branch)
  *   7. web/sanity/queries/components/modules/<name>.ts  (GROQ projection)
  *   8. web/sanity/types/modules/<name>.ts               (TS type)
@@ -45,6 +47,7 @@ const RICH_TEXT_MEDIA = join(
 );
 const WEB_COMPONENTS_DIR = join(root, "web/src/components/modules");
 const WEB_COMPONENTS_BARREL = join(WEB_COMPONENTS_DIR, "index.ts");
+const MODULES_RENDERER = join(WEB_COMPONENTS_DIR, "ModulesRenderer.tsx");
 const QUERIES_DIR = join(root, "web/sanity/queries/components/modules");
 const QUERIES_BARREL = join(QUERIES_DIR, "index.ts");
 const TYPES_DIR = join(root, "web/sanity/types/modules");
@@ -123,6 +126,7 @@ const [
 	modulesArrayFieldSrc,
 	richTextMediaSrc,
 	componentsBarrelSrc,
+	modulesRendererSrc,
 	queriesBarrelSrc,
 	typesBarrelSrc,
 ] = await Promise.all([
@@ -130,6 +134,7 @@ const [
 	read(MODULES_ARRAY_FIELD),
 	read(RICH_TEXT_MEDIA),
 	read(WEB_COMPONENTS_BARREL),
+	read(MODULES_RENDERER),
 	read(QUERIES_BARREL),
 	read(TYPES_BARREL),
 ]);
@@ -197,10 +202,9 @@ for (const m of modules) {
 	const componentInSibling = existsSync(altComponentDir);
 	if (!componentInDir && !componentInSibling) {
 		// On variant/document-level, ModuleContentRefs has only a placeholder. Tolerate that case if a placeholder branch exists in ModulesRenderer.
-		const renderer = await read(
-			join(WEB_COMPONENTS_DIR, "ModulesRenderer.tsx"),
+		const hasPlaceholder = modulesRendererSrc?.includes(
+			`Module${m.pascal}Placeholder`,
 		);
-		const hasPlaceholder = renderer?.includes(`Module${m.pascal}Placeholder`);
 		if (!hasPlaceholder) {
 			add(
 				m.id,
@@ -208,6 +212,16 @@ for (const m of modules) {
 				`web component Module${m.pascal}.tsx is missing (no fallback Module${m.pascal}Placeholder either)`,
 			);
 		}
+	}
+
+	// 5. ModulesRenderer dispatch — without a `_type` branch the module falls
+	// through to `UnknownModule`, which renders nothing in production.
+	if (!modulesRendererSrc?.includes(`"${m.id}"`)) {
+		add(
+			m.id,
+			MODULES_RENDERER,
+			`no branch for "${m.id}" in renderModuleChild() — renders as UnknownModule (nothing in production)`,
+		);
 	}
 
 	// 6. components barrel — optional (variant branch omits it)

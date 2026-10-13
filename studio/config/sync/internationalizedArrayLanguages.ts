@@ -46,12 +46,18 @@ function normalizeFromDoc(doc: SiteLanguageSettingsDoc): Array<{
 /**
  * Languages for `sanity-plugin-internationalized-array`, loaded on each Studio session
  * from the `siteLanguageSettings` singleton (drafts when the Studio client uses preview).
+ * Falls back to the minimal `en` list when the fetch fails, so Studio still boots.
  */
 export async function internationalizedArrayLanguagesFromClient(
   client: SanityClient,
 ): Promise<Array<{ id: string; title: string }>> {
-  const doc = await client.fetch<SiteLanguageSettingsDoc>(
-    siteLanguageSettingsInternationalizedQuery,
-  );
-  return normalizeFromDoc(doc);
+  try {
+    const doc = await client.fetch<SiteLanguageSettingsDoc>(
+      siteLanguageSettingsInternationalizedQuery,
+    );
+    return normalizeFromDoc(doc);
+  } catch (err) {
+    console.error("[internationalizedArrayLanguages] fetch failed:", err);
+    return [...FALLBACK_LANGUAGES];
+  }
 }

@@ -17,6 +17,7 @@ import {
 	sectionsJsonFromSanity,
 } from "@/src/components/tracking/lib/cookieConsentConfig";
 import {
+	markConsentLibraryStarted,
 	notifyAnalyticsConsentChange,
 	registerConsentLibrary,
 } from "./cookieConsentApi";
@@ -119,9 +120,11 @@ export function CookieConsentBanner({ doc, locale, trackers = [] }: Props) {
 	useEffect(() => {
 		if (!doc?.useCookieBanner) return;
 		registerConsentLibrary(CookieConsent);
-		CookieConsent.run(buildConfig(doc, locale, trackers)).catch((err) => {
-			console.warn("[CookieConsent] run() failed:", err);
-		});
+		CookieConsent.run(buildConfig(doc, locale, trackers))
+			.then(markConsentLibraryStarted)
+			.catch((err) => {
+				console.warn("[CookieConsent] run() failed:", err);
+			});
 	}, [doc, locale, trackers]);
 
 	return null;

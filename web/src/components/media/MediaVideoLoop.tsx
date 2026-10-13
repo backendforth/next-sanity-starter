@@ -28,6 +28,9 @@ import {
 } from "@/sanity/utils/sanityImageBuilder";
 import { VolumeMutedIcon } from "@/src/components/icons/VolumeMutedIcon";
 import { VolumeOnIcon } from "@/src/components/icons/VolumeOnIcon";
+import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
+import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 import {
 	extractMuxPlaybackId,
@@ -164,6 +167,9 @@ export function MediaVideoLoop({
 	hlsAttachDelayMs = 0,
 }: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(media);
+	const locale =
+		useOptionalLanguage()?.currentLocale ??
+		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
 	const [containerRef, slotWidthPx, slotHeightPx] =
 		useContainerPixelWidth<HTMLDivElement>();
 	/* DPR snapshotted once at mount: matches what `muxLoopHlsSrc` needs for
@@ -722,7 +728,7 @@ export function MediaVideoLoop({
 				<button
 					type="button"
 					onClick={onToggleMute}
-					aria-label={muted ? "Turn sound on" : "Turn sound off"}
+					aria-label={uiLabel(muted ? "soundOn" : "soundOff", locale)}
 					aria-pressed={!muted}
 					className={clsx(
 						"absolute right-sm bottom-sm z-20",

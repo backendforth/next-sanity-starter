@@ -1,6 +1,7 @@
 import type { NavMenuLink } from "@/sanity/types/nav";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import { uiLabel } from "@/src/i18n/uiLabels";
 import { resolveFooterMenuRows } from "../../utils/navHref";
 import { NavItem } from "./NavItem";
 
@@ -27,7 +28,7 @@ export function Footer({ locale, footerMenu, pathUtils, siteLocale }: Props) {
 			<div className="mx-auto flex w-full max-w-container flex-col gap-sm px-md py-md sm:px-container">
 				<nav
 					className="flex flex-col gap-xs sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-sm sm:gap-y-xs"
-					aria-label="Footer"
+					aria-label={uiLabel("footer", locale)}
 				>
 					{rows.map((row) => (
 						<NavItem key={row.id} row={row} className="text-color-text-muted" />

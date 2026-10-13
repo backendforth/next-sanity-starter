@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/src/contexts/LanguageContext";
+import { uiLabel } from "@/src/i18n/uiLabels";
 import { cn } from "@/src/utils/cn";
 
 import {
@@ -22,7 +23,7 @@ export function LanguageSwitch({
 
 	return (
 		<fieldset
-			aria-label="Language"
+			aria-label={uiLabel("language", currentLocale)}
 			className={cn(
 				navControlGroupClass,
 				"m-0 min-w-0 border-0 p-0",

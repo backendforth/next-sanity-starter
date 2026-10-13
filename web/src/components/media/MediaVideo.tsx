@@ -84,6 +84,13 @@ const POSTER_HOLD_MS = 250;
 const OFFSCREEN_PAUSE_DELAY_MS = 150;
 
 /**
+ * Re-check interval for an off-screen player in fullscreen / PiP. Leaving either mode doesn't
+ * re-fire the IntersectionObserver when the inline box is still off-screen, so the deferred
+ * pause looks again until the player is back in the page.
+ */
+const DETACHED_RECHECK_MS = 1000;
+
+/**
  * The bits of `MuxPlayerElement` driven imperatively. Typed structurally rather than importing
  * the element class — the player loads lazily, and its type would pull the client-only module
  * into this boundary.
@@ -98,9 +105,18 @@ type MuxPlayerHandle = HTMLElement & {
 	media?: { nativeEl?: HTMLVideoElement } | null;
 };
 
-/** Fullscreen or picture-in-picture: the inline box can leave the viewport while it plays. */
+/**
+ * This player is in fullscreen or picture-in-picture: the inline box can leave the viewport
+ * while it plays. Another player in either mode doesn't count. Both APIs retarget an element
+ * inside the player's shadow tree (its `<video>`, its media controller) to the player itself.
+ */
 function isPlayerDetachedFromPage(player: MuxPlayerHandle): boolean {
-	if (document.fullscreenElement || document.pictureInPictureElement) {
+	const isOwn = (el: Element | null) =>
+		el !== null && (el === player || player.contains(el));
+	if (
+		isOwn(document.fullscreenElement) ||
+		isOwn(document.pictureInPictureElement)
+	) {
 		return true;
 	}
 	/* iOS plays fullscreen through the native `<video>`, outside the Fullscreen API. */
@@ -265,13 +281,27 @@ function MuxVideoPlayer({
 	/* Pause once the player leaves the viewport — a clip nobody is looking at is bandwidth
 	 * and noise. Autoplay clips resume when they scroll back; a clip the visitor started stays
 	 * paused, they didn't ask for it to follow them. Debounced so a fast scroll-through
-	 * doesn't stop a player that is about to be back on screen; skipped in fullscreen / PiP,
-	 * where the inline box can drift out of view while the video is what's on screen. */
+	 * doesn't stop a player that is about to be back on screen; deferred while this player is
+	 * in fullscreen / PiP, where the inline box can drift out of view while the video is what's
+	 * on screen. */
 	useEffect(() => {
 		if (!playerReady) return;
 		const root = containerRef.current;
 		if (!root) return;
 		let pauseTimer: number | undefined;
+		const schedulePause = (delayMs: number) => {
+			pauseTimer = window.setTimeout(() => {
+				pauseTimer = undefined;
+				const player = playerRef.current;
+				if (!player || player.paused) return;
+				if (isPlayerDetachedFromPage(player)) {
+					schedulePause(DETACHED_RECHECK_MS);
+					return;
+				}
+				expectingPauseRef.current = true;
+				player.pause();
+			}, delayMs);
+		};
 		const io = new IntersectionObserver(
 			([entry]) => {
 				if (!entry) return;
@@ -284,15 +314,7 @@ function MuxVideoPlayer({
 					resumeAutoplay();
 					return;
 				}
-				pauseTimer = window.setTimeout(() => {
-					pauseTimer = undefined;
-					const player = playerRef.current;
-					if (!player || player.paused || isPlayerDetachedFromPage(player)) {
-						return;
-					}
-					expectingPauseRef.current = true;
-					player.pause();
-				}, OFFSCREEN_PAUSE_DELAY_MS);
+				if (pauseTimer === undefined) schedulePause(OFFSCREEN_PAUSE_DELAY_MS);
 			},
 			{ threshold: 0 },
 		);
@@ -317,14 +339,21 @@ function MuxVideoPlayer({
 
 	/* Poster URL latched once the slot is measured: the measurement lands in a layout effect,
 	 * before the lazy player mounts (its placeholder renders no poster), so the player sees one
-	 * URL sized to the slot. Re-latched when the editor swaps the uploaded poster. */
-	const posterAsset = resolveSanityImageFieldForUrl(posterPayload)?.asset;
-	const posterKey = posterAsset?._id ?? posterAsset?._ref ?? "";
+	 * URL sized to the slot. Re-latched when anything else in the URL changes — the uploaded
+	 * poster, its crop or hotspot, or the Mux thumbnail time — so Presentation shows the
+	 * editor's pick; only the slot width is deliberately left out. */
+	const thumbnailTime = muxThumbnailTimeSec(media);
+	const posterField = resolveSanityImageFieldForUrl(posterPayload);
+	const posterKey = JSON.stringify([
+		posterField?.asset?._id ?? posterField?.asset?._ref ?? null,
+		posterField?.crop ?? null,
+		posterField?.hotspot ?? null,
+		thumbnailTime ?? null,
+	]);
 	const posterLatchRef = useRef<{ key: string; url: string | null } | null>(
 		null,
 	);
 
-	const thumbnailTime = muxThumbnailTimeSec(media);
 	let posterUrl: string | null;
 	if (posterLatchRef.current?.key === posterKey) {
 		posterUrl = posterLatchRef.current.url;

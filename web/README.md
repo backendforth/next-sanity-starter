@@ -25,7 +25,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | Studio UI labels for `internationalizedArray*` | Same document; Studio loads them at runtime from Sanity (see `studio/config/sync/internationalizedArrayLanguages.ts`). |
 | Fallback when a field has no translation | Same order as `availableLanguages` (after exact / base tags). |
 
-If the singleton is missing or invalid, the web app falls back to **en** + **de** (see `web/src/i18n/fallbackSiteLocales.ts`). **Publish** `siteLanguageSettings` so the CDN sees it, or set **`SANITY_API_READ_TOKEN`** in `web/.env.local` so dev reads drafts (same as Presentation). The same token in `studio/.env` lets Studio read draft language settings — see `studio/.env.example`.
+If the singleton is missing or lists no language ids, the web app falls back to **en** only (see `web/src/i18n/fallbackSiteLocales.ts`). Partial data degrades per row instead: a language without a label uses its id, and a `defaultLanguageId` that isn't in the list falls back to the first language (`sanity/normalizeSiteLocaleConfig.ts`). **Publish** `siteLanguageSettings` so the CDN sees it, or set **`SANITY_API_READ_TOKEN`** in `web/.env.local` so dev reads drafts (same as Presentation). Studio needs no token: it reads the draft first through the editor's session.
 
 **Reserved path segments:** every **non-default** language `id` is a first path segment (for example `de` in `/de/about`). Do not use those strings as page slugs on the default-locale site.
 

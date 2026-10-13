@@ -81,10 +81,18 @@ export function SiteTracking({ config }: Props) {
 				for (const tracker of stale) {
 					loadedMap.delete(tracker._key);
 				}
+				// PostHog edited in place (new key or host) can't be re-initialised: the
+				// loaded SDK keeps sending to the old project. Reloading starts it with
+				// the new settings; nothing is stale after that, so it doesn't loop.
+				const replacesPostHog = stale.some(
+					(tracker) =>
+						tracker._type === "trackerPostHog" &&
+						allowedByKey.has(tracker._key),
+				);
 				// Clarity's recorder cannot be torn down in place, so a reload is the
 				// only thing that genuinely stops it. Safe from looping: after the
 				// reload consent is already withdrawn, so it never loads again.
-				if (needsReload) {
+				if (needsReload || replacesPostHog) {
 					window.location.reload();
 					return;
 				}

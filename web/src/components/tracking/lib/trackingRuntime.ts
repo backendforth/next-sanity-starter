@@ -57,6 +57,15 @@ export function isTrackerLoaded(key: string): boolean {
 	return loadedTrackers.has(key);
 }
 
+/**
+ * What is running on this page right now. Module state, so it outlives a remount of
+ * `SiteTracking` (e.g. a locale switch re-rendering the layout) — a fresh component
+ * must reconcile against this, not against an empty map of its own.
+ */
+export function loadedTrackerEntries(): [string, AnalyticsTracker][] {
+	return Array.from(loadedTrackers, ([key, { tracker }]) => [key, tracker]);
+}
+
 export function registerInjectedScript(
 	key: string,
 	script: HTMLScriptElement,

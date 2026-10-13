@@ -17,6 +17,7 @@ import {
 	trackerRequiresConsent,
 } from "@/src/components/tracking/lib/trackingConfig";
 import {
+	loadedTrackerEntries,
 	trackPageView,
 	unloadTrackers,
 } from "@/src/components/tracking/lib/trackingRuntime";
@@ -41,7 +42,13 @@ function trackersForConsent(
 }
 
 export function SiteTracking({ config }: Props) {
-	const loaded = useRef(new Map<string, AnalyticsTracker>());
+	/* Seeded from the runtime registry: after a remount (a locale switch re-renders the
+	 * layout) trackers from the previous render are still running, and reconciling
+	 * against an empty map would leave them collecting when the new config needs
+	 * consent. */
+	const loaded = useRef<Map<string, AnalyticsTracker> | null>(null);
+	if (loaded.current === null) loaded.current = new Map(loadedTrackerEntries());
+	const loadedMap = loaded.current;
 	const initialPageView = useRef(true);
 	const pathname = usePathname();
 
@@ -63,7 +70,7 @@ export function SiteTracking({ config }: Props) {
 			// A tracker disabled or deleted in Sanity vanishes from `trackers`
 			// entirely, so comparing the two would leave it collecting; a tracker
 			// edited in place keeps its `_key`, so compare what affects loading.
-			const stale = Array.from(loaded.current.values()).filter((tracker) => {
+			const stale = Array.from(loadedMap.values()).filter((tracker) => {
 				const next = allowedByKey.get(tracker._key);
 				return (
 					!next || trackerLoadSignature(next) !== trackerLoadSignature(tracker)
@@ -72,7 +79,7 @@ export function SiteTracking({ config }: Props) {
 			if (stale.length > 0) {
 				const needsReload = unloadTrackers(stale);
 				for (const tracker of stale) {
-					loaded.current.delete(tracker._key);
+					loadedMap.delete(tracker._key);
 				}
 				// Clarity's recorder cannot be torn down in place, so a reload is the
 				// only thing that genuinely stops it. Safe from looping: after the
@@ -83,14 +90,12 @@ export function SiteTracking({ config }: Props) {
 				}
 			}
 
-			const pending = allowed.filter(
-				(tracker) => !loaded.current.has(tracker._key),
-			);
+			const pending = allowed.filter((tracker) => !loadedMap.has(tracker._key));
 			if (pending.length === 0) return;
 			// Recorded before loading, not after: PostHog initialises
 			// asynchronously, so waiting would let a re-run inject it twice.
 			for (const tracker of pending) {
-				loaded.current.set(tracker._key, tracker);
+				loadedMap.set(tracker._key, tracker);
 			}
 			loadTrackers(pending, {
 				analyticsConsent: showBanner && analyticsAccepted,
@@ -107,7 +112,7 @@ export function SiteTracking({ config }: Props) {
 		}
 
 		syncConsent(true);
-	}, [config, showBanner, trackers]);
+	}, [config, showBanner, trackers, loadedMap]);
 
 	// Providers emit their own view when they initialise; only client-side
 	// navigations after that need one, hence skipping the first run.
@@ -116,9 +121,9 @@ export function SiteTracking({ config }: Props) {
 			initialPageView.current = false;
 			return;
 		}
-		if (loaded.current.size === 0) return;
+		if (loadedMap.size === 0) return;
 		trackPageView(pathname, window.location.search);
-	}, [pathname]);
+	}, [pathname, loadedMap]);
 
 	return null;
 }

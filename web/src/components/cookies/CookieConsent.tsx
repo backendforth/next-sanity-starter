@@ -29,8 +29,12 @@ function parseSections(
 	const raw = sectionsJsonFromSanity(doc.preferencesModal?.sections);
 	if (raw && raw.trim().length > 0) {
 		try {
-			JSON.parse(raw);
-			return buildCookieSections(doc, trackers);
+			// Valid JSON that isn't a list of sections (e.g. `{}`) falls through to
+			// the locale's defaults below, not to the English-only builder defaults.
+			if (Array.isArray(JSON.parse(raw))) {
+				return buildCookieSections(doc, trackers);
+			}
+			console.warn("[CookieConsent] `sections` JSON is not an array.");
 		} catch (err) {
 			console.warn("[CookieConsent] Failed to parse `sections` JSON:", err);
 		}

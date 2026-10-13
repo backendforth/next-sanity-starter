@@ -112,7 +112,18 @@ const ATTACH_WITHOUT_MEASUREMENT_MS = 300;
  */
 const LOOP_STALL_RESCUE_MS = 4000;
 
-export function MediaVideoLoop({
+/**
+ * Keyed by playback ID, like `MediaVideo`: swapping the asset (in Presentation, or a reused
+ * carousel slide) starts a fresh loop instead of inheriting the previous one's stall-rescue
+ * ceiling or a rescue timer that is still pending.
+ */
+export function MediaVideoLoop(props: MediaVideoLoopProps) {
+	const playbackId = extractMuxPlaybackId(props.media);
+	if (!playbackId) return null;
+	return <MuxVideoLoop key={playbackId} {...props} />;
+}
+
+function MuxVideoLoop({
 	media,
 	caption,
 	posterPayload,

@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v5) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `@sanity/internationalized-array` — locales are resolved at **render time**, never inside GROQ.
+This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v6) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `sanity-plugin-internationalized-array` — locales are resolved at **render time**, never inside GROQ.
 
 Before writing code:
 
@@ -26,7 +26,7 @@ Before writing code:
 | Path | Purpose |
 |---|---|
 | `web/` | Next.js 16 app (App Router). User-facing site. |
-| `studio/` | Sanity Studio v5. Editorial UI + schemas. |
+| `studio/` | Sanity Studio v6. Editorial UI + schemas. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |

@@ -5,7 +5,7 @@ globs:
   - studio/config/**
 ---
 
-Sanity Studio v5. Schemas live under `studio/schemas/`. Indent 2 spaces, double quotes.
+Sanity Studio v6. Schemas live under `studio/schemas/`. Indent 2 spaces, double quotes.
 
 Hard rules:
 

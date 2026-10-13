@@ -55,15 +55,20 @@ export function CarouselViewport({ slides, options }: Props) {
 		return () => mq.removeEventListener("change", sync);
 	}, []);
 
-	const autoplayPlugin = useRef(
-		options.autoplay
+	/* Lazy init: `useRef(Autoplay(...))` evaluates its argument on every render, which built
+	 * and discarded a fresh plugin each time. */
+	const autoplayPlugin = useRef<ReturnType<typeof Autoplay> | null | undefined>(
+		undefined,
+	);
+	if (autoplayPlugin.current === undefined) {
+		autoplayPlugin.current = options.autoplay
 			? Autoplay({
 					delay: Math.max(1000, options.autoplayDelayMs),
 					stopOnInteraction: true,
 					stopOnMouseEnter: true,
 				})
-			: null,
-	);
+			: null;
+	}
 
 	const [emblaRef, emblaApi] = useEmblaCarousel(
 		{ loop: options.loop, align: "start" },
@@ -107,13 +112,19 @@ export function CarouselViewport({ slides, options }: Props) {
 		};
 	}, [emblaApi, onSelect]);
 
+	/* Suspend autoplay under reduced motion and resume it only when the preference flips back,
+	 * not on every effect run — a `stopOnInteraction` stop must survive unrelated re-renders. */
+	const wasReducedMotionRef = useRef(false);
 	useEffect(() => {
 		if (!options.autoplay) return;
 		const plugin = autoplayPlugin.current;
 		if (!plugin) return;
 		if (reducedMotion) {
 			plugin.stop();
+		} else if (wasReducedMotionRef.current) {
+			plugin.play();
 		}
+		wasReducedMotionRef.current = reducedMotion;
 	}, [reducedMotion, options.autoplay]);
 
 	const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);

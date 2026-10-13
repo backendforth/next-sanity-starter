@@ -38,7 +38,7 @@ export type ResolvedLink =
 	| null;
 
 /**
- * URL for a polymorphic document reference (`home`, `page`, `project`). Returns
+ * URL for a polymorphic document reference (`home`, `page`, `work`, `project`). Returns
  * `undefined` for unknown ref shapes so callers can skip rendering the link.
  *
  * Pass `locale` to prefix the path (e.g. `/de/about`); leave it undefined
@@ -52,6 +52,7 @@ export function resolveRefHref(
 	const prefix = options?.locale ? `/${options.locale}` : "";
 	if (ref._type === "home") return prefix || "/";
 	if (ref._type === "page" && ref.slug) return `${prefix}/${ref.slug}`;
+	if (ref._type === "work") return `${prefix}/work`;
 	if (ref._type === "project" && ref.slug) return `${prefix}/work/${ref.slug}`;
 	return undefined;
 }

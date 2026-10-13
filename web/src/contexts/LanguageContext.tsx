@@ -8,12 +8,15 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
+	useState,
 } from "react";
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import {
 	createLanguagePathUtils,
 	type LanguagePathUtils,
+	type TranslationPath,
+	translationPathsByLocale,
 } from "@/src/i18n/siteLocalePathUtils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -27,8 +30,23 @@ type LanguageContextValue = LanguagePathUtils & {
 	languages: readonly StudioLanguageOption[];
 	/** Ids + default for `pickLocalizedString` / Portable Text resolution on the client. */
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-	/** Navigate to the same logical path in another locale. */
+	/**
+	 * Navigate to the current document in another locale — its registered
+	 * translation, else that locale's home. Routes that register nothing
+	 * keep the path and swap the prefix.
+	 */
 	setLocale: (next: string) => void;
+	/** Called by `LocaleAlternates` with the language variants of the page at `pathname`. */
+	setTranslations: (
+		pathname: string,
+		translations: readonly TranslationPath[],
+	) => void;
+};
+
+/** Locale → prefixed path of the document rendered at `pathname`. */
+type RegisteredTranslations = {
+	pathname: string;
+	byLocale: Readonly<Record<string, string>>;
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -67,14 +85,37 @@ export function LanguageProvider({
 		[pathname, pathUtils],
 	);
 
+	/* Slugs differ per language under document-level translation, so the
+	 * prefix swap only holds for routes that don't register their variants.
+	 * Keyed by pathname: an entry left behind by the previous page is ignored. */
+	const [registered, setRegistered] = useState<RegisteredTranslations | null>(
+		null,
+	);
+
+	const setTranslations = useCallback(
+		(forPathname: string, translations: readonly TranslationPath[]) => {
+			setRegistered({
+				pathname: forPathname,
+				byLocale: translationPathsByLocale(translations, pathUtils),
+			});
+		},
+		[pathUtils],
+	);
+
 	const setLocale = useCallback(
 		(next: string) => {
 			if (!pathUtils.isAppLocale(next)) {
 				return;
 			}
+			if (registered?.pathname === pathname) {
+				router.push(
+					registered.byLocale[next] ?? pathUtils.localePath("/", next),
+				);
+				return;
+			}
 			router.push(pathUtils.localePath(pathWithoutLocale, next));
 		},
-		[pathWithoutLocale, pathUtils, router],
+		[pathname, pathWithoutLocale, pathUtils, registered, router],
 	);
 
 	const value = useMemo<LanguageContextValue>(
@@ -87,8 +128,9 @@ export function LanguageProvider({
 				defaultLocale: siteLocaleConfig.defaultLocale,
 			},
 			setLocale,
+			setTranslations,
 		}),
-		[currentLocale, pathUtils, setLocale, siteLocaleConfig],
+		[currentLocale, pathUtils, setLocale, setTranslations, siteLocaleConfig],
 	);
 
 	useEffect(() => {

@@ -29,7 +29,7 @@ If the singleton is missing or invalid, the web app falls back to **en** + **de*
 
 **Reserved path segments:** every **non-default** language `id` is a first path segment (for example `de` in `/de/about`). Do not use those strings as page slugs on the default-locale site.
 
-**Routing:** [`src/proxy.ts`](./src/proxy.ts) reads locales from the Sanity CDN (cached). Client links use [`LanguageContext`](./src/contexts/LanguageContext.tsx) (`localePath`, etc.).
+**Routing:** [`src/proxy.ts`](./src/proxy.ts) reads locales from the Sanity CDN (cached). Client links use [`LanguageContext`](./src/contexts/LanguageContext.tsx) (`localePath`, etc.). Slugs differ per language, so each route page renders [`LocaleAlternates`](./src/components/navigation/LocaleAlternates.tsx) with its `translations`; the language switch follows those instead of swapping the URL prefix.
 
 ---
 

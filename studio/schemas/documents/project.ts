@@ -5,6 +5,7 @@ import { defineType, type PreviewValue } from "sanity";
 
 import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
 import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
+import { NEWEST_FIRST_SUGGESTIONS } from "../constants/references";
 
 export const project = defineType({
   name: "project",
@@ -49,7 +50,15 @@ export const project = defineType({
       name: "categories",
       title: "Categories",
       type: "array",
-      of: [{ type: "reference", to: [{ type: "projectCategory" }] }],
+      of: [
+        {
+          type: "reference",
+          to: [{ type: "projectCategory" }],
+          options: {
+            ...NEWEST_FIRST_SUGGESTIONS,
+          },
+        },
+      ],
       group: "editorial",
     },
     {

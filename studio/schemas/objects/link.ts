@@ -2,6 +2,7 @@ import { LinkIcon } from "@sanity/icons/Link";
 import { defineType } from "sanity";
 
 import {
+  NEWEST_FIRST_SUGGESTIONS,
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
 } from "../constants/references";
@@ -51,6 +52,7 @@ export const link = defineType({
       weak: true,
       to: [...PAGE_REFERENCES],
       options: {
+        ...NEWEST_FIRST_SUGGESTIONS,
         filter: PAGE_REFERENCE_FILTER,
       },
       hidden: ({ parent }) => parent?.type !== "internal",

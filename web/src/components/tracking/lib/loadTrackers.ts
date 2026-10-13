@@ -10,6 +10,11 @@ import {
 
 const POSTHOG_INIT_MAX_ATTEMPTS = 40;
 
+/** How a load was allowed: `analyticsConsent` is true only when the visitor granted it in the banner. */
+export type TrackerLoadContext = {
+	analyticsConsent: boolean;
+};
+
 /**
  * Every injected tag is registered against the tracker so `unloadTracker` can
  * remove it — otherwise withdrawing and re-granting consent stacks a duplicate
@@ -98,15 +103,27 @@ _paq.push(['setSiteId', ${JSON.stringify(siteId)}]);
 	registerLoadedTracker(tracker);
 }
 
-function loadMicrosoftClarity(tracker: AnalyticsTracker): void {
+function loadMicrosoftClarity(
+	tracker: AnalyticsTracker,
+	context: TrackerLoadContext,
+): void {
 	if (tracker._type !== "trackerMicrosoftClarity") return;
 	const projectId = tracker.projectId?.trim();
 	if (!projectId || isTrackerLoaded(tracker._key)) return;
 
+	// Since 2025-10-31 Clarity expects a consent signal for EEA, UK and CH visitors and
+	// otherwise runs in its no-consent mode (no cookies, limited data). After the visitor
+	// accepted analytics in the banner, say so — queued on the stub, so it reaches the tag
+	// before its first beacon. Without the banner no consent was asked, so nothing is sent.
+	// No ads category exists here, so `ad_Storage` stays denied.
+	const consentSignal = context.analyticsConsent
+		? `window.clarity("consentv2", { ad_Storage: "denied", analytics_Storage: "granted" });`
+		: "";
 	appendInlineScript(
 		tracker._key,
 		`
 window.clarity = window.clarity || function(){(window.clarity.q=window.clarity.q||[]).push(arguments)};
+${consentSignal}
 `,
 	);
 	appendScript(
@@ -225,7 +242,7 @@ function loadPlausible(tracker: AnalyticsTracker): void {
 
 const loaders: Record<
 	AnalyticsTracker["_type"],
-	(tracker: AnalyticsTracker) => void
+	(tracker: AnalyticsTracker, context: TrackerLoadContext) => void
 > = {
 	trackerGoogleAnalytics: loadGoogleAnalytics,
 	trackerMatomo: loadMatomo,
@@ -234,13 +251,19 @@ const loaders: Record<
 	trackerPlausible: loadPlausible,
 };
 
-export function loadTracker(tracker: AnalyticsTracker): void {
+export function loadTracker(
+	tracker: AnalyticsTracker,
+	context: TrackerLoadContext,
+): void {
 	const loader = loaders[tracker._type];
-	if (loader) loader(tracker);
+	if (loader) loader(tracker, context);
 }
 
-export function loadTrackers(trackers: AnalyticsTracker[]): void {
+export function loadTrackers(
+	trackers: AnalyticsTracker[],
+	context: TrackerLoadContext,
+): void {
 	for (const tracker of trackers) {
-		loadTracker(tracker);
+		loadTracker(tracker, context);
 	}
 }

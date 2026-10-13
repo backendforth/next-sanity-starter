@@ -92,7 +92,9 @@ export function SiteTracking({ config }: Props) {
 			for (const tracker of pending) {
 				loaded.current.set(tracker._key, tracker);
 			}
-			loadTrackers(pending);
+			loadTrackers(pending, {
+				analyticsConsent: showBanner && analyticsAccepted,
+			});
 		};
 
 		// No one-shot guard here: the effect owns the consent subscription, so an

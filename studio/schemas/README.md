@@ -83,7 +83,7 @@ When you add a **new** module, wire it up in **both** places so behaviour stays 
 
 ### Adding a new module (checklist)
 
-> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically. See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
+> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically, and prints the `ModulesRenderer.tsx` branch to paste by hand (`pnpm check:wiring` fails until it is there). See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
 
 1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).

@@ -59,7 +59,7 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
 | **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
-| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module across all 8 wiring points |
+| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and prints the `ModulesRenderer.tsx` branch to paste |
 | **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` — validates module wiring across schema, component, query, and type files (CI gate) |
 
 ---
@@ -152,7 +152,7 @@ All from the repo root.
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
 | `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
-| `pnpm gen:module <Name>` | Scaffold a new content module across the 8 wiring points. PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
+| `pnpm gen:module <Name>` | Scaffold a new content module (files, barrels, `schemaTypes`, `moduleTypes`; prints the `ModulesRenderer.tsx` branch to paste). PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
 | `pnpm check:wiring` | Validate the 8-point module wiring (schema, component, query, type, and their barrels/registrations). Runs in CI. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.

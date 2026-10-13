@@ -3,6 +3,11 @@
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { cn } from "@/src/utils/cn";
 
+import {
+	navControlGroupClass,
+	navUtilityButtonClass,
+} from "./navControlStyles";
+
 export type LanguageSwitchProps = {
 	className?: string;
 	/** After `setLocale` (e.g. close mobile nav). */
@@ -16,28 +21,32 @@ export function LanguageSwitch({
 	const { currentLocale, languages, setLocale } = useLanguage();
 
 	return (
-		<select
+		<fieldset
 			aria-label="Language"
 			className={cn(
-				"max-w-[min(100%,11rem)] shrink-0 cursor-pointer rounded-sm border border-color-border-subtle bg-color-bg py-1.5 pl-2 pr-8 text-sm text-color-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent",
+				navControlGroupClass,
+				"m-0 min-w-0 border-0 p-0",
 				className,
 			)}
-			value={currentLocale}
-			onChange={(e) => {
-				const next = e.target.value;
-				setLocale(next);
-				onAfterLocaleChange?.();
-			}}
 		>
-			{languages.map((languageOption) => (
-				<option
-					key={languageOption.id}
-					value={languageOption.id}
-					lang={languageOption.id}
-				>
-					{languageOption.title}
-				</option>
-			))}
-		</select>
+			{languages.map((languageOption) => {
+				const active = currentLocale === languageOption.id;
+				return (
+					<button
+						key={languageOption.id}
+						type="button"
+						lang={languageOption.id}
+						className={navUtilityButtonClass(active)}
+						aria-pressed={active}
+						onClick={() => {
+							setLocale(languageOption.id);
+							onAfterLocaleChange?.();
+						}}
+					>
+						{languageOption.title}
+					</button>
+				);
+			})}
+		</fieldset>
 	);
 }

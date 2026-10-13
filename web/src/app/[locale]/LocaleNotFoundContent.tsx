@@ -22,7 +22,7 @@ export function LocaleNotFoundContent({ errorSettings }: Props) {
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
-				<h1 className="text-3xl font-bold">{title}</h1>
+				<h2 className="page-title">{title}</h2>
 				{body.length ? (
 					<RichTextMedia value={body} />
 				) : (
@@ -32,7 +32,7 @@ export function LocaleNotFoundContent({ errorSettings }: Props) {
 				)}
 				<Link
 					href={localePath("/", locale)}
-					className="inline-flex items-center gap-2 text-color-link hover:underline"
+					className="inline-flex items-center gap-xs text-color-link hover:text-color-hover"
 				>
 					Back to home
 				</Link>

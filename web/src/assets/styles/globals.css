@@ -17,8 +17,9 @@
 @import "./tailwind/theme.css";
 @import "./typography/rich-text.css";
 @import "./components/mux-player.css";
-@import "vanilla-cookieconsent/dist/cookieconsent.css";
-@import "./components/cookieConsent.css";
+/* vanilla-cookieconsent CSS (base + theme overrides) is imported by
+ * `components/cookies/CookieConsent.tsx` so it travels with the banner's lazy
+ * chunk instead of shipping to every visitor. */
 
 /*
  * Reserve the scrollbar gutter permanently. Without it, navigating between a

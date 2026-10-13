@@ -22,9 +22,27 @@ const listeners = new Set<ConsentListener>();
  */
 let library: ConsentLibrary | null = null;
 
+/** Set once `CookieConsent.run()` has resolved — `showPreferences` needs a started banner. */
+let started = false;
+
+/**
+ * A preferences click that arrived before the banner started. Navigation hydrates
+ * and takes clicks while the lazy banner chunk may still be downloading, so the
+ * request is kept and served on start instead of being dropped.
+ */
+let preferencesRequested = false;
+
 /** Called by `CookieConsentBanner` before it runs the banner. */
 export function registerConsentLibrary(lib: ConsentLibrary): void {
 	library = lib;
+}
+
+/** Called by `CookieConsentBanner` once `run()` has resolved. */
+export function markConsentLibraryStarted(): void {
+	started = true;
+	if (!preferencesRequested) return;
+	preferencesRequested = false;
+	openPreferences();
 }
 
 /** Subscribe to analytics consent changes (after CookieConsent.run). */
@@ -50,19 +68,22 @@ export function hasConsent(category: string): boolean {
 	return library?.acceptedCategory(category) ?? false;
 }
 
-/** Open the preferences modal — wired to the `open-cookie-preferences` linkFunction. */
-export function showCookiePreferences(): void {
-	// The link can be placed in navigation regardless of settings, but there is
-	// nothing to show unless the banner is enabled and has started.
-	if (!library) {
-		console.warn(
-			"[CookieConsent] Preferences unavailable — the banner is not enabled.",
-		);
-		return;
-	}
+function openPreferences(): void {
 	try {
-		library.showPreferences();
+		library?.showPreferences();
 	} catch (err) {
 		console.warn("[CookieConsent] Preferences unavailable.", err);
 	}
+}
+
+/** Open the preferences modal — wired to the `open-cookie-preferences` linkFunction. */
+export function showCookiePreferences(): void {
+	// The link can be placed in navigation regardless of settings. With the banner
+	// enabled but not started yet (lazy chunk in flight), open the modal on start;
+	// with the banner disabled nothing ever starts and the click stays a no-op.
+	if (!library || !started) {
+		preferencesRequested = true;
+		return;
+	}
+	openPreferences();
 }

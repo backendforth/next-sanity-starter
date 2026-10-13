@@ -9,6 +9,7 @@ import { media } from "sanity-plugin-media";
 import { muxInput } from "sanity-plugin-mux-input";
 import { netlifyTool } from "sanity-plugin-netlify";
 
+import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
 
 import { initialValueTemplates } from "./config/initialValueTemplates";
@@ -25,8 +26,8 @@ import { schemaTypes } from "./schemas";
 /**
  * Document types that carry a `language` field and have parallel-per-locale
  * documents (see `@sanity/document-internationalization`). Add new translatable
- * types here AND on the schema (`language` field + `translatable: true` in
- * `singletons.ts` where it applies).
+ * types here AND give the schema the hidden read-only `language` field (see
+ * `schemas/documents/page.ts`).
  */
 const TRANSLATABLE_SCHEMA_TYPES = [
   "home",

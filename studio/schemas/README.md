@@ -83,7 +83,7 @@ When you add a **new** module, wire it up in **both** places so behaviour stays 
 
 ### Adding a new module (checklist)
 
-> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus the safe insertions atomically. On this branch the script gracefully skips the `web/src/components/modules/index.ts` barrel patch (no barrel exists here). See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
+> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically. See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
 
 1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
@@ -92,7 +92,7 @@ When you add a **new** module, wire it up in **both** places so behaviour stays 
 3. **Rich text (inline blocks)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**.
 4. **Document-level `modules` arrays** — append the same `{ type: "module.<id>" }` to **`moduleTypes`** in **`fields/modulesArrayField.ts`**.
 
-After any module change, run `pnpm check:wiring` from the repo root. The validator is branch-aware: it treats the missing `web/src/components/modules/index.ts` barrel and `Module<Name>Placeholder` fallbacks as skips, not failures.
+After any module change, run `pnpm check:wiring` from the repo root to verify the full 8-point wiring (steps 1–4 above plus the four web-side files).
 
 You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
 
@@ -104,16 +104,16 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 | Module | Role |
 |--------|------|
-| `module.media` | Image or Mux video via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) depending on `type`. |
+| `module.media` | Image, Mux video, or silent loop via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) / **`videoLoopContent`** (`media.videoLoop`) depending on `type` (`image` / `video` / `loop`). |
 | `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`autoplay`** + **`autoplayDelayMs`**. |
-| `module.contentRefs` | Optional heading; **`allowMultiple`** toggles single **`reference`** vs **`references`** array to **`PAGE_REFERENCES`** (same as internal links). |
+| `module.contentRefs` | Optional heading; **`sourceScope`** (`all` / `pages` / `projects`); **`showProjectFilters`** (projects only); **`selection`** (`all` / `selected`). Projects support **`projectCategory`** filters + sort (A–Z / newest) on the web. |
 | `module.text` | Title + rich text body. |
 
 **Breaking change (JSON / GROQ):** Legacy `module.media` stored `image`, `video`, `videoSettings`, and `caption` at the root. Current data nests these under **`imageContent`** and **`videoContent`** (caption lives on the nested `media.image` / `media.video` objects). Update queries and front-end mapping accordingly, or migrate old documents.
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** in **`schemas/constants/references.ts`**. To allow more routable singletons in the picker, extend that list and follow the presentation/routing notes in section 4.
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
 
 ## 9. Mux / media
 

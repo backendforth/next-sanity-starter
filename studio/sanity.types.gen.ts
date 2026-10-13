@@ -90,7 +90,7 @@ export type RichText = Array<{
 
 export type ModuleText = {
   _type: "module.text";
-  title: string;
+  title?: string;
   body?: RichTextMedia;
 };
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import {
+	fetchSiteAnalyticsSettings,
 	fetchSiteCookieBanner,
 	fetchSiteLanguageSettings,
 	fetchSiteNavMenus,
@@ -10,6 +11,8 @@ import {
 import { CookieConsentBanner } from "@/src/components/cookies/CookieConsent";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
+import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
+import { SiteTrackingShell } from "@/src/components/tracking/SiteTrackingShell";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
@@ -47,12 +50,15 @@ export default async function LocaleLayout({ children, params }: Props) {
 	// menus are independent. The nav fetch when `raw` ends up invalid is
 	// wasted effort but the path is rare (404s only); the common case saves a
 	// roundtrip.
-	const [siteLocale, siteNav, cookieBanner, siteBrand] = await Promise.all([
-		fetchSiteLanguageSettings(),
-		fetchSiteNavMenus(),
-		fetchSiteCookieBanner(),
-		fetchSiteSettingsTitle(),
-	]);
+	const [siteLocale, siteNav, cookieBanner, siteBrand, analytics] =
+		await Promise.all([
+			fetchSiteLanguageSettings(),
+			fetchSiteNavMenus(),
+			fetchSiteCookieBanner(),
+			fetchSiteSettingsTitle(),
+			fetchSiteAnalyticsSettings(),
+		]);
+	const enabledTrackers = getEnabledTrackers(analytics);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
 	if (!pathUtils.isAppLocale(raw)) {
@@ -82,7 +88,12 @@ export default async function LocaleLayout({ children, params }: Props) {
 				pathUtils={pathUtils}
 				siteLocale={siteLocale}
 			/>
-			<CookieConsentBanner doc={cookieBanner} locale={locale} />
+			<CookieConsentBanner
+				doc={cookieBanner}
+				locale={locale}
+				trackers={enabledTrackers}
+			/>
+			<SiteTrackingShell />
 		</LanguageProvider>
 	);
 }

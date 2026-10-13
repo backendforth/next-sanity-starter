@@ -4,6 +4,7 @@ import type { StructureResolver } from "sanity/structure";
 import { errorSettingsStructureItem } from "./items/errorSettings";
 import { homeStructureItem } from "./items/home";
 import { pagesStructureItem } from "./items/pages";
+import { siteAnalyticsSettingsStructureItem } from "./items/siteAnalyticsSettings";
 import { siteCookieBannerStructureItem } from "./items/siteCookieBanner";
 import { siteLanguageSettingsStructureItem } from "./items/siteLanguageSettings";
 import { siteNavStructureItem } from "./items/siteNav";
@@ -30,6 +31,7 @@ export const structure: StructureResolver = (S) =>
               siteNavStructureItem(S),
               errorSettingsStructureItem(S),
               siteCookieBannerStructureItem(S),
+              siteAnalyticsSettingsStructureItem(S),
             ]),
         ),
     ]);

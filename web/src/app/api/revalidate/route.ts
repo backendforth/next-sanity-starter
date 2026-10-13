@@ -19,6 +19,7 @@ const ALLOWED_DOCUMENT_TYPES = new Set([
 	"siteSettings",
 	"siteNav",
 	"siteCookieBanner",
+	"siteAnalyticsSettings",
 	"errorSettings",
 	"siteLanguageSettings",
 ] as const);
@@ -158,6 +159,10 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 
 	if (_type === "siteCookieBanner") {
 		tags.push("site-cookie-banner");
+	}
+
+	if (_type === "siteAnalyticsSettings") {
+		tags.push("site-analytics-settings");
 	}
 
 	if (_type === "errorSettings") {

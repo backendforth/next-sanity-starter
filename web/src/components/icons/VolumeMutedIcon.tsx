@@ -3,7 +3,6 @@
 /** Speaker with X — “muted”. Pair with an accessible label on the control. */
 export function VolumeMutedIcon() {
 	return (
-		// biome-ignore lint/a11y/noSvgWithoutTitle: decorative; label on parent control
 		<svg
 			width={22}
 			height={22}

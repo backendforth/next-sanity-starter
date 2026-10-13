@@ -8,7 +8,7 @@ import {
 	fetchSiteNavMenus,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
-import { CookieConsentBanner } from "@/src/components/cookies/CookieConsent";
+import { LazyCookieConsentBanner } from "@/src/components/cookies/LazyCookieConsentBanner";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
@@ -88,11 +88,16 @@ export default async function LocaleLayout({ children, params }: Props) {
 				pathUtils={pathUtils}
 				siteLocale={siteLocale}
 			/>
-			<CookieConsentBanner
-				doc={cookieBanner}
-				locale={locale}
-				trackers={enabledTrackers}
-			/>
+			{/* Only when the Studio toggle is on: the lazy chunk (JS + CSS) is
+			 * otherwise never requested. A toggle flip reaches the page through
+			 * the `siteCookieBanner` cache tag, without a deploy. */}
+			{cookieBanner?.useCookieBanner ? (
+				<LazyCookieConsentBanner
+					doc={cookieBanner}
+					locale={locale}
+					trackers={enabledTrackers}
+				/>
+			) : null}
 			<SiteTrackingShell />
 		</LanguageProvider>
 	);

@@ -14,9 +14,8 @@ import {
 	pageBySlugQuery,
 	projectBySlugQuery,
 	siteAnalyticsSettingsQuery,
-	siteCookieBannerLayoutQuery,
+	siteChromeQuery,
 	siteLanguageSettingsQuery,
-	siteNavMenusQuery,
 	siteSettingsFaviconQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
@@ -150,8 +149,8 @@ export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
 /**
  * `siteSettings.favicon` for root metadata icons. The image field travels whole
  * (crop + hotspot); `siteFaviconIcons` derives the sizes on the Sanity CDN.
- * Returns `null` when unset — the browser's implicit `/favicon.ico` probe then
- * reaches the static `public/favicon.ico`.
+ * Returns `null` when unset — there is no static fallback icon (see
+ * `app/layout.tsx`).
  */
 export const fetchSiteSettingsFavicon = cache(
 	async (options?: LiveFetchOptions): Promise<SanityImageField | null> => {
@@ -165,28 +164,34 @@ export const fetchSiteSettingsFavicon = cache(
 	},
 );
 
-/** `siteNav` main/footer menus with resolved links; no embedded modules. */
-export const fetchSiteNavMenus = cache(async () => {
-	if (!isSanityConfigured) return null;
-	const { data } = await sanityFetch({
-		query: siteNavMenusQuery,
-		tags: [SANITY_CACHE_TAGS.siteNav],
-	});
-	return data as SiteNavMenusDocument | null;
-});
+/** `siteChromeQuery` result — what `app/[locale]/layout.tsx` renders around every page. */
+export type SiteChromeData = {
+	/** `siteNav` main/footer menus with resolved links; no embedded modules. */
+	nav: SiteNavMenusDocument | null;
+	/** Cookie banner copy for the app shell — no embedded modules. */
+	cookieBanner: SiteCookieBannerDocument | null;
+	/** `siteSettings.title`, the header brand. */
+	title: string | null;
+} | null;
 
-/** Cookie banner copy for the app shell — no embedded modules. */
-export const fetchSiteCookieBanner = cache(
-	async (
-		options?: LiveFetchOptions,
-	): Promise<SiteCookieBannerDocument | null> => {
+/**
+ * App-shell chrome (nav, cookie banner, site title) in one `sanityFetch` instead of three —
+ * each fetch is two roundtrips (sync-tags probe + data). `fetchSiteSettingsTitle` stays for
+ * the `generateMetadata` paths, which fetch with `stega: false`.
+ */
+export const fetchSiteChrome = cache(
+	async (options?: LiveFetchOptions): Promise<SiteChromeData> => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
-			query: siteCookieBannerLayoutQuery,
-			tags: [SANITY_CACHE_TAGS.siteCookieBanner],
+			query: siteChromeQuery,
+			tags: [
+				SANITY_CACHE_TAGS.siteNav,
+				SANITY_CACHE_TAGS.siteCookieBanner,
+				SANITY_CACHE_TAGS.siteSettings,
+			],
 			...options,
 		});
-		return data as SiteCookieBannerDocument | null;
+		return data as SiteChromeData;
 	},
 );
 

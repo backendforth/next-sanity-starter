@@ -90,7 +90,7 @@ export default async function Project({ params }: PageProps) {
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{projectTitle || hasTitleMedia ? (
 					<header className="flex flex-col gap-sm">
 						{projectTitle ? (
@@ -112,7 +112,7 @@ export default async function Project({ params }: PageProps) {
 						/>
 					</article>
 				) : null}
-			</main>
+			</div>
 		</div>
 	);
 }

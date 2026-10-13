@@ -10,6 +10,7 @@ import {
 } from "@/sanity/utils/sanityLocalizedText";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import { useLanguage } from "@/src/contexts/LanguageContext";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
 	errorSettings: ErrorSettingsDocument | null;
@@ -22,7 +23,7 @@ export function LocaleNotFoundContent({ errorSettings }: Props) {
 
 	const title =
 		pickLocalizedString(errorSettings?.notFoundTitle, locale, siteLocale) ??
-		"Page not found";
+		uiLabel("notFoundTitle", locale);
 	const body = pickLocalizedPortableTextBlocks(
 		errorSettings?.notFoundBody,
 		locale,
@@ -31,22 +32,22 @@ export function LocaleNotFoundContent({ errorSettings }: Props) {
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
 				<h2 className="page-title">{title}</h2>
 				{body?.length ? (
 					<RichTextMedia value={body} />
 				) : (
 					<p className="text-color-text-muted">
-						The page you are looking for does not exist or has been moved.
+						{uiLabel("notFoundBody", locale)}
 					</p>
 				)}
 				<Link
 					href={localePath("/", locale)}
 					className="inline-flex items-center gap-xs text-color-link hover:text-color-hover"
 				>
-					Back to home
+					{uiLabel("backHome", locale)}
 				</Link>
-			</main>
+			</div>
 		</div>
 	);
 }

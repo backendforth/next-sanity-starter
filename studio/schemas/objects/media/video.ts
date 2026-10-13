@@ -3,6 +3,7 @@ import { defineType } from "sanity";
 
 import { MediaVideoPreview } from "../../../components/previews/MediaVideoPreview";
 import { getDurationString } from "../../../utils/helpers";
+import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const mediaVideo = defineType({
   name: "media.video",
@@ -26,7 +27,7 @@ export const mediaVideo = defineType({
       name: "poster",
       title: "Poster image",
       type: "image",
-      description: "Displayed before playback and as fallback.",
+      description: `Displayed before playback and as fallback. ${IMAGE_COLOR_PROFILE_HINT}`,
       options: { hotspot: true },
     },
     {

@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
-import { VisualEditing } from "next-sanity/visual-editing";
 import {
 	fetchSiteLanguageSettings,
 	fetchSiteSettingsFavicon,
 } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
-import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
@@ -41,10 +40,10 @@ const geistMono = Geist_Mono({
  * The icons come from `siteSettings.favicon`, with every size derived from that
  * one asset on the Sanity CDN (`siteFaviconIcons`). Declaring them here covers
  * every route below — route metadata merges field by field, so no page has to
- * repeat them. With the field unset the key stays absent and `public/favicon.ico`
- * is picked up by the browser's implicit `/favicon.ico` probe; it lives in
- * `public/` rather than `app/` because the file convention beats the metadata
- * object, and with both in place two icons stood in the head.
+ * repeat them. There is deliberately no static fallback: browsers, bookmarks
+ * and search crawlers probe `/favicon.ico` regardless of the `<link>` tags, so
+ * the Next.js default icon that used to sit in `public/` showed up beside or
+ * instead of the Sanity one. With the field unset the site has no favicon.
  */
 export async function generateMetadata(): Promise<Metadata> {
 	const favicon = await fetchSiteSettingsFavicon({ stega: false });
@@ -140,12 +139,7 @@ export default async function RootLayout({
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />
 				) : null}
-				{isDraft ? (
-					<>
-						<VisualEditing />
-						<DisableDraftMode />
-					</>
-				) : null}
+				{isDraft ? <LazyDraftModeOverlays /> : null}
 			</body>
 		</html>
 	);

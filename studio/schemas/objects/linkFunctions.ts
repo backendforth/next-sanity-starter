@@ -1,7 +1,7 @@
 import { defineType } from "sanity";
 
 /**
- * App-level link actions resolved in the frontend (e.g. scroll, modal).
+ * App-level link actions resolved in the frontend (scroll-to anchor, cookie preferences).
  */
 export const linkFunctions = defineType({
   name: "linkFunctions",
@@ -15,7 +15,6 @@ export const linkFunctions = defineType({
       options: {
         list: [
           { title: "Scroll to anchor", value: "scroll-to" },
-          { title: "Open modal", value: "open-modal" },
           {
             title: "Cookie / Open preferences",
             value: "open-cookie-preferences",

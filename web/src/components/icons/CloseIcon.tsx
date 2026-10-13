@@ -3,7 +3,6 @@
 /** X close icon; pair with an accessible label on the control (e.g. button). */
 export function CloseIcon() {
 	return (
-		// biome-ignore lint/a11y/noSvgWithoutTitle: decorative; label on parent control
 		<svg
 			width={22}
 			height={22}

@@ -3,7 +3,6 @@
 /** Speaker with waves — “sound on”. Pair with an accessible label on the control. */
 export function VolumeOnIcon() {
 	return (
-		// biome-ignore lint/a11y/noSvgWithoutTitle: decorative; label on parent control
 		<svg
 			width={22}
 			height={22}

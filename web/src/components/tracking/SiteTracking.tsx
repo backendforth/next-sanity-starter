@@ -1,7 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 
 import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import {
@@ -49,8 +49,6 @@ export function SiteTracking({ config }: Props) {
 	const loaded = useRef<Map<string, AnalyticsTracker> | null>(null);
 	if (loaded.current === null) loaded.current = new Map(loadedTrackerEntries());
 	const loadedMap = loaded.current;
-	const initialPageView = useRef(true);
-	const pathname = usePathname();
 
 	const trackers = useMemo(
 		() => getEnabledTrackers(config.analytics),
@@ -122,16 +120,34 @@ export function SiteTracking({ config }: Props) {
 		syncConsent(true);
 	}, [config, showBanner, trackers, loadedMap]);
 
-	// Providers emit their own view when they initialise; only client-side
-	// navigations after that need one, hence skipping the first run.
+	return (
+		<Suspense fallback={null}>
+			<PageViews loaded={loadedMap} />
+		</Suspense>
+	);
+}
+
+/**
+ * Page views for client-side navigations, including query-only ones (`?q=a` → `?q=b`),
+ * which `usePathname` alone never sees. Its own component behind `Suspense`:
+ * `useSearchParams` would otherwise opt the whole layout out of static rendering.
+ *
+ * Providers emit their own view when they initialise; only navigations after that
+ * need one, hence skipping the first run.
+ */
+function PageViews({ loaded }: { loaded: Map<string, AnalyticsTracker> }) {
+	const pathname = usePathname();
+	const search = useSearchParams().toString();
+	const initialPageView = useRef(true);
+
 	useEffect(() => {
 		if (initialPageView.current) {
 			initialPageView.current = false;
 			return;
 		}
-		if (loadedMap.size === 0) return;
-		trackPageView(pathname, window.location.search);
-	}, [pathname, loadedMap]);
+		if (loaded.size === 0) return;
+		trackPageView(pathname, search ? `?${search}` : "");
+	}, [pathname, search, loaded]);
 
 	return null;
 }

@@ -8,7 +8,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
-	useState,
+	useRef,
 } from "react";
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
@@ -87,17 +87,17 @@ export function LanguageProvider({
 
 	/* Slugs differ per language under document-level translation, so the
 	 * prefix swap only holds for routes that don't register their variants.
-	 * Keyed by pathname: an entry left behind by the previous page is ignored. */
-	const [registered, setRegistered] = useState<RegisteredTranslations | null>(
-		null,
-	);
+	 * Keyed by pathname: an entry left behind by the previous page is ignored.
+	 * A ref, not state — it is only read on click, so registering must not
+	 * re-render every `useLanguage` consumer. */
+	const registeredRef = useRef<RegisteredTranslations | null>(null);
 
 	const setTranslations = useCallback(
 		(forPathname: string, translations: readonly TranslationPath[]) => {
-			setRegistered({
+			registeredRef.current = {
 				pathname: forPathname,
 				byLocale: translationPathsByLocale(translations, pathUtils),
-			});
+			};
 		},
 		[pathUtils],
 	);
@@ -107,6 +107,7 @@ export function LanguageProvider({
 			if (!pathUtils.isAppLocale(next)) {
 				return;
 			}
+			const registered = registeredRef.current;
 			if (registered?.pathname === pathname) {
 				router.push(
 					registered.byLocale[next] ?? pathUtils.localePath("/", next),
@@ -115,7 +116,7 @@ export function LanguageProvider({
 			}
 			router.push(pathUtils.localePath(pathWithoutLocale, next));
 		},
-		[pathname, pathWithoutLocale, pathUtils, registered, router],
+		[pathname, pathWithoutLocale, pathUtils, router],
 	);
 
 	const value = useMemo<LanguageContextValue>(

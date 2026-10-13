@@ -4,6 +4,8 @@
  * types live here; fetches stay deduped per request via React cache.
  */
 import type { PortableTextBlock } from "@portabletext/types";
+import type { TranslationPath } from "@/src/i18n/siteLocalePathUtils";
+
 import type { ContentModule, ModuleMediaData } from "./modules";
 
 /** Resolved seo / seo.fallback projection from GROQ (snippets/seo.ts). */
@@ -13,12 +15,8 @@ export type PageSeo = {
 	imageUrl?: string | null;
 } | null;
 
-/** One language variant of a route document (`translationsQuery`). */
-export type DocumentTranslation = {
-	language?: string | null;
-	/** Route path without the locale prefix (`/`, `/work`, `/about`, `/work/x`). */
-	path?: string | null;
-} | null;
+/** One language variant of a route document (`translationsQuery`): language + path without locale prefix. */
+export type DocumentTranslation = TranslationPath;
 
 export type HomeDocument = {
 	_id: string;

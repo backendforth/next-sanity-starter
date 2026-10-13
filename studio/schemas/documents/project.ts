@@ -69,6 +69,7 @@ export const project = defineType({
       type: "slug",
       options: {
         maxLength: 96,
+        source: "title",
         isUnique: isUniqueLocaleAgnostic,
       },
       validation: validateSlug,

@@ -63,6 +63,8 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
 
+Give the slug a **Generate** button with `options.source: "title"`. On this branch each language variant is its own document with a plain-string `title`, so `source` points at it directly (`main` needs a helper for its localized titles).
+
 ## 7. Shared media objects (`media.*`)
 
 Reusable **`type: "object"`** types for image and Mux video live under **`objects/media/`**:

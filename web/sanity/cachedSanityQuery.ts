@@ -4,6 +4,7 @@ import {
 	FALLBACK_SITE_LOCALE_CONFIG,
 	type SiteLocaleConfig,
 } from "@/src/i18n/fallbackSiteLocales";
+import { EMBEDDED_CONTENT_TAGS, SANITY_CACHE_TAGS } from "./cacheTags";
 import { client, isSanityConfigured } from "./client";
 import { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
@@ -39,27 +40,6 @@ export const cachedSanityQuery = cache(async <T>(query: string) => {
 	return { data };
 });
 
-// ── Tag constants (kept in sync with `/api/revalidate`) ─────────────────────
-
-export const SANITY_CACHE_TAGS = {
-	home: (locale: string) => `home-${locale}`,
-	work: (locale: string) => `work-${locale}`,
-	/** Every language's home/work entry — each one projects its sibling variants (`translationsQuery`). */
-	homeAll: "home-all",
-	workAll: "work-all",
-	pages: "pages",
-	pageSlug: (slug: string, locale: string) => `page-${slug}-${locale}`,
-	projects: "projects",
-	projectSlug: (slug: string, locale: string) => `project-${slug}-${locale}`,
-	sitemap: "site-pages",
-	siteLanguageSettings: "site-language-settings",
-	siteSettings: "site-settings",
-	siteNav: "site-nav",
-	siteCookieBanner: "site-cookie-banner",
-	siteAnalyticsSettings: "site-analytics-settings",
-	errorSettings: "error-settings",
-} as const;
-
 // ── Page-by-slug ────────────────────────────────────────────────────────────
 
 /**
@@ -82,7 +62,7 @@ export const cachedPageDocumentBySlug = cache(
 			[tag],
 			{
 				revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-				tags: [tag, SANITY_CACHE_TAGS.pages],
+				tags: [tag, ...EMBEDDED_CONTENT_TAGS],
 			},
 		);
 		const data = await fetchPage();
@@ -105,7 +85,7 @@ export const cachedHomeDocument = cache(async (locale: string) => {
 		[tag],
 		{
 			revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-			tags: [tag, SANITY_CACHE_TAGS.homeAll],
+			tags: [tag, SANITY_CACHE_TAGS.homeAll, ...EMBEDDED_CONTENT_TAGS],
 		},
 	);
 	const data = await fetchHome();

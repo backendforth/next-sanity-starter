@@ -2,6 +2,7 @@ import { defineQuery } from "next-sanity";
 
 import { modulesQuery } from "../components/modules";
 import { pageSeoQuery } from "../snippets/seo";
+import { translationsQuery } from "../snippets/translations";
 
 export const homeQuery =
 	defineQuery(`*[_type == "home" && language == $locale][0]{
@@ -9,5 +10,6 @@ export const homeQuery =
   title,
   language,
   ${modulesQuery},
-  ${pageSeoQuery}
+  ${pageSeoQuery},
+  ${translationsQuery}
 }`);

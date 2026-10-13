@@ -2,6 +2,7 @@ import { defineQuery } from "next-sanity";
 
 import { modulesQuery } from "../components/modules";
 import { pageSeoQuery } from "../snippets/seo";
+import { translationsQuery } from "../snippets/translations";
 
 /** `work` landing — one document per locale (doc-level i18n). */
 export const workQuery =
@@ -10,5 +11,6 @@ export const workQuery =
   title,
   language,
   ${modulesQuery},
-  ${pageSeoQuery}
+  ${pageSeoQuery},
+  ${translationsQuery}
 }`);

@@ -3,6 +3,7 @@ import { defineQuery } from "next-sanity";
 import { moduleMediaInnerFields } from "../components/modules/media";
 import { richTextMediaQuery } from "../components/text/richTextMedia";
 import { pageSeoQuery } from "../snippets/seo";
+import { translationsQuery } from "../snippets/translations";
 
 /** Project detail — one document per locale (doc-level i18n). */
 export const projectBySlugQuery =
@@ -18,5 +19,6 @@ export const projectBySlugQuery =
   body[]{
     ${richTextMediaQuery}
   },
-  ${pageSeoQuery}
+  ${pageSeoQuery},
+  ${translationsQuery}
 }`);

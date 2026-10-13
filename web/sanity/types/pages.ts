@@ -13,12 +13,21 @@ export type PageSeo = {
 	imageUrl?: string | null;
 } | null;
 
+/** One language variant of a route document (`translationsQuery`). */
+export type DocumentTranslation = {
+	language?: string | null;
+	/** Route path without the locale prefix (`/`, `/work`, `/about`, `/work/x`). */
+	path?: string | null;
+} | null;
+
 export type HomeDocument = {
 	_id: string;
 	language?: string | null;
 	title?: string | null;
 	modules?: ContentModule[] | null;
 	seo?: PageSeo;
+	/** Every published language variant, this document included. */
+	translations?: DocumentTranslation[] | null;
 };
 
 export type PageDocument = {
@@ -28,6 +37,8 @@ export type PageDocument = {
 	slug?: { current?: string | null } | null;
 	modules?: ContentModule[] | null;
 	seo?: PageSeo;
+	/** Every published language variant, this document included. */
+	translations?: DocumentTranslation[] | null;
 };
 
 export type WorkDocument = {
@@ -36,6 +47,8 @@ export type WorkDocument = {
 	title?: string | null;
 	modules?: ContentModule[] | null;
 	seo?: PageSeo;
+	/** Every published language variant, this document included. */
+	translations?: DocumentTranslation[] | null;
 };
 
 export type ProjectDocument = {
@@ -46,4 +59,6 @@ export type ProjectDocument = {
 	slug?: { current?: string | null } | null;
 	body?: PortableTextBlock[] | null;
 	seo?: PageSeo;
+	/** Every published language variant, this document included. */
+	translations?: DocumentTranslation[] | null;
 };

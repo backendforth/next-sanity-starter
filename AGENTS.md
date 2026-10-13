@@ -279,22 +279,25 @@ Always link to these; never duplicate their content.
 
 ## Branch-specific notes
 
-Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: how a document's locale is stored.
+Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: where a locale lives — in the field (`main`) or in the document (`variant`).
 
-**Verify before you trust this table.** It described a much wider divergence for months after the branches had converged, which made routine ports look like rewrites. If a row here contradicts the branch you are on, the branch wins — fix the row.
+**Verify before you trust this table.** It has been wrong in both directions: it described a much wider divergence for months after the branches had converged, and later claimed the variant still used `internationalizedArray*` fields when it had moved to plain ones (corrected 2026-10-13). If a row here contradicts the branch you are on, the branch wins — fix the row.
 
 | Aspect | `main` | `variant/document-level` |
 |---|---|---|
-| Document-level locale field | None — i18n is purely field-level via `internationalizedArray*`. | `page` has a `language` string field (`readOnly: true`, `hidden: true`, `initialValue: "en"`) set by the i18n plugin, **never edit it manually**. Title, module bodies, and other content fields still use `internationalizedArray*` and resolve through `sanityLocalizedText.ts` exactly as on `main`. |
-| Studio plugin | — | `@sanity/document-internationalization` in `studio/package.json` + registered in `sanity.config.ts`. |
-| Per-locale settings documents | `siteSettings` is a singleton; queries address it by `_id` (`*[_id == "siteSettings"][0]`). | `siteSettings` exists per locale; queries filter on it (`*[_type == "siteSettings" && language == $locale][0]`) and take a `$locale` param. |
+| Where the locale lives | In the field. One document per page; translatable fields are `internationalizedArray*` (`[{ _key, language, value }]`). | In the document. One document per language; every document type (`page`, `project`, `projectCategory`, `work`, `home`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) has a `language` string field (`readOnly`, `hidden`, `initialValue: "en"`) set by the plugin — **never edit it manually**. Content fields are plain (`string`, `richText`, `richTextMedia`). |
+| Studio plugin | `sanity-plugin-internationalized-array`, languages from `studio/config/sync/internationalizedArrayLanguages.ts`. | `@sanity/document-internationalization`, languages from `studio/config/sync/supportedLanguages.ts`; translations are linked through `translation.metadata` documents. |
+| GROQ | No locale parameter; singletons by `_id` (`*[_id == "siteSettings"][0]`). The "never filter locale in GROQ" rule applies here. | Queries select the document for the route's language and take `$locale` (`*[_type == "siteSettings" && language == $locale][0]`). Selecting by `language` is the design here, not the anti-pattern. |
+| Render-time resolution | Every translatable field through `pickLocalizedString` / `parseLocalizedText`. | Fields already hold the route's language; render them directly. `sanityLocalizedText.ts` remains for link labels that may still carry localized arrays. |
+| Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
 
 Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/` with the `index.ts` barrel, flat `queries/components/modules/<name>.ts` + `types/modules/<name>.ts` with barrels, and the `richTextMedia.ts` inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
 ### Variant-branch rules
 
-- The `page.language` field is set programmatically by the i18n plugin; **do not edit, hide, expose, or remove it**. New page documents inherit it from `initialValue`.
-- Anything reading `siteSettings` needs the `$locale` param on this branch. Porting a settings query from `main` means adding that filter, not copying the `_id` lookup.
+- The `language` field on every document type is set by the i18n plugin; **do not edit, hide, expose, or remove it**. New documents inherit it from `initialValue` or the plugin's "create translation" action.
+- Anything reading a per-language document (`home`, `work`, `page`, `project`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) needs the `$locale` param on this branch. Porting such a query from `main` means adding the `language == $locale` filter, not copying the `_id` lookup.
+- A field that is `internationalizedArray*` on `main` is plain on this branch: drop the `pickLocalizedString` call in the port, render the value directly.
 - Web fixes authored on `main` are expected to apply here with context conflicts only. If a port looks structural, re-check against the branch before adapting — the divergence table above has been wrong in that direction before.
 
 ### Updating conventions on both branches

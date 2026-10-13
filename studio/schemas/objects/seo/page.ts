@@ -1,4 +1,5 @@
 import { defineType, type Rule } from "sanity";
+import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 type LocalizedEntry = { _key?: string; language?: string; value?: unknown };
 
@@ -43,6 +44,7 @@ export const seoPage = defineType({
       name: "image",
       title: "Social / OG image",
       type: "image",
+      description: IMAGE_COLOR_PROFILE_HINT,
       options: {
         hotspot: true,
       },
@@ -72,6 +74,7 @@ export const seoFallback = defineType({
       name: "image",
       title: "Social / OG image",
       type: "image",
+      description: IMAGE_COLOR_PROFILE_HINT,
       options: {
         hotspot: true,
       },

@@ -55,9 +55,12 @@ const WEBHOOK_TAG_MAP: Record<
 	string,
 	(slug?: string, language?: string) => string[]
 > = {
+	/* `home` is a page reference too (`PAGE_REFERENCES`): content-refs lists and internal links
+	 * embed its title, so it purges the embedding entries like a page does. */
 	home: (_slug, language) => [
 		...(language ? [SANITY_CACHE_TAGS.home(language)] : []),
 		SANITY_CACHE_TAGS.homeAll,
+		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.sitemap,
 	],
 	work: (_slug, language) => [

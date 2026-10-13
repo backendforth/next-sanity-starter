@@ -207,6 +207,14 @@ export function unloadTracker(tracker: AnalyticsTracker): void {
 				}
 			).clarity;
 			if (clarity) {
+				// Clarity's own withdrawal signal (Consent API v2): it drops to its
+				// no-consent mode and stops setting cookies. The reload that follows
+				// is what actually stops the recorder; this covers the moment before
+				// it, and a reload the browser does not carry out.
+				clarity("consentv2", {
+					ad_Storage: "denied",
+					analytics_Storage: "denied",
+				});
 				clarity.q = [];
 				(
 					window as Window & { clarity?: (...args: unknown[]) => void }

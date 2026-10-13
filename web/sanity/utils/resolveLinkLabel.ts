@@ -1,13 +1,13 @@
 /**
  * Resolve a human-readable label for a Sanity `link` object (Nav, Portable Text).
  *
- * `link.title` is now an `internationalizedArrayString` (per-locale entries). For internal
- * links we fall back to the referenced document title (also localized). External links fall
- * back to the URL, function links to the function key — both as a last resort before the
- * literal "Link" placeholder.
+ * On this branch (document-level i18n) `link.title` and the referenced document's title are
+ * plain strings in the document's language. For internal links we fall back to the referenced
+ * document title. External links fall back to the URL, function links to the function key —
+ * both as a last resort before the literal "Link" placeholder.
  *
- * Plain `string` is accepted on both fields for forward-compat with the document-level i18n
- * variant (one document per language → `reference->title` is a plain string).
+ * `IntlStringEntry[]` is still accepted on both fields and resolved with `pickLocalizedString`,
+ * so the code matches `main`, where `link.title` is an `internationalizedArrayString`.
  */
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";

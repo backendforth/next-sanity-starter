@@ -1,6 +1,6 @@
 # web/ — Claude Code subtree rules
 
-Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas — see AGENTS.md for the full repo conventions, module pattern, and i18n architecture.
+Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas — see AGENTS.md for the full repo conventions, module pattern, and i18n architecture. On this branch (`variant/document-level`), AGENTS.md §"Branch-specific notes" wins over the field-level §i18n.
 
 ## Stack quirks (non-obvious)
 
@@ -11,7 +11,8 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas �
 
 ## Locale flow (the part that breaks SSR if you get it wrong)
 
-- **YOU MUST** thread `{ locale, siteLocale }` through every render path that touches Sanity content. The render tree starts at `app/[locale]/page.tsx` and ends in modules.
+- **YOU MUST** pass the route `locale` into every fetch of a per-language document (`fetch*` helpers → `$locale` in GROQ), and `{ locale, siteLocale }` into anything that builds hrefs (`ModulesRenderer` → `ModuleContentRefs`, nav). The render tree starts at `app/[locale]/page.tsx`.
+- Fields arrive in the route's language (one document per language). Render them directly — no `pickLocalizedString` on content fields.
 - **NEVER** read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR and Presentation iframes.
 - URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
 
@@ -19,7 +20,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas �
 
 - `web/sanity/types/*` are **hand-maintained**. After schema or GROQ projection changes, update the type in the same commit. `pnpm check:wiring` catches missing files; field renames slip through silently.
 - **NEVER** import from `studio/sanity.types.gen.ts` — wrong direction, breaks the build.
-- Set `data-sanity` attrs on Sanity-rendered roots (copy from `ModuleText.tsx` / `MediaImage.tsx`). Visual Editing depends on it.
+- Don't set `data-sanity` in module components. `ModulesRenderer` puts one attribute on the module container (path `modules`, built with `dataAttr`); Visual Editing click-to-edit depends on rendering modules through it.
 
 ## Anti-patterns specific to web
 

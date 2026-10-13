@@ -12,8 +12,8 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | `settings.ts` includes | `siteSettingsSeoFallbackQuery` | Standalone `siteSettings.seo` projection used once per request for route `generateMetadata` fallbacks. |
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
 | `link.ts` | `linkQuery` | Portable Text `link` marks: `internal` (route, slug, `resolvedReference`), `external` (href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
-| `settings.ts` | `siteNavMenusQuery`, `navMenusQuery`, `errorSettingsQuery`, `siteCookieBannerLayoutQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery` | Lean singleton projections for the app shell (each fetched via its `fetch*` helper in `fetchSanityData.ts`) |
-| `sitemap.ts` | `pageSlugsQuery`, `sitemapPagesQuery` | Slug list for `[slug]` routes; sitemap rows include `home` + all `page` docs with `path` / `lastmod` fields |
+| `settings.ts` | `siteNavMenusQuery`, `navMenusQuery`, `errorSettingsQuery`, `siteCookieBannerLayoutQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery` | Lean projections for the app shell (each fetched via its `fetch*` helper in `fetchSanityData.ts`). All select the document with `language == $locale`, except `siteLanguageSettingsQuery` (global singleton, by `_id`) |
+| `sitemap.ts` | `pageSlugsQuery`, `projectSlugsQuery`, `sitemapPagesQuery` | Slug + `language` rows for `[slug]` / `work/[slug]` routes (all languages); sitemap rows cover `home`, `work`, `page`, `project` with `language`, unprefixed `path`, and `_updatedAt` |
 
 ## Using a snippet in a custom query (Next.js)
 
@@ -32,21 +32,23 @@ const myPortableTextField = `body[]{
   }
 }`;
 
-export const myQuery = `*[_type == "article" && slug.current == $slug][0]{
+export const myQuery = `*[_type == "article" && slug.current == $slug && language == $locale][0]{
   _id,
   title,
   ${myPortableTextField}
 }`;
 
-// Server Component or route handler
-const doc = await client.fetch(myQuery, { slug: "hello" });
+// Server Component or route handler — `locale` comes from the route params
+const doc = await client.fetch(myQuery, { slug: "hello", locale });
 ```
 
 Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, LQIP, playback ids).
 
-## Singleton settings
+## Settings documents
 
-- **`siteNavMenusQuery`** — `siteNav` document with resolved main + footer menus (no `modules[]`).
+Settings are per-language documents (one `siteNav`, `siteSettings`, … per language), so the full queries below take `$locale` (`navMenusQuery` is a fragment).
+
+- **`siteNavMenusQuery`** — `siteNav` document for `$locale` with resolved main + footer menus (no `modules[]`). Falls back to a legacy `siteNav` without `language`.
 - **`navMenusQuery`** — only the `mainMenu` / `footerMenu` projections (embed in a larger query if needed).
 - **`errorSettingsQuery`** — 404 / 500 copy; deliberately no `modules[]` (no error page renders modules).
 
@@ -58,8 +60,8 @@ Example:
 import { navMenusQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
-const shellNavQuery = `*[_id == "siteNav"][0]{ _id, title, ${navMenusQuery} }`;
-const nav = await client.fetch(shellNavQuery);
+const shellNavQuery = `*[_type == "siteNav" && language == $locale][0]{ _id, title, ${navMenusQuery} }`;
+const nav = await client.fetch(shellNavQuery, { locale });
 ```
 
 ## Using snippets with a client-side store
@@ -72,12 +74,16 @@ Snippets are just strings — the **store** should hold **fetch results**, not t
 Example pattern with a small API route that wraps a snippet-based query:
 
 ```ts
-// app/api/site-shell/route.ts
+// app/api/site-shell/[locale]/route.ts
 import { siteNavMenusQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
-export async function GET() {
-  const data = await client.fetch(siteNavMenusQuery);
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ locale: string }> },
+) {
+  const { locale } = await params;
+  const data = await client.fetch(siteNavMenusQuery, { locale });
   return Response.json(data);
 }
 ```
@@ -88,18 +94,18 @@ import { create } from "zustand";
 
 type SiteShell = Awaited<ReturnType<typeof fetchSiteShell>>;
 
-async function fetchSiteShell() {
-  const res = await fetch("/api/site-shell");
+async function fetchSiteShell(locale: string) {
+  const res = await fetch(`/api/site-shell/${locale}`);
   return res.json();
 }
 
 export const useSiteShellStore = create<{
   data: SiteShell | null;
-  load: () => Promise<void>;
+  load: (locale: string) => Promise<void>;
 }>((set) => ({
   data: null,
-  load: async () => {
-    const data = await fetchSiteShell();
+  load: async (locale) => {
+    const data = await fetchSiteShell(locale);
     set({ data });
   },
 }));

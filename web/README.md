@@ -20,12 +20,12 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | What | Where |
 |------|-------|
-| Supported languages | Sanity **Site languages** — order = fallback order in `sanity/utils/sanityLocalizedText.ts`. |
+| Supported languages | Sanity **Site languages** — ids are URL segments and the `language` values on translated documents; order = language switcher order. |
 | **Default** (no URL prefix) | **`defaultLanguageId`** in that document. |
-| Studio UI labels for `internationalizedArray*` | Same document; Studio loads them at runtime from Sanity (see `studio/config/sync/internationalizedArrayLanguages.ts`). |
-| Fallback when a field has no translation | Same order as `availableLanguages` (after exact / base tags). |
+| Studio languages for `@sanity/document-internationalization` | Same document; Studio fetches it once per session (see `studio/config/sync/supportedLanguages.ts`). |
+| Content in a language | One Sanity document per language. Queries select it with `language == $locale`; a missing translation is not filled from another language (slug routes 404). |
 
-If the singleton is missing or invalid, the web app falls back to **en** + **de** (see `web/src/i18n/fallbackSiteLocales.ts`). **Publish** `siteLanguageSettings` so the CDN sees it, or set **`SANITY_API_READ_TOKEN`** in `web/.env.local` so dev reads drafts (same as Presentation). The same token in `studio/.env` lets Studio read draft language settings — see `studio/.env.example`.
+If the singleton is missing or invalid, the web app falls back to **en** only (see `web/src/i18n/fallbackSiteLocales.ts`). **Publish** `siteLanguageSettings` so the CDN sees it, or set **`SANITY_API_READ_TOKEN`** in `web/.env.local` so dev reads drafts (same as Presentation). The same token in `studio/.env` lets Studio read draft language settings — see `studio/.env.example`.
 
 **Reserved path segments:** every **non-default** language `id` is a first path segment (for example `de` in `/de/about`). Do not use those strings as page slugs on the default-locale site.
 

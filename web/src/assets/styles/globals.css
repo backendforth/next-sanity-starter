@@ -35,3 +35,17 @@ body {
 	background: var(--color-bg);
 	color: var(--color-text);
 }
+
+/*
+ * Pointer cursor on everything clickable. Tailwind v4's Preflight dropped v3's
+ * `button { cursor: pointer }` for the UA default (an arrow), so every <button> lost it.
+ * Anchors keep the UA pointer. In `@layer base` so a call site can still opt out with
+ * the `cursor-default` / `cursor-not-allowed` utilities.
+ */
+@layer base {
+	button:not(:disabled):not([aria-disabled="true"]),
+	summary,
+	[role="button"]:not([aria-disabled="true"]) {
+		cursor: pointer;
+	}
+}

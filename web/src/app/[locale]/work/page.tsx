@@ -57,20 +57,20 @@ export default async function Work({ params }: PageProps) {
 	if (!data) {
 		return (
 			<div className="flex flex-col flex-1 bg-color-bg">
-				<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
+				<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
 					<p>
 						Work singleton is not in the dataset yet. Create it in Sanity Studio
 						(document id <code>work</code>
 						).
 					</p>
-				</main>
+				</div>
 			</div>
 		);
 	}
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{data.modules?.length ? (
 					<section className="flex flex-col gap-sm">
 						<ModulesRenderer
@@ -82,7 +82,7 @@ export default async function Work({ params }: PageProps) {
 						/>
 					</section>
 				) : null}
-			</main>
+			</div>
 		</div>
 	);
 }

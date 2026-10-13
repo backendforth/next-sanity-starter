@@ -79,7 +79,7 @@ export default async function Project({ params }: PageProps) {
 				path={`/work/${slug}`}
 				translations={data.translations}
 			/>
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{projectTitle || hasTitleMedia ? (
 					<header className="flex flex-col gap-sm">
 						{projectTitle ? (
@@ -92,7 +92,7 @@ export default async function Project({ params }: PageProps) {
 						<RichTextMedia value={body} />
 					</article>
 				) : null}
-			</main>
+			</div>
 		</div>
 	);
 }

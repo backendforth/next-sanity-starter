@@ -26,7 +26,7 @@ export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
-			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
 				<h2 className="page-title">{title}</h2>
 				{body.length ? (
 					<RichTextMedia value={body} />
@@ -41,7 +41,7 @@ export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {
 				>
 					Back to home
 				</Link>
-			</main>
+			</div>
 		</div>
 	);
 }

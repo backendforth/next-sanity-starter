@@ -4,9 +4,9 @@ import type { SanityClient } from "sanity";
  * Draft-first so a language added in Studio is offered for translations
  * immediately, before the `siteLanguageSettings` singleton is published.
  * Reading only the published doc meant a freshly added language was missing
- * from the translations menu until publish. Works under every perspective:
- * `raw` sees the `drafts.` id, `drafts` overlays it on the published id,
- * `published` skips it.
+ * from the translations menu until publish. The fetch forces the `raw`
+ * perspective: the client the plugin hands in may default to `published`, which
+ * hides the `drafts.` id before GROQ runs.
  * Same projection as `web/sanity/queries/snippets/settings.ts` (siteLanguageSettings).
  */
 export const siteLanguageSettingsLanguagesQuery = `coalesce(
@@ -68,6 +68,8 @@ export async function supportedLanguagesFromClient(
   try {
     const doc = await client.fetch<SiteLanguageSettingsDoc>(
       siteLanguageSettingsLanguagesQuery,
+      {},
+      { perspective: "raw" },
     );
     return normalizeFromDoc(doc);
   } catch (err) {

@@ -9,6 +9,7 @@ import { media } from "sanity-plugin-media";
 import { muxInput } from "sanity-plugin-mux-input";
 import { netlifyTool } from "sanity-plugin-netlify";
 
+import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
 
 import { initialValueTemplates } from "./config/initialValueTemplates";

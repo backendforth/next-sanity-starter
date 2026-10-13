@@ -3,8 +3,9 @@
  *
  * Token values mirror `web/src/assets/styles/variables/fontsizes.css` (keep in sync).
  * Utility mapping matches `web/src/assets/styles/typography/typography.css`:
- *   normal → text (md), bigText → big-text (2lg, p),
- *   h1/h2 → rich-text-heading-sans (3lg, Geist), h3/h4 → heading-3/4 (mono, semibold)
+ *   normal → text (md), bigText → big-text (lg),
+ *   h1 → heading-1 (3lg), h2 → heading-2 (2lg), h3 → heading-3 (lg, Geist Mono semibold),
+ *   h4 → heading-4 (md, Geist Mono semibold)
  */
 
 :root {
@@ -54,8 +55,26 @@
   line-height: var(--pt-line-height-md);
 }
 
-/* @utility big-text — paragraph with h3 scale (2lg, Geist) */
+/* @utility big-text — lg, Geist Sans regular */
 .pt-preview--big-text {
+  font-family: var(--pt-preview-font-text);
+  font-weight: 400;
+  font-style: normal;
+  font-size: var(--pt-font-size-lg);
+  line-height: var(--pt-line-height-lg);
+}
+
+/* PT “Heading 1” — heading-1 (3lg, Geist Sans regular) */
+.pt-preview--h1 {
+  font-family: var(--pt-preview-font-text);
+  font-weight: 400;
+  font-style: normal;
+  font-size: var(--pt-font-size-3lg);
+  line-height: var(--pt-line-height-3lg);
+}
+
+/* PT “Heading 2” — heading-2 (2lg, Geist Sans regular) */
+.pt-preview--h2 {
   font-family: var(--pt-preview-font-text);
   font-weight: 400;
   font-style: normal;
@@ -63,27 +82,8 @@
   line-height: var(--pt-line-height-2lg);
 }
 
-/* @utility rich-text-heading-sans — h1 + h2 (3lg, Geist Sans, semibold) */
-.pt-preview--h1,
-.pt-preview--h2 {
-  font-family: var(--pt-preview-font-text);
-  font-weight: 600;
-  font-style: normal;
-  font-size: var(--pt-font-size-3lg);
-  line-height: var(--pt-line-height-3lg);
-}
-
-/* @utility heading-3 — h3 (2lg, Geist Mono, semibold) */
+/* PT “Heading 3” — heading-3 (lg, Geist Mono semibold) */
 .pt-preview--h3 {
-  font-family: var(--pt-preview-font-mono);
-  font-weight: 600;
-  font-style: normal;
-  font-size: var(--pt-font-size-2lg);
-  line-height: var(--pt-line-height-2lg);
-}
-
-/* @utility heading-4 — h4 (lg, Geist Mono, semibold) */
-.pt-preview--h4 {
   font-family: var(--pt-preview-font-mono);
   font-weight: 600;
   font-style: normal;
@@ -91,11 +91,33 @@
   line-height: var(--pt-line-height-lg);
 }
 
-.pt-preview--big-text :is(strong, em, i),
-.pt-preview--h1 :is(strong, em, i),
-.pt-preview--h2 :is(strong, em, i),
-.pt-preview--h3 :is(strong, em, i),
-.pt-preview--h4 :is(strong, em, i),
-.pt-preview--normal :is(strong, em, i) {
+/* PT “Heading 4” — heading-4 (md, Geist Mono semibold) */
+.pt-preview--h4 {
   font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--pt-font-size-md);
+  line-height: var(--pt-line-height-md);
+}
+
+/* Body emphasis: Geist Mono semibold (single accent face for inline bold/italic) */
+.pt-preview--normal :is(strong, b),
+.pt-preview--big-text :is(strong, b) {
+  font-family: var(--pt-preview-font-mono);
+  font-weight: 600;
+}
+
+.pt-preview--normal :is(em, i),
+.pt-preview--big-text :is(em, i) {
+  font-family: var(--pt-preview-font-mono);
+  font-style: italic;
+}
+
+/* Heading emphasis: inherit family + weight (single weight per heading) */
+.pt-preview--h1 :is(strong, em, i, b),
+.pt-preview--h2 :is(strong, em, i, b),
+.pt-preview--h3 :is(strong, em, i, b),
+.pt-preview--h4 :is(strong, em, i, b) {
+  font-family: inherit;
+  font-weight: inherit;
 }

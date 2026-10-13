@@ -128,7 +128,12 @@ export const link = defineType({
         typeof title === "string" && title.trim() ? title.trim() : "";
       const refTitleText =
         typeof refTitle === "string" && refTitle.trim() ? refTitle.trim() : "";
-      const mainTitle = titleText || refTitleText || "Link";
+      const mainTitle =
+        titleText ||
+        refTitleText ||
+        (type === "external" && typeof url === "string" ? url : "") ||
+        (type === "function" && funcKey ? funcKey : "") ||
+        "Link";
 
       let subtitle = "";
 

@@ -47,11 +47,11 @@ export const home = defineType({
     },
   ],
   preview: {
-    select: { language: "language" },
-    prepare({ language }) {
+    select: { title: "title", language: "language" },
+    prepare({ title, language }) {
       return {
-        title: "Home",
-        subtitle: language || undefined,
+        title: typeof title === "string" && title.trim() ? title : "Home",
+        subtitle: language ? `/ · ${language}` : "/",
       };
     },
   },

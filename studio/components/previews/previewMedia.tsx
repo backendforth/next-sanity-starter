@@ -21,16 +21,23 @@ const richTextMediaFrameStyle: CSSProperties = {
   background: "var(--card-muted-bg-color, rgba(0,0,0,0.07))",
 };
 
-/** Resolve CDN URL for Sanity image objects passed as preview `media` (not React elements). */
-function previewImageUrl(media: PreviewProps["media"]): string | null {
+/**
+ * CDN URL for a Sanity image object passed as preview `media` (not a React element), cropped
+ * to `width` × `height` — twice the displayed size, for high-density screens.
+ */
+function previewImageUrl(
+  media: PreviewProps["media"],
+  width: number,
+  height: number,
+): string | null {
   if (media == null || typeof media !== "object" || isValidElement(media)) {
     return null;
   }
   try {
     const url = urlForImage
       .image(media as SanityImageSource)
-      .width(1600)
-      .height(900)
+      .width(width)
+      .height(height)
       .fit("crop")
       .url();
     return url || null;
@@ -39,7 +46,7 @@ function previewImageUrl(media: PreviewProps["media"]): string | null {
   }
 }
 
-/** Renders Sanity preview `media` (image ref, URL string, or icon component). */
+/** Renders Sanity preview `media` (image ref, URL string, or icon component) for a 56 px thumbnail. */
 export function renderPreviewMedia(media: PreviewProps["media"]): ReactNode {
   if (media == null) {
     return null;
@@ -47,7 +54,7 @@ export function renderPreviewMedia(media: PreviewProps["media"]): ReactNode {
   if (isValidElement(media)) {
     return media;
   }
-  const objectImageUrl = previewImageUrl(media);
+  const objectImageUrl = previewImageUrl(media, 112, 112);
   if (objectImageUrl) {
     return (
       <img
@@ -105,7 +112,7 @@ export function RichTextBlockMediaArea({
     return null;
   }
 
-  const fromSanityImage = previewImageUrl(media);
+  const fromSanityImage = previewImageUrl(media, 1600, 900);
   if (typeof fromSanityImage === "string" && fromSanityImage.length > 0) {
     return (
       <div style={richTextMediaFrameStyle}>

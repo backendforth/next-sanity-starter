@@ -1,17 +1,19 @@
 import { defineArrayMember, defineField } from "sanity";
 
-import { CarouselPreview } from "../../components/previews/CarouselPreview";
-import { MediaPreview } from "../../components/previews/MediaPreview";
+import { moduleRowPreview } from "../../components/previews/ModuleRowPreview";
+
+const MediaRowPreview = moduleRowPreview("Media");
+const CarouselRowPreview = moduleRowPreview();
 
 /** Types allowed in document-level `modules` arrays (keep in sync with `richTextMedia` block types). */
 export const moduleTypes = [
   defineArrayMember({
     type: "module.media",
-    components: { preview: MediaPreview },
+    components: { preview: MediaRowPreview },
   }),
   defineArrayMember({
     type: "module.carousel",
-    components: { preview: CarouselPreview },
+    components: { preview: CarouselRowPreview },
   }),
   { type: "module.contentRefs" },
   { type: "module.text" },

@@ -35,7 +35,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
-**Hardened revalidation** — `POST /api/revalidate` does HMAC-SHA256 signature verification (Sanity signed webhooks), payload validation, a document-type allow-list, in-memory rate limiting, and is fail-closed in production.
+**Hardened revalidation** — `POST /api/revalidate` verifies Sanity's webhook signature (`parseBody` from `next-sanity/webhook`), acts only on allow-listed document types, expires the matching cache tags immediately, and is fail-closed in production.
 
 **SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `resolveSanityMetadata` builds canonical + `hreflang` metadata for every route.
 
@@ -103,7 +103,7 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 |------|----------|----------|---------|
 | `web/.env.local` + `studio/.env` | `SANITY_STUDIO_PROJECT_ID` | yes | Your Sanity project id |
 | `web/.env.local` | `SANITY_API_READ_TOKEN` | optional | Draft mode + server-side draft reads |
-| `web/.env.local` | `SANITY_REVALIDATE_SECRET` | **prod yes** | HMAC secret for `/api/revalidate` (fail-closed in prod) |
+| `web/.env.local` | `SANITY_REVALIDATE_SECRET` | **prod yes** | Webhook secret for `/api/revalidate` (fail-closed in prod) |
 | `web/.env.local` | `NEXT_PUBLIC_SITE_URL` | yes (prod) | Used by `sitemap.ts`, `robots.ts`, metadata base |
 | both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | optional | Switch dataset per environment (`staging`, `development`, …) |
 | both | `SANITY_STUDIO_DATASET` | optional | Hard pin a specific dataset name (skips auto-resolution) |

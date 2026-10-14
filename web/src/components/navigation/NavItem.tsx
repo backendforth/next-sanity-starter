@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 
 import { isCurrentNavHref } from "@/src/i18n/paths";
-import { cn } from "@/src/utils/cn";
 
 import type { ResolvedNavRow } from "../../utils/navHref";
 import { showCookiePreferences } from "../cookies/cookieConsentApi";
@@ -16,7 +15,8 @@ import { navLinkButtonClass } from "./navControlStyles";
 type Props = {
 	row: ResolvedNavRow;
 	onNavigate?: () => void;
-	className?: string;
+	/** `muted` for the footer: muted text in both states. */
+	tone?: "default" | "muted";
 };
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ function useLocationOrigin(): string {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function NavItem({ row, onNavigate, className }: Props) {
+export function NavItem({ row, onNavigate, tone = "default" }: Props) {
 	const pathname = usePathname() ?? "/";
 	const hash = useLocationHash();
 	const origin = useLocationOrigin();
@@ -61,7 +61,7 @@ export function NavItem({ row, onNavigate, className }: Props) {
 	const isActive =
 		row.kind === "link" && isCurrentNavHref(pathname, row.href, hash, origin);
 
-	const linkClassName = cn(navLinkButtonClass(isActive), className);
+	const linkClassName = navLinkButtonClass(isActive, tone);
 
 	const ariaCurrent = !isActive
 		? undefined
@@ -74,7 +74,7 @@ export function NavItem({ row, onNavigate, className }: Props) {
 		return (
 			<button
 				type="button"
-				className={cn(navLinkButtonClass(false), className)}
+				className={navLinkButtonClass(false, tone)}
 				onClick={() => {
 					showCookiePreferences();
 					onNavigate?.();

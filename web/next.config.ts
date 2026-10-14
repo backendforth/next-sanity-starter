@@ -217,7 +217,6 @@ const nextConfig: NextConfig = {
 		optimizePackageImports: [
 			"@portabletext/react",
 			"clsx",
-			"tailwind-merge",
 			"@sanity/image-url",
 		],
 		/** Client router cache for prefetched static segments (seconds). */

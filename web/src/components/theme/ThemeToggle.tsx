@@ -8,7 +8,6 @@ import {
 } from "@/src/components/navigation/navControlStyles";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { type UiLabelKey, uiLabel } from "@/src/i18n/uiLabels";
-import { cn } from "@/src/utils/cn";
 
 import {
 	type ColorScheme,
@@ -36,7 +35,7 @@ export function ThemeToggle() {
 	return (
 		<fieldset
 			aria-label={uiLabel("colorScheme", currentLocale)}
-			className={cn(navControlGroupClass, "m-0 min-w-0 border-0 p-0")}
+			className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
 		>
 			{OPTIONS.map((option) => {
 				const selected = theme === option.value;

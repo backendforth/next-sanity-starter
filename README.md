@@ -39,7 +39,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `resolveSanityMetadata` builds canonical + `hreflang` metadata for every route.
 
-**Hardened by default** — CSP with `frame-ancestors` (Studio-friendly), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options` via `netlify.toml`. Netlify `build.ignore` skips web builds on Studio-only commits.
+**Hardened by default** — CSP with `frame-ancestors` (Studio-friendly), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options` from `headers()` in `web/next.config.ts`, so they reach the SSR HTML on any host. Netlify `build.ignore` skips web builds on Studio-only commits.
 
 **Cookie consent (optional)** — Sanity-driven [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner with light/dark theming via `--color-*` tokens, editable copy and per-category sections in JSON, plus `en` / `de` defaults when the doc is empty. An `open-cookie-preferences` link function lets any nav item reopen the preferences modal, and `hasConsent(category)` is exposed for gating analytics scripts. Toggle it on under **Settings → Cookie Banner**; the banner stays inert until `useCookieBanner` is `true`.
 
@@ -191,7 +191,7 @@ Configure the **Revalidate webhook** in Sanity Manage → API → Webhooks, targ
 
 ### Any other host (Vercel, Docker, …)
 
-Everything is standard Next.js + Sanity — mirror the env vars and you're done. CSP / HSTS live in `netlify.toml`; port the equivalent headers to your platform's config.
+Everything is standard Next.js + Sanity — mirror the env vars and you're done. CSP / HSTS come from `headers()` in `web/next.config.ts` and need no platform config.
 
 ---
 

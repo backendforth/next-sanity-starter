@@ -5,6 +5,7 @@ export type {
 	PageDocument,
 	PageSeo,
 } from "./pages";
+export type { SiteAnalyticsSettingsDocument } from "./siteAnalyticsSettings";
 export type {
 	CookieConsentModalCopy,
 	CookiePreferencesModalCopy,

@@ -20,7 +20,6 @@
   "dependencies": {
     "@repo/sanity-dataset-resolve": "workspace:*",
     "@sanity/code-input": "^7.3.8",
-    "@sanity/dashboard": "^6.0.18",
     "@sanity/icons": "^5.2.2",
     "@sanity/image-url": "^2.1.1",
     "@sanity/vision": "^6.16.0",

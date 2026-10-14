@@ -14,14 +14,9 @@ const DEFAULT_CONSENT_DESCRIPTION =
  * `JSON.parse` rejects — the banner then fell back to the default sections while editing.
  */
 export function sectionsJsonFromSanity(
-	sections: string | { code?: string | null } | null | undefined,
+	sections: string | null | undefined,
 ): string | null {
-	if (typeof sections === "string") return stegaClean(sections);
-	if (sections && typeof sections === "object" && "code" in sections) {
-		const code = (sections as { code?: unknown }).code;
-		return typeof code === "string" ? code : null;
-	}
-	return null;
+	return sections ? stegaClean(sections) : null;
 }
 
 function parseSectionsJson(raw: string | null | undefined): Section[] {

@@ -24,7 +24,7 @@ Other plugins in this Studio include the **dashboard**, **structure** (custom si
 
 ## Quick start
 
-1. Copy `studio/.env.example` to `studio/.env` and set `SANITY_STUDIO_PROJECT_ID` (and preview origin if needed).
+1. Copy `studio/.env.example` to `studio/.env` and set `SANITY_STUDIO_PROJECT_ID` (and preview origin if needed). Every `SANITY_STUDIO_*` value ends up in the public Studio bundle, so secrets (`MUX_TOKEN_*`, `SANITY_DATASET_RESOLVER_TOKEN`, `SANITY_AUTH_TOKEN`) use plain names; `sanity.cli.ts` stops `sanity build` / `sanity deploy` when a `SANITY_STUDIO_*TOKEN|SECRET|PASSWORD` variable is set.
 2. Run `pnpm dev` from the repo root or `pnpm dev` inside `studio/` (shows a **sync hint**; run `sanity dev` directly if you want to skip it).
 3. Run `pnpm build` in `studio/` for a production Studio bundle.
 

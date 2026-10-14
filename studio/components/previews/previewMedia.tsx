@@ -11,14 +11,13 @@ import type { PreviewProps } from "sanity";
 
 import { urlForImage } from "../../utils/imageUrl";
 
-const richTextMediaFrameStyle: CSSProperties = {
+const fillStyle: CSSProperties = {
+  position: "absolute",
+  inset: 0,
   width: "100%",
-  maxWidth: "100%",
-  boxSizing: "border-box",
-  aspectRatio: "16 / 9",
-  position: "relative",
-  overflow: "hidden",
-  background: "var(--card-muted-bg-color, rgba(0,0,0,0.07))",
+  height: "100%",
+  objectFit: "cover",
+  display: "block",
 };
 
 /**
@@ -46,141 +45,48 @@ function previewImageUrl(
   }
 }
 
-/** Renders Sanity preview `media` (image ref, URL string, or icon component) for a 56 px thumbnail. */
-export function renderPreviewMedia(media: PreviewProps["media"]): ReactNode {
+/**
+ * Sanity preview `media` (image, URL string, element or icon component) for a frame with
+ * `position: relative`: images and elements cover it, an icon is `iconSize` px (center it with
+ * the frame's flex alignment). `width` × `height` is the image size requested from the CDN.
+ * `null` when there is nothing to show.
+ */
+export function renderPreviewMedia(
+  media: PreviewProps["media"],
+  {
+    width,
+    height,
+    iconSize,
+  }: { width: number; height: number; iconSize: number },
+): ReactNode {
   if (media == null) {
     return null;
   }
   if (isValidElement(media)) {
-    return media;
+    const el = media as ReactElement<{ style?: CSSProperties }>;
+    return cloneElement(el, {
+      style: {
+        ...(typeof el.props.style === "object" ? el.props.style : {}),
+        ...fillStyle,
+      },
+    });
   }
-  const objectImageUrl = previewImageUrl(media, 112, 112);
-  if (objectImageUrl) {
-    return (
-      <img
-        src={objectImageUrl}
-        alt=""
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
-    );
+  const src =
+    typeof media === "string" ? media : previewImageUrl(media, width, height);
+  if (src) {
+    return <img src={src} alt="" style={fillStyle} />;
   }
   if (typeof media === "function") {
     const Icon = media as ComponentType<{ style?: CSSProperties }>;
     return (
       <Icon
         style={{
-          width: 28,
-          height: 28,
-          opacity: 0.65,
+          width: iconSize,
+          height: iconSize,
+          opacity: 0.6,
           flexShrink: 0,
         }}
       />
-    );
-  }
-  if (typeof media === "string") {
-    return (
-      <img
-        src={media}
-        alt=""
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
-    );
-  }
-  return null;
-}
-
-/**
- * 16:9 preview area as wide as the rich-text block (not the Studio window).
- * Placeholder icons are centered; images fill the frame.
- */
-export function RichTextBlockMediaArea({
-  media,
-}: {
-  media: PreviewProps["media"];
-}) {
-  if (media == null) {
-    return null;
-  }
-
-  const fromSanityImage = previewImageUrl(media, 1600, 900);
-  if (typeof fromSanityImage === "string" && fromSanityImage.length > 0) {
-    return (
-      <div style={richTextMediaFrameStyle}>
-        <img
-          src={fromSanityImage}
-          alt=""
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (typeof media === "function") {
-    const Icon = media as ComponentType<{ style?: CSSProperties }>;
-    return (
-      <div
-        style={{
-          ...richTextMediaFrameStyle,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon style={{ width: 48, height: 48, opacity: 0.5, flexShrink: 0 }} />
-      </div>
-    );
-  }
-  if (typeof media === "string") {
-    return (
-      <div style={richTextMediaFrameStyle}>
-        <img
-          src={media}
-          alt=""
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      </div>
-    );
-  }
-  if (isValidElement(media)) {
-    const el = media as ReactElement<{ style?: CSSProperties }>;
-    return (
-      <div style={richTextMediaFrameStyle}>
-        {cloneElement(el, {
-          style: {
-            ...(typeof el.props.style === "object" ? el.props.style : {}),
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block",
-          },
-        })}
-      </div>
     );
   }
   return null;

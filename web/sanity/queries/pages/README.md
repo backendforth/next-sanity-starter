@@ -115,7 +115,7 @@ const meta = await fetchPageBySlug(slug, locale, { stega: false });
 
 ## Metadata
 
-Call **`fetchSettingsSeoFallback`** alongside the route fetch (in the same `Promise.all` as `fetchHomeDocument` / `fetchPageBySlug`) and pass `data` plus the resolved `settingsSeo` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so empty fields fall back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language and is used first; pass the slug (or a route label) as **`segmentFallback`**.
+Call **`fetchSettingsSeoFallback`** alongside the route fetch (in the same `Promise.all` as `fetchHomeDocument` / `fetchPageBySlug`) and pass `data` plus the resolved `settingsSeo` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label) → site SEO title; home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A title equal to the brand skips the layout's `%s | brand` template.
 
 ## Related
 

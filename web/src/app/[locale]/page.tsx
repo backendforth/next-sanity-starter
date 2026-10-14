@@ -46,6 +46,7 @@ export async function generateMetadata({
 		locale,
 		segmentFallback: "Home",
 		settingsSeo,
+		siteSeoTitleFirst: true,
 		siteLocale,
 		path: "/",
 		siteBrandTitle: siteBrand,

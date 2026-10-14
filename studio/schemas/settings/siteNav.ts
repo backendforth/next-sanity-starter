@@ -1,5 +1,6 @@
 import { MenuIcon } from "@sanity/icons/Menu";
 import { defineType } from "sanity";
+import { languageField } from "../fields/languageField";
 
 /** Main/footer navigation. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteNav = defineType({
@@ -8,13 +9,7 @@ export const siteNav = defineType({
   title: "Navigation",
   icon: MenuIcon,
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       title: "Title",
       name: "title",

@@ -2,7 +2,7 @@ import { HomeIcon } from "@sanity/icons/Home";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
-
+import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
 export const home = defineType({
@@ -23,13 +23,7 @@ export const home = defineType({
     },
   ],
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       name: "title",
       title: "Title",

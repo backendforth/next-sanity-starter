@@ -3,6 +3,7 @@ import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
+import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
 export const page = defineType({
@@ -23,13 +24,7 @@ export const page = defineType({
     },
   ],
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       name: "title",
       title: "Title",

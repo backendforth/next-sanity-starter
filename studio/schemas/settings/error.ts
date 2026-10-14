@@ -1,6 +1,7 @@
 import { ErrorOutlineIcon } from "@sanity/icons/ErrorOutline";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
+import { languageField } from "../fields/languageField";
 
 export const errorSettings = defineType({
   name: "errorSettings",
@@ -15,13 +16,7 @@ export const errorSettings = defineType({
     },
   ],
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       name: "notFoundTitle",
       title: "404 — Title",

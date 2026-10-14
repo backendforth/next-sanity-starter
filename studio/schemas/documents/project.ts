@@ -9,6 +9,7 @@ import {
   PROJECT_CATEGORY_REFERENCE_FILTER,
   sameLanguageReferenceFilter,
 } from "../constants/references";
+import { languageField } from "../fields/languageField";
 
 export const project = defineType({
   name: "project",
@@ -28,13 +29,7 @@ export const project = defineType({
     },
   ],
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       name: "title",
       title: "Title",

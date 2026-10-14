@@ -3,6 +3,7 @@ import { StackIcon } from "@sanity/icons/Stack";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
 import { defaultCookieSections } from "../../utils/defaultCookieSections";
+import { languageField } from "../fields/languageField";
 
 /** Cookie banner copy. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteCookieBanner = defineType({
@@ -11,13 +12,7 @@ export const siteCookieBanner = defineType({
   title: "Cookie Banner",
   icon: CodeBlockIcon,
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       title: "Title",
       name: "title",

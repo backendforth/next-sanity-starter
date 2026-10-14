@@ -3,6 +3,7 @@ import { DesktopIcon } from "@sanity/icons/Desktop";
 import { SearchIcon } from "@sanity/icons/Search";
 import { defineType } from "sanity";
 import { IMAGE_COLOR_PROFILE_HINT } from "../constants/media";
+import { languageField } from "../fields/languageField";
 
 /** Global site settings. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteSettings = defineType({
@@ -23,13 +24,7 @@ export const siteSettings = defineType({
     },
   ],
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       title: "Site Title",
       name: "title",

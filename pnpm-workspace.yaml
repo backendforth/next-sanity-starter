@@ -2,3 +2,9 @@ packages:
   - "web"
   - "studio"
   - "packages/*"
+
+# pnpm 10 runs no dependency install scripts unless listed here. esbuild's postinstall checks
+# its platform binary and links it directly (faster startup); without it every fresh install
+# warns "Ignored build scripts: esbuild". Add a package only when it needs its script.
+onlyBuiltDependencies:
+  - esbuild

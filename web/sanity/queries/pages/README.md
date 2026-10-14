@@ -22,7 +22,6 @@ Slug lists and sitemap-oriented queries live in **`queries/snippets/sitemap.ts`*
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
-import type { PageDocument } from "@/sanity/types/pages";
 
 export default async function Page({
   params,
@@ -30,7 +29,8 @@ export default async function Page({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const doc = await client.fetch<PageDocument | null>(pageBySlugQuery, { slug, locale });
+  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`. No hand-written type.
+  const doc = await client.fetch(pageBySlugQuery, { slug, locale });
   if (!doc) notFound();
 
   return (
@@ -51,11 +51,9 @@ import { client } from "@/sanity/client";
 import { pageSlugsQuery } from "@/sanity/queries";
 
 export async function generateStaticParams() {
-  const rows = await client.fetch<Array<{ slug: string | null; language: string | null }>>(
-    pageSlugsQuery,
-  );
+  const rows = await client.fetch(pageSlugsQuery);
   return rows
-    .filter((r): r is { slug: string; language: string } => Boolean(r.slug && r.language))
+    .filter((r) => r.language)
     .map((r) => ({ locale: r.language, slug: r.slug }));
 }
 ```
@@ -64,22 +62,13 @@ The app's version is `src/app/[locale]/[slug]/page.tsx` (via `cachedPageSlugs`).
 
 ## Sitemap — `sitemapPagesQuery`
 
-Returns every **public route** in every language: `home` (`path: "/"`), `work` (`/work`), and all `page` / `project` documents with a slug (`/{slug}`, `/work/{slug}`). Each row includes `_id`, `_type`, `_updatedAt`, `language`, optional `slug`, and **`path`** without the locale prefix — add it per `language` when building `loc` (see `src/app/sitemap.ts`).
+Returns every **public route** in every language: `home` (`path: "/"`), `work` (`/work`), and all `page` / `project` documents with a slug (`/{slug}`, `/work/{slug}`). Each row includes `_id`, `_type`, `_updatedAt`, `language`, `translations` and **`path`** without the locale prefix — add it per `language` when building `loc` (see `src/app/sitemap.ts`).
 
 ```ts
 import { client } from "@/sanity/client";
 import { sitemapPagesQuery } from "@/sanity/queries";
 
-const entries = await client.fetch<
-  Array<{
-    _id: string;
-    _type: string;
-    _updatedAt: string;
-    language: string | null;
-    slug: string | null;
-    path: string;
-  }>
->(sitemapPagesQuery);
+const entries = await client.fetch(sitemapPagesQuery);
 ```
 
 ## Home route

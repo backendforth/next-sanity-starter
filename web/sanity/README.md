@@ -95,7 +95,6 @@ This example fetches a page in the route's language. `title` is a plain string; 
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
-import type { PageDocument } from "@/sanity/types/pages";
 
 export default async function Page({
   params,
@@ -103,10 +102,8 @@ export default async function Page({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const doc = await client.fetch<PageDocument | null>(pageBySlugQuery, {
-    slug,
-    locale,
-  });
+  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`.
+  const doc = await client.fetch(pageBySlugQuery, { slug, locale });
 
   if (!doc) {
     notFound();

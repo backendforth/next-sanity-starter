@@ -36,7 +36,6 @@
 		"postcss-calc": "^11.2.1",
 		"postcss-functions": "^4.0.2",
 		"postcss-import": "^17.0.0",
-		"postcss-nested-ancestors": "^3.0.0",
 		"sanity": "^6.16.0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3"

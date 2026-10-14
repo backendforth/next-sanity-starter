@@ -69,10 +69,10 @@ export default async function Work({ params }: PageProps) {
 					<section className="flex flex-col gap-sm">
 						<ModulesRenderer
 							modules={data.modules}
-							documentId={data._id}
-							documentType="work"
 							locale={locale}
 							siteLocale={siteLocale}
+							documentId={data._id}
+							documentType="work"
 						/>
 					</section>
 				) : null}

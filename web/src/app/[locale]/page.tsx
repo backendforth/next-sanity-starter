@@ -70,10 +70,10 @@ export default async function Home({ params }: PageProps) {
 					<section className="flex flex-col gap-sm">
 						<ModulesRenderer
 							modules={data.modules}
-							documentId={data._id}
-							documentType="home"
 							locale={locale}
 							siteLocale={siteLocale}
+							documentId={data._id}
+							documentType="home"
 						/>
 					</section>
 				) : null}

@@ -61,10 +61,13 @@ export const page = defineType({
       language: "language",
     },
     prepare({ title, slug, language }) {
-      const path = slug?.current?.trim() ? `/${slug.current}` : "Page";
+      const segment = slug?.current?.trim();
+      const path = segment ? `/${segment}` : "/";
+      const headline = typeof title === "string" && title.trim() ? title : path;
+      const subtitle = language ? `${path} · ${language}` : path;
       return {
-        title: typeof title === "string" && title.trim() ? title : path,
-        subtitle: language ? `${path} · ${language}` : path,
+        title: headline,
+        subtitle: headline === path ? undefined : subtitle,
       };
     },
   },

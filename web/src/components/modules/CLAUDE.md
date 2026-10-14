@@ -44,7 +44,7 @@ export function ModuleFoo({ module }: Props) {
 
 - Component without a matching GROQ projection → query returns `null`/`undefined`.
 - Component without a TS type → `any` propagates through the renderer.
-- Calling `pickLocalizedString` / `parseLocalizedText` on module fields — they are plain values on this branch.
+- Calling `pickLocalizedString` / `pickLocalizedValue` on module fields — they are plain values on this branch.
 - Reading locale via `useRouter()` / `usePathname()` → wrong locale during SSR.
 - Rendering a module outside `ModulesRenderer` → no `data-sanity` wrapper, editor click-to-edit breaks on it.
 - Importing from `studio/...` — illegal across packages.

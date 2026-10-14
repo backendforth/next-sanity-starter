@@ -32,7 +32,7 @@ This branch stores one document per language (`@sanity/document-internationaliza
 - **Components render fields directly.** `doc.title` is a `string`, `module.body` is Portable Text — no locale picking. Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`) — aligned with schema **`richTextMedia`**.
 - **No cross-language fallback.** If a document doesn't exist in the requested language, the query returns `null`: slug routes (`page`, `project`) 404, while `home` and `work` render a "no document for this locale" notice.
 
-`utils/sanityLocalizedText.ts` (`parseLocalizedText`, `pickLocalizedString`, …) resolves `internationalizedArray*` values (`[{ _key, language, value }]`), `main`'s storage format. On this branch only **`resolveLinkLabel`** calls it, so link titles that arrive as arrays still resolve; new code should not need it.
+`utils/sanityLocalizedText.ts` (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`) resolves `internationalizedArray*` values (`[{ _key, language, value }]`), `main`'s storage format. On this branch only **`resolveLinkLabel`** calls it, so link titles that arrive as arrays still resolve; new code should not need it.
 
 ---
 

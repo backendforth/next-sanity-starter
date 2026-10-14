@@ -8,7 +8,8 @@
  * it holds (`read`) or returns the source with one more entry (`insert`). An `insert` that
  * can't find its anchor throws; the scaffolder relies on that to abort before writing.
  */
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * @typedef {{
@@ -21,13 +22,20 @@ import { join } from "node:path";
  * }} ModuleNames
  *
  * @typedef {{
- *   key: string;
  *   label: string;
  *   file: string;
  *   read: (source: string) => Set<string>;
  *   insert: (source: string, mod: ModuleNames) => string;
  * }} ListSlot
  */
+
+/** The checkout to work on: `--root <dir>` (the tooling tests), else this repo. @param {string[]} argv */
+export function rootFromArgv(argv) {
+	const flag = argv.indexOf("--root");
+	return flag === -1
+		? fileURLToPath(new URL("../../..", import.meta.url))
+		: resolve(argv[flag + 1] ?? ".");
+}
 
 /** @param {string} pascal */
 export function moduleNames(pascal) {
@@ -40,13 +48,6 @@ export function moduleNames(pascal) {
 		schemaVar: `module${pascal}`,
 		queryVar: `module${pascal}Query`,
 	};
-}
-
-/** `module.hero` → `Hero`. */
-/** @param {string} id */
-export function pascalFromId(id) {
-	const camel = id.replace(/^module\./, "");
-	return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
 /** `moduleHero` / `ModuleHero` / `moduleHeroQuery` → `module.hero`. */
@@ -158,7 +159,6 @@ export function wiringSlots(root) {
 
 	/** @type {ListSlot} */
 	const schemaIndex = {
-		key: "schemaIndex",
 		label: "schemas/index.ts — import + schemaTypes entry",
 		file: files.schemaIndex,
 		read(source) {
@@ -197,7 +197,6 @@ export function wiringSlots(root) {
 
 	/** @type {ListSlot} */
 	const modulesArray = {
-		key: "modulesArray",
 		label: "modulesArrayField.ts — moduleTypes entry",
 		file: files.modulesArray,
 		read(source) {
@@ -215,7 +214,6 @@ export function wiringSlots(root) {
 
 	/** @type {ListSlot} */
 	const renderer = {
-		key: "renderer",
 		label: "ModulesRenderer.tsx — `case` in renderModuleChild()",
 		file: files.renderer,
 		read(source) {
@@ -243,13 +241,17 @@ export function wiringSlots(root) {
 		},
 	};
 
-	/** @type {ListSlot} */
-	const queryBarrel = {
-		key: "queryBarrel",
-		label: "queries/components/modules/index.ts — import + modulesQuery entry",
-		file: files.queryBarrel,
+	/**
+	 * A template literal of `${module…Query}` fragments. `insert` imports the new fragment from
+	 * `from` and lists it after the template's last `${…}`.
+	 *
+	 * @param {Pick<ListSlot, "label" | "file"> & { header: RegExp; indent: string; from: (mod: ModuleNames) => string }} spec
+	 * @returns {ListSlot}
+	 */
+	const queryList = ({ header, indent, from, ...slot }) => ({
+		...slot,
 		read(source) {
-			const block = findBlock(source, MODULES_QUERY, this.file);
+			const block = findBlock(source, header, slot.file);
 			return collect(
 				source.slice(block.start, block.end),
 				/\$\{(module\w+Query)\}/g,
@@ -260,23 +262,30 @@ export function wiringSlots(root) {
 			const withImport = insertAfterLastLine(
 				source,
 				QUERY_IMPORT,
-				`import { ${mod.queryVar} } from "./${mod.camel}";`,
-				this.file,
+				`import { ${mod.queryVar} } from "${from(mod)}";`,
+				slot.file,
 			);
-			const block = findBlock(withImport, MODULES_QUERY, this.file);
+			const block = findBlock(withImport, header, slot.file);
 			const body = withImport.slice(block.start, block.end);
-			const last = [...body.matchAll(/\$\{module\w+Query\}/g)].at(-1);
+			const last = [...body.matchAll(/\$\{\w+\}/g)].at(-1);
 			if (!last || last.index === undefined) {
-				throw new Error(`${this.file}: modulesQuery lists no module`);
+				throw new Error(`${slot.file}: no \`\${…}\` to list the module after`);
 			}
 			const at = block.start + last.index + last[0].length;
-			return `${withImport.slice(0, at)},\n  \${${mod.queryVar}}${withImport.slice(at)}`;
+			return `${withImport.slice(0, at)},\n${indent}\${${mod.queryVar}}${withImport.slice(at)}`;
 		},
-	};
+	});
+
+	const queryBarrel = queryList({
+		label: "queries/components/modules/index.ts — import + modulesQuery entry",
+		file: files.queryBarrel,
+		header: MODULES_QUERY,
+		indent: "  ",
+		from: (mod) => `./${mod.camel}`,
+	});
 
 	/** @type {ListSlot} */
 	const inlineSchema = {
-		key: "inlineSchema",
 		label: "richTextMedia.ts (studio) — inline `of` entry",
 		file: files.inlineSchema,
 		read(source) {
@@ -292,40 +301,16 @@ export function wiringSlots(root) {
 		},
 	};
 
-	/** @type {ListSlot} */
-	const inlineQuery = {
-		key: "inlineQuery",
+	const inlineQuery = queryList({
 		label: "richTextMediaQuery — inline module projection",
 		file: files.inlineQuery,
-		read(source) {
-			const block = findBlock(source, INLINE_QUERY, this.file);
-			return collect(
-				source.slice(block.start, block.end),
-				/\$\{(module\w+Query)\}/g,
-				idFromIdentifier,
-			);
-		},
-		insert(source, mod) {
-			const withImport = insertAfterLastLine(
-				source,
-				QUERY_IMPORT,
-				`import { ${mod.queryVar} } from "../modules/${mod.camel}";`,
-				this.file,
-			);
-			const block = findBlock(withImport, INLINE_QUERY, this.file);
-			const body = withImport.slice(block.start, block.end);
-			const last = [...body.matchAll(/\$\{module\w+Query\}/g)].at(-1);
-			if (!last || last.index === undefined) {
-				return appendToBlock(withImport, block, `,\n    \${${mod.queryVar}}`);
-			}
-			const at = block.start + last.index + last[0].length;
-			return `${withImport.slice(0, at)},\n    \${${mod.queryVar}}${withImport.slice(at)}`;
-		},
-	};
+		header: INLINE_QUERY,
+		indent: "    ",
+		from: (mod) => `../modules/${mod.camel}`,
+	});
 
 	/** @type {ListSlot} */
 	const inlineComponents = {
-		key: "inlineComponents",
 		label: "portableTextComponents.tsx — `types` handler",
 		file: files.inlineComponents,
 		read(source) {

@@ -15,30 +15,29 @@
  * Creates the schema, component and GROQ projection from `templates/` and adds the module to
  * every list slot in `@repo/check-wiring/manifest` (the same slots `pnpm check:wiring`
  * reads), `ModulesRenderer`'s switch included. Every change is computed first; if any anchor
- * is missing nothing is written, and a failed write rolls back the files already written.
- * The touched files are formatted with Biome at the end.
+ * is missing nothing is written. The touched files are formatted with Biome at the end.
  *
  * Then run `pnpm generate` (the module's type is `ModuleOf<"module.<id>">` from TypeGen),
  * `pnpm check:wiring` and `pnpm typecheck`. `--root <dir>` targets another checkout (tests).
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { moduleNames, wiringSlots } from "@repo/check-wiring/manifest";
+import {
+	moduleNames,
+	rootFromArgv,
+	wiringSlots,
+} from "@repo/check-wiring/manifest";
 
 const templatesDir = fileURLToPath(new URL("../templates", import.meta.url));
 
 const argv = process.argv.slice(2);
 const dryRun = argv.includes("--dry-run");
 const inline = argv.includes("--inline");
-const rootFlag = argv.indexOf("--root");
-const root =
-	rootFlag === -1
-		? fileURLToPath(new URL("../../..", import.meta.url))
-		: resolve(argv[rootFlag + 1] ?? ".");
+const root = rootFromArgv(argv);
 const rawName = argv.find(
 	(arg, i) => !arg.startsWith("--") && argv[i - 1] !== "--root",
 );
@@ -62,7 +61,7 @@ const wiring = wiringSlots(root);
 const rel = (p) => relative(root, p);
 
 // ── Plan every change in memory ────────────────────────────────────────────
-/** @type {Map<string, { before: string | null; after: string; label: string }>} */
+/** @type {Map<string, { created: boolean; after: string; label: string }>} */
 const plan = new Map();
 
 /** @param {string} name */
@@ -89,7 +88,7 @@ try {
 			);
 		}
 		plan.set(file, {
-			before: null,
+			created: true,
 			after: await fromTemplate(template),
 			label,
 		});
@@ -108,7 +107,7 @@ try {
 			);
 		}
 		plan.set(slot.file, {
-			before: current?.before ?? source,
+			created: current?.created ?? false,
 			after,
 			label: current ? `${current.label}; ${slot.label}` : slot.label,
 		});
@@ -123,42 +122,25 @@ try {
 if (dryRun) {
 	for (const [file, change] of plan) {
 		console.log(
-			`${change.before === null ? "would create" : "would patch "}  ${rel(file)} (${change.label})`,
+			`${change.created ? "would create" : "would patch "}  ${rel(file)} (${change.label})`,
 		);
 	}
 	console.log("\nDry run — nothing written.");
 	process.exit(0);
 }
 
-// ── Write, rolling back on failure ─────────────────────────────────────────
-/** @type {string[]} */
-const written = [];
-try {
-	for (const [file, change] of plan) {
-		await mkdir(dirname(file), { recursive: true });
-		await writeFile(file, change.after, "utf8");
-		written.push(file);
-		console.log(
-			`${change.before === null ? "created" : "patched"}  ${rel(file)} (${change.label})`,
-		);
-	}
-} catch (error) {
-	console.error(
-		`error: ${/** @type {Error} */ (error).message} — rolling back.`,
+// ── Write ──────────────────────────────────────────────────────────────────
+for (const [file, change] of plan) {
+	await writeFile(file, change.after, "utf8");
+	console.log(
+		`${change.created ? "created" : "patched"}  ${rel(file)} (${change.label})`,
 	);
-	for (const file of written) {
-		const before = plan.get(file)?.before;
-		if (before === null || before === undefined)
-			await rm(file, { force: true });
-		else await writeFile(file, before, "utf8");
-	}
-	process.exit(1);
 }
 
 /* Relative paths: Biome matches its `studio/**` override (2-space indent) against them. */
 const format = spawnSync(
 	"pnpm",
-	["exec", "biome", "check", "--write", ...written.map(rel)],
+	["exec", "biome", "check", "--write", ...[...plan.keys()].map(rel)],
 	{ cwd: root, stdio: "ignore" },
 );
 if (format.status !== 0) {

@@ -11,14 +11,13 @@ Compares the module wiring documented in [`/AGENTS.md`](../../AGENTS.md) ("The m
 | Schema file | `module<Name>.ts` with `name: "module.<id>"` and `export const module<Name>`, all three matching. |
 | Component + query files | `web/src/components/modules/Module<Name>.tsx`; `web/sanity/queries/components/modules/<name>.ts` exporting `module<Name>Query`. |
 | List slots | `schemas/index.ts` (import + `schemaTypes`), `moduleTypes`, a `case` in `ModulesRenderer`'s switch, `modulesQuery`. A missing entry fails; an entry for a module without a schema is stale and fails too. |
-| Renderer fallback | `const unhandled: never = mod` stays, so a module without a `case` fails `tsc`. |
 | Inline (opt-in) | The Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx` name the same modules. |
 
 The module's TS type is not checked here: it is `ModuleOf<"module.<id>">`, and `tsc` covers it. `--root <dir>` checks another checkout.
 
 ## `pnpm check:typegen`
 
-Part of `pnpm generate`. Sanity TypeGen skips a `defineQuery` it cannot evaluate statically (a function call, a non-`const` fragment) with nothing but a spinner warning; the query then types as `unknown`. This compares every `defineQuery` in `web/sanity/` with the `// Variable:` blocks in `web/sanity/sanity.types.gen.ts`, both ways.
+Part of `pnpm generate`. Sanity TypeGen skips a `defineQuery` it cannot evaluate statically (a function call, a non-`const` fragment) with nothing but a spinner warning; the query then types as `unknown`. This checks that every `defineQuery` in `web/sanity/` has a `// Variable:` block in `web/sanity/sanity.types.gen.ts`.
 
 ## The manifest (`@repo/check-wiring/manifest`)
 

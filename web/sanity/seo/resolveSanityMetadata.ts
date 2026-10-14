@@ -3,7 +3,7 @@ import { stegaClean } from "next-sanity";
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
-import { SITE_BASE_URL } from "@/src/utils/siteUrl";
+import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
 import type { PageSeo, RouteDocument, SiteSettings } from "../types";
 import {
@@ -88,23 +88,36 @@ export type ResolveSanityMetadataInput = {
 	siteLocale?: SiteLocaleSlice | null;
 };
 
+/**
+ * `hreflang` map for one document: its path under every site locale, plus `x-default` → the
+ * default locale. Field-level i18n renders every locale from the same document, so each
+ * language is listed. Used by route metadata and the sitemap.
+ */
+export function hreflangLanguages(
+	path: string,
+	siteLocale: SiteLocaleSlice,
+): Record<string, string> {
+	const { localePath } = createLanguagePathUtils(siteLocale);
+	const languages: Record<string, string> = {};
+	for (const id of siteLocale.localeIds) {
+		languages[id] = absoluteSiteUrl(localePath(path, id));
+	}
+	languages["x-default"] = absoluteSiteUrl(
+		localePath(path, siteLocale.defaultLocale),
+	);
+	return languages;
+}
+
 function buildAlternates(
 	path: string | undefined,
 	currentLocale: string | undefined,
 	siteLocale: SiteLocaleSlice | null | undefined,
 ): Metadata["alternates"] | undefined {
 	if (!path || !currentLocale || !siteLocale) return undefined;
-	const pathUtils = createLanguagePathUtils(siteLocale);
-	const canonicalPath = pathUtils.localePath(path, currentLocale);
-	const languages: Record<string, string> = {};
-	for (const id of siteLocale.localeIds) {
-		languages[id] = `${SITE_BASE_URL}${pathUtils.localePath(path, id)}`;
-	}
-	languages["x-default"] =
-		`${SITE_BASE_URL}${pathUtils.localePath(path, siteLocale.defaultLocale)}`;
+	const { localePath } = createLanguagePathUtils(siteLocale);
 	return {
-		canonical: `${SITE_BASE_URL}${canonicalPath}`,
-		languages,
+		canonical: absoluteSiteUrl(localePath(path, currentLocale)),
+		languages: hreflangLanguages(path, siteLocale),
 	};
 }
 

@@ -120,7 +120,7 @@ pnpm typecheck             # web + studio
 pnpm format                # biome check --write .
 ```
 
-The pre-commit hook formats and re-stages the staged files; the pre-push hook runs `biome ci .` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
+The pre-commit hook formats and re-stages the staged files (it refuses a file that is only partly staged); the pre-push hook runs `biome ci .` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
 
 **IMPORTANT — never edit:**
 

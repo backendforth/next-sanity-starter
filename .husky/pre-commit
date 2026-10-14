@@ -1,1 +1,7 @@
+# Formatting rewrites whole files and `--again` re-stages them, so a partly staged file would
+# carry its unstaged hunks into the commit. Refuse those instead.
+if git status --porcelain | grep -qE '^[MARC][MD]'; then
+	echo "pre-commit: a staged file also has unstaged changes. Stage all of it, or stash the rest." >&2
+	exit 1
+fi
 pnpm exec biome check --write --staged --no-errors-on-unmatched && git update-index --again

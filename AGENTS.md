@@ -183,7 +183,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm register` | `node scripts/register-hosting.mjs` → `sanity deploy --external`. Pass `--dry-run` to preview. |
 | `pnpm generate` | `sanity schema extract --enforce-required-fields --force && sanity typegen generate`. Run via the root `pnpm generate`. |
 | `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
-| `pnpm migrate:seo-i18n` | One-off migration of plain-string SEO fields (see `studio/scripts/README.md`). Only run when explicitly needed. |
+| `pnpm migrate:seo-i18n` | `main` only: one-off migration of plain-string SEO fields to i18n arrays (see `studio/scripts/README.md`). Only run when explicitly needed. |
 | `pnpm typecheck` | `tsc --noEmit` (studio only). |
 | `pnpm lint` | Biome on `studio/`. |
 | `pnpm format` | Biome write on `studio/`. |

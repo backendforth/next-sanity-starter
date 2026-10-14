@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { Suspense } from "react";
 
 import {
 	LazyMediaVideo,
@@ -107,28 +108,31 @@ export function CarouselSlide({
 		);
 	}
 
-	if (!isActive) {
-		return (
-			<MediaImage
-				imagePayload={slide.poster}
-				muxFallbackMedia={slide.media}
-				caption={slide.caption ?? undefined}
-				fillParent
-				objectFit="cover"
-				sizes={multiSizes}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
-			/>
-		);
-	}
-
-	return (
-		<LazyMediaVideo
-			media={slide.media}
-			caption={slide.caption}
-			posterPayload={slide.poster}
-			videoSettings={slide.videoSettings}
+	const poster = (
+		<MediaImage
+			imagePayload={slide.poster}
+			muxFallbackMedia={slide.media}
+			caption={slide.caption ?? undefined}
 			fillParent
+			objectFit="cover"
+			sizes={multiSizes}
 			className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
 		/>
+	);
+	if (!isActive) return poster;
+
+	/* The player chunk loads when a video slide first becomes active, after hydration. Without
+	   its own boundary that suspends up to the route and blanks the page meanwhile. */
+	return (
+		<Suspense fallback={poster}>
+			<LazyMediaVideo
+				media={slide.media}
+				caption={slide.caption}
+				posterPayload={slide.poster}
+				videoSettings={slide.videoSettings}
+				fillParent
+				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
+			/>
+		</Suspense>
 	);
 }

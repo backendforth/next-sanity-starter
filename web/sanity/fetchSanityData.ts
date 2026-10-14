@@ -66,7 +66,7 @@ export const fetchHomeDocument = cache(
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: homeQuery,
-			tags: [SANITY_CACHE_TAGS.home(locale)],
+			tags: [SANITY_CACHE_TAGS.home(locale), SANITY_CACHE_TAGS.homeAll],
 			params: { locale },
 			...options,
 		});
@@ -94,7 +94,7 @@ export const fetchWorkDocument = cache(
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: workQuery,
-			tags: [SANITY_CACHE_TAGS.work(locale)],
+			tags: [SANITY_CACHE_TAGS.work(locale), SANITY_CACHE_TAGS.workAll],
 			params: { locale },
 			...options,
 		});
@@ -161,8 +161,8 @@ export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
 /**
  * `siteSettings.favicon` for root metadata icons (per-locale document). The
  * image field travels whole (crop + hotspot); `siteFaviconIcons` derives the
- * sizes on the Sanity CDN. Returns `null` when unset — the browser's implicit
- * `/favicon.ico` probe then reaches the static `public/favicon.ico`.
+ * sizes on the Sanity CDN. Returns `null` when unset — there is no static
+ * fallback icon (see `app/layout.tsx`).
  */
 export const fetchSiteSettingsFavicon = cache(
 	async (

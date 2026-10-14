@@ -17,7 +17,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 | File | Role |
 |------|------|
 | **`fallbackSiteLocales.ts`** | Minimal **`en`** fallback when `siteLanguageSettings` is missing or invalid; also used for static bootstrap (e.g. root `<html lang>` before client sync). |
-| **`siteLocalePathUtils.ts`** | `createLanguagePathUtils({ defaultLocale, localeIds })` — `localePath`, prefixes, `isAppLocale`. |
+| **`siteLocalePathUtils.ts`** | `createLanguagePathUtils({ defaultLocale, localeIds })` — `localePath`, prefixes, `isAppLocale`. `translationPathsByLocale(translations, pathUtils)` — locale → prefixed path for a document's language variants (slugs differ per language; feeds `hreflang`, the sitemap and the language switch). |
 | **`proxyLocaleFetch.ts`** | CDN fetch + short cache for **`proxy.ts`**. |
 | **`config.ts`** | `AppLocale` (string), `LOCALE_HEADER_NAME`. |
 | **`site-locales.ts`** | `LOCALE_HEADER_NAME` for `proxy.ts` / headers. |

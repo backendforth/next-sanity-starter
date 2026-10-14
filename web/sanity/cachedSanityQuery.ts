@@ -44,6 +44,9 @@ export const cachedSanityQuery = cache(async <T>(query: string) => {
 export const SANITY_CACHE_TAGS = {
 	home: (locale: string) => `home-${locale}`,
 	work: (locale: string) => `work-${locale}`,
+	/** Every language's home/work entry — each one projects its sibling variants (`translationsQuery`). */
+	homeAll: "home-all",
+	workAll: "work-all",
 	pages: "pages",
 	pageSlug: (slug: string, locale: string) => `page-${slug}-${locale}`,
 	projects: "projects",
@@ -102,7 +105,7 @@ export const cachedHomeDocument = cache(async (locale: string) => {
 		[tag],
 		{
 			revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-			tags: [tag],
+			tags: [tag, SANITY_CACHE_TAGS.homeAll],
 		},
 	);
 	const data = await fetchHome();

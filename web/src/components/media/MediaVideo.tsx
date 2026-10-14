@@ -9,20 +9,25 @@
 
 import MuxPlayer from "@mux/mux-player-react/lazy";
 import clsx from "clsx";
-import type { CSSProperties } from "react";
-
 import {
-	resolveSanityImageFieldForUrl,
-	urlForFetchedImage,
-} from "@/sanity/utils/sanityImageBuilder";
+	type CSSProperties,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
+import { resolveSanityImageFieldForUrl } from "@/sanity/utils/sanityImageBuilder";
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
+	MUX_PLAYBACK_MAX_TIER,
+	type MuxPlayerResolution,
 	muxThumbnailRequestWidthPx,
 	muxThumbnailTimeSec,
-	muxThumbnailUrl,
+	resolveMuxPlayerResolution,
 } from "@/src/utils/muxPlayback";
+import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 
 export type MediaVideoProps = {
@@ -56,23 +61,83 @@ const MUX_PRIMARY = "#e3e3e3";
 /** Control bar surface — transparent so controls have no chip/backplate. */
 const MUX_SECONDARY = "transparent";
 
-function resolvePosterUrl(
-	playbackId: string,
-	posterPayload: unknown,
-	media: unknown,
-	thumbWidthPx: number,
-): string {
-	const img = resolveSanityImageFieldForUrl(posterPayload);
-	if (img) {
-		const u = urlForFetchedImage(img, Math.min(thumbWidthPx, 3840));
-		if (u) return u;
+/**
+ * Stall rescue deadline: once playback has run, a `waiting` rebuffer that isn't resolved within
+ * this window means the pinned min = max rendition outruns the connection. Safari and Firefox
+ * expose no Network Information API, so the pin is chosen blind there. After the deadline
+ * `minResolution` is dropped (the `maxResolution` cap stays) so ABR may step down instead of
+ * stalling; the player resumes where it was.
+ */
+const STALL_RESCUE_MS = 3000;
+
+/**
+ * Poster hold after `play`: keep the poster fully visible this long before its fade-out starts,
+ * so the first video frame has painted and the 200 ms fade (`mux-player.css`) lands on picture
+ * instead of a black gap.
+ */
+const POSTER_HOLD_MS = 250;
+
+/**
+ * Grace period before a player that scrolled out of view is paused. Flicking past a player
+ * doesn't stop a clip that is about to be back on screen; nothing keeps playing unseen.
+ */
+const OFFSCREEN_PAUSE_DELAY_MS = 150;
+
+/**
+ * Re-check interval for an off-screen player in fullscreen / PiP. Leaving either mode doesn't
+ * re-fire the IntersectionObserver when the inline box is still off-screen, so the deferred
+ * pause looks again until the player is back in the page.
+ */
+const DETACHED_RECHECK_MS = 1000;
+
+/**
+ * The bits of `MuxPlayerElement` driven imperatively. Typed structurally rather than importing
+ * the element class — the player loads lazily, and its type would pull the client-only module
+ * into this boundary.
+ */
+type MuxPlayerHandle = HTMLElement & {
+	play: () => Promise<void> | void;
+	pause: () => void;
+	paused: boolean;
+	ended: boolean;
+	currentTime: number;
+	/** `mux-video` element; its `nativeEl` is the `<video>`. */
+	media?: { nativeEl?: HTMLVideoElement } | null;
+};
+
+/**
+ * This player is in fullscreen or picture-in-picture: the inline box can leave the viewport
+ * while it plays. Another player in either mode doesn't count. Both APIs retarget an element
+ * inside the player's shadow tree (its `<video>`, its media controller) to the player itself.
+ */
+function isPlayerDetachedFromPage(player: MuxPlayerHandle): boolean {
+	const isOwn = (el: Element | null) =>
+		el !== null && (el === player || player.contains(el));
+	if (
+		isOwn(document.fullscreenElement) ||
+		isOwn(document.pictureInPictureElement)
+	) {
+		return true;
 	}
-	return muxThumbnailUrl(playbackId, muxThumbnailTimeSec(media), {
-		width: thumbWidthPx,
-	});
+	/* iOS plays fullscreen through the native `<video>`, outside the Fullscreen API. */
+	const video = player.media?.nativeEl as
+		| (HTMLVideoElement & { webkitDisplayingFullscreen?: boolean })
+		| undefined;
+	return video?.webkitDisplayingFullscreen === true;
 }
 
-export function MediaVideo({
+/**
+ * Keyed by playback ID, so swapping the asset (e.g. in Presentation) starts a fresh player
+ * instead of inheriting the previous one's stall and poster state.
+ */
+export function MediaVideo(props: MediaVideoProps) {
+	const playbackId = extractMuxPlaybackId(props.media);
+	if (!playbackId) return null;
+	return <MuxVideoPlayer key={playbackId} playbackId={playbackId} {...props} />;
+}
+
+function MuxVideoPlayer({
+	playbackId,
 	media,
 	caption,
 	posterPayload,
@@ -82,31 +147,235 @@ export function MediaVideo({
 	aspectRatioOverride,
 	accentColor: accentColorProp,
 	priority = false,
-}: MediaVideoProps) {
-	const playbackId = extractMuxPlaybackId(media);
+}: MediaVideoProps & { playbackId: string }) {
 	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
-
-	if (!playbackId) return null;
-
 	const dims = getMuxDisplayDimensions(media);
+	const autoplay = !!videoSettings?.autoplay;
+	const chromeless = videoSettings?.controls === false;
+
+	/* Client-only and latched: screen and network are read after mount (SSR renders the
+	 * unpinned ceiling), and NOT re-resolved on resize — a min/max change swaps the stream src
+	 * and reloads the player. */
+	const [resolution, setResolution] = useState<MuxPlayerResolution | null>(
+		null,
+	);
+	useEffect(() => {
+		setResolution(
+			resolveMuxPlayerResolution({
+				videoWidthPx: dims.isFallback ? undefined : dims.width,
+				videoHeightPx: dims.isFallback ? undefined : dims.height,
+			}),
+		);
+	}, [dims.isFallback, dims.width, dims.height]);
+
+	/* Imperative handle for viewport pause / resume and the stall rescue. The lazy wrapper
+	 * mounts a placeholder first, so `playerReady` tells the effects when the element exists. */
+	const playerRef = useRef<MuxPlayerHandle | null>(null);
+	const [playerReady, setPlayerReady] = useState(false);
+	const bindPlayer = useCallback((player: HTMLElement | null) => {
+		playerRef.current = player as MuxPlayerHandle | null;
+		setPlayerReady(player !== null);
+	}, []);
+
+	/* Who paused the player. A pause we trigger (off-screen, stall swap) is resumable; a pause
+	 * the visitor made with the controls is theirs and sticks. Pauses while the tab is hidden
+	 * come from the browser, not the visitor. */
+	const userPausedRef = useRef(false);
+	const expectingPauseRef = useRef(false);
+	/* Last IntersectionObserver verdict (`null` until the first callback); nothing autoplays
+	 * while it is `false`. */
+	const inViewRef = useRef<boolean | null>(null);
+
+	/* Stall rescue (see {@link STALL_RESCUE_MS}). Armed by `waiting` only after playback has
+	 * run once — startup and a fresh seek legitimately wait for the first segment — and
+	 * disarmed by `playing` or `pause`. Latched: one hard stall frees ABR for this player for
+	 * good. The swap reloads the stream, so position and play state are carried over through
+	 * `startTime` and a `play()` on the next `canplay`. */
+	const [stallDegraded, setStallDegraded] = useState(false);
+	const [resumeAtSec, setResumeAtSec] = useState<number | undefined>(undefined);
+	const hasPlayedRef = useRef(false);
+	const resumeAfterSwapRef = useRef(false);
+	const stallTimerRef = useRef<number | undefined>(undefined);
+	const disarmStallTimer = useCallback(() => {
+		if (stallTimerRef.current !== undefined) {
+			window.clearTimeout(stallTimerRef.current);
+			stallTimerRef.current = undefined;
+		}
+	}, []);
+	useEffect(() => disarmStallTimer, [disarmStallTimer]);
+	const onPlayerWaiting = useCallback(() => {
+		if (!hasPlayedRef.current || stallDegraded) return;
+		if (stallTimerRef.current !== undefined) return;
+		stallTimerRef.current = window.setTimeout(() => {
+			stallTimerRef.current = undefined;
+			const player = playerRef.current;
+			if (player) {
+				setResumeAtSec(player.currentTime);
+				resumeAfterSwapRef.current = !player.paused;
+			}
+			setStallDegraded(true);
+		}, STALL_RESCUE_MS);
+	}, [stallDegraded]);
+	const onPlayerCanPlay = useCallback(() => {
+		if (!resumeAfterSwapRef.current) return;
+		resumeAfterSwapRef.current = false;
+		const player = playerRef.current;
+		if (player?.paused) void Promise.resolve(player.play()).catch(() => {});
+	}, []);
+
+	/* Poster dismissal: on the first `play`, hold the poster for {@link POSTER_HOLD_MS}, then
+	 * set `[data-poster-hidden]` so `mux-player.css` fades the poster layer out. */
+	const [posterHidden, setPosterHidden] = useState(false);
+	const posterHoldTimerRef = useRef<number | undefined>(undefined);
+	useEffect(
+		() => () => {
+			if (posterHoldTimerRef.current !== undefined) {
+				window.clearTimeout(posterHoldTimerRef.current);
+			}
+		},
+		[],
+	);
+
+	const onPlayerPlay = useCallback(() => {
+		const player = playerRef.current;
+		/* Autoplay can kick in for a player that is already off-screen (a priority player whose
+		 * chunk lands after the visitor scrolled away). */
+		if (
+			player &&
+			inViewRef.current === false &&
+			!isPlayerDetachedFromPage(player)
+		) {
+			expectingPauseRef.current = true;
+			player.pause();
+			return;
+		}
+		userPausedRef.current = false;
+		if (posterHoldTimerRef.current !== undefined) return;
+		posterHoldTimerRef.current = window.setTimeout(
+			() => setPosterHidden(true),
+			POSTER_HOLD_MS,
+		);
+	}, []);
+	const onPlayerPlaying = useCallback(() => {
+		hasPlayedRef.current = true;
+		disarmStallTimer();
+	}, [disarmStallTimer]);
+	const onPlayerPause = useCallback(() => {
+		disarmStallTimer();
+		if (expectingPauseRef.current) {
+			expectingPauseRef.current = false;
+			return;
+		}
+		if (resumeAfterSwapRef.current) return;
+		if (document.visibilityState === "visible") userPausedRef.current = true;
+	}, [disarmStallTimer]);
+
+	/** Resume an on-screen autoplay clip that stopped without the visitor asking for it. */
+	const resumeAutoplay = useCallback(() => {
+		const player = playerRef.current;
+		if (!autoplay || !player?.paused || player.ended) return;
+		if (userPausedRef.current || inViewRef.current === false) return;
+		void Promise.resolve(player.play()).catch(() => {});
+	}, [autoplay]);
+
+	/* Pause once the player leaves the viewport — a clip nobody is looking at is bandwidth
+	 * and noise. Autoplay clips resume when they scroll back; a clip the visitor started stays
+	 * paused, they didn't ask for it to follow them. Debounced so a fast scroll-through
+	 * doesn't stop a player that is about to be back on screen; deferred while this player is
+	 * in fullscreen / PiP, where the inline box can drift out of view while the video is what's
+	 * on screen. */
+	useEffect(() => {
+		if (!playerReady) return;
+		const root = containerRef.current;
+		if (!root) return;
+		let pauseTimer: number | undefined;
+		const schedulePause = (delayMs: number) => {
+			pauseTimer = window.setTimeout(() => {
+				pauseTimer = undefined;
+				const player = playerRef.current;
+				if (!player || player.paused) return;
+				if (isPlayerDetachedFromPage(player)) {
+					schedulePause(DETACHED_RECHECK_MS);
+					return;
+				}
+				expectingPauseRef.current = true;
+				player.pause();
+			}, delayMs);
+		};
+		const io = new IntersectionObserver(
+			([entry]) => {
+				if (!entry) return;
+				inViewRef.current = entry.isIntersecting;
+				if (entry.isIntersecting) {
+					if (pauseTimer !== undefined) {
+						window.clearTimeout(pauseTimer);
+						pauseTimer = undefined;
+					}
+					resumeAutoplay();
+					return;
+				}
+				if (pauseTimer === undefined) schedulePause(OFFSCREEN_PAUSE_DELAY_MS);
+			},
+			{ threshold: 0 },
+		);
+		io.observe(root);
+		return () => {
+			io.disconnect();
+			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
+		};
+	}, [playerReady, containerRef, resumeAutoplay]);
+
+	/* Returning to a long-backgrounded tab: browsers suspend background media and may evict
+	 * the MSE buffer, leaving an autoplay clip paused with nothing watching it. Nudge it back
+	 * into motion when the tab is visible again — only if it is on screen. */
+	useEffect(() => {
+		if (!playerReady || !autoplay) return;
+		const onVisible = () => {
+			if (document.visibilityState === "visible") resumeAutoplay();
+		};
+		document.addEventListener("visibilitychange", onVisible);
+		return () => document.removeEventListener("visibilitychange", onVisible);
+	}, [playerReady, autoplay, resumeAutoplay]);
+
+	/* Poster URL latched once the slot is measured: the measurement lands in a layout effect,
+	 * before the lazy player mounts (its placeholder renders no poster), so the player sees one
+	 * URL sized to the slot. Re-latched when anything else in the URL changes — the uploaded
+	 * poster, its crop or hotspot, or the Mux thumbnail time — so Presentation shows the
+	 * editor's pick; only the slot width is deliberately left out. */
+	const thumbnailTime = muxThumbnailTimeSec(media);
+	const posterField = resolveSanityImageFieldForUrl(posterPayload);
+	const posterKey = JSON.stringify([
+		posterField?.asset?._id ?? posterField?.asset?._ref ?? null,
+		posterField?.crop ?? null,
+		posterField?.hotspot ?? null,
+		thumbnailTime ?? null,
+	]);
+	const posterLatchRef = useRef<{ key: string; url: string | null } | null>(
+		null,
+	);
+
+	let posterUrl: string | null;
+	if (posterLatchRef.current?.key === posterKey) {
+		posterUrl = posterLatchRef.current.url;
+	} else {
+		posterUrl = resolveMediaPosterUrl({
+			posterPayload,
+			muxMedia: media,
+			thumbWidthPx: muxThumbnailRequestWidthPx({
+				containerWidthPx: slotWidthPx,
+				assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
+			}),
+			muxTimeSec: thumbnailTime,
+		});
+		if (slotWidthPx !== undefined) {
+			posterLatchRef.current = { key: posterKey, url: posterUrl };
+		}
+	}
+
 	const aspectCss = dims.isFallback
 		? "16 / 9"
 		: `${dims.width} / ${dims.height}`;
 	const resolvedAspectRatio = aspectRatioOverride ?? aspectCss;
-
-	const thumbWidthPx = muxThumbnailRequestWidthPx({
-		containerWidthPx: slotWidthPx,
-		assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
-	});
-	const posterUrl = resolvePosterUrl(
-		playbackId,
-		posterPayload,
-		media,
-		thumbWidthPx,
-	);
-
-	const autoplay = !!videoSettings?.autoplay;
-	const chromeless = videoSettings?.controls === false;
 
 	const muxSurfaceStyle = {
 		...(fillParent
@@ -132,27 +401,38 @@ export function MediaVideo({
 				className,
 			)}
 			style={fillParent ? undefined : { aspectRatio: resolvedAspectRatio }}
+			data-poster-hidden={posterHidden ? "" : undefined}
 		>
 			<MuxPlayer
+				ref={bindPlayer}
 				loading={priority ? "page" : "viewport"}
 				preload={priority ? "auto" : "metadata"}
 				streamType="on-demand"
 				playbackId={playbackId}
-				poster={posterUrl}
-				thumbnailTime={muxThumbnailTimeSec(media)}
-				autoPlay={autoplay}
+				poster={posterUrl ?? undefined}
+				thumbnailTime={thumbnailTime}
+				startTime={resumeAtSec}
+				/* `"muted"` rather than `true`: playback-core forces the element muted before
+				 * play() and retries muted if an unmuted attempt is denied, instead of failing
+				 * silently on autoplay policy. */
+				autoPlay={autoplay ? "muted" : false}
+				/* Constant per instance, so React never re-applies it and fights the mute
+				 * button. Autoplay clips start muted (the only way autoplay may begin); clips
+				 * the visitor starts play with sound. */
 				muted={autoplay}
 				playsInline
 				renditionOrder="desc"
-				/* Ceiling at 2160p — 4K available for capable devices on fast
-				 * connections; ABR + MuxPlayer's internal player-size cap land
-				 * most viewers at 1440p naturally. Floor at 1080p enforces a
-				 * "no visible degradation" policy: on a slow link the player
-				 * rebuffers at 1080p instead of dropping to 720p/540p. Quality
-				 * over instant-recovery — the loop player uses 540p floor
-				 * instead because autoplay there can't tolerate stalls. */
-				maxResolution="2160p"
-				minResolution="1080p"
+				/* Quality-first (see `resolveMuxPlayerResolution`): min = max pins the best
+				 * tier for this display from the first segment; on a degraded connection, or
+				 * after the stall rescue fired, min stays unset so ABR can step down instead
+				 * of rebuffering. Pre-mount / SSR: unpinned hard ceiling. */
+				minResolution={stallDegraded ? undefined : resolution?.minResolution}
+				maxResolution={resolution?.maxResolution ?? MUX_PLAYBACK_MAX_TIER}
+				onPlay={onPlayerPlay}
+				onPlaying={onPlayerPlaying}
+				onPause={onPlayerPause}
+				onWaiting={onPlayerWaiting}
+				onCanPlay={onPlayerCanPlay}
 				/* Privacy + bytes: skip Mux Data analytics pings and the
 				 * associated cookies. We lose the Mux Data dashboard, but no
 				 * cookie banner is needed for video playback. Re-enable per

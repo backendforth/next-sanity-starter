@@ -2,9 +2,12 @@ import { CaseIcon } from "@sanity/icons/Case";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
-
 import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
 import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
+import {
+  PROJECT_CATEGORY_REFERENCE_FILTER,
+  sameLanguageReferenceFilter,
+} from "../constants/references";
 
 export const project = defineType({
   name: "project",
@@ -49,7 +52,17 @@ export const project = defineType({
       name: "categories",
       title: "Categories",
       type: "array",
-      of: [{ type: "reference", to: [{ type: "projectCategory" }] }],
+      of: [
+        {
+          type: "reference",
+          to: [{ type: "projectCategory" }],
+          options: {
+            filter: sameLanguageReferenceFilter(
+              PROJECT_CATEGORY_REFERENCE_FILTER,
+            ),
+          },
+        },
+      ],
       group: "editorial",
     },
     {

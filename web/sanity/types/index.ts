@@ -1,5 +1,10 @@
 export type { ErrorSettingsDocument } from "./errorSettings";
-export type { HomeDocument, PageDocument, PageSeo } from "./pages";
+export type {
+	DocumentTranslation,
+	HomeDocument,
+	PageDocument,
+	PageSeo,
+} from "./pages";
 export type { SiteAnalyticsSettingsDocument } from "./siteAnalyticsSettings";
 export type {
 	CookieConsentModalCopy,

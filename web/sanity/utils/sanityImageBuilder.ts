@@ -195,10 +195,6 @@ export function getImageAspectRatio(
 	return fallback;
 }
 
-export function getImageLqip(image: SanityImageField): string | null {
-	return image?.asset?.metadata?.lqip ?? null;
-}
-
 export function buildFetchedImageUrl(
 	image: SanityImageField,
 	options: BuildImageUrlOptions = {},

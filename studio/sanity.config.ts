@@ -94,7 +94,8 @@ export default defineConfig({
     ...(isDev ? [visionTool()] : []),
     media(),
     muxInput({
-      // QHD cap — between 4K source and 1080p delivery on smaller viewports.
+      // Default encoding ceiling. `media.video` (2160p) and `media.videoLoop`
+      // (1440p) set their own via field `options`, which override this.
       max_resolution_tier: "1440p",
       // Per-title encoding: lower bitrates on simple loops without visible loss.
       video_quality: "plus",

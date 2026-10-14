@@ -9,8 +9,7 @@ export const imageShapeQuery = `
     _id,
     url,
     metadata{
-      dimensions{ width, height, aspectRatio },
-      lqip
+      dimensions{ width, height, aspectRatio }
     }
   }
 `;
@@ -19,6 +18,10 @@ export const imageQuery = `{${imageShapeQuery}}`;
 
 /**
  * Mux / `mux.video` field: use as `fieldName${videoQuery}`.
+ *
+ * `thumbTime` is the poster frame picked in Studio (`muxThumbnailTimeSec`). `data` is trimmed
+ * to what `muxPlayback.ts` reads (playback ID fallbacks, video track size); the full Mux asset
+ * payload (renditions, static files, input info) is several KB per video.
  */
 export const videoQuery = `{
   "playbackId": coalesce(
@@ -29,7 +32,12 @@ export const videoQuery = `{
   "duration": asset->data.duration,
   "asset": asset->{
     playbackId,
-    data
+    thumbTime,
+    "data": data{
+      playbackId,
+      "playback_ids": playback_ids[]{ id },
+      "tracks": tracks[]{ type, max_width, max_height }
+    }
   }
 }`;
 

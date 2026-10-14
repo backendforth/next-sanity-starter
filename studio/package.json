@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "node scripts/dev-with-hint.mjs",
     "sync:prod-to-dev": "node scripts/sync-prod-to-dev.mjs",
-    "migrate:project-body-rich-text": "node scripts/migrate-project-body-rich-text.mjs",
     "migrate:seo-i18n": "node scripts/migrate-seo-i18n.mjs",
     "mux:migrate-assets": "node scripts/mux-migrate-assets.mjs",
     "start": "sanity start",

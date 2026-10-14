@@ -13,7 +13,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas â€
 
 - **YOU MUST** thread `{ locale, siteLocale }` through every render path that touches Sanity content. The render tree starts at `app/[locale]/page.tsx` and ends in modules.
 - **NEVER** read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module â€” breaks SSR and Presentation iframes.
-- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
+- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
 
 ## Sanity-side gotchas
 

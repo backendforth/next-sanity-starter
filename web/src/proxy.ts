@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { LOCALE_HEADER_NAME } from "@/src/i18n/config";
 import { fetchSiteLocaleConfigForProxy } from "@/src/i18n/proxyLocaleFetch";
 
 /** Cookie set by Next.js Draft Mode (`/api/draft-mode/enable`, Presentation preview). */
@@ -47,19 +46,12 @@ export async function proxy(request: NextRequest) {
 
 	const first = pathname.split("/")[1];
 	if (first && isKnownLocale(first) && first !== defaultLocale) {
-		const requestHeaders = new Headers(request.headers);
-		requestHeaders.set(LOCALE_HEADER_NAME, first);
-		return NextResponse.next({
-			request: { headers: requestHeaders },
-		});
+		return NextResponse.next();
 	}
 
 	const url = request.nextUrl.clone();
 	url.pathname =
 		pathname === "/" ? defaultPrefix : `${defaultPrefix}${pathname}`;
-
-	const requestHeaders = new Headers(request.headers);
-	requestHeaders.set(LOCALE_HEADER_NAME, defaultLocale);
 	return NextResponse.rewrite(url);
 }
 

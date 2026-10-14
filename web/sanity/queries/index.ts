@@ -1,10 +1,4 @@
-export {
-	moduleCarouselQuery,
-	moduleContentRefsQuery,
-	moduleMediaQuery,
-	modulesQuery,
-	moduleTextQuery,
-} from "./components/modules";
+export { modulesQuery } from "./components/modules";
 export {
 	internationalizedRichTextMediaBodyQuery,
 	richTextMediaQuery,

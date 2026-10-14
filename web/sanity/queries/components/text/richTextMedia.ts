@@ -1,6 +1,6 @@
 import { linkQuery } from "../../snippets/link";
-import { moduleCarouselInnerFields } from "../modules/carousel";
-import { moduleMediaInnerFields } from "../modules/media";
+import { moduleCarouselQuery } from "../modules/carousel";
+import { moduleMediaQuery } from "../modules/media";
 
 /** Portable Text blocks with resolved `link` marks. */
 export const blockFields = `
@@ -17,22 +17,15 @@ export const blockFields = `
   `;
 
 /**
- * Portable Text `value[]` for `internationalizedArrayRichTextMedia` / `richTextMedia`.
- *
- * The editor's `of` is `[block, module.media, module.carousel]`
- * (`objects/editors/richTextMedia.ts`), and `portableTextComponents.tsx` renders exactly
- * those, so a rich-text body never holds `module.text` or `module.contentRefs`. The
- * projection is flat: the recursive `module.text` branch and the contentRefs projection
- * were unreachable query text, POSTed twice per `sanityFetch`.
+ * Portable Text `value[]` for `internationalizedArrayRichTextMedia` / `richTextMedia`: blocks
+ * plus the inline modules. Inline modules are opt-in, and this list must name exactly the
+ * modules in the editor's `of` (`objects/editors/richTextMedia.ts`) and the `types` map in
+ * `portableTextComponents.tsx` — `pnpm check:wiring` compares the three.
  */
 export const richTextMediaQuery = `
     ${blockFields},
-    _type == "module.media" => {
-      ${moduleMediaInnerFields}
-    },
-    _type == "module.carousel" => {
-      ${moduleCarouselInnerFields}
-    }
+    ${moduleMediaQuery},
+    ${moduleCarouselQuery}
   `;
 
 /** i18n wrapper for a document-level `body` field using `internationalizedArrayRichTextMedia`. */

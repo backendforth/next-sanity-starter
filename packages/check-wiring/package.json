@@ -10,5 +10,8 @@
 	"scripts": {
 		"check": "node ./bin/check-wiring.mjs",
 		"check:typegen": "node ./bin/check-typegen.mjs"
+	},
+	"exports": {
+		"./manifest": "./src/manifest.mjs"
 	}
 }

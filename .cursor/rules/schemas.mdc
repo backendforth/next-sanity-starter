@@ -22,7 +22,7 @@ After every schema edit:
 
 ```
 pnpm generate
-git add studio/schema.json studio/sanity.types.gen.ts
+git add studio/schema.json studio/sanity.types.gen.ts web/sanity/sanity.types.gen.ts
 pnpm typecheck
 ```
 
@@ -30,7 +30,7 @@ CI rejects any uncommitted gen diff.
 
 NEVER edit:
 
-- `studio/sanity.types.gen.ts`
+- `studio/sanity.types.gen.ts`, `web/sanity/sanity.types.gen.ts` (any `*.gen.*`)
 - `studio/schema.json`
 - Anything under `studio/.sanity/`
 

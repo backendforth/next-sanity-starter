@@ -93,7 +93,7 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 
 > **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root (`--inline` for a rich-text module): it creates the studio + web files and wires every point, the `ModulesRenderer.tsx` `case` included, or writes nothing if an anchor is missing. See `packages/scaffold-module/README.md`. The steps below describe the Studio half of what it does.
 
-1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
+1. **Define the object** — create `schemas/objects/modules/module<Name>.ts` with `export const module<Name> = defineType(…)` (`pnpm check:wiring` only finds modules named this way):
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
    - **`type: "object"`** — fields, `preview`, optional `icon`, etc.
 2. **Register the type** — export it and add it to **`schemas/index.ts`** → `schemaTypes` (keep module types together with other `module.*` entries).
@@ -146,5 +146,5 @@ If you need “New document” templates with presets, add them through `schema.
 | Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
 | Languages | `config/sync/supportedLanguages.ts`; translatable types: `language` field + `TRANSLATABLE_SCHEMA_TYPES` in `sanity.config.ts` |
 | Slug rules | `validation: validateSlug` on slug fields |
-| New **module** | New file `objects/modules/module<Name>.ts`, `index.ts`, `richTextMedia.ts`, `fields/modulesArrayField.ts` (`moduleTypes`) |
+| New **module** | `pnpm gen:module <Name>`, or by hand: `objects/modules/module<Name>.ts`, `index.ts`, `fields/modulesArrayField.ts` (`moduleTypes`); `objects/editors/richTextMedia.ts` only for an inline module |
 | New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |

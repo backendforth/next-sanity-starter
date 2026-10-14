@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`) and is passed into `metadataFromSanityPageData`.
+**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, `path`, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`) and is passed into `metadataFromSanityPageData`.
 
 Import from `@/sanity/queries`.
 

@@ -41,7 +41,7 @@ Internal `link` fields use `PAGE_REFERENCES`; `module.contentRefs` adds `PROJECT
 
 ## Anti-patterns specific to studio
 
-- Adding a `module.<id>` to only one of `richTextMedia.ts` / `modulesArrayField.ts`.
+- Adding a module to `richTextMedia.ts` alone — inline also takes `richTextMediaQuery` and the web `types` map.
 - Document type without a structure item — invisible to editors.
 - `internationalizedArray*` fields for content — that is `main`'s model, not this branch's.
 - A translatable document type without the `language` field or missing from `TRANSLATABLE_SCHEMA_TYPES`.

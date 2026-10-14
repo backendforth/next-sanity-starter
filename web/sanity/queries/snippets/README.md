@@ -54,7 +54,7 @@ Settings are per-language documents (one `siteNav`, `siteSettings`, … per lang
 
 - **`siteChromeQuery`** — `siteNav` for `$locale` with resolved main + footer menus (falls back to a legacy `siteNav` without `language`), the cookie banner copy, site settings, analytics and the 404 copy in one fetch (no `modules[]` anywhere: no error page renders modules).
 
-Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
+Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). That is why `siteSettingsQuery`, `siteNavQuery` and `siteCookieBannerQuery` are unexported, field-scoped fragments of `siteChromeQuery` rather than full-document queries — compose from the fragments in `settings.ts` and `linkQuery` if you need a custom shape.
 
 Example:
 

@@ -121,7 +121,7 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (per-language singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`, prefixed with `/{language}` for non-default languages).
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (per-language singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`, prefixed with `/{language}` for non-default languages).
 
 Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SUGGESTIONS`** (same file) into the field’s `options`, next to any `filter`. Do the same on new reference fields.
 

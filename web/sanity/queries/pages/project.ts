@@ -11,7 +11,6 @@ export const projectBySlugQuery =
   _id,
   title,
   "path": ${routePathProjection},
-  language,
   body[]{
     ${richTextMediaQuery}
   },

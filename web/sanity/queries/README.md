@@ -51,7 +51,7 @@ This branch keeps **one document per language** (`@sanity/document-international
 | `errorSettings` | 404 / 500 copy |
 | `siteCookieBanner` | Cookie UI |
 
-Pattern: `*[_type == "siteSettings" && language == $locale][0]`. `siteNav` also falls back to a legacy document without `language` (see `siteChromeQuery`).
+Pattern: `*[_type == "siteSettings" && language == $locale][0]`. The cookie banner and the favicon fall back to the default language's document (see `siteChromeQuery`).
 
 The only fixed-id document is the global singleton **`siteLanguageSettings`** (`*[_id == "siteLanguageSettings"][0]`).
 

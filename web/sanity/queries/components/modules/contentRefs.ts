@@ -9,7 +9,6 @@ const contentRefTargetProjection = `
   _id,
   _type,
   _createdAt,
-  language,
   title,
   "slug": slug.current,
   "path": ${routePathProjection},

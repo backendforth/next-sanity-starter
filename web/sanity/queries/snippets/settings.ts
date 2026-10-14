@@ -34,18 +34,10 @@ const navFooterMenuQuery = `footerMenu[]{
   ${linkQuery}
 }`;
 
-/**
- * `siteNav` for the active locale — main + footer menus with resolved links, no `modules[]`.
- * Falls back to a legacy document with no `language` (pre–document-level i18n) when no
- * locale-specific doc exists.
- */
-const siteNavQuery = `coalesce(
-  *[_type == "siteNav" && language == $locale][0],
-  *[_type == "siteNav" && !defined(language)][0]
-){
+/** `siteNav` for the active locale — main + footer menus with resolved links, no `modules[]`. */
+const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
   _id,
   title,
-  language,
   "mainMenu": ${navMainMenuQuery},
   "footerMenu": ${navFooterMenuQuery}
 }`;

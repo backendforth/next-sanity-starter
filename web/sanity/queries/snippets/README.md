@@ -13,6 +13,7 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
 | `link.ts` | `linkQuery` | Portable Text `link` marks: `internal` (route, slug, `resolvedReference`), `external` (href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
 | `settings.ts` | `siteNavMenusQuery`, `navMenusQuery`, `errorSettingsQuery`, `siteCookieBannerLayoutQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery` | Lean projections for the app shell (each fetched via its `fetch*` helper in `fetchSanityData.ts`). All select the document with `language == $locale`, except `siteLanguageSettingsQuery` (global singleton, by `_id`) |
+| `translations.ts` | `routePathProjection`, `translationsQuery` | Route path of a document without locale prefix; `translations` = every published language variant (`page`/`project` via `translation.metadata`, `home`/`work` by type) for `hreflang` and the language switch |
 | `sitemap.ts` | `pageSlugsQuery`, `projectSlugsQuery`, `sitemapPagesQuery` | Slug + `language` rows for `[slug]` / `work/[slug]` routes (all languages); sitemap rows cover `home`, `work`, `page`, `project` with `language`, unprefixed `path`, and `_updatedAt` |
 
 ## Using a snippet in a custom query (Next.js)
@@ -42,7 +43,7 @@ export const myQuery = `*[_type == "article" && slug.current == $slug && languag
 const doc = await client.fetch(myQuery, { slug: "hello", locale });
 ```
 
-Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, LQIP, playback ids).
+Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, playback ids, Studio poster frame).
 
 ## Settings documents
 

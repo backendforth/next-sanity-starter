@@ -8,13 +8,18 @@ import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 
 type Props = {
-	errorSettings: ErrorSettingsDocument | null;
+	/** `errorSettings` per locale id — one document per language. */
+	errorSettingsByLocale: Readonly<Record<string, ErrorSettingsDocument | null>>;
 };
 
-export function LocaleNotFoundContent({ errorSettings }: Props) {
+export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {
 	const pathname = usePathname() ?? "/";
-	const { localeFromPathname, localePath } = useLanguage();
+	const { defaultLocale, localeFromPathname, localePath } = useLanguage();
 	const locale = localeFromPathname(pathname);
+	const errorSettings =
+		errorSettingsByLocale[locale] ??
+		errorSettingsByLocale[defaultLocale] ??
+		null;
 
 	const title = errorSettings?.notFoundTitle?.trim() || "Page not found";
 	const body = errorSettings?.notFoundBody ?? [];

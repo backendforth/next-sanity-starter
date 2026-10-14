@@ -33,7 +33,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Sanity Studio v6** — Vision, Dashboard, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
 
-**Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position`, LQIP and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
+**Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
 **Hardened revalidation** — `POST /api/revalidate` does HMAC-SHA256 signature verification (Sanity signed webhooks), payload validation, a document-type allow-list, in-memory rate limiting, and is fail-closed in production.
 

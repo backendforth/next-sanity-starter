@@ -11,6 +11,9 @@
 		"strip-readmes:dry-run": "pnpm --filter @repo/strip-readmes run strip:dry-run",
 		"gen:module": "pnpm --filter @repo/scaffold-module run gen --",
 		"check:wiring": "pnpm --filter @repo/check-wiring run check",
+		"check:typegen": "pnpm --filter @repo/check-wiring run check:typegen",
+		"//generate": "Both typegens (Studio schema + types, then the web query types) and a check that every web query got a type. Run after every schema or query edit.",
+		"generate": "pnpm --filter studio run generate && pnpm --filter web run generate && pnpm run check:typegen",
 		"prepare": "husky",
 		"//dev": "Starts both web (3000) and studio (3333) in parallel — comment out one filter or use `web:dev`/`studio:dev` to run only one.",
 		"dev": "pnpm --stream -r run dev",
@@ -20,7 +23,7 @@
 		"studio:build": "pnpm --filter studio run build",
 		"studio:deploy": "pnpm --filter studio run deploy",
 		"studio:register": "pnpm --filter studio run register",
-		"studio:generate": "pnpm --filter studio run generate",
+		"studio:generate": "pnpm run generate",
 		"studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev",
 		"update": "pnpm up --stream -r",
 		"studio:update": "pnpm up --filter studio"

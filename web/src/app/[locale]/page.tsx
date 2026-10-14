@@ -4,10 +4,7 @@ import {
 	fetchSiteChrome,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
-import {
-	metadataFromSanityPageData,
-	siteBrandTitle,
-} from "@/sanity/seo/resolveSanityMetadata";
+import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 
 type PageProps = {
@@ -28,12 +25,8 @@ export async function generateMetadata({
 		fetchSiteLanguageSettings(),
 		fetchSiteChrome(),
 	]);
-	if (!data) {
-		return {
-			title: { absolute: siteBrandTitle(chrome?.settings) },
-			description: undefined,
-		};
-	}
+	/* No document: the layout's `title.default` (the brand) applies. */
+	if (!data) return {};
 	return metadataFromSanityPageData({
 		data,
 		locale,

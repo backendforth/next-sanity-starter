@@ -5,7 +5,7 @@ import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
-import type { PageSeo, RouteDocument, SiteSettings } from "../types";
+import type { RouteDocument, SiteSettings } from "../types";
 import {
 	type LocalizedEntry,
 	pickLocalizedString,
@@ -45,50 +45,6 @@ function localizedSeoText(
 }
 
 /**
- * Merges local page `seo` with Sanity **site settings** fallback (`settingsSeo` from GROQ),
- * description resolved for `locale`. Empty strings are treated as missing so fallbacks
- * apply. The title has its own order, see `resolveSanityMetadata`.
- */
-export function mergePageAndSettingsSeo(
-	pageSeo: PageSeo,
-	settingsSeo: PageSeo,
-	locale?: string,
-	siteLocale?: SiteLocaleSlice | null,
-): {
-	description?: string;
-	imageUrl?: string;
-} {
-	return {
-		description: firstNonEmpty(
-			localizedSeoText(pageSeo?.description, locale, siteLocale),
-			localizedSeoText(settingsSeo?.description, locale, siteLocale),
-		),
-		imageUrl: firstNonEmpty(pageSeo?.imageUrl, settingsSeo?.imageUrl),
-	};
-}
-
-export type ResolveSanityMetadataInput = {
-	/** Local `data.seo` from the page / singleton query. */
-	seo?: PageSeo;
-	/** Site-wide fallback, `siteSettings.seo` (`fetchSiteChrome`). */
-	settingsSeo?: PageSeo;
-	/** When the page has no meta title (e.g. localized H1 or slug). Wins over `settingsSeo.title`. */
-	titleFallback: string;
-	/** Brand: the last-resort title, and the tab-title suffix it must not repeat. */
-	siteTitleFallback?: string;
-	/** Home: the site-wide SEO title describes this page, so it wins over `titleFallback`. */
-	siteSeoTitleFirst?: boolean;
-	/** Site name for Open Graph (defaults to siteTitleFallback). */
-	siteName?: string;
-	/** Locale-agnostic path for the document (e.g. `"/"`, `"/about"`). Required for `alternates`. */
-	path?: string;
-	/** Active locale id for canonical URL and the localized SEO fields. */
-	currentLocale?: string;
-	/** Site locale config used to build `hreflang` entries for every available language. */
-	siteLocale?: SiteLocaleSlice | null;
-};
-
-/**
  * `hreflang` map for one document: its path under every site locale, plus `x-default` → the
  * default locale. Field-level i18n renders every locale from the same document, so each
  * language is listed. Used by route metadata and the sitemap.
@@ -108,89 +64,12 @@ export function hreflangLanguages(
 	return languages;
 }
 
-function buildAlternates(
-	path: string | undefined,
-	currentLocale: string | undefined,
-	siteLocale: SiteLocaleSlice | null | undefined,
-): Metadata["alternates"] | undefined {
-	if (!path || !currentLocale || !siteLocale) return undefined;
-	const { localePath } = createLanguagePathUtils(siteLocale);
-	return {
-		canonical: absoluteSiteUrl(localePath(path, currentLocale)),
-		languages: hreflangLanguages(path, siteLocale),
-	};
-}
-
 /**
- * The brand, `siteSettings.title`, clean of stega markers — tab-title suffix, Open Graph
- * `siteName` and last-resort title. `"Site"` when unset.
+ * The brand, `siteSettings.title`, clean of stega markers — tab-title suffix and Open Graph
+ * `siteName`. `"Site"` when unset.
  */
 export function siteBrandTitle(site: SiteSettings | null | undefined): string {
 	return stegaClean(site?.title)?.trim() || "Site";
-}
-
-/**
- * Next.js `Metadata` from merged Sanity SEO + Open Graph + Twitter cards + `hreflang` alternates.
- * Every string is cleaned of stega markers: the fetches are shared with the rendered page, so in
- * Draft Mode they carry them.
- */
-export function resolveSanityMetadata({
-	seo,
-	settingsSeo,
-	titleFallback,
-	siteTitleFallback = "Site",
-	siteSeoTitleFirst = false,
-	siteName,
-	path,
-	currentLocale,
-	siteLocale,
-}: ResolveSanityMetadataInput): Metadata {
-	const merged = mergePageAndSettingsSeo(
-		seo ?? null,
-		settingsSeo ?? null,
-		currentLocale,
-		siteLocale,
-	);
-	/* The page's own title beats the site-wide SEO title. That one is usually the brand, which
-	 * the layout's `%s | brand` template would render as "Brand | Brand" on every page. */
-	const pageTitle = localizedSeoText(seo?.title, currentLocale, siteLocale);
-	const siteSeoTitle = localizedSeoText(
-		settingsSeo?.title,
-		currentLocale,
-		siteLocale,
-	);
-	const brand = stegaClean(siteTitleFallback).trim();
-	const metaTitle = stegaClean(
-		(siteSeoTitleFirst
-			? firstNonEmpty(pageTitle, siteSeoTitle, titleFallback)
-			: firstNonEmpty(pageTitle, titleFallback, siteSeoTitle)) ?? brand,
-	);
-	const description = stegaClean(merged.description?.trim()) || undefined;
-	const ogImage = stegaClean(merged.imageUrl?.trim()) || undefined;
-	const resolvedSiteName = stegaClean(siteName) || brand;
-	const alternates = buildAlternates(path, currentLocale, siteLocale);
-
-	return {
-		/* A title that already is the brand skips the template, which would repeat it. */
-		title: metaTitle === brand ? { absolute: metaTitle } : metaTitle,
-		description,
-		...(alternates ? { alternates } : {}),
-		openGraph: {
-			type: "website",
-			siteName: resolvedSiteName,
-			title: metaTitle,
-			description,
-			...(alternates?.canonical ? { url: alternates.canonical as string } : {}),
-			...(currentLocale ? { locale: currentLocale } : {}),
-			...(ogImage ? { images: [{ url: ogImage }] } : {}),
-		},
-		twitter: {
-			card: ogImage ? "summary_large_image" : "summary",
-			title: metaTitle,
-			description,
-			...(ogImage ? { images: [ogImage] } : {}),
-		},
-	};
 }
 
 export type MetadataFromSanityPageDataInput = {
@@ -203,15 +82,17 @@ export type MetadataFromSanityPageDataInput = {
 	/** `siteSettings` from `fetchSiteChrome`: SEO fallback and brand. */
 	site?: SiteSettings | null;
 	/** Locale config for `hreflang` alternates and SEO-field fallback order. */
-	siteLocale?: SiteLocaleSlice | null;
-	/** Home only: the site-wide SEO title wins over the heading. */
+	siteLocale: SiteLocaleSlice;
+	/** Home only: the site-wide SEO title describes this page, so it wins over the heading. */
 	siteSeoTitleFirst?: boolean;
 };
 
 /**
- * `pickLocalizedString` + `resolveSanityMetadata` for route documents (home / work
- * singletons or `page` / `project` by slug). Pass `site` (`fetchSiteChrome().settings`) so
- * empty page-level SEO falls back to site settings and the brand is known.
+ * Route metadata: title, description, Open Graph, Twitter card and `hreflang` alternates.
+ * Empty page-level SEO falls back to `siteSettings.seo`. The title goes page SEO title →
+ * (home: site SEO title) → heading → `segmentFallback`; the site SEO title is usually the brand,
+ * which the layout's `%s | brand` template would repeat on every other page. Text is cleaned of
+ * stega markers: the fetches are shared with the rendered page.
  */
 export function metadataFromSanityPageData({
 	data,
@@ -219,21 +100,57 @@ export function metadataFromSanityPageData({
 	segmentFallback,
 	site,
 	siteLocale,
-	siteSeoTitleFirst,
+	siteSeoTitleFirst = false,
 }: MetadataFromSanityPageDataInput): Metadata {
-	const heading = pickLocalizedString(data.title, locale, siteLocale);
+	const seo = data.seo;
+	const settingsSeo = site?.seo;
 	const brand = siteBrandTitle(site);
-	return resolveSanityMetadata({
-		seo: data.seo,
-		settingsSeo: site?.seo,
-		titleFallback: heading || segmentFallback,
-		siteSeoTitleFirst,
-		/* `routePathProjection`: canonical + `hreflang` alternates. A path starts with `/`, so
-		 * stega never encodes it. */
-		path: data.path ?? undefined,
-		currentLocale: locale,
-		siteLocale: siteLocale ?? null,
-		siteTitleFallback: brand,
-		siteName: brand,
-	});
+	const heading = pickLocalizedString(data.title, locale, siteLocale);
+	const title = stegaClean(
+		firstNonEmpty(
+			localizedSeoText(seo?.title, locale, siteLocale),
+			siteSeoTitleFirst
+				? localizedSeoText(settingsSeo?.title, locale, siteLocale)
+				: undefined,
+			heading,
+		) ?? segmentFallback,
+	);
+	const description = stegaClean(
+		firstNonEmpty(
+			localizedSeoText(seo?.description, locale, siteLocale),
+			localizedSeoText(settingsSeo?.description, locale, siteLocale),
+		),
+	);
+	const ogImage = firstNonEmpty(seo?.imageUrl, settingsSeo?.imageUrl);
+	/* `routePathProjection`; a path starts with `/`, so stega never encodes it. */
+	const alternates = data.path
+		? {
+				canonical: absoluteSiteUrl(
+					createLanguagePathUtils(siteLocale).localePath(data.path, locale),
+				),
+				languages: hreflangLanguages(data.path, siteLocale),
+			}
+		: undefined;
+
+	return {
+		/* A page titled exactly like the brand skips the template, which would repeat it. */
+		title: title === brand ? { absolute: title } : title,
+		description,
+		...(alternates ? { alternates } : {}),
+		openGraph: {
+			type: "website",
+			siteName: brand,
+			title,
+			description,
+			...(alternates ? { url: alternates.canonical } : {}),
+			locale,
+			...(ogImage ? { images: [{ url: ogImage }] } : {}),
+		},
+		twitter: {
+			card: ogImage ? "summary_large_image" : "summary",
+			title,
+			description,
+			...(ogImage ? { images: [ogImage] } : {}),
+		},
+	};
 }

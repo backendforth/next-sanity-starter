@@ -4,7 +4,7 @@
  * `metadataFromSanityPageData` (not embedded in per-page queries).
  *
  * `title` / `description` are `internationalizedArray*` and project as full
- * arrays — `resolveSanityMetadata` picks the locale.
+ * arrays — `metadataFromSanityPageData` picks the locale.
  */
 export const pageSeoQuery = `seo {
   title,

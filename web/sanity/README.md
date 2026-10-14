@@ -12,7 +12,7 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 | `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
 | `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers with primitive arguments only, so `generateMetadata` and the page share one React `cache` entry: `fetchHomeDocument`, `fetchPageBySlug(slug)`, `fetchWorkDocument`, `fetchProjectBySlug(slug)` and `fetchSiteChrome` (nav, cookie banner, site settings, analytics, 404 copy — one query for the whole shell). A render makes two `sanityFetch` calls |
-| `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
+| `seo/` | `metadataFromSanityPageData` — route metadata from merged SEO + localized title; `siteFaviconIcons` |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
 | `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |

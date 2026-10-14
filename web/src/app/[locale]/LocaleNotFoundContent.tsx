@@ -35,7 +35,7 @@ export function LocaleNotFoundContent({ errorSettings }: Props) {
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
 				<h2 className="page-title">{title}</h2>
 				{body?.length ? (
-					<RichTextMedia value={body} />
+					<RichTextMedia value={body} locale={locale} siteLocale={siteLocale} />
 				) : (
 					<p className="text-color-text-muted">
 						{uiLabel("notFoundBody", locale)}

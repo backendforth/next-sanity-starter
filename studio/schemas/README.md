@@ -59,7 +59,7 @@ Singletons that should open Web Preview at `/` belong in **`SITE_ROOT_DOCUMENT_T
 
 This branch translates whole documents (`@sanity/document-internationalization`): one document per language, and content fields stay plain (`string`, `richText`, `richTextMedia`). To make a document type translatable:
 
-1. Add the hidden, read-only `language` field — copy it from `schemas/documents/page.ts` (`readOnly: true`, `hidden: true`, `initialValue: "en"`). The plugin sets it; never edit it by hand.
+1. Add `languageField` (`schemas/fields/languageField.ts`: hidden, read-only, `initialValue: "en"`) to `fields`. The plugin sets it; never edit it by hand.
 2. Add the type name to **`TRANSLATABLE_SCHEMA_TYPES`** in **`sanity.config.ts`**.
 3. Filter its web queries with `language == $locale` (see `web/sanity/queries/README.md`).
 

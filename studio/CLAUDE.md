@@ -13,7 +13,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds Studio-specific gotchas
 ## Document-level i18n
 
 - One document per language. Every type in `TRANSLATABLE_SCHEMA_TYPES` (`sanity.config.ts`) has a hidden, read-only `language` field that the plugin sets. **NEVER** edit, expose, or remove it.
-- A new translatable document type needs both: the `language` field (copy it from `schemas/documents/page.ts`) **and** an entry in `TRANSLATABLE_SCHEMA_TYPES`.
+- A new translatable document type needs both: the `language` field (`languageField` from `schemas/fields/languageField.ts`) **and** an entry in `TRANSLATABLE_SCHEMA_TYPES`.
 - Content fields are plain (`string`, `richText`, `richTextMedia`). The document's `language` carries the locale.
 - `sanity-plugin-internationalized-array` stays in `package.json` although nothing in `studio/` imports it: `@sanity/document-internationalization` requires it as a peer and uses it for the `translations` array on `translation.metadata` documents. Content fields don't use it.
 

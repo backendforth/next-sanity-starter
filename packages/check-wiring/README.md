@@ -28,7 +28,7 @@ The repo has two long-lived branches with slightly different module layouts (see
 | 2 | `studio/schemas/index.ts` imports and re-exports the schema in `schemaTypes`. | Schema is invisible to Studio/APIs without this. |
 | 3 | `studio/schemas/objects/editors/richTextMedia.ts` includes the type — **optional**, warned. | Editors can't insert inline if needed. |
 | 4 | `studio/schemas/fields/modulesArrayField.ts` includes the type. | Editors can't add the module to document-level `modules[]`. |
-| 5 | `web/src/components/modules/Module<Name>.tsx` OR a `Module<Name>Placeholder` in `ModulesRenderer.tsx`. | Renderer falls through to `UnknownModule`. |
+| 5 | `web/src/components/modules/Module<Name>.tsx` OR a `Module<Name>Placeholder` in `ModulesRenderer.tsx`, **and** a `"module.<id>"` branch in `ModulesRenderer.tsx` (`pnpm gen:module` only prints that branch). | Renderer falls through to `UnknownModule`: a dashed placeholder in dev, nothing in production. |
 | 6 | Components barrel re-exports the component — **skipped on branches without a barrel**. | Stale imports drift silently. |
 | 7 | `web/sanity/queries/components/modules/<name>.ts` exists and the barrel references the `module<Name>Query` const. | Query returns no projection for the module's fields. |
 | 8 | `web/sanity/types/modules/<name>.ts` exists and the barrel references `Module<Name>Data`. | TypeScript loses the union member; `mod as Module<Name>Data` silently `any`s. |

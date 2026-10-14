@@ -6,7 +6,7 @@ This folder holds the **component half** of every module. You are touching point
 
 ## YOU MUST
 
-1. Prefer `pnpm gen:module <Name>` over hand-writing — it creates the schema, component, query, and type files and patches the barrels (including `index.ts` here). It does **not** edit `ModulesRenderer.tsx`; it prints the branch to paste.
+1. Prefer `pnpm gen:module <Name>` over hand-writing — it creates the schema, component, query, and type files and patches the barrels (including `index.ts` here). It does **not** edit `ModulesRenderer.tsx`; it prints the `_type` branch to paste, and `pnpm check:wiring` fails until it is there.
 2. Name the file `Module<Name>.tsx` (PascalCase). The Sanity schema `name` must be `module.<name>` (dot-lowercase). 1:1 correspondence.
 3. Accept `{ module }`. Fields are plain values in the document's language — render them directly, no `pickLocalizedString`. Add `locale` / `siteLocale` props only when the module builds hrefs (as `ModuleContentRefs` does), and pass them from `renderModuleChild` in `ModulesRenderer.tsx`.
 4. Don't set `data-sanity` yourself. `ModulesRenderer` puts one `data-sanity` attribute on the module container (path `modules`, built with `dataAttr`) — Visual Editing click-to-edit depends on it, so always render through `ModulesRenderer`.

@@ -4,9 +4,9 @@ Full guardrails live in `AGENTS.md` at the repo root. This file is a condensed m
 
 ## Repo at a glance
 
-- pnpm monorepo: `web` (Next.js 16 App Router), `studio` (Sanity v5), shared `packages/*`.
+- pnpm monorepo: `web` (Next.js 16 App Router), `studio` (Sanity v6), shared `packages/*`.
 - Editorial content is rendered via the **module pattern**: every content block is a paired `module.<name>` Sanity object + `Module<Name>.tsx` React component, wired in 8 places.
-- Multilingual content uses `@sanity/internationalized-array`. Locale is resolved at **render time** via `web/sanity/utils/sanityLocalizedText.ts`, never inside GROQ.
+- Multilingual content uses `sanity-plugin-internationalized-array`. Locale is resolved at **render time** via `web/sanity/utils/sanityLocalizedText.ts`, never inside GROQ.
 
 ## Top rules
 

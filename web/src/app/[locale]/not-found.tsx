@@ -1,4 +1,4 @@
-import { fetchErrorSettings } from "@/sanity/fetchSanityData";
+import { fetchSiteChrome } from "@/sanity/fetchSanityData";
 
 import { LocaleNotFoundContent } from "./LocaleNotFoundContent";
 
@@ -8,6 +8,6 @@ import { LocaleNotFoundContent } from "./LocaleNotFoundContent";
  * the whole `[locale]` segment as dynamic and disable SSG for `/[locale]`.
  */
 export default async function NotFound() {
-	const errorSettings = await fetchErrorSettings();
-	return <LocaleNotFoundContent errorSettings={errorSettings} />;
+	const chrome = await fetchSiteChrome();
+	return <LocaleNotFoundContent copy={chrome?.notFound ?? null} />;
 }

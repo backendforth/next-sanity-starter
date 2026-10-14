@@ -66,64 +66,24 @@ export const siteLanguageSettingsQuery =
   defaultLanguageId
 }`);
 
-/** Minimal fetch for `app/[locale]/layout.tsx` `generateMetadata` (tab title template). */
-export const siteSettingsTitleQuery = defineQuery(
-	`*[_type == "siteSettings" && _id == "siteSettings"][0]{title}`,
-);
-
 /**
- * `siteSettings.favicon` — the raw image field, `crop` and `hotspot` included:
- * the browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`),
- * so whatever an editor uploads is squared and resized on the fly. Cropping
- * the source in the Studio is what makes a wide logo usable at 32 px, which is
- * why those two fields have to travel with the asset.
+ * `siteSettings` for the shell and route metadata: the brand title, the favicon and the
+ * site-wide SEO fallback. The favicon is the raw image field, `crop` and `hotspot` included:
+ * the browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`), so cropping
+ * the source in the Studio is what makes a wide logo usable at 32 px.
  */
-export const siteSettingsFaviconQuery =
-	defineQuery(`*[_type == "siteSettings" && _id == "siteSettings"][0]{
-  "favicon": favicon${imageQuery}
-}`);
-
-/** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
-export const siteSettingsSeoFallbackQuery =
-	defineQuery(`*[_type == "siteSettings" && _id == "siteSettings"][0]{
-  "title": seo.title,
-  "description": seo.description,
-  "imageUrl": seo.image.asset->url
-}`);
-
-/**
- * Document id: `errorSettings` — 404 / 500 copy only. The document's
- * `modules[]` field is deliberately not projected: no error page renders
- * modules, and embedding `modulesQuery` here inflated the query from ~2 KB
- * to ~79 KB.
- */
-export const errorSettingsQuery =
-	defineQuery(`*[_type == "errorSettings" && _id == "errorSettings"][0]{
-  _id,
-  notFoundTitle,
-  notFoundBody${intlRichTextBody},
-  serverErrorTitle,
-  serverErrorBody${intlRichTextBody}
-}`);
-
-/**
- * App shell for `app/[locale]/layout.tsx` in one fetch: nav menus, cookie banner copy and the
- * site title. Each `sanityFetch` is two roundtrips (sync-tags probe + data), so three separate
- * fetches cost six requests per uncached render, the bundle two. Live invalidation still works:
- * the bundle's sync tags cover every member document. `siteAnalyticsSettings` stays separate,
- * it is fetched with `stega: false`.
- */
-export const siteChromeQuery = defineQuery(`{
-  "nav": ${siteNavQuery},
-  "cookieBanner": ${siteCookieBannerQuery},
-  "title": *[_type == "siteSettings" && _id == "siteSettings"][0].title
-}`);
+const siteSettingsQuery = `*[_type == "siteSettings" && _id == "siteSettings"][0]{
+  title,
+  "favicon": favicon${imageQuery},
+  "seo": seo{
+    title,
+    description,
+    "imageUrl": image.asset->url
+  }
+}`;
 
 /** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */
-export const siteAnalyticsSettingsQuery =
-	defineQuery(`*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
-  _id,
-  title,
+const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
   loadMode,
   trackers[]{
     _key,
@@ -151,4 +111,29 @@ export const siteAnalyticsSettingsQuery =
       scriptUrl
     }
   }
+}`;
+
+/**
+ * Document id: `errorSettings` — the 404 copy. Its `modules[]` field is deliberately not
+ * projected: no error page renders modules, and embedding `modulesQuery` inflated the query
+ * from ~2 KB to ~79 KB.
+ */
+const notFoundQuery = `*[_type == "errorSettings" && _id == "errorSettings"][0]{
+  notFoundTitle,
+  notFoundBody${intlRichTextBody}
+}`;
+
+/**
+ * Everything around the page in one fetch: nav menus, cookie banner copy, site settings (brand,
+ * favicon, SEO fallback), analytics and the 404 copy. The layout, every route's
+ * `generateMetadata` and the 404 page all read it, so a render costs this fetch plus the route
+ * document's — two `sanityFetch` calls, each a sync-tags probe plus the data request. Live
+ * invalidation still works: the bundle's sync tags cover every member document.
+ */
+export const siteChromeQuery = defineQuery(`{
+  "nav": ${siteNavQuery},
+  "cookieBanner": ${siteCookieBannerQuery},
+  "settings": ${siteSettingsQuery},
+  "analytics": ${siteAnalyticsSettingsQuery},
+  "notFound": ${notFoundQuery}
 }`);

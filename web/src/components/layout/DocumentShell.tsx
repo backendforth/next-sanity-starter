@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
+import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
-import { fetchSiteSettingsFavicon } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
+import type { SiteFavicon } from "@/sanity/types";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
@@ -47,9 +48,10 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * the Next.js default icon that used to sit in `public/` showed up beside or
  * instead of the Sanity one. With the field unset the site has no favicon.
  */
-export async function documentMetadata(): Promise<Metadata> {
-	const favicon = await fetchSiteSettingsFavicon({ stega: false });
-	const icons = siteFaviconIcons(favicon);
+export function documentMetadata(
+	favicon: SiteFavicon | null | undefined,
+): Metadata {
+	const icons = siteFaviconIcons(stegaClean(favicon));
 	return {
 		metadataBase: new URL(SITE_BASE_URL),
 		...(icons ? { icons } : {}),

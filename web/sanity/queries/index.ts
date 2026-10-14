@@ -16,13 +16,8 @@ export {
 } from "./snippets/media";
 export { pageSeoQuery } from "./snippets/seo";
 export {
-	errorSettingsQuery,
-	siteAnalyticsSettingsQuery,
 	siteChromeQuery,
 	siteLanguageSettingsQuery,
-	siteSettingsFaviconQuery,
-	siteSettingsSeoFallbackQuery,
-	siteSettingsTitleQuery,
 } from "./snippets/settings";
 export {
 	pageSlugsQuery,

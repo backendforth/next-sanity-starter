@@ -8,11 +8,10 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 
 | File | Export(s) | Role |
 |------|-----------|------|
-| `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata uses `fetchSettingsSeoFallback` (via `siteSettingsSeoFallbackQuery`) for site-wide fallback instead of an embedded join. |
-| `settings.ts` includes | `siteSettingsSeoFallbackQuery` | Standalone `siteSettings.seo` projection used once per request for route `generateMetadata` fallbacks. |
+| `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata takes the site-wide fallback from `siteChromeQuery` (`settings.seo`) instead of an embedded join. |
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
 | `link.ts` | `linkQuery` | `link` marks and nav rows, one `select` branch per type (`linkType` tells them apart): `internal` (route, slug, `resolvedReference`), `external` (url/href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
-| `settings.ts` | `siteChromeQuery`, `errorSettingsQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery`, `siteAnalyticsSettingsQuery` | Lean singleton queries for the app shell, each a `defineQuery` fetched via its `fetch*` helper in `fetchSanityData.ts`. `siteChromeQuery` bundles nav menus, cookie banner and site title |
+| `settings.ts` | `siteChromeQuery`, `siteLanguageSettingsQuery` | `siteChromeQuery` is the whole app shell in one fetch (`fetchSiteChrome`): nav menus, cookie banner, site settings (title, favicon, SEO fallback), analytics and the 404 copy. `siteLanguageSettingsQuery` drives routing (`fetchSiteLanguageSettings`) |
 | `sitemap.ts` | `pageSlugsQuery`, `sitemapPagesQuery` | Slug list for `[slug]` routes; sitemap rows include `home` + all `page` docs with `path` / `lastmod` fields |
 
 ## Using a snippet in a custom query (Next.js)
@@ -50,7 +49,7 @@ Use `imageQuery` / `videoQuery` inside object projections when you need consiste
 ## Singleton settings
 
 - **`siteChromeQuery`** — `siteNav` with resolved main + footer menus, the cookie banner copy and the site title in one fetch (no `modules[]`).
-- **`errorSettingsQuery`** — 404 / 500 copy; deliberately no `modules[]` (no error page renders modules).
+- Its `notFound` member is the 404 copy; deliberately no `modules[]` (no error page renders modules).
 
 Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
 

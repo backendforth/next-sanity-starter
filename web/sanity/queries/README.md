@@ -14,7 +14,7 @@ This folder holds **GROQ** strings for the Next.js app: reusable **snippets**, *
 | Path | Role |
 |------|------|
 | [`index.ts`](./index.ts) | Barrel: re-exports all public query constants. |
-| [`snippets/`](./snippets/README.md) | Small fragments: `linkQuery`, `pageSeoQuery`, `imageQuery`, settings singletons (incl. `siteSettingsSeoFallbackQuery`), sitemap helpers. Composed into larger strings, not usually run alone. |
+| [`snippets/`](./snippets/README.md) | Small fragments: `linkQuery`, `pageSeoQuery`, `imageQuery`, the shell bundle `siteChromeQuery` (nav, cookie banner, site settings, analytics, 404 copy), sitemap helpers. Composed into larger strings, not usually run alone. |
 | [`components/`](./components/README.md) | `components/modules/` — `modulesQuery` and per-`module.*` projections; `components/text/richTextMedia.ts` — `richTextMediaQuery` for portable text bodies. |
 | [`pages/`](./pages/README.md) | Full document queries: `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery`. |
 
@@ -43,7 +43,7 @@ These match the Desk structure / initial templates:
 | ID | Purpose |
 |----|--------|
 | `home` | Home singleton |
-| `siteSettings` | Site metadata, favicon, SEO fallback (fetched via `fetchSettingsSeoFallback`), optional modules |
+| `siteSettings` | Site metadata, favicon, SEO fallback (part of `siteChromeQuery`), optional modules |
 | `siteNav` | Main + footer menus, optional modules |
 | `errorSettings` | 404 / 500 copy |
 | `siteCookieBanner` | Cookie UI |
@@ -62,7 +62,7 @@ Paste into **Vision** (adjust dataset in Studio if needed). For queries using `$
 *[_id == "home"][0]{ _id, title }
 ```
 
-**App route queries** interpolate **`pageSeoQuery`** from [`snippets/seo.ts`](./snippets/seo.ts) (local `seo` only). The site-wide `siteSettings.seo` fallback is fetched separately via **`fetchSettingsSeoFallback`** (one Sanity hit per request) and merged in `metadataFromSanityPageData`. Minimal Vision check:
+**App route queries** interpolate **`pageSeoQuery`** from [`snippets/seo.ts`](./snippets/seo.ts) (local `seo` only). The site-wide `siteSettings.seo` fallback comes with the shell bundle (`fetchSiteChrome`, already fetched by the layout) and is merged in `metadataFromSanityPageData`. Minimal Vision check:
 
 ```groq
 *[_id == "home"][0]{
@@ -144,7 +144,7 @@ To match the app’s resolved links, use the exported `siteChromeQuery` from cod
 
 ### Site settings
 
-The app fetches `siteSettings` field-scoped (`siteSettingsTitleQuery`, `siteSettingsFaviconQuery`, `siteSettingsSeoFallbackQuery`). Combined smoke test:
+The app reads `siteSettings` through `siteChromeQuery` (`settings`: title, favicon, SEO fallback). Vision smoke test:
 
 ```groq
 *[_id == "siteSettings"][0]{
@@ -172,13 +172,13 @@ Omit favicon/SEO lines if you only need to verify the document:
 
 ### Settings + nav + errors + cookie banner (one object)
 
-Four sub-queries in one GROQ object — a handy Vision smoke test for all shell singletons at once (the app itself fetches them separately via the `fetch*` helpers):
+Four sub-queries in one GROQ object — a handy Vision smoke test for the shell singletons (the app fetches them together, plus analytics, through `siteChromeQuery`):
 
 ```groq
 {
   "siteSettings": *[_id == "siteSettings"][0]{ _id, title },
   "siteNav": *[_id == "siteNav"][0]{ _id, title },
-  "errorSettings": *[_id == "errorSettings"][0]{ _id, notFoundTitle, serverErrorTitle },
+  "errorSettings": *[_id == "errorSettings"][0]{ _id, notFoundTitle },
   "siteCookieBanner": *[_id == "siteCookieBanner"][0]{ _id, title, useCookieBanner }
 }
 ```

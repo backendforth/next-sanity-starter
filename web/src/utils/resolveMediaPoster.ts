@@ -75,10 +75,8 @@ function resolveMuxPoster(
 	if (!playbackId) return null;
 	const { width, height } = getMuxDisplayDimensions(muxMedia);
 	const cap = Math.min(thumbWidthPx, maxWidthPx, POSTER_MAX_WIDTH_PX);
-	const src = muxThumbnailUrl(playbackId, timeSec, { width: cap });
-	const srcSet = srcSetFor(cap, (w) =>
-		muxThumbnailUrl(playbackId, timeSec, { width: w }),
-	);
+	const src = muxThumbnailUrl(playbackId, timeSec, cap);
+	const srcSet = srcSetFor(cap, (w) => muxThumbnailUrl(playbackId, timeSec, w));
 	return { src, srcSet: srcSet || undefined, width, height };
 }
 

@@ -41,12 +41,6 @@ type MediaVideoProps = {
 	className?: string;
 	/** Fill the parent (no fixed aspect ratio) — e.g. fullscreen background video. */
 	fillParent?: boolean;
-	/** Optional fixed aspect ratio override (e.g. `"3 / 2"`). */
-	aspectRatioOverride?: string;
-	/**
-	 * Optional override for Mux `accentColor` (progress / scrubber). Default `#262626`.
-	 */
-	accentColor?: string;
 	/**
 	 * Above-the-fold hint: starts loading the player bundle + HLS manifest immediately
 	 * (no `IntersectionObserver` wait, `preload="auto"`). Use for hero / LCP videos only.
@@ -144,8 +138,6 @@ function MuxVideoPlayer({
 	videoSettings,
 	className,
 	fillParent = false,
-	aspectRatioOverride,
-	accentColor: accentColorProp,
 	priority = false,
 }: MediaVideoProps & { playbackId: string }) {
 	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
@@ -375,7 +367,6 @@ function MuxVideoPlayer({
 	const aspectCss = dims.isFallback
 		? "16 / 9"
 		: `${dims.width} / ${dims.height}`;
-	const resolvedAspectRatio = aspectRatioOverride ?? aspectCss;
 
 	const muxSurfaceStyle = {
 		...(fillParent
@@ -400,7 +391,7 @@ function MuxVideoPlayer({
 					"h-full min-h-[100dvh] w-full [&_mux-player]:!block [&_mux-player]:!h-full [&_mux-player]:!min-h-full [&_mux-player]:!w-full",
 				className,
 			)}
-			style={fillParent ? undefined : { aspectRatio: resolvedAspectRatio }}
+			style={fillParent ? undefined : { aspectRatio: aspectCss }}
 			data-poster-hidden={posterHidden ? "" : undefined}
 		>
 			<MuxPlayer
@@ -440,7 +431,7 @@ function MuxVideoPlayer({
 				disableTracking
 				disableCookies
 				metadataVideoTitle={videoTitle}
-				accentColor={accentColorProp ?? MUX_ACCENT}
+				accentColor={MUX_ACCENT}
 				primaryColor={MUX_PRIMARY}
 				secondaryColor={MUX_SECONDARY}
 				className="absolute inset-0 block h-full w-full max-w-none"

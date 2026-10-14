@@ -6,7 +6,7 @@ import {
 	fetchSiteChrome,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
-import { siteBrandTitle } from "@/sanity/seo";
+import { siteBrandTitle } from "@/sanity/seo/resolveSanityMetadata";
 import { LazyCookieConsentBanner } from "@/src/components/cookies/LazyCookieConsentBanner";
 import {
 	DocumentShell,

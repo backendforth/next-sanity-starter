@@ -98,7 +98,7 @@ Page queries return **JSON**. Persist that in your store, not the query string.
 
 **Option A — `sanityFetch` via `fetchSanityData` (recommended for App Router):**
 
-Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request, so `generateMetadata` and the page share one fetch; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Metadata cleans the strings it uses (`resolveSanityMetadata`).
+Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request, so `generateMetadata` and the page share one fetch; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Metadata cleans the strings it uses (`metadataFromSanityPageData`).
 
 ```ts
 import { fetchPageBySlug } from "@/sanity/fetchSanityData";
@@ -115,7 +115,7 @@ const data = await fetchPageBySlug(slug, locale);
 
 ## Metadata
 
-Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label) → site SEO title; home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A title equal to the brand skips the layout's `%s | brand` template.
+Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata`. The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label); home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A page titled exactly like the brand skips the layout's `%s | brand` template.
 
 ## Related
 

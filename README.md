@@ -37,7 +37,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Hardened revalidation** — `POST /api/revalidate` verifies Sanity's webhook signature (`parseBody` from `next-sanity/webhook`), acts only on allow-listed document types, expires the matching cache tags immediately, and is fail-closed in production.
 
-**SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `resolveSanityMetadata` builds canonical + `hreflang` metadata for every route.
+**SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `metadataFromSanityPageData` builds canonical + `hreflang` metadata for every route.
 
 **Hardened by default** — CSP with `frame-ancestors` (Studio-friendly), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options` from `headers()` in `web/next.config.ts`, so they reach the SSR HTML on any host. Netlify `build.ignore` skips web builds on Studio-only commits.
 

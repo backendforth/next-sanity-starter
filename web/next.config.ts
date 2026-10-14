@@ -1,3 +1,4 @@
+import { resolveStudioDatasetAsync } from "@repo/sanity-dataset-resolve";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -181,22 +182,6 @@ const securityHeaders = [
 // App Router: no `next.config` i18n. Site locales come from Sanity (`siteLanguageSettings`), not from here.
 // Use the same `SANITY_STUDIO_PROJECT_ID` / dataset env as `studio/.env` so web + Studio hit one dataset.
 const nextConfig: NextConfig = {
-	transpilePackages: ["@repo/sanity-dataset-resolve"],
-
-	/**
-	 * Inline `SANITY_STUDIO_*` into the **client** bundle.
-	 *
-	 * Next normally only exposes `NEXT_PUBLIC_*` variables to the browser. We keep a single
-	 * env-var name across `web/` and `studio/` (`SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`)
-	 * by listing them here — `next.config`'s `env` map gets statically replaced at build time
-	 * exactly like `NEXT_PUBLIC_*`. Without this, Client Components (image-URL builder etc.)
-	 * would see `undefined` and SSR / CSR would diverge → hydration mismatch on Sanity images.
-	 */
-	env: {
-		SANITY_STUDIO_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID ?? "",
-		SANITY_STUDIO_DATASET: process.env.SANITY_STUDIO_DATASET ?? "",
-	},
-
 	/** Drop the `X-Powered-By: Next.js` header — small fingerprinting reduction. */
 	poweredByHeader: false,
 
@@ -230,4 +215,21 @@ const nextConfig: NextConfig = {
 	},
 };
 
-export default nextConfig;
+/**
+ * Inline `SANITY_STUDIO_*` into every bundle: server, proxy and client.
+ *
+ * Next normally only exposes `NEXT_PUBLIC_*` variables to the browser. We keep a single
+ * env-var name across `web/` and `studio/` by listing them here — `next.config`'s `env` map
+ * gets statically replaced at build time exactly like `NEXT_PUBLIC_*`. The dataset is resolved
+ * once, here (`@repo/sanity-dataset-resolve`), so GROQ queries and image URLs read the same
+ * one, and SSR and CSR build identical image URLs (no hydration mismatch).
+ */
+export default async function config(): Promise<NextConfig> {
+	return {
+		...nextConfig,
+		env: {
+			SANITY_STUDIO_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID ?? "",
+			SANITY_STUDIO_DATASET: await resolveStudioDatasetAsync(process.env),
+		},
+	};
+}

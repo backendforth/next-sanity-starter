@@ -8,8 +8,7 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 |------|------|
 | `client.ts` | `createClient` — base client; `defineLive` / `sanityFetch` use it with draft perspective when enabled |
 | `live.ts` | `defineLive` → **`sanityFetch`**, **`SanityLive`** — required for Presentation, Draft Mode, and Visual Editing (Stega) |
-| `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
-| `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
+| `sanityEnv.ts` | **`projectId`** and **`dataset`** for every reader (client, proxy, image URLs) — resolved once in `next.config.ts` and inlined into every bundle |
 | `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers with primitive arguments only, so `generateMetadata` and the page share one React `cache` entry: `fetchHomeDocument(locale)`, `fetchPageBySlug(slug, locale)`, `fetchWorkDocument(locale)`, `fetchProjectBySlug(slug, locale)`, `fetchSiteChrome(locale)` (nav, cookie banner, site settings, analytics, 404 copy — one query for the whole shell). Each per-language helper passes `locale` as `$locale`. A render makes two `sanityFetch` calls |
 | `seo/` | `metadataFromSanityPageData` — route metadata from merged SEO + document title; `siteFaviconIcons` |
@@ -65,7 +64,7 @@ function HeroImage({ image }: { image: SanityImageField | null }) {
 }
 ```
 
-Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`); missing `development` or `production` is detected and the other name is used when possible.
+Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (both from **`sanityEnv.ts`**). `next.config.ts` resolves the dataset once per build and inlines it: **`SANITY_STUDIO_DATASET`** when set, otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`) and uses the other name when the preferred dataset does not exist.
 
 ---
 

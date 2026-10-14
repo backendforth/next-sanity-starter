@@ -124,7 +124,7 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 3. Canonical names are configurable (`SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION`).
 4. If needed, the resolver enumerates actual datasets via the Management API (`SANITY_DATASET_RESOLVER_TOKEN` / `SANITY_AUTH_TOKEN`) to avoid requesting one that doesn't exist.
 
-Consumed by `web/sanity/resolveStudioDataset.ts` + `web/sanity/sanityEnv.ts` and `studio/config/sync/studioDataset.ts`.
+Consumed by `web/next.config.ts` (resolved once per build and inlined, so queries and image URLs share it) and `studio/config/sync/studioDataset.ts`.
 
 ---
 

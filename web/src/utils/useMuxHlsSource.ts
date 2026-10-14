@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react";
 
 import {
 	computeLoopVideoTarget,
-	computeObjectCoverTargetPx,
 	detectMuxLevelCodecFamily,
 	getPreferredVideoCodec,
 	type MuxLevelCodecFamily,
@@ -29,9 +28,8 @@ type HlsInstance = InstanceType<typeof import("hls.js")["default"]>;
  *
  * hls.js is the preferred backend EVERYWHERE it can run, desktop Safari
  * included: it is the only path with level control under our own pick
- * ({@link pickMuxHlsLevelIndex}), a bounded buffer budget, and the
- * `loadingPaused` lever carousel slides depend on. Native HLS has none of
- * that — Safari's own ABR decides the ramp and `preload` is the only knob.
+ * ({@link pickMuxHlsLevelIndex}) and a bounded buffer budget. Native HLS has
+ * neither — Safari's own ABR decides the ramp and `preload` is the only knob.
  * So native is the fallback ONLY where classic `MediaSource` is missing:
  * iPhone (`ManagedMediaSource` alone is deliberately not enough — see
  * `preferManagedMediaSource` below) and very old engines.
@@ -84,49 +82,32 @@ type UseMuxHlsSourceOptions = {
 	 * Only takes effect with the hls.js backend; Native HLS (Safari/iOS) keeps
 	 * default behavior because the platform manages audio tracks itself.
 	 */
-	audioEnabled?: boolean;
+	audioEnabled: boolean;
 	/**
-	 * Prefer AV1 → HEVC → H.264 renditions when the manifest and browser support
-	 * them. Only used by {@link MediaVideoLoop} — other players keep default ABR.
+	 * Intrinsic video size: levels are picked for `object-fit: cover`
+	 * ({@link computeLoopVideoTarget}). Unknown → the element's own box.
 	 */
-	preferModernCodecs?: boolean;
-	/**
-	 * Use {@link computeObjectCoverTargetPx} for level selection (loops with
-	 * `object-fit: cover`). Requires {@link objectCoverVideoPx}.
-	 */
-	useObjectCoverPick?: boolean;
-	/** Intrinsic video size — paired with `useObjectCoverPick`. */
 	objectCoverVideoPx?: { width: number; height: number };
-	/**
-	 * Short silent loops: minimal ahead-buffer, locked level (no ABR upswitch),
-	 * 1440p ceiling.
-	 */
-	tuneForShortLoop?: boolean;
-	/** When true, hls.js stops fetching segments (stacked carousel inactive slide). */
-	loadingPaused?: boolean;
 };
 
 /**
- * Attach a Mux HLS (`.m3u8`) source to a `<video>` element.
+ * Attach a Mux HLS (`.m3u8`) source to a `<video>` element, tuned for short silent loops:
+ * AV1 → HEVC → H.264 renditions where the manifest and browser support them, a locked level
+ * (no ABR upswitch) and a loop-sized buffer.
  *
- * Prefers **`hls.js`** (MSE, level cap to player size, tuned ABR) — on desktop Safari too.
+ * Prefers **`hls.js`** (MSE, level cap to player size) — on desktop Safari too.
  * Falls back to **native HLS** only where MSE is missing (iPhone). `hls.js` is imported
  * lazily so it only ships when a loop video is used.
  *
  * @see https://docs.mux.com/guides/control-playback-resolution — rationale for
- *   `rendition_order=desc` used in {@link muxHlsSrc}.
+ *   `rendition_order=desc` used in {@link muxLoopHlsSrc}.
  */
 export function useMuxHlsSource(
 	videoRef: RefObject<HTMLVideoElement | null>,
 	playbackId: string | null,
 	src: string,
-	opts: UseMuxHlsSourceOptions = {},
+	{ audioEnabled, objectCoverVideoPx }: UseMuxHlsSourceOptions,
 ): void {
-	const audioEnabled = opts.audioEnabled !== false;
-	const preferModernCodecs = opts.preferModernCodecs === true;
-	const useObjectCoverPick = opts.useObjectCoverPick === true;
-	const tuneForShortLoop = opts.tuneForShortLoop === true;
-	const loadingPaused = opts.loadingPaused === true;
 	const hlsRef = useRef<HlsInstance | null>(null);
 	useEffect(warmUpHls, []);
 	/* Exposed by the lifecycle effect so the ResizeObserver effect can re-pick
@@ -139,16 +120,8 @@ export function useMuxHlsSource(
 	 * (React warns when dep array length changes across HMR / renders). */
 	const audioEnabledRef = useRef(audioEnabled);
 	audioEnabledRef.current = audioEnabled;
-	const preferModernCodecsRef = useRef(preferModernCodecs);
-	preferModernCodecsRef.current = preferModernCodecs;
-	const useObjectCoverPickRef = useRef(useObjectCoverPick);
-	useObjectCoverPickRef.current = useObjectCoverPick;
-	const objectCoverVideoPxRef = useRef(opts.objectCoverVideoPx);
-	objectCoverVideoPxRef.current = opts.objectCoverVideoPx;
-	const tuneForShortLoopRef = useRef(tuneForShortLoop);
-	tuneForShortLoopRef.current = tuneForShortLoop;
-	const loadingPausedRef = useRef(loadingPaused);
-	loadingPausedRef.current = loadingPaused;
+	const objectCoverVideoPxRef = useRef(objectCoverVideoPx);
+	objectCoverVideoPxRef.current = objectCoverVideoPx;
 
 	useEffect(() => {
 		const video = videoRef.current;
@@ -211,65 +184,43 @@ export function useMuxHlsSource(
 		 * smoothly + power-efficiently (e.g. M1 / M2 — no HW AV1 decoder) it
 		 * returns "hevc" so HEVC HW decode wins over software AV1. On M3+ /
 		 * recent x86 with HW AV1 the probe stays at "av1" → unchanged behaviour. */
-		const preferModern = preferModernCodecsRef.current;
-		void Promise.all([
-			import("hls.js"),
-			preferModern
-				? getPreferredVideoCodec()
-				: Promise.resolve<MuxLevelCodecFamily | null>(null),
-		]).then(([{ default: Hls }, preferredCodec]) => {
+		const ready = Promise.all([import("hls.js"), getPreferredVideoCodec()]);
+		void ready.then(([{ default: Hls }, preferredCodec]) => {
 			if (cancelled) return;
 
 			if (Hls.isSupported()) {
-				const loopTuned = tuneForShortLoopRef.current;
 				hls = new Hls({
 					/* Classic MSE, also on Safari 17+ where `ManagedMediaSource`
 					 * exists: MMS lets the browser gate segment loading
 					 * (`startstreaming` / `endstreaming`), which would undercut the
-					 * deterministic level pin and the `loadingPaused` lever below.
+					 * deterministic level pin below.
 					 * Desktop Safari has plain `MediaSource`; iPhone has only MMS and
 					 * takes the native path above anyway. */
 					preferManagedMediaSource: false,
 					capLevelToPlayerSize: true,
-					ignoreDevicePixelRatio: !loopTuned,
-					...(preferModern && preferredCodec
-						? {
-								videoPreference: {
-									videoCodec: muxCodecFamilyToHlsPreference(preferredCodec),
-									allowedVideoRanges: ["SDR"],
-								},
-							}
-						: {}),
-					...(loopTuned
-						? {
-								/* Loops must replay from MSE, not the network. Budgets are
-								 * sized against the heaviest real rendition (Mux premium
-								 * 2160p H.264: ~31 Mbps in 4 s segments ~ 20 MB each): a
-								 * ~2-segment lookahead absorbs bandwidth dips, and the back
-								 * buffer keeps the whole clip so the loop wrap (and carousel
-								 * A -> B -> A re-activation) costs zero bytes. With budgets
-								 * below one segment (the previous 3 s / 8 MB) hls.js fetched
-								 * just-in-time and `backBufferLength: 0` evicted behind the
-								 * playhead — every cycle re-downloaded the entire clip
-								 * (~30 Mbps per visitor, forever). */
-								maxBufferLength: 8,
-								maxMaxBufferLength: 16,
-								maxBufferSize: 64 * 1000 * 1000,
-								backBufferLength: 30,
-								abrEwmaDefaultEstimate: 4_000_000,
-								startFragPrefetch: false,
-								abrBandWidthFactor: 0,
-								abrBandWidthUpFactor: 0,
-							}
-						: {
-								abrEwmaDefaultEstimate: 50_000_000,
-								maxBufferLength: 20,
-								maxBufferSize: 100 * 1000 * 1000,
-								progressive: true,
-								/* Long-form playback seeks; a back buffer would pin memory
-								 * for footage the viewer has moved past. */
-								backBufferLength: 0,
-							}),
+					ignoreDevicePixelRatio: false,
+					videoPreference: {
+						videoCodec: muxCodecFamilyToHlsPreference(preferredCodec),
+						allowedVideoRanges: ["SDR"],
+					},
+					/* Loops must replay from MSE, not the network. Budgets are
+					 * sized against the heaviest real rendition (Mux premium
+					 * 2160p H.264: ~31 Mbps in 4 s segments ~ 20 MB each): a
+					 * ~2-segment lookahead absorbs bandwidth dips, and the back
+					 * buffer keeps the whole clip so the loop wrap (and carousel
+					 * A -> B -> A re-activation) costs zero bytes. With budgets
+					 * below one segment (the previous 3 s / 8 MB) hls.js fetched
+					 * just-in-time and `backBufferLength: 0` evicted behind the
+					 * playhead — every cycle re-downloaded the entire clip
+					 * (~30 Mbps per visitor, forever). */
+					maxBufferLength: 8,
+					maxMaxBufferLength: 16,
+					maxBufferSize: 64 * 1000 * 1000,
+					backBufferLength: 30,
+					abrEwmaDefaultEstimate: 4_000_000,
+					startFragPrefetch: false,
+					abrBandWidthFactor: 0,
+					abrBandWidthUpFactor: 0,
 					fragLoadingMaxRetry: 6,
 					levelLoadingMaxRetry: 4,
 				});
@@ -277,8 +228,8 @@ export function useMuxHlsSource(
 				 * player size (DPR-aware). Without this hls.js ramps up from a low level
 				 * and the viewer sees a visible quality step-up after a few seconds.
 				 *
-				 * When `preferModernCodecs` is on, filter by AV1 → HEVC → H.264 before
-				 * applying the resolution pick so multi-codec manifests don't default to AVC.
+				 * Filters by AV1 → HEVC → H.264 before applying the resolution pick so
+				 * multi-codec manifests don't default to AVC.
 				 *
 				 * `upgradeOnly` is set by the ResizeObserver path: a container that grew
 				 * gets a higher rendition; a container that shrunk keeps the current one
@@ -292,35 +243,20 @@ export function useMuxHlsSource(
 					let targetW = cw * (window.devicePixelRatio || 1);
 					let targetH = ch * (window.devicePixelRatio || 1);
 					const videoPx = objectCoverVideoPxRef.current;
-					if (
-						useObjectCoverPickRef.current &&
-						videoPx?.width &&
-						videoPx?.height
-					) {
-						if (tuneForShortLoopRef.current) {
-							({ targetW, targetH } = computeLoopVideoTarget({
-								containerWidthPx: cw,
-								containerHeightPx: ch,
-								devicePixelRatio: window.devicePixelRatio,
-								videoWidthPx: videoPx.width,
-								videoHeightPx: videoPx.height,
-							}));
-						} else {
-							({ targetW, targetH } = computeObjectCoverTargetPx({
-								containerWidthPx: cw,
-								containerHeightPx: ch,
-								devicePixelRatio: window.devicePixelRatio || 1,
-								videoWidthPx: videoPx.width,
-								videoHeightPx: videoPx.height,
-							}));
-						}
+					if (videoPx?.width && videoPx?.height) {
+						({ targetW, targetH } = computeLoopVideoTarget({
+							containerWidthPx: cw,
+							containerHeightPx: ch,
+							devicePixelRatio: window.devicePixelRatio,
+							videoWidthPx: videoPx.width,
+							videoHeightPx: videoPx.height,
+						}));
 					}
 					const pick = pickMuxHlsLevelIndex(levels, {
 						targetW,
 						targetH,
-						preferModernCodecs: preferModernCodecsRef.current,
 						excludedFamilies: excludedCodecFamilies,
-						preferredCodec: preferredCodec ?? undefined,
+						preferredCodec,
 					});
 					if (typeof pick !== "number") return;
 					if (pickOpts?.upgradeOnly) {
@@ -333,23 +269,14 @@ export function useMuxHlsSource(
 					}
 					if (hls.currentLevel === pick && hls.nextLevel === pick) return;
 					hls.startLevel = pick;
-					if (loopTuned) {
-						hls.nextLevel = pick;
-						hls.currentLevel = pick;
-						hls.autoLevelCapping = pick;
-					} else {
-						hls.autoLevelCapping = -1;
-						hls.nextLevel = pick;
-						hls.currentLevel = pick;
-					}
+					hls.nextLevel = pick;
+					hls.currentLevel = pick;
+					hls.autoLevelCapping = pick;
 				};
 				applyPickRef.current = applyPick;
 				hls.on(Hls.Events.MANIFEST_PARSED, () => {
 					applyPick();
 					syncAudioTrack();
-					if (loadingPausedRef.current) {
-						hls?.stopLoad();
-					}
 				});
 				hls.on(Hls.Events.ERROR, (_, data) => {
 					if (!data.fatal || !hls) return;
@@ -357,10 +284,8 @@ export function useMuxHlsSource(
 						/* hls.js already retried per-request (fragLoadingMaxRetry /
 						 * levelLoadingMaxRetry) before escalating to fatal — a bounded
 						 * number of full restarts is the last resort, not an infinite
-						 * hammer against a dead endpoint (ad-blocker, offline). Paused
-						 * slides don't restart loading at all: that would reintroduce
-						 * exactly the parallel-fetch contention `stopLoad()` prevents. */
-						if (fatalNetworkRetries < 3 && !loadingPausedRef.current) {
+						 * hammer against a dead endpoint (ad-blocker, offline). */
+						if (fatalNetworkRetries < 3) {
 							fatalNetworkRetries += 1;
 							hls.startLoad();
 						}
@@ -370,16 +295,12 @@ export function useMuxHlsSource(
 							hls.recoverMediaError();
 							return;
 						}
-						if (preferModernCodecsRef.current) {
-							const current = hls.levels[hls.currentLevel];
-							const family = detectMuxLevelCodecFamily(current?.codecs);
-							if (family) excludedCodecFamilies.add(family);
-							applyPick();
-							mediaErrorRecoveryAttempted = false;
-							hls.startLoad();
-							return;
-						}
-						hls.recoverMediaError();
+						const current = hls.levels[hls.currentLevel];
+						const family = detectMuxLevelCodecFamily(current?.codecs);
+						if (family) excludedCodecFamilies.add(family);
+						applyPick();
+						mediaErrorRecoveryAttempted = false;
+						hls.startLoad();
 					} else {
 						/* Unrecoverable (KEY/MUX/OTHER): tear down hls and fall back to a
 						 * native src. Clear the shared refs too — the audio effect and the

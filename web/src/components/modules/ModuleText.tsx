@@ -1,4 +1,4 @@
-import type { ModuleTextData } from "@/sanity/types/modules";
+import type { ModuleOf } from "@/sanity/types";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
@@ -7,7 +7,7 @@ import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	module: ModuleTextData;
+	module: ModuleOf<"module.text">;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };

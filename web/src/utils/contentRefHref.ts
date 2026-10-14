@@ -1,27 +1,18 @@
-import type {
-	ContentRefRoute,
-	ModuleContentRefTarget,
-} from "@/sanity/types/modules/contentRefs";
+import type { ContentRefTarget } from "@/sanity/types";
 
-/** Locale-aware href for a content-refs list item. */
+/** Locale-aware href for a content-refs list item; `null` when a page or project has no slug. */
 export function contentRefTargetHref(
-	target: ModuleContentRefTarget,
+	target: ContentRefTarget,
 	localePath: (pathname: string, locale: string) => string,
 	locale: string,
 ): string | null {
-	if (!target?._type) return null;
-	const route = target.route as ContentRefRoute | null | undefined;
-	const slug = typeof target.slug === "string" ? target.slug.trim() : "";
-
-	if (route === "index" || target._type === "home") {
+	if (target._type === "home") {
 		return localePath("/", locale);
 	}
-	if (route === "project" || target._type === "project") {
-		if (!slug) return null;
+	const slug = target.slug?.trim();
+	if (!slug) return null;
+	if (target._type === "project") {
 		return localePath(`/work/${slug}`, locale);
 	}
-	if (slug) {
-		return localePath(`/${slug}`, locale);
-	}
-	return null;
+	return localePath(`/${slug}`, locale);
 }

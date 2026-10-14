@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Validates that every module declared in studio/schemas/objects/modules/
- * is correctly wired across the 8 points of the module pattern.
+ * is correctly wired across the 7 points of the module pattern.
  *
  * Usage:
  *   pnpm check:wiring
@@ -10,7 +10,7 @@
  * report when drift is found. Intended for CI gating and local pre-flight
  * after running `pnpm gen:module` or hand-editing modules.
  *
- * The 8 wiring points checked per `module.<id>`:
+ * The 7 wiring points checked per `module.<id>`:
  *
  *   1. studio/schemas/objects/modules/module<Name>.ts   (schema file exists with the right `name`)
  *   2. studio/schemas/index.ts                          (import + schemaTypes entry)
@@ -21,7 +21,9 @@
  *      prints that branch, so a forgotten paste is caught here)
  *   6. web/src/components/modules/index.ts              (barrel export, if a barrel exists on this branch)
  *   7. web/sanity/queries/components/modules/<name>.ts  (GROQ projection)
- *   8. web/sanity/types/modules/<name>.ts               (TS type)
+ *
+ * The module's TS type is no longer a wiring point: it is `ModuleOf<"module.<id>">` from the
+ * generated query types, and `tsc` checks fields and the `ModulesRenderer` branch.
  *
  * Some branches diverge (e.g. `variant/document-level` has no
  * components/modules barrel). The checker treats the missing barrel as a
@@ -50,8 +52,6 @@ const WEB_COMPONENTS_BARREL = join(WEB_COMPONENTS_DIR, "index.ts");
 const MODULES_RENDERER = join(WEB_COMPONENTS_DIR, "ModulesRenderer.tsx");
 const QUERIES_DIR = join(root, "web/sanity/queries/components/modules");
 const QUERIES_BARREL = join(QUERIES_DIR, "index.ts");
-const TYPES_DIR = join(root, "web/sanity/types/modules");
-const TYPES_BARREL = join(TYPES_DIR, "index.ts");
 
 /** @typedef {{ file: string; rule: string }} Finding */
 
@@ -128,7 +128,6 @@ const [
 	componentsBarrelSrc,
 	modulesRendererSrc,
 	queriesBarrelSrc,
-	typesBarrelSrc,
 ] = await Promise.all([
 	read(SCHEMAS_INDEX),
 	read(MODULES_ARRAY_FIELD),
@@ -136,7 +135,6 @@ const [
 	read(WEB_COMPONENTS_BARREL),
 	read(MODULES_RENDERER),
 	read(QUERIES_BARREL),
-	read(TYPES_BARREL),
 ]);
 
 if (!schemasIndexSrc) {
@@ -243,17 +241,6 @@ for (const m of modules) {
 		const queryVar = `${m.varName}Query`;
 		if (!queriesBarrelSrc.includes(queryVar)) {
 			add(m.id, QUERIES_BARREL, `${queryVar} not referenced in queries barrel`);
-		}
-	}
-
-	// 8. TS type file + barrel
-	const typeFile = join(TYPES_DIR, `${m.camel}.ts`);
-	if (!existsSync(typeFile)) {
-		add(m.id, typeFile, `TS type file missing`);
-	} else if (typesBarrelSrc) {
-		const typeName = `Module${m.pascal}Data`;
-		if (!typesBarrelSrc.includes(typeName)) {
-			add(m.id, TYPES_BARREL, `${typeName} not referenced in types barrel`);
 		}
 	}
 }

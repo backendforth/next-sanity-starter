@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 
-import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
+import type { AnalyticsTracker } from "@/sanity/types";
 import {
 	hasConsent,
 	subscribeAnalyticsConsent,

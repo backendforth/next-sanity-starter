@@ -8,14 +8,7 @@ import {
 } from "@/src/i18n/siteLocalePathUtils";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
-import type {
-	DocumentTranslation,
-	HomeDocument,
-	PageDocument,
-	PageSeo,
-	ProjectDocument,
-	WorkDocument,
-} from "../types/pages";
+import type { PageSeo, RouteDocument } from "../types";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
@@ -67,7 +60,7 @@ export type ResolveSanityMetadataInput = {
 	/** Site locale config — which `hreflang` ids are valid and which is `x-default`. */
 	siteLocale?: SiteLocaleSlice | null;
 	/** Published language variants of the document (`translationsQuery`) for `hreflang`. */
-	translations?: readonly DocumentTranslation[] | null;
+	translations?: readonly TranslationPath[] | null;
 };
 
 /**
@@ -99,7 +92,7 @@ function buildAlternates(
 	path: string | undefined,
 	currentLocale: string | undefined,
 	siteLocale: SiteLocaleSlice | null | undefined,
-	translations: readonly DocumentTranslation[] | null | undefined,
+	translations: readonly TranslationPath[] | null | undefined,
 ): Metadata["alternates"] | undefined {
 	if (!path || !currentLocale || !siteLocale) return undefined;
 	const pathUtils = createLanguagePathUtils(siteLocale);
@@ -176,7 +169,7 @@ export function resolveSanityMetadata({
 
 export type MetadataFromSanityPageDataInput = {
 	/** Route document (home / work singletons or `page` / `project` by slug). */
-	data: HomeDocument | PageDocument | WorkDocument | ProjectDocument;
+	data: RouteDocument;
 	/** Active route locale id. */
 	locale: string;
 	/** Meta title when the page has neither an SEO title nor a heading (e.g. the slug). */

@@ -6,17 +6,23 @@
  * document title. External links fall back to the URL, function links to the function key —
  * both as a last resort before the literal "Link" placeholder.
  *
- * `IntlStringEntry[]` is still accepted on both fields and resolved with `pickLocalizedString`,
+ * Localized entry arrays are still accepted on both fields and resolved with `pickLocalizedString`,
  * so the code matches `main`, where `link.title` is an `internationalizedArrayString`.
  */
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import type { IntlStringEntry } from "./sanityLocalizedText";
-import { pickLocalizedString } from "./sanityLocalizedText";
+import {
+	type LocalizedEntry,
+	pickLocalizedString,
+} from "./sanityLocalizedText";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
-type LocalizableLabel = IntlStringEntry[] | string | null | undefined;
+type LocalizableLabel =
+	| ReadonlyArray<LocalizedEntry<string>>
+	| string
+	| null
+	| undefined;
 
 function trimToUndefined(value: string | undefined): string | undefined {
 	if (!value) return undefined;

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 
-import type { MainMenuItem } from "@/sanity/types/nav";
+import type { MainMenuItem } from "@/sanity/types";
 import { CloseIcon } from "@/src/components/icons/CloseIcon";
 import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";

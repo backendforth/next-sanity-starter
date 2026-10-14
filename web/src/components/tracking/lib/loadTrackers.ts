@@ -1,4 +1,4 @@
-import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
+import type { AnalyticsTracker } from "@/sanity/types";
 import {
 	beginTrackerLoad,
 	consumeSelfOptOut,

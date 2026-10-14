@@ -7,7 +7,7 @@
  * straight through and come back typed: a string field yields `string`, a rich-text body its
  * own block union (embedded modules included, untouched — they resolve their own fields).
  */
-import type { PortableTextBlock, TypedObject } from "@portabletext/types";
+import type { TypedObject } from "@portabletext/types";
 
 import {
 	FALLBACK_SITE_LOCALE_CONFIG,
@@ -22,9 +22,6 @@ export type LocalizedEntry<V> = {
 	language?: string | null;
 	value?: V | null;
 };
-
-export type IntlStringEntry = LocalizedEntry<string>;
-export type IntlRichTextEntry = LocalizedEntry<PortableTextBlock[]>;
 
 function effectiveSiteLocale(
 	siteLocale?: SiteLocaleSlice | null,
@@ -83,12 +80,18 @@ function hasContent(value: unknown): boolean {
 	return value != null;
 }
 
+type Entries = ReadonlyArray<LocalizedEntry<unknown>> | null | undefined;
+/** The value type of an entry array — for a union of arrays (clean and stega-branded query results), the union of their values. */
+type EntryValue<T extends Entries> = NonNullable<
+	NonNullable<T>[number]["value"]
+>;
+
 /** The entry for `locale`, following the fallback chain; `undefined` when no entry has content. */
-export function pickLocalizedValue<V>(
-	entries: ReadonlyArray<LocalizedEntry<V>> | null | undefined,
+export function pickLocalizedValue<T extends Entries>(
+	entries: T,
 	locale?: string,
 	siteLocale?: SiteLocaleSlice | null,
-): V | undefined {
+): EntryValue<T> | undefined {
 	if (!entries?.length) {
 		return undefined;
 	}
@@ -105,11 +108,12 @@ export function pickLocalizedValue<V>(
 					hasContent(entry.value),
 			);
 			if (match) {
-				return match.value ?? undefined;
+				return (match.value ?? undefined) as EntryValue<T> | undefined;
 			}
 		}
 	}
-	return entries.find((entry) => hasContent(entry.value))?.value ?? undefined;
+	return (entries.find((entry) => hasContent(entry.value))?.value ??
+		undefined) as EntryValue<T> | undefined;
 }
 
 /** i18n string fields (`internationalizedArrayString`), trimmed. */
@@ -122,10 +126,12 @@ export function pickLocalizedString(
 }
 
 /** `internationalizedArrayRichText*` bodies — the blocks for `locale`, `[]` when there are none. */
-export function pickLocalizedPortableTextBlocks<B extends TypedObject>(
-	entries: ReadonlyArray<LocalizedEntry<B[]>> | null | undefined,
+export function pickLocalizedPortableTextBlocks<
+	T extends ReadonlyArray<LocalizedEntry<TypedObject[]>> | null | undefined,
+>(
+	entries: T,
 	locale: string,
 	siteLocale?: SiteLocaleSlice | null,
-): B[] {
+): EntryValue<T>[number][] {
 	return pickLocalizedValue(entries, locale, siteLocale) ?? [];
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import type { SanityImageField } from "@/sanity/types/modules";
+import type { SanityImageField } from "@/sanity/utils/sanityImageBuilder";
 import { buildFetchedImageUrl } from "@/sanity/utils/sanityImageBuilder";
 
 /**

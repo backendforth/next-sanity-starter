@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import type { ModuleContentRefListItem } from "@/sanity/types/modules";
 import {
 	MediaImage,
 	PREVIEW_MAX_SRC_WIDTH,
@@ -16,6 +15,8 @@ import {
 import { uiLabel } from "@/src/i18n/uiLabels";
 import { cn } from "@/src/utils/cn";
 
+import type { ContentRefListItem } from "./ModuleContentRefs";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type SortMode = "newest" | "az";
@@ -27,7 +28,7 @@ type CategoryOption = {
 
 type Props = {
 	locale: string;
-	items: ModuleContentRefListItem[];
+	items: ContentRefListItem[];
 	isProjectList: boolean;
 	showCategoryFilters: boolean;
 	/** First module on the page — eager-load the first card image (LCP candidate). */
@@ -36,7 +37,7 @@ type Props = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function targetTitle(target: ModuleContentRefListItem): string {
+function targetTitle(target: ContentRefListItem): string {
 	const title = typeof target?.title === "string" ? target.title.trim() : "";
 	if (title) return title;
 	const slug = target?.slug?.trim();
@@ -44,20 +45,18 @@ function targetTitle(target: ModuleContentRefListItem): string {
 	return "Untitled";
 }
 
-function sortKey(target: ModuleContentRefListItem, locale: string): string {
+function sortKey(target: ContentRefListItem, locale: string): string {
 	return targetTitle(target).toLocaleLowerCase(locale);
 }
 
-function createdAtMs(target: ModuleContentRefListItem): number {
+function createdAtMs(target: ContentRefListItem): number {
 	const raw = target?._createdAt;
 	if (!raw) return 0;
 	const ms = Date.parse(raw);
 	return Number.isNaN(ms) ? 0 : ms;
 }
 
-function collectCategoryOptions(
-	items: ModuleContentRefListItem[],
-): CategoryOption[] {
+function collectCategoryOptions(items: ContentRefListItem[]): CategoryOption[] {
 	const byId = new Map<string, string>();
 	for (const item of items) {
 		for (const cat of item?.categories ?? []) {
@@ -71,7 +70,7 @@ function collectCategoryOptions(
 }
 
 function itemMatchesCategory(
-	item: ModuleContentRefListItem,
+	item: ContentRefListItem,
 	categoryId: string | null,
 ): boolean {
 	if (!categoryId) return true;

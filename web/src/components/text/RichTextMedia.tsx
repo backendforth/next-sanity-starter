@@ -1,20 +1,14 @@
-import { PortableText } from "@portabletext/react";
-import type { PortableTextBlock } from "@portabletext/types";
 import clsx from "clsx";
-import type { LinkMark } from "@/sanity/utils/linkResolver";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { PortableText } from "next-sanity";
+
+import type { RichTextMediaValue } from "@/sanity/types";
+import type { LinkLocaleOptions } from "@/sanity/utils/linkResolver";
 
 import { portableTextMediaComponents } from "./portableTextComponents";
 
-/** @deprecated Import `LinkMark` from `@/sanity/utils/linkResolver` instead. */
-export type RichTextMediaLinkMark = LinkMark;
-
-type RichTextMediaProps = {
-	value: PortableTextBlock[];
+type RichTextMediaProps = LinkLocaleOptions & {
+	value: RichTextMediaValue;
 	className?: string;
-	/** Locale of internal links. */
-	locale?: string;
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 /**

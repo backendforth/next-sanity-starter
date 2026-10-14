@@ -5,6 +5,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas â€
 ## Stack quirks (non-obvious)
 
 - Next.js 16 App Router only. RSC by default; `"use client"` only when you need state, effects, or browser APIs.
+- Next preloads every client component a route's server tree imports, rendered or not. Heavy client code that only some pages render (video players, the carousel, the Visual Editing reorder) goes behind a lazy client boundary (`next/dynamic` in a `"use client"` file). `pnpm --filter web run build && node .github/scripts/bundle-report.mjs` shows first-load JS per route.
 - Path alias `@/*` resolves to `web/` (configured in `web/tsconfig.json`). **NEVER** use `@/*` outside `web/`.
 - Biome enforces **tabs** in `web/`. Studio uses 2 spaces â€” don't copy formatting across boundaries.
 - Tailwind v4 (CSS-first config). Tokens live in `web/src/assets/styles/`. No per-component CSS files.

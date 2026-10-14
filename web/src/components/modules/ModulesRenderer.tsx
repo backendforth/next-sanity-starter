@@ -1,12 +1,16 @@
+import "server-only";
+
+import { draftMode } from "next/headers";
 import type { ContentModule } from "@/sanity/types";
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
+import { LazyModulesRendererClient } from "./LazyModulesRendererClient";
 import { ModuleCarousel } from "./ModuleCarousel";
 import { ModuleContentRefs } from "./ModuleContentRefs";
 import { ModuleMedia } from "./ModuleMedia";
-import { ModulesRendererClient } from "./ModulesRendererClient";
+import type { PrerenderedModule } from "./ModulesRendererClient";
 import { ModuleText } from "./ModuleText";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -84,12 +88,23 @@ function renderModuleChild(
 	}
 }
 
+/** The module stack as plain server markup — the same DOM `ModulesRendererClient` renders. */
+function ModuleStack({ modules }: { modules: PrerenderedModule[] }) {
+	return (
+		<div className="flex flex-col gap-lg">
+			{modules.map((m) => (
+				<div key={m._key}>{m.rendered}</div>
+			))}
+		</div>
+	);
+}
+
 /**
- * Renders the document `modules[]` stack. Each module is rendered server-side
- * with the active locale baked in (so module bundles stay out of the page's
- * client chunk and translations are resolved before crossing the RSC seam),
- * then handed to a thin client wrapper that orchestrates optimistic reordering
- * when Visual Editing dispatches a document update.
+ * Renders the document `modules[]` stack. Each module is rendered server-side with the active
+ * locale baked in, so module code stays out of the client bundle and translations resolve
+ * before crossing the RSC seam. Visitors get `ModuleStack`, plain markup. In Draft Mode the
+ * same nodes go to `ModulesRendererClient` (lazy), which reorders them optimistically when
+ * Visual Editing dispatches a document update.
  *
  * Each module wrapper carries a field-level `data-sanity` path
  * (`modules[_key=="..."]`) so Presentation jumps directly to the right slot.
@@ -98,14 +113,14 @@ function renderModuleChild(
  * Production data from Sanity always carries `_key`s; this branch is only for
  * legacy edge cases.
  */
-export function ModulesRenderer({
+export async function ModulesRenderer({
 	modules,
 	locale,
 	siteLocale,
 	documentId,
 	documentType,
 }: Props) {
-	const initialModules = modules.map((mod, index) => {
+	const initialModules: PrerenderedModule[] = modules.map((mod, index) => {
 		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
 		const sanityAttr = mod._key
 			? dataAttr({
@@ -125,8 +140,11 @@ export function ModulesRenderer({
 		};
 	});
 
+	if (!(await draftMode()).isEnabled) {
+		return <ModuleStack modules={initialModules} />;
+	}
 	return (
-		<ModulesRendererClient
+		<LazyModulesRendererClient
 			documentId={documentId}
 			initialModules={initialModules}
 		/>

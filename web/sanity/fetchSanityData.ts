@@ -1,3 +1,5 @@
+import "server-only";
+
 import { draftMode } from "next/headers";
 import { cache } from "react";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";

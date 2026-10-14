@@ -1,3 +1,5 @@
+import "server-only";
+
 import clsx from "clsx";
 import { PortableText } from "next-sanity";
 

@@ -141,11 +141,7 @@ export async function DocumentShell({ lang, children }: Props) {
 				<link rel="preconnect" href="https://cdn.sanity.io" />
 				<link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-				{/* Mux video player & thumbnails */}
-				<link rel="preconnect" href="https://stream.mux.com" />
-				<link rel="dns-prefetch" href="https://stream.mux.com" />
-				<link rel="preconnect" href="https://image.mux.com" />
-				<link rel="dns-prefetch" href="https://image.mux.com" />
+				{/* Mux hints come from the video components (`preconnectMux`), only where a video renders */}
 
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>

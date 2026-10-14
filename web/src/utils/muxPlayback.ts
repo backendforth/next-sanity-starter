@@ -1,3 +1,5 @@
+import { preconnect } from "react-dom";
+
 /**
  * Mux HLS playback: resolution-tier picking for loops and the full player, codec detection and
  * hls.js level selection. Payload, display-size and thumbnail helpers live in `muxImage.ts`, so
@@ -570,4 +572,14 @@ export function pickMuxHlsLevelIndex(
 	}
 
 	return pickSmallestSufficientLevelIndex(indexed, opts.targetW, opts.targetH);
+}
+
+/**
+ * Opens the connections to Mux early (`stream.mux.com` for the playlist and segments,
+ * `image.mux.com` for posters). Called while a video component renders, so only pages with a
+ * video pay for them; React hoists the hints into `<head>`, during SSR included.
+ */
+export function preconnectMux(): void {
+	preconnect("https://stream.mux.com");
+	preconnect("https://image.mux.com");
 }

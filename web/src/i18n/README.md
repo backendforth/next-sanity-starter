@@ -32,7 +32,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 3. User opens `/` or `/about` → **`proxy`** rewrites internally to `/{defaultLocale}/…` using the CDN-backed locale list.
 4. User opens `/de/about` → no rewrite; header marks locale `de`.
 5. `app/[locale]/page.tsx` (and nested routes) read `params.locale`, pass it to the `fetch*` helpers (`$locale` in GROQ), and pass **`siteLocale`** to path utils.
-6. **Language switch** — `setLocale` in `LanguageContext` keeps the current path and swaps the locale prefix. It does not look up the translated document's slug (`translation.metadata`), so a page whose slug differs between languages 404s after switching.
+6. **Language switch** — every route page renders `LocaleAlternates` with its document's language variants (`translationsQuery`, linked through `translation.metadata`). `setLocale` in `LanguageContext` sends the switch to the variant in the target language (`/about` → `/de/ueber-uns`), or to that language's home when the document has none there. A page without `LocaleAlternates` (the 404) keeps its path and swaps the locale prefix.
 
 ## Studio note
 

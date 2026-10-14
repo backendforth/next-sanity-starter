@@ -13,7 +13,7 @@ import {
 import {
 	getMuxDisplayDimensions,
 	muxThumbnailRequestWidthPx,
-} from "@/src/utils/muxPlayback";
+} from "@/src/utils/muxImage";
 import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 
 /** Sanity CDN `w=` bounds — not layout breakpoints. */

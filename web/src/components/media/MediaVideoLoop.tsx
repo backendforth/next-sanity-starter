@@ -32,9 +32,11 @@ import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
 	LOOP_POSTER_MAX_WIDTH_PX,
+	muxThumbnailRequestWidthPx,
+} from "@/src/utils/muxImage";
+import {
 	type MuxResolutionTier,
 	muxLoopHlsSrc,
-	muxThumbnailRequestWidthPx,
 	muxTierBelow,
 	resolveMuxLoopTier,
 } from "@/src/utils/muxPlayback";

@@ -7,7 +7,6 @@ import { structureTool } from "sanity/structure";
 import { internationalizedArray } from "sanity-plugin-internationalized-array";
 import { media } from "sanity-plugin-media";
 import { muxInput } from "sanity-plugin-mux-input";
-import { netlifyTool } from "sanity-plugin-netlify";
 
 import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
@@ -84,7 +83,6 @@ export default defineConfig({
       // No download/embed flows — HLS-only playback on the site.
       mp4_support: "none",
     }),
-    netlifyTool(),
     internationalizedArray({
       languages: internationalizedArrayLanguagesFromClient,
       /** Plugin only accepts a static list; runtime default comes from `siteLanguageSettings` in the fetch above. */

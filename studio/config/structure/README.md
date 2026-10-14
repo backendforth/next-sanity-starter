@@ -1,15 +1,14 @@
 # Desk structure
 
-The **Structure API** controls the left-hand navigation in Sanity Studio. The root resolver is **`index.ts`**: it returns a `StructureResolver` that builds a list titled “Content”, nests **Work** (singleton + projects) and **Settings** in their own groups.
+The **Structure API** controls the left-hand navigation in Sanity Studio. The root resolver is **`index.ts`**: it returns a `StructureResolver` that builds a list titled “Content”, nests **Work** (landing, projects, project categories) and **Settings** in their own groups.
 
 ## How items are wired
 
 - **`index.ts`** imports small factories from `items/*` and passes the `StructureBuilder` (`S`) into each. Each factory returns a `ListItem` (or similar) configured with title, icon, id, and **child** (what opens when you click).
-- **Singletons** (one document per type, fixed id) typically use:
-  - `S.document().schemaType("home").documentId("home")`
-  - Same pattern for settings docs with stable ids (`siteSettings`, `errorSettings`, …).
-- **Collections** use something like:
-  - `S.documentTypeList("page").title("Pages")` — shows all documents of that type.
+- **Global singletons** (one document, fixed id) use:
+  - `S.document().schemaType("siteLanguageSettings").documentId("siteLanguageSettings")`
+- **Translatable types** — collections like `page` **and** the per-language "singletons" (`home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) — have one document per language, so they use:
+  - `S.documentTypeList("home").title("Home")` — lists every language version of that type.
 
 Icons come from `@sanity/icons`. Keep `.id()` values stable if you deep-link or use structure plugins that key off them.
 

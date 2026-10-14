@@ -8,8 +8,8 @@ import { portableTextLists } from "./text/lists";
 import { portableTextStyles } from "./text/styles";
 
 /**
- * Portable Text + inline modules; registered as `richTextMedia` for
- * `internationalizedArrayRichTextMedia`.
+ * Portable Text + inline modules; registered as `richTextMedia`. Used as a
+ * plain field type: the document's `language` carries the locale.
  */
 export const richTextMedia = defineType({
   name: "richTextMedia",

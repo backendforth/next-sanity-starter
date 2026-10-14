@@ -20,10 +20,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | What | Where |
 |------|-------|
-| Supported languages | Sanity **Site languages** — order = fallback order in `sanity/utils/sanityLocalizedText.ts`. |
+| Supported languages | Sanity **Site languages** — ids are URL segments and the `language` values on translated documents; order = language switcher order. |
 | **Default** (no URL prefix) | **`defaultLanguageId`** in that document. |
-| Studio UI labels for `internationalizedArray*` | Same document; Studio loads them at runtime from Sanity (see `studio/config/sync/internationalizedArrayLanguages.ts`). |
-| Fallback when a field has no translation | Same order as `availableLanguages` (after exact / base tags). |
+| Studio languages for `@sanity/document-internationalization` | Same document, read draft first (see `studio/config/sync/supportedLanguages.ts`); reload the Studio after changing languages. |
+| Content in a language | One Sanity document per language. Queries select it with `language == $locale`; a missing translation is not filled from another language (slug routes 404). |
 
 If the singleton is missing or lists no language ids, the web app falls back to **en** only (see `web/src/i18n/fallbackSiteLocales.ts`). Partial data degrades per row instead: a language without a label uses its id, and a `defaultLanguageId` that isn't in the list falls back to the first language (`sanity/normalizeSiteLocaleConfig.ts`). **Publish** `siteLanguageSettings` so the CDN sees it, or set **`SANITY_API_READ_TOKEN`** in `web/.env.local` so dev reads drafts (same as Presentation). Studio needs no token: it reads the draft first through the editor's session.
 

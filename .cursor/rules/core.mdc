@@ -9,6 +9,7 @@ Top-level rules (do not duplicate — see AGENTS.md for the full context):
 
 - Reuse before invention; grep `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/` first.
 - Content blocks are **modules** — paired Sanity object + React component, wired in 8 places. Skipping any one is a bug.
-- Locale-aware at render time, never inside GROQ. Always use `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`.
+- This is `variant/document-level`: one document per language (AGENTS.md §"Branch-specific notes" wins over its field-level §i18n). Select documents in GROQ with `language == $locale`; fields are plain and render directly. Never add `internationalizedArray*` content fields here.
+- Never edit the plugin-managed `language` field on documents.
 - After schema edits: `pnpm studio:generate` → `pnpm typecheck` → `pnpm format`. Never edit `studio/sanity.types.gen.ts` or `studio/schema.json`.
 - `web/sanity/types/*` are hand-maintained; keep aligned with field changes.

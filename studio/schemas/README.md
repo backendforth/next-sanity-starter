@@ -5,7 +5,7 @@ Schema types are defined with `defineType` from `sanity` and grouped in folders 
 ## 1. Create the type
 
 - **Document** — `type: "document"`, unique `_id` per document (e.g. `schemas/documents/page.ts`).
-- **Singleton** — still `type: "document"`, but you fix the id in structure (e.g. `documentId("home")`) so only one instance exists (`schemas/singletons/home.ts`).
+- **Singleton** — still `type: "document"`. A global singleton fixes its id in structure (`documentId("siteLanguageSettings")`). A per-language singleton such as `home` (`schemas/singletons/home.ts`) has one document per language; list it with `S.documentTypeList` and add it to `config/singletons.ts` to lock delete / unpublish / duplicate.
 - **Object** — `type: "object"` for nested blocks, modules, SEO objects, links (`schemas/objects/...`).
 - **Root-level types** that are not documents (e.g. shared defs) follow the same `defineType` pattern.
 
@@ -57,7 +57,13 @@ Singletons that should open Web Preview at `/` belong in **`SITE_ROOT_DOCUMENT_T
 
 ## 5. Multi-language fields
 
-If the document uses `internationalizedArray*` field types, ensure those string names are listed under **`internationalizedArray`** in **`sanity.config.ts`** (`fieldTypes`). Language tabs come from **`siteLanguageSettings`** at runtime (`config/sync/internationalizedArrayLanguages.ts`); see **`utils/README.md`**.
+This branch translates whole documents (`@sanity/document-internationalization`): one document per language, and content fields stay plain (`string`, `richText`, `richTextMedia`). To make a document type translatable:
+
+1. Add the hidden, read-only `language` field — copy it from `schemas/documents/page.ts` (`readOnly: true`, `hidden: true`, `initialValue: "en"`). The plugin sets it; never edit it by hand.
+2. Add the type name to **`TRANSLATABLE_SCHEMA_TYPES`** in **`sanity.config.ts`**.
+3. Filter its web queries with `language == $locale` (see `web/sanity/queries/README.md`).
+
+The language list comes from **`siteLanguageSettings`** at runtime (`config/sync/supportedLanguages.ts`); see **`utils/README.md`**.
 
 ## 6. Slugs
 
@@ -80,14 +86,14 @@ Fields that take an image upload (the `media.image` image, both video posters, `
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
-1. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`).
+1. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`richTextMedia` fields).
 2. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons).
 
 When you add a **new** module, wire it up in **both** places so behaviour stays consistent: inline in text **and** in the stacked `modules` list.
 
 ### Adding a new module (checklist)
 
-> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically. See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
+> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically, and prints the `ModulesRenderer.tsx` branch to paste by hand (`pnpm check:wiring` fails until it is there). See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
 
 1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
@@ -117,7 +123,7 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (per-language singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`, prefixed with `/{language}` for non-default languages).
 
 Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SUGGESTIONS`** (same file) into the field’s `options`, next to any `filter`. Do the same on new reference fields.
 
@@ -140,7 +146,7 @@ If you need “New document” templates with presets, register them in **`confi
 | Sidebar | `config/structure/items/...` + `config/structure/index.ts` |
 | Internal links | `schemas/constants/references.ts` |
 | Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
-| Languages | `config/sync/internationalizedArrayLanguages.ts`, `sanity.config.ts` (plugin) |
+| Languages | `config/sync/supportedLanguages.ts`; translatable types: `language` field + `TRANSLATABLE_SCHEMA_TYPES` in `sanity.config.ts` |
 | Slug rules | `validation: validateSlug` on slug fields |
 | New **module** | New file `objects/modules/module<Name>.ts`, `index.ts`, `richTextMedia.ts`, `fields/modulesArrayField.ts` (`moduleTypes`) |
 | New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |

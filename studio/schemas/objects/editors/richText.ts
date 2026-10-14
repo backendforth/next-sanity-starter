@@ -6,8 +6,8 @@ import { portableTextLists } from "./text/lists";
 import { portableTextStyles } from "./text/styles";
 
 /**
- * Portable Text registered as `richText` for
- * `internationalizedArrayRichText`.
+ * Portable Text registered as `richText`. Used as a plain field type: the
+ * document's `language` carries the locale.
  */
 export const richText = defineType({
   name: "richText",

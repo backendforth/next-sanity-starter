@@ -12,9 +12,12 @@ Claude Code additionally auto-loads scoped rules from subtree `CLAUDE.md` files 
 
 **IMPORTANT:** When subtree rules conflict with `AGENTS.md`, `AGENTS.md` wins. Update `AGENTS.md` first, then propagate.
 
+**This branch is `variant/document-level`.** Its i18n is document-level (one document per language), so AGENTS.md §"Branch-specific notes" wins over the field-level §i18n above it.
+
 ## Quick reminders (the full versions live in AGENTS.md)
 
 - **YOU MUST** run all 8 module wiring points when adding/renaming a module. Skipping any is a bug.
 - **YOU MUST** run `pnpm studio:generate` after schema edits, then `pnpm check:wiring`, then `pnpm typecheck`.
 - **NEVER** edit `studio/sanity.types.gen.ts`, `studio/schema.json`, or any `*.gen.*` file.
-- **NEVER** filter locale inside GROQ. Locale resolves at render time via `pickLocalizedString` / `parseLocalizedText`.
+- Select per-language documents in GROQ with `language == $locale`; their fields are plain and render directly. **NEVER** add `internationalizedArray*` fields or `pickLocalizedString` calls for content on this branch.
+- **NEVER** edit the plugin-managed `language` field on documents.

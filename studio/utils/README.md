@@ -8,11 +8,11 @@ This file **re-exports** **`PAGE_REFERENCES`** from **`schemas/constants/referen
 
 ## Multi-language setup
 
-1. **Languages** — Edit the **`siteLanguageSettings`** singleton (Settings → Site languages) in the Studio. Creating it the first time uses the schema **`initialValue`** (e.g. `en` + `de`, default `en`). If the document is missing or lists no language ids, **`supportedLanguagesFromClient`** falls back to a minimal **`en`** list only — keep that in sync with `web/src/i18n/fallbackSiteLocales.ts`. The **`documentInternationalization`** plugin reads languages live via **`config/sync/supportedLanguages.ts`** (`sanity.config.ts`), draft first, so a newly added language is offered for translations before you publish the singleton (reload the Studio to pick it up).
+1. **Languages** — Edit the **`siteLanguageSettings`** singleton (Settings → Site languages) in the Studio. Creating it the first time uses the schema **`initialValue`** (e.g. `en` + `de`, default `en`). If the document is missing or lists no language ids, **`supportedLanguagesFromClient`** falls back to a minimal **`en`** list only — keep that in sync with `web/src/i18n/fallbackSiteLocales.ts`. The **`documentInternationalization`** plugin reads languages via **`config/sync/supportedLanguages.ts`** (`sanity.config.ts`), draft first, so a newly added language is offered for translations before you publish the singleton (reload the Studio to pick it up).
 
-2. **Plugin** — `internationalizedArray` in **`sanity.config.ts`** lists which **field types** get the language UI (`string`, `richText`, `richTextMedia`, …). Add new field type names there if you introduce another translatable custom type.
+2. **Plugin** — `documentInternationalization` in **`sanity.config.ts`** lists the translatable **document types** in `TRANSLATABLE_SCHEMA_TYPES`. Each of them has a hidden, read-only `language` field (see `schemas/documents/page.ts`); editors create the other language versions from the plugin's language menu in the document header. A new translatable type needs both the field and the list entry. Content fields stay plain (`string`, `richText`, `richTextMedia`).
 
-3. **Frontend** — Ensure the Next.js app uses the same locale ids for routing and content.
+3. **Frontend** — The Next.js app uses the same language ids as URL segments and selects each document with `language == $locale`.
 
 ## Development vs production datasets
 

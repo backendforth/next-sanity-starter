@@ -11,7 +11,7 @@ This folder holds **structure** (sidebar), **presentation** (Visual Editing / We
 
 So: **new document or object type → add it to `schemas/index.ts`**. **New sidebar entry → add or extend items in `config/structure/`** (see `config/structure/README.md`).
 
-Singletons (fixed document IDs) use `S.document().schemaType("…").documentId("…")` in structure; repeatable types often use `S.documentTypeList("…")`.
+Only global singletons with a fixed document ID (`siteLanguageSettings`) use `S.document().schemaType("…").documentId("…")` in structure. Translatable types — including the per-language "singletons" `home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner` — have one document per language, so they use `S.documentTypeList("…")`. `config/singletons.ts` still locks delete / unpublish / duplicate on those types.
 
 ## Web Preview (Presentation)
 
@@ -38,4 +38,4 @@ Nothing in this repo auto-registers new types in the sidebar or in Presentation;
 
 ## Dataset resolution
 
-`config/sync/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, optional Management API, and dev-first vs prod-first order by deploy context). `config/sync/internationalizedArrayLanguages.ts` supplies runtime languages for `sanity-plugin-internationalized-array`. See `studio/utils/README.md` for editor-facing notes.
+`config/sync/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, optional Management API, and dev-first vs prod-first order by deploy context). `config/sync/supportedLanguages.ts` supplies the runtime language list for `@sanity/document-internationalization`. See `studio/utils/README.md` for editor-facing notes.

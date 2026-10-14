@@ -1,13 +1,13 @@
 # next-sanity-starter
 
-> A production-shaped starting point for a multi-language, CMS-driven site — **Next.js 16** App Router, **React 19**, **Sanity Studio v5**, with optional **Mux** video and **Netlify** hosting.
+> A production-shaped starting point for a multi-language, CMS-driven site — **Next.js 16** App Router, **React 19**, **Sanity Studio v6**, with optional **Mux** video and **Netlify** hosting.
 
-[![Next.js 16](https://img.shields.io/badge/Next.js-16.2-000?logo=next.js&logoColor=white)](https://nextjs.org)
-[![React 19](https://img.shields.io/badge/React-19.2-149eca?logo=react&logoColor=white)](https://react.dev)
-[![Sanity v5](https://img.shields.io/badge/Sanity-5.27-f03e2f?logo=sanity&logoColor=white)](https://www.sanity.io)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=next.js&logoColor=white)](https://nextjs.org)
+[![React 19](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)](https://react.dev)
+[![Sanity v6](https://img.shields.io/badge/Sanity-6-f03e2f?logo=sanity&logoColor=white)](https://www.sanity.io)
 [![TypeScript 6](https://img.shields.io/badge/TypeScript-6-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tailwind v4](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Biome](https://img.shields.io/badge/Biome-2.4-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
+[![Biome](https://img.shields.io/badge/Biome-2-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
 [![License: ISC](https://img.shields.io/badge/license-ISC-green)](LICENSE)
 
 It stays slim on purpose: no unused features, production-grade defaults, and a clear path from `git clone` to first published page. Documentation lives next to the code that needs it — strip the per-folder READMEs with `pnpm strip-readmes` once you're ready to ship.
@@ -31,7 +31,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). `SanityLive` only mounts when it's actually useful (read token present or draft mode active).
 
-**Sanity Studio v5** — Vision, Dashboard, Presentation with configurable preview origin, runtime language tabs driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
+**Sanity Studio v6** — Vision, Dashboard, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
@@ -56,10 +56,10 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | Package | Path | Role |
 |---------|------|------|
 | **Web** | `web/` | Next.js 16 App Router app — i18n routing, GROQ data fetching, Portable Text, Mux, sitemap/robots, cache-tag revalidation |
-| **Studio** | `studio/` | Sanity Studio v5 — schema, plugins, Presentation, dev/prod dataset sync |
+| **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
 | **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
-| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module across all 8 wiring points |
+| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and prints the `ModulesRenderer.tsx` branch to paste |
 | **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` — validates module wiring across schema, component, query, and type files (CI gate) |
 
 ---
@@ -129,7 +129,7 @@ The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)
 
 - **Data access** — `web/sanity/fetchSanityData.ts` is the only place React talks to Sanity; it wraps `sanityFetch` from `defineLive` for Draft Mode / Presentation. Published-only reads (sitemap, `generateStaticParams`, no-token paths) go through `web/sanity/cachedSanityQuery.ts` (`unstable_cache` + cache tags).
 - **GROQ** — strings live under `web/sanity/queries/` (snippets, page-level queries, component projections). The final queries are wrapped in `defineQuery` so `sanity typegen` emits result types.
-- **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the language tabs in Studio. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
+- **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the Studio's document languages. Each language is its own document; queries select it with `language == $locale`. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
 - **Media** — `<MediaImage />`, `<MediaVideo />`, `<MediaVideoLoop />` share container measurement, hydration-safe URLs, and viewport-deferred JS.
 
 ---
@@ -152,7 +152,7 @@ All from the repo root.
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
 | `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
-| `pnpm gen:module <Name>` | Scaffold a new content module across the 8 wiring points. PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
+| `pnpm gen:module <Name>` | Scaffold a new content module (files, barrels, `schemaTypes`, `moduleTypes`; prints the `ModulesRenderer.tsx` branch to paste). PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
 | `pnpm check:wiring` | Validate the 8-point module wiring (schema, component, query, type, and their barrels/registrations). Runs in CI. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.

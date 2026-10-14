@@ -1,9 +1,9 @@
 /**
  * `siteNav` menu items after `linkQuery` expansion (see `sanity/queries/snippets/link.ts`).
  *
- * `title` is an `internationalizedArrayString` (per-locale entries). `resolvedReference.title`
- * carries the referenced document's localized title for internal-link fallback. Plain `string`
- * is allowed for forward-compat with the document-level i18n variant.
+ * `title` is a plain string on this branch (document-level i18n). `resolvedReference.title`
+ * carries the referenced document's title for internal-link fallback. `IntlStringEntry[]` stays
+ * in the union because `main` stores link titles as `internationalizedArrayString`.
  */
 import type { IntlStringEntry } from "../utils";
 

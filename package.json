@@ -19,6 +19,7 @@
 		"build": "pnpm --stream -r run build",
 		"studio:build": "pnpm --filter studio run build",
 		"studio:deploy": "pnpm --filter studio run deploy",
+		"studio:register": "pnpm --filter studio run register",
 		"studio:generate": "pnpm --filter studio run generate",
 		"studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev",
 		"update": "pnpm up --stream -r",

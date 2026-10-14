@@ -31,7 +31,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). `SanityLive` only mounts when it's actually useful (read token present or draft mode active).
 
-**Sanity Studio v6** — Vision, Dashboard, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone.
+**Sanity Studio v6** — Vision, Dashboard, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone. Hosted on Netlify on its own domain by default (`studio/netlify.toml`); Sanity Hosting stays one command away.
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
@@ -108,7 +108,12 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 | both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | optional | Switch dataset per environment (`staging`, `development`, …) |
 | both | `SANITY_STUDIO_DATASET` | optional | Hard pin a specific dataset name (skips auto-resolution) |
 | `studio/.env` | `SANITY_STUDIO_PREVIEW_ORIGIN` | yes (Studio) | Origin used by the Presentation iframe |
-| `studio/.env` | `SANITY_STUDIO_MUX_TOKEN_ID` / `_SECRET` | optional | Mux uploads in Studio |
+| `studio/.env` | `SANITY_STUDIO_HOSTING_URL` | yes (Netlify Studio) | The Studio's own URL — registered with Sanity by `pnpm studio:register` |
+| `web/.env.local` | `NEXT_PUBLIC_SANITY_STUDIO_URL` | yes (prod) | Studio URL for CSP `frame-ancestors` and click-to-edit links — same value as `SANITY_STUDIO_HOSTING_URL` |
+| Netlify Studio site | `SANITY_AUTH_TOKEN` | optional | Deploy token; production deploys then register the Studio URL and upload the schema |
+| `studio/.env` | `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` | optional | Mux API token for `pnpm mux:migrate-assets` only (the Mux plugin stores its own credentials) |
+
+**Every `SANITY_STUDIO_*` variable is public**: the Studio build inlines all of them into its JS bundle. Never give a token or secret that prefix — `sanity build` / `sanity deploy` refuse to run with one set.
 
 ### How `@repo/sanity-dataset-resolve` picks a dataset
 
@@ -117,7 +122,7 @@ Variables you actually care about — full comments live in [`web/.env.example`]
    - `production` → prefer `production`, fall back to `development`.
    - `development` / `preview` / unset → prefer `development`, fall back to `production`.
 3. Canonical names are configurable (`SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION`).
-4. If needed, the resolver enumerates actual datasets via the Management API (`SANITY_STUDIO_DATASET_RESOLVER_TOKEN` / `SANITY_API_READ_TOKEN`) to avoid requesting one that doesn't exist.
+4. If needed, the resolver enumerates actual datasets via the Management API (`SANITY_DATASET_RESOLVER_TOKEN` / `SANITY_AUTH_TOKEN`) to avoid requesting one that doesn't exist.
 
 Consumed by `web/sanity/resolveStudioDataset.ts` + `web/sanity/sanityEnv.ts` and `studio/config/sync/studioDataset.ts`.
 
@@ -144,7 +149,9 @@ All from the repo root.
 | `pnpm web:dev` | Web only (`next dev --webpack`) |
 | `pnpm studio:dev` | Studio only |
 | `pnpm build` | Build all workspaces |
-| `pnpm studio:build` / `studio:deploy` | Build / deploy Studio to Sanity hosting |
+| `pnpm studio:build` | Build the Studio (`studio/dist`) |
+| `pnpm studio:register` | Register the Netlify-hosted Studio URL with Sanity and upload the schema (`--dry-run` to preview) |
+| `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`) — the alternative to Netlify |
 | `pnpm studio:generate` | Schema extract + GROQ typegen |
 | `pnpm studio:sync-prod-to-dev` | Clone `production` → `development` dataset |
 | `pnpm lint` | Biome check (repo-wide) |
@@ -183,7 +190,13 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 
 Set on the host: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` (optional), `SANITY_REVALIDATE_SECRET` (required in prod), `NEXT_PUBLIC_SITE_URL`, `SANITY_STUDIO_DEPLOYMENT_TARGET` (only if you want to point at a non-production dataset).
 
-### Sanity Studio
+### Netlify (Studio) — default
+
+The Studio is a second Netlify site from the same repository: package directory `studio`, configured by [`studio/netlify.toml`](studio/netlify.toml) (build, SPA routing, dataset per deploy context, `noindex`, `frame-ancestors` against clickjacking). Commits that only touch the web app don't rebuild it.
+
+Set on that site: `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET` (per deploy context: `production` / `development`), `SANITY_STUDIO_PREVIEW_ORIGIN` (production web origin), `SANITY_STUDIO_HOSTING_URL`, optionally `SANITY_AUTH_TOKEN`. Then add the domain to the Sanity project's CORS origins with credentials, set `NEXT_PUBLIC_SANITY_STUDIO_URL` on the web site, and register the Studio (`pnpm studio:register`). Step by step: [`studio/README.md`](studio/README.md#deploying-the-studio).
+
+### Sanity Hosting (Studio) — alternative
 
 `pnpm studio:deploy` ships to Sanity's hosted Studio (`*.sanity.studio`). The deploy script forces `SANITY_STUDIO_DEPLOYMENT_TARGET=production`.
 

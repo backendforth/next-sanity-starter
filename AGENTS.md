@@ -27,6 +27,7 @@ Before writing code:
 |---|---|
 | `web/` | Next.js 16 app (App Router). User-facing site. |
 | `studio/` | Sanity Studio v6. Editorial UI + schemas. |
+| `studio/netlify.toml` | Netlify pipeline for the Studio — the default hosting, a second Netlify site with package directory `studio`. The root `netlify.toml` is the web site's. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
@@ -124,7 +125,8 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm studio:dev` | Start the Studio only (uses `studio/scripts/dev-with-hint.mjs`). |
 | `pnpm build` | Build both apps. |
 | `pnpm studio:build` | Build the Studio only. |
-| `pnpm studio:deploy` | Deploy the Studio to Sanity (production target). |
+| `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`, production target) — the alternative to Netlify. |
+| `pnpm studio:register` | Register the Netlify-hosted Studio URL (`SANITY_STUDIO_HOSTING_URL`) with Sanity and upload the schema. Netlify production deploys run it when `SANITY_AUTH_TOKEN` is set. |
 | `pnpm studio:generate` | Regenerate `studio/schema.json` + `studio/sanity.types.gen.ts`. **Run after every schema edit.** |
 | `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
 | `pnpm typecheck` | `tsc --noEmit` across web + studio. |
@@ -156,7 +158,8 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm dev` | Studio dev server via `scripts/dev-with-hint.mjs`. |
 | `pnpm start` | `sanity start`. |
 | `pnpm build` | `sanity build`. |
-| `pnpm deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy`. |
+| `pnpm deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). |
+| `pnpm register` | `node scripts/register-hosting.mjs` → `sanity deploy --external`. Pass `--dry-run` to preview. |
 | `pnpm generate` | `sanity schema extract --enforce-required-fields && sanity typegen generate`. |
 | `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
 | `pnpm migrate:project-body-rich-text` | One-off migration. Only run when explicitly needed. |

@@ -1,12 +1,16 @@
 # Netlify — Next.js app in `web/` (pnpm monorepo).
 #
+# The Studio is a second Netlify site from the same repository, configured by
+# `studio/netlify.toml` (package directory `studio`). This file is the web site's only.
+#
 # Build runs from the repository root so pnpm can resolve workspace packages.
 # In the Netlify UI, keep the base directory at the repo root unless you mirror this layout elsewhere.
 #
 # Set in Site settings → Environment variables (Build + Runtime as needed):
-#   SANITY_STUDIO_PROJECT_ID  — required for Next ↔ Sanity
-#   SANITY_STUDIO_DATASET     — optional if you pin a dataset
-#   NEXT_PUBLIC_SANITY_*      — optional client fallbacks
+#   SANITY_STUDIO_PROJECT_ID       — required for Next ↔ Sanity
+#   SANITY_STUDIO_DATASET          — optional if you pin a dataset
+#   NEXT_PUBLIC_SANITY_STUDIO_URL  — the Studio's hosting URL (CSP `frame-ancestors`, edit links)
+#   NEXT_PUBLIC_SANITY_*           — optional client fallbacks
 # Full list: `web/.env.example`
 #
 # Publish directory (why not `dist/`?):
@@ -16,11 +20,15 @@
 # - `publish = "web/.next"` is the path to that Next output relative to the repo root (monorepo).
 
 [build]
-  command = "pnpm install --frozen-lockfile && pnpm --filter web run build"
+  # Netlify installs the workspace itself (pnpm, version from `packageManager`) before this runs.
+  command = "pnpm --filter web run build"
   publish = "web/.next"
-  # Skip the build when the diff between HEAD and HEAD^ only touches files outside the
-  # web app and its shared package. Saves Netlify minutes on Studio-only commits.
-  ignore = "git diff --quiet HEAD^ HEAD ./web ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json"
+  # Skip the build when nothing since the last commit Netlify built for this context
+  # (`CACHED_COMMIT_REF`) touched the web app, its shared package, the workspace manifests
+  # or this file — not just the last commit, so a multi-commit push can't hide a change.
+  # A build without cache has both refs equal; the `[ … ]` guard then builds instead of
+  # skipping. Saves Netlify minutes on Studio-only pushes.
+  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./web ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json ./netlify.toml'
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

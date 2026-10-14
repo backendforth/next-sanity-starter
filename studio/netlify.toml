@@ -1,0 +1,69 @@
+# Netlify — Sanity Studio in `studio/` (pnpm monorepo). The default way to host the Studio.
+#
+# One repository, two Netlify sites: the web app reads the root `netlify.toml`, the
+# Studio site reads this file. Create the Studio site from the same repository with:
+#   Base directory:     (empty — the repo root, so pnpm can resolve workspace packages)
+#   Package directory:  studio   ← Netlify then reads this file instead of the root one
+#   Build command / publish directory: leave empty, they are set below
+# Then add the Studio's domain under Domain management, and the same origin to the Sanity
+# project's CORS origins **with credentials** (`studio/README.md` → "Deploying the Studio").
+#
+# Set in Site configuration → Environment variables. `SANITY_STUDIO_*` values are inlined
+# into the Studio bundle at BUILD time, so a change needs a redeploy.
+#   SANITY_STUDIO_PROJECT_ID      — required
+#   SANITY_STUDIO_DATASET         — set per deploy context (Production: `production`,
+#                                   Deploy Previews + Branch deploys: `development`).
+#                                   Unset, the Studio probes for its dataset on every load.
+#   SANITY_STUDIO_PREVIEW_ORIGIN  — the web app's origin, opened by Presentation
+#   SANITY_STUDIO_HOSTING_URL     — this Studio's own URL (custom domain)
+#   SANITY_AUTH_TOKEN             — optional: registers the URL and uploads the schema
+# Full list: `studio/.env.example`.
+#
+# The alternative, Sanity's own hosting (`*.sanity.studio`), stays one command away:
+# `pnpm studio:deploy`. It does not read this file.
+
+[build]
+  # Paths are relative to the base directory (the repo root), not to `studio/`.
+  # `register` registers the hosting URL with Sanity and uploads the schema — only on a
+  # production deploy with `SANITY_AUTH_TOKEN` set; everywhere else it logs and skips.
+  # Netlify installs the workspace itself before this runs.
+  command = "pnpm --filter studio run build && pnpm --filter studio run register"
+  publish = "studio/dist"
+  # Skip the build when nothing since the last built commit touched the Studio (this file
+  # included), its shared package or the workspace manifests — the mirror of the web
+  # site's rule, `[ … ]` guard included.
+  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
+
+# Dataset order per deploy context (`@repo/sanity-dataset-resolve`), matching the web
+# site: production deploys prefer `production`, previews prefer `development`. The
+# hosted bundle can't see Netlify's `CONTEXT`, so the target has to be inlined here.
+# `SANITY_STUDIO_DATASET`, set per context in the Netlify UI, overrides the target and
+# spares the Studio its dataset probe at load.
+[context.production.environment]
+  SANITY_STUDIO_DEPLOYMENT_TARGET = "production"
+
+[context.deploy-preview.environment]
+  SANITY_STUDIO_DEPLOYMENT_TARGET = "preview"
+
+[context.branch-deploy.environment]
+  SANITY_STUDIO_DEPLOYMENT_TARGET = "preview"
+
+# The Studio is a single-page app: every route (`/structure/…`, `/presentation/…`)
+# is served by `index.html`. Not forced, so files in `dist/` still win.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # An editing tool, not content — keep it out of search indexes.
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Against clickjacking: only the Studio itself and the Sanity Dashboard may frame it. The
+    # Dashboard (`*.sanity.io`) opens registered Studios in a frame, so `X-Frame-Options`
+    # (`DENY` / `SAMEORIGIN`) would lock it out. Presentation is unaffected: it frames the web
+    # app, which has its own `frame-ancestors` in `web/next.config.ts`.
+    Content-Security-Policy = "frame-ancestors 'self' https://*.sanity.io"

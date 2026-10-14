@@ -43,8 +43,9 @@ function studioResolveEnv(): SanityDatasetResolveEnv {
     SANITY_STUDIO_DATASET_PRODUCTION:
       process.env.SANITY_STUDIO_DATASET_PRODUCTION,
     SANITY_STUDIO_DEPLOYMENT_TARGET: resolvedDeploymentTarget(),
-    SANITY_STUDIO_DATASET_RESOLVER_TOKEN:
-      process.env.SANITY_STUDIO_DATASET_RESOLVER_TOKEN,
+    // Unprefixed, so only the CLI (Node) sees these tokens. In the browser bundle they are
+    // undefined and the resolver falls back to probing the Data API.
+    SANITY_DATASET_RESOLVER_TOKEN: process.env.SANITY_DATASET_RESOLVER_TOKEN,
     SANITY_AUTH_TOKEN: process.env.SANITY_AUTH_TOKEN,
     VERCEL: process.env.VERCEL,
     VERCEL_ENV: process.env.VERCEL_ENV,

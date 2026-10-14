@@ -29,6 +29,7 @@ Internal links use `PAGE_REFERENCES` (and `PROJECT_REFERENCES` on `main`) from `
 ## Reuse before invention
 
 - `media.image`, `media.video`, `media.videoLoop` already exist in `objects/media/`. **NEVER** redeclare image hotspot fields inline.
+- Mux encoding ceilings are set per field (`options.max_resolution_tier` on `mux.video`: video 2160p, loop 1440p). Change the field, not the web playback ceiling — see "Mux video resolution" in @../AGENTS.md.
 - Slug fields use `validateSlug` from `utils/validateSlug.ts`.
 - Translatable fields use `internationalizedArrayString` / `internationalizedArrayRichText` / `internationalizedArrayRichTextMedia` — **NEVER** plain `string` for translatable content.
 

@@ -7,7 +7,7 @@
  * Improvements over a plain autoplay `<video>`:
  * - HLS source attached lazily via `IntersectionObserver` + dynamic `hls.js` import — no bytes
  *   downloaded for off-screen loops.
- * - Poster fades out once the first frame is decoded (no hard cut).
+ * - Poster fades out once the first frame is actually painted (no hard cut, no black flash).
  * - Respects `prefers-reduced-motion`: skips autoplay and leaves the poster in place.
  * - Poster WebP `srcset`/`sizes` track the container width (retina-aware).
  * - Prefers AV1 → HEVC → H.264 HLS renditions when the manifest and browser support them.
@@ -22,10 +22,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import {
-	resolveSanityImageFieldForUrl,
-	urlForFetchedImage,
-} from "@/sanity/utils/sanityImageBuilder";
 import { VolumeMutedIcon } from "@/src/components/icons/VolumeMutedIcon";
 import { VolumeOnIcon } from "@/src/components/icons/VolumeOnIcon";
 import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
@@ -36,10 +32,13 @@ import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
 	LOOP_POSTER_MAX_WIDTH_PX,
+	type MuxResolutionTier,
 	muxLoopHlsSrc,
 	muxThumbnailRequestWidthPx,
-	muxThumbnailUrl,
+	muxTierBelow,
+	resolveMuxLoopTier,
 } from "@/src/utils/muxPlayback";
+import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 import { useMuxHlsSource } from "@/src/utils/useMuxHlsSource";
 
@@ -103,51 +102,31 @@ export type MediaVideoLoopProps = {
 	hlsAttachDelayMs?: number;
 };
 
-/** Widths used for the poster `srcset` when coming from Sanity. */
-const POSTER_SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2560, 3840] as const;
+/**
+ * Measurement gate fallback: a zero-size or hidden container never reports a size, so after
+ * this deadline the loop attaches with the ceiling URL anyway.
+ */
+const ATTACH_WITHOUT_MEASUREMENT_MS = 300;
 
-type PosterSource = { src: string; srcSet?: string };
+/**
+ * Stall rescue deadline: a `waiting` stall longer than this means the pinned tier outruns the
+ * connection (Safari has no Network Information API to pre-throttle the pick, and Chrome's
+ * `downlink` is ignored). The loop then re-attaches one tier lower, per window, down to 720p.
+ */
+const LOOP_STALL_RESCUE_MS = 4000;
 
-function resolvePosterFromSanity(
-	posterPayload: unknown,
-	thumbWidthPx: number,
-): PosterSource | null {
-	const img = resolveSanityImageFieldForUrl(posterPayload);
-	if (!img) return null;
-	const cap = Math.min(thumbWidthPx, 3840);
-	const src = urlForFetchedImage(img, cap);
-	if (!src) return null;
-	const srcSet = POSTER_SRCSET_WIDTHS.filter((w) => w <= cap)
-		.map((w) => {
-			const url = urlForFetchedImage(img, w);
-			return url ? `${url} ${w}w` : null;
-		})
-		.filter(Boolean)
-		.join(", ");
-	return { src, srcSet: srcSet || undefined };
+/**
+ * Keyed by playback ID, like `MediaVideo`: swapping the asset (in Presentation, or a reused
+ * carousel slide) starts a fresh loop instead of inheriting the previous one's stall-rescue
+ * ceiling or a rescue timer that is still pending.
+ */
+export function MediaVideoLoop(props: MediaVideoLoopProps) {
+	const playbackId = extractMuxPlaybackId(props.media);
+	if (!playbackId) return null;
+	return <MuxVideoLoop key={playbackId} {...props} />;
 }
 
-function resolvePosterFromMux(
-	playbackId: string,
-	thumbWidthPx: number,
-): PosterSource {
-	/* Always extract the t=0 frame so the poster matches the first decoded
-	 * video frame and the fade-out (`onLoadedData` → `opacity-0`) is invisible.
-	 * Mux's editor-selected `thumbTime` is deliberately ignored — for a loop the
-	 * meaningful frame is the one playback starts on, not an arbitrary still. */
-	const cap = Math.min(thumbWidthPx, LOOP_POSTER_MAX_WIDTH_PX, 3840);
-	const thumbOpts = { format: "webp" as const };
-	const src = muxThumbnailUrl(playbackId, 0, { ...thumbOpts, width: cap });
-	const srcSet = POSTER_SRCSET_WIDTHS.filter((w) => w <= cap)
-		.map(
-			(w) =>
-				`${muxThumbnailUrl(playbackId, 0, { ...thumbOpts, width: w })} ${w}w`,
-		)
-		.join(", ");
-	return { src, srcSet: srcSet || undefined };
-}
-
-export function MediaVideoLoop({
+function MuxVideoLoop({
 	media,
 	caption,
 	posterPayload,
@@ -172,17 +151,13 @@ export function MediaVideoLoop({
 		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
 	const [containerRef, slotWidthPx, slotHeightPx] =
 		useContainerPixelWidth<HTMLDivElement>();
-	/* DPR snapshotted once at mount: matches what `muxLoopHlsSrc` needs for
-	 * tier selection and stays stable across renders. Re-measuring on every
-	 * render would just be noise — switching displays after page load doesn't
-	 * retroactively warrant a manifest reload. */
-	const [devicePixelRatio, setDevicePixelRatio] = useState<number | undefined>(
-		undefined,
+	/* DPR snapshotted once via lazy initializer: it never reaches rendered markup (SSR stays
+	 * `undefined`), it only feeds `hlsSrc`, which effects apply imperatively. Reading it
+	 * synchronously keeps the first `hlsSrc` final, so the measurement gate below attaches
+	 * exactly once. Switching displays after load doesn't warrant a manifest reload. */
+	const [devicePixelRatio] = useState<number | undefined>(() =>
+		typeof window === "undefined" ? undefined : window.devicePixelRatio || 1,
 	);
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		setDevicePixelRatio(window.devicePixelRatio || 1);
-	}, []);
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const isActiveRef = useRef(isActive);
 	isActiveRef.current = isActive;
@@ -378,18 +353,28 @@ export function MediaVideoLoop({
 		assetMaxWidthPx: dims && !dims.isFallback ? dims.width : undefined,
 	});
 
-	const poster = useMemo(() => {
-		if (!playbackId) return null;
-		/* Prefer the Mux thumbnail at t=0 — it matches the first decoded frame.
-		 * An editorially-uploaded Sanity poster is kept only as a defensive
-		 * fallback for the (currently impossible) case where the Mux thumbnail
-		 * URL can't be built. */
-		return (
-			resolvePosterFromMux(playbackId, thumbWidthPx) ??
-			resolvePosterFromSanity(posterPayload, thumbWidthPx)
-		);
-	}, [playbackId, posterPayload, thumbWidthPx]);
+	const poster = useMemo(
+		() =>
+			playbackId
+				? resolveMediaPosterUrls({
+						posterPayload,
+						muxMedia: media,
+						thumbWidthPx,
+						/* The uploaded poster wins, so a video shows the same still everywhere
+						 * (accepting a possible one-frame step at the fade). The Mux fallback
+						 * stays at t=0, the frame playback starts on. */
+						muxTimeSec: 0,
+						muxMaxWidthPx: LOOP_POSTER_MAX_WIDTH_PX,
+					})
+				: null,
+		[playbackId, posterPayload, media, thumbWidthPx],
+	);
 
+	/* Stall rescue ceiling (see {@link LOOP_STALL_RESCUE_MS}): absolute, so a later resize
+	 * can't undo a downgrade by re-picking against a bigger container. */
+	const [rescueTierCeiling, setRescueTierCeiling] = useState<
+		MuxResolutionTier | undefined
+	>(undefined);
 	const hlsSrc = useMemo(() => {
 		if (!playbackId) return "";
 		const vw = dims && !dims.isFallback ? dims.width : 16;
@@ -397,23 +382,63 @@ export function MediaVideoLoop({
 		/* Container-aware tier selection: `muxLoopHlsSrc` combines the DPR-
 		 * capped container size with `getNetworkAwareTierCeiling()` to pick
 		 * the highest tier this device + connection can comfortably serve,
-		 * up to the {@link LOOP_VIDEO_MAX_TIER} = 2160p ceiling, and pins
+		 * up to the {@link MUX_PLAYBACK_MAX_TIER} = 2160p ceiling, and pins
 		 * the manifest's min and max to that single tier so ABR can't ramp
-		 * up from a lower rendition. The first render (before the
-		 * ResizeObserver fires and `devicePixelRatio` snapshots) passes
-		 * `undefined`s and gets the bare ceiling — measurements then refine
-		 * the URL within a paint frame, which costs one extra manifest
-		 * fetch on mount. Resizing the viewport invalidates this memo and
-		 * picks a new tier; in practice resize is rare and the manifest
-		 * itself is ~5 kB. */
+		 * up from a lower rendition. The measurement gate on `attachHls`
+		 * keeps the pre-measurement value (bare ceiling) from ever being
+		 * attached. Resizing the viewport invalidates this memo and picks a
+		 * new tier; in practice resize is rare and the manifest is ~5 kB. */
 		return muxLoopHlsSrc(playbackId, {
 			videoWidthPx: vw,
 			videoHeightPx: vh,
 			containerWidthPx: slotWidthPx,
 			containerHeightPx: slotHeightPx,
 			devicePixelRatio,
+			tierCeiling: rescueTierCeiling,
 		});
-	}, [playbackId, dims, slotWidthPx, slotHeightPx, devicePixelRatio]);
+	}, [
+		playbackId,
+		dims,
+		slotWidthPx,
+		slotHeightPx,
+		devicePixelRatio,
+		rescueTierCeiling,
+	]);
+
+	const stallTimerRef = useRef<number | undefined>(undefined);
+	const disarmStallTimer = useCallback(() => {
+		if (stallTimerRef.current !== undefined) {
+			window.clearTimeout(stallTimerRef.current);
+			stallTimerRef.current = undefined;
+		}
+	}, []);
+	useEffect(() => disarmStallTimer, [disarmStallTimer]);
+	/* `waiting` arms the deadline, `playing` / `pause` disarm it. On expiry the pinned tier
+	 * steps one rung down; the new `hlsSrc` goes through `useMuxHlsSource`'s normal re-attach,
+	 * and the loop restarts from its first frame at the lighter tier. */
+	const onVideoWaiting = useCallback(() => {
+		if (stallTimerRef.current !== undefined || !playbackId) return;
+		stallTimerRef.current = window.setTimeout(() => {
+			stallTimerRef.current = undefined;
+			const current = resolveMuxLoopTier({
+				videoWidthPx: dims && !dims.isFallback ? dims.width : 16,
+				videoHeightPx: dims && !dims.isFallback ? dims.height : 9,
+				containerWidthPx: slotWidthPx,
+				containerHeightPx: slotHeightPx,
+				devicePixelRatio,
+				tierCeiling: rescueTierCeiling,
+			});
+			const below = muxTierBelow(current);
+			if (below !== current) setRescueTierCeiling(below);
+		}, LOOP_STALL_RESCUE_MS);
+	}, [
+		playbackId,
+		dims,
+		slotWidthPx,
+		slotHeightPx,
+		devicePixelRatio,
+		rescueTierCeiling,
+	]);
 
 	const objectCoverVideoPx =
 		dims && !dims.isFallback
@@ -426,7 +451,28 @@ export function MediaVideoLoop({
 	 * intact, so A → B → A re-activation plays from cache (no segment re-fetch).
 	 * Previously we gated attach on `isActive || isNextSlide` and tore HLS down
 	 * for the rest, which forced a fresh manifest + full re-buffer on return. */
-	const attachHls = shouldAttachHls && Boolean(playbackId);
+	/* Attach only once the container measurement and DPR have landed, so the first `hlsSrc`
+	 * is the final URL. Without the gate, `useMuxHlsSource` attaches the bare-ceiling URL and
+	 * the measured re-render one commit later changes `src` — a full teardown that refetches
+	 * the manifest and, on Safari, aborts the first segment mid-flight. The layout-effect
+	 * measurement in `useContainerPixelWidth` clears the gate within the mount task. */
+	const measurementsReady =
+		slotWidthPx !== undefined &&
+		slotHeightPx !== undefined &&
+		devicePixelRatio !== undefined;
+	const [attachFallback, setAttachFallback] = useState(false);
+	useEffect(() => {
+		if (measurementsReady || attachFallback || !shouldAttachHls) return;
+		const t = window.setTimeout(
+			() => setAttachFallback(true),
+			ATTACH_WITHOUT_MEASUREMENT_MS,
+		);
+		return () => window.clearTimeout(t);
+	}, [measurementsReady, attachFallback, shouldAttachHls]);
+	const attachHls =
+		shouldAttachHls &&
+		(measurementsReady || attachFallback) &&
+		Boolean(playbackId);
 	/* Pre-buffer the next slide so its `play()` after activation doesn't have
 	 * to wait for the first segment fetch — that wait is what causes the
 	 * mid-crossfade "video freezes for ~300 ms before snapping into motion"
@@ -485,16 +531,14 @@ export function MediaVideoLoop({
 	}, [muted]);
 
 	const onToggleMute = useCallback(() => {
-		setMuted((prev) => {
-			const next = !prev;
-			/* Unmuting counts as a user gesture — safe to start playback even under reduced
-			 * motion or while the element was paused (e.g. just scrolled into view). */
-			if (!next) {
-				queueMicrotask(() => tryPlay());
-			}
-			return next;
-		});
-	}, [tryPlay]);
+		setMuted(!muted);
+		/* Unmuting counts as a user gesture — safe to start playback even under reduced
+		 * motion or while the element was paused (e.g. just scrolled into view). Kept outside
+		 * the state updater: updaters must stay pure (StrictMode calls them twice). */
+		if (muted) {
+			queueMicrotask(() => tryPlay());
+		}
+	}, [muted, tryPlay]);
 
 	/* Poster fade gated on the first PAINTED frame, not on `loadeddata` /
 	 * `playing`: both events can fire before the element has composited a
@@ -591,21 +635,29 @@ export function MediaVideoLoop({
 		const root = containerRef.current;
 		if (!root || !playbackId) return;
 
+		let pauseTimer: number | undefined;
 		const io = new IntersectionObserver(
 			([entry]) => {
 				if (!entry) return;
 				if (entry.isIntersecting) {
+					if (pauseTimer !== undefined) {
+						window.clearTimeout(pauseTimer);
+						pauseTimer = undefined;
+					}
 					setShouldAttachHls(true);
 					if (isActive && !reducedMotion) tryPlay();
 				} else {
 					const el = videoRef.current;
-					window.setTimeout(() => el?.pause(), 100);
+					pauseTimer = window.setTimeout(() => el?.pause(), 100);
 				}
 			},
 			{ rootMargin: "400px", threshold: 0 },
 		);
 		io.observe(root);
-		return () => io.disconnect();
+		return () => {
+			io.disconnect();
+			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
+		};
 	}, [
 		playbackId,
 		isActive,
@@ -615,15 +667,63 @@ export function MediaVideoLoop({
 		reducedMotion,
 	]);
 
+	/* Safari autoplay rescue: Low Power Mode (iOS/macOS) and the per-site "Never Auto-Play"
+	 * setting deny even muted `playsinline` autoplay — iOS then draws a struck-through play
+	 * glyph and every programmatic `play()` rejects. A real user gesture lifts that for calls
+	 * made inside its handler, so the first pointer / key / touch retries `play()` on a visible,
+	 * paused loop. The listeners detach after the first `playing`. */
+	useEffect(() => {
+		if (reducedMotion || !playbackId) return;
+		const el = videoRef.current;
+		if (!el) return;
+		let removed = false;
+		const onGesture = () => {
+			if (!el.paused) return;
+			/* Inactive loops (carousel slides) and off-screen loops stay paused on purpose. */
+			if (!isActiveRef.current) return;
+			const r = el.getBoundingClientRect();
+			if (
+				r.width === 0 ||
+				r.bottom <= 0 ||
+				r.top >= window.innerHeight ||
+				r.right <= 0 ||
+				r.left >= window.innerWidth
+			) {
+				return;
+			}
+			/* Same engagement guard as `tryPlay`. */
+			if (!el.currentSrc && !el.src) return;
+			if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
+			void el.play().catch(() => {});
+		};
+		const remove = () => {
+			if (removed) return;
+			removed = true;
+			document.removeEventListener("pointerup", onGesture);
+			document.removeEventListener("touchend", onGesture);
+			document.removeEventListener("keydown", onGesture);
+			el.removeEventListener("playing", remove);
+		};
+		el.addEventListener("playing", remove);
+		document.addEventListener("pointerup", onGesture);
+		document.addEventListener("touchend", onGesture);
+		document.addEventListener("keydown", onGesture);
+		return remove;
+	}, [reducedMotion, playbackId]);
+
 	if (!playbackId || !poster) {
 		return null;
 	}
 
+	/* Pre-measurement fallback: a literal width — `var()` is invalid inside the `sizes`
+	 * grammar, so the entry silently fell back to 100vw. 2000px mirrors
+	 * `--content-max-width` (`--breakpoint-wide`); the measured width replaces it one commit
+	 * later. */
 	const posterSizes = fillParent
 		? "100vw"
 		: typeof slotWidthPx === "number" && slotWidthPx > 0
 			? `${slotWidthPx}px`
-			: "(max-width: 900px) 100vw, min(100vw, var(--container-width, 1200px))";
+			: "(max-width: 900px) 100vw, min(100vw, 2000px)";
 
 	return (
 		<div
@@ -657,18 +757,12 @@ export function MediaVideoLoop({
 					 * `[&_video]:object-cover` overrides further up the cascade
 					 * don't accidentally introduce a top-left anchor. The video
 					 * always crops from both opposite edges equally — the middle
-					 * of the frame stays put when the viewport resizes. */
+					 * of the frame stays put when the viewport resizes.
+					 *
+					 * No CSS filters on the video (contrast/saturate/sharpen): a
+					 * filter on the video alone shifts it against its own poster,
+					 * and perceptual polish belongs in the graded master export. */
 					"absolute inset-0 z-0 h-full w-full object-cover object-center",
-					/* Perceptual polish: a touch more contrast/saturation as a plain
-					 * CSS filter — compositor-applied, cheap at any resolution.
-					 * Sharpening is NOT done here: an SVG feConvolveMatrix runs a
-					 * 9-tap convolution over the full video layer on every frame
-					 * (8.3 Mpx at 4K, 25x/s), and SVG reference filters on video are
-					 * not reliably GPU-composited — it stuttered playback on exactly
-					 * the machines a fullscreen loop targets. Sharpening belongs in
-					 * the graded master export. `md`+ only: phones keep the raw video
-					 * (denser pixels, less softness to fight). */
-					"md:[filter:contrast(1.04)_saturate(1.03)]",
 				)}
 				muted
 				playsInline
@@ -693,7 +787,12 @@ export function MediaVideoLoop({
 				 * instead of waiting for `canplay`. */
 				onLoadedMetadata={tryPlayIfActive}
 				onCanPlay={tryPlayIfActive}
-				onPlaying={hidePosterWhenReady}
+				onPlaying={() => {
+					disarmStallTimer();
+					hidePosterWhenReady();
+				}}
+				onWaiting={onVideoWaiting}
+				onPause={disarmStallTimer}
 				onTimeUpdate={
 					onTimeUpdate
 						? (e) => {
@@ -716,11 +815,14 @@ export function MediaVideoLoop({
 				fetchPriority={posterPriority ? "high" : "auto"}
 				decoding={posterPriority ? "sync" : "async"}
 				className={clsx(
-					/* 700 ms fade (was 300) so the poster's exit overlaps the
-					 * 1200 ms logo-bridge dismiss in `ModuleIntro` — staggered
-					 * reveal instead of three transitions racing each other. */
-					"pointer-events-none absolute inset-0 z-10 h-full w-full object-cover object-center transition-opacity duration-700",
-					posterHidden ? "opacity-0" : "opacity-100",
+					"pointer-events-none absolute inset-0 z-10 h-full w-full object-cover object-center",
+					/* Hiding fades over 700 ms; showing is instant, so a cold fallback
+					 * covers a frameless element at once instead of fading in over
+					 * black. CSS takes the transition from the state being entered,
+					 * so putting it on the hidden state alone gives the asymmetry. */
+					posterHidden
+						? "opacity-0 transition-opacity duration-700"
+						: "opacity-100",
 				)}
 				aria-hidden={posterHidden ? "true" : undefined}
 			/>

@@ -209,6 +209,18 @@ URL /[locale]/[slug]
 | Mark translatable schema fields with `internationalizedArray*`. | Use a plain `string` or `array` field for translatable content. |
 | Extend `sanityLocalizedText.ts` if a new resolver is genuinely needed. | Write a parallel ad-hoc resolver inside a component. |
 
+## Mux video resolution
+
+| Layer | Where | Value |
+|---|---|---|
+| Encoding ceiling (what Mux stores) | `options: { max_resolution_tier }` on the `mux.video` field | `media.video` **2160p**, `media.videoLoop` **1440p** |
+| Plugin default | `muxInput({ max_resolution_tier })` in `studio/sanity.config.ts` | 1440p, overridden by the field options |
+| Playback ceiling | `MUX_PLAYBACK_MAX_TIER` in `web/src/utils/muxPlayback.ts` | 2160p for loops and the full player |
+
+- **Encoding is the only knob.** To give loops 4K, set `videoLoop.ts` to `"2160p"`. Leave the web ceiling alone.
+- Assets uploaded before a change keep their old ladder until they are re-encoded in Mux.
+- `mp4_support: "none"` stays: HLS only, no progressive MP4.
+
 ## Anti-patterns (stop if you're about to do any of these)
 
 - Creating a one-off `<section>` directly in `app/[locale]/page.tsx` instead of a module.

@@ -16,6 +16,7 @@ Hard rules:
 - Translatable fields use `internationalizedArrayString` / `internationalizedArrayRichText` / `internationalizedArrayRichTextMedia` — never plain `string` for translatable content.
 - Slug fields use `validateSlug` from `studio/utils/validateSlug.ts`.
 - Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
+- Mux encoding ceilings live on the `mux.video` field (`options.max_resolution_tier`: video 2160p, loop 1440p). See "Mux video resolution" in `AGENTS.md`.
 
 After every schema edit:
 

@@ -32,10 +32,37 @@
 	--top-airplay-button: none;
 }
 
+/*
+ * Control-bar inset in project tokens (`--space-*` from `variables/sizes.css`), even on all four
+ * sides so the row sits off the video's bottom edge instead of against it.
+ */
 .mux-player mux-player::part(bottom) {
-	/* Uses `--space-*` from `variables/sizes.css` (via `tokens.css`). */
-	padding-block: var(--space-min);
-	padding-inline: calc(var(--space-min) + var(--space-xs) / 2);
+	padding: var(--space-xs);
+}
+
+/*
+ * Poster: always `cover` (media-chrome's `--media-object-fit` default is `contain`, which
+ * letterboxes posters whose aspect differs from the player box).
+ */
+.mux-player mux-player::part(poster) {
+	object-fit: cover;
+}
+
+/*
+ * Poster fade-out on play (200ms) instead of the theme's hard cut. media-chrome hides the poster
+ * with `[mediahasplayed] slot[name=poster] { display: none }` inside its shadow root; outer
+ * declarations win over inner shadow rules, so `display: flex` here keeps the layer rendered and
+ * the opacity fade does the dismissal. `MediaVideo` sets `data-poster-hidden` 250ms after the
+ * first `play`. The layer is `pointer-events: none`, so the faded poster never blocks controls.
+ */
+.mux-player mux-player::part(poster-layer) {
+	display: flex;
+	opacity: 1;
+	transition: opacity 200ms ease;
+}
+
+.mux-player[data-poster-hidden] mux-player::part(poster-layer) {
+	opacity: 0;
 }
 
 /*

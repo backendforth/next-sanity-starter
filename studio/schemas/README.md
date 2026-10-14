@@ -127,7 +127,7 @@ The encoding ceiling is set per field: `options: { max_resolution_tier }` on a `
 
 ## 10. Initial value templates (optional)
 
-If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of the global “Create” menu by `document.newDocumentOptions` (`isSingletonTemplate` in `config/singletons.ts`).
+If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of every create menu — the global “Create” menu and the “Create new” button of reference inputs — by `document.newDocumentOptions` (`isSingletonTemplate` in `config/singletons.ts`); only structure items, which open them by fixed id, keep their templates. The filter knows the default template ids (= schema type) only, so don't add templates for a singleton type.
 
 ## Checklist summary
 

@@ -31,7 +31,7 @@ This is the **data layer**: GROQ queries, hand-maintained TS shapes, and resolve
 |---|---|
 | `pickLocalizedString(entries, locale, siteLocale)` | Single i18n string. |
 | `parseLocalizedText({ value, locale, siteLocale, as })` | String or Portable Text (`as: "auto" \| "string" \| "blocks"`). |
-| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with embedded i18n marks/modules. |
+| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with i18n marks; embedded modules resolve their own fields. |
 
 If you need a new resolver, extend `sanityLocalizedText.ts` — don't write a parallel one in a component.
 

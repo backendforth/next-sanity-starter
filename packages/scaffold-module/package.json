@@ -8,5 +8,8 @@
 	},
 	"scripts": {
 		"gen": "node ./bin/scaffold-module.mjs"
+	},
+	"dependencies": {
+		"@repo/check-wiring": "workspace:*"
 	}
 }

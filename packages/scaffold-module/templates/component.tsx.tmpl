@@ -1,4 +1,4 @@
-import type { __MODULE_DATA_TYPE__ } from "@/sanity/types/modules";
+import type { ModuleOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
@@ -7,7 +7,8 @@ import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	module: __MODULE_DATA_TYPE__;
+	/** Typed by TypeGen from the projection in `queries/components/modules/` — run `pnpm generate`. */
+	module: ModuleOf<"__MODULE_NAME__">;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };

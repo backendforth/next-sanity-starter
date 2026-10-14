@@ -62,3 +62,8 @@
     X-Robots-Tag = "noindex, nofollow"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    # Against clickjacking: only the Studio itself and the Sanity Dashboard may frame it. The
+    # Dashboard (`*.sanity.io`) opens registered Studios in a frame, so `X-Frame-Options`
+    # (`DENY` / `SAMEORIGIN`) would lock it out. Presentation is unaffected: it frames the web
+    # app, which has its own `frame-ancestors` in `web/next.config.ts`.
+    Content-Security-Policy = "frame-ancestors 'self' https://*.sanity.io"

@@ -134,7 +134,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 		siteLocale,
 	);
 	const homeHref = localePath("/", currentLocale);
-	/** From `siteSettings.title` via `fetchSiteSettingsTitle` (not `siteNav.title`). */
+	/** `siteSettings.title` from `fetchSiteChrome` (not `siteNav.title`). */
 	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
 	const brandLabel = trimmedTitle.length > 0 ? trimmedTitle : "Site";
 

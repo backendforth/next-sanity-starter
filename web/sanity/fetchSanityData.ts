@@ -7,24 +7,14 @@ import { client, isSanityConfigured } from "./client";
 import { sanityFetch } from "./live";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
-	errorSettingsQuery,
 	homeQuery,
+	notFoundCopyQuery,
 	pageBySlugQuery,
 	projectBySlugQuery,
-	siteAnalyticsSettingsQuery,
 	siteChromeQuery,
 	siteLanguageSettingsQuery,
-	siteSettingsFaviconQuery,
-	siteSettingsSeoFallbackQuery,
-	siteSettingsTitleQuery,
 	workQuery,
 } from "./queries";
-import type { ErrorSettings, PageSeo, SiteFavicon } from "./types";
-
-type LiveFetchOptions = {
-	stega?: boolean;
-	perspective?: "published" | "drafts";
-};
 
 /*
  * Every `sanityFetch` below passes the matching `SANITY_CACHE_TAGS` entry.
@@ -34,64 +24,57 @@ type LiveFetchOptions = {
  * `/api/revalidate` invalidates these entries too, so published content stays
  * fresh without streaming live events to every anonymous visitor
  * (see `shouldMountSanityLive` in `src/components/layout/DocumentShell.tsx`).
+ *
+ * The fetchers take primitive arguments only (`locale`, `slug`): React `cache` keys on
+ * argument identity, so `generateMetadata` and the page share one entry per request. Stega follows Draft Mode
+ * (`sanityFetch`'s default); metadata cleans the strings it uses (`stegaClean`), never whole
+ * documents.
  */
 
-/** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
-export const fetchHomeDocument = cache(
-	async (locale: string, options?: LiveFetchOptions) => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: homeQuery,
-			tags: [
-				SANITY_CACHE_TAGS.home(locale),
-				SANITY_CACHE_TAGS.homeAll,
-				...EMBEDDED_CONTENT_TAGS,
-			],
-			params: { locale },
-			...options,
-		});
-		return data;
-	},
-);
+/** `home` for one language (one document per language). */
+export const fetchHomeDocument = cache(async (locale: string) => {
+	if (!isSanityConfigured) return null;
+	const { data } = await sanityFetch({
+		query: homeQuery,
+		params: { locale },
+		tags: [
+			SANITY_CACHE_TAGS.home(locale),
+			SANITY_CACHE_TAGS.homeAll,
+			...EMBEDDED_CONTENT_TAGS,
+		],
+	});
+	return data;
+});
 
-/** Dedupes page fetches; pass `{ stega: false }` in `generateMetadata`. */
-export const fetchPageBySlug = cache(
-	async (slug: string, locale: string, options?: LiveFetchOptions) => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: pageBySlugQuery,
-			params: { slug, locale },
-			tags: [
-				SANITY_CACHE_TAGS.pageSlug(slug, locale),
-				...EMBEDDED_CONTENT_TAGS,
-			],
-			...options,
-		});
-		return data;
-	},
-);
+/** A `page` by slug in one language. */
+export const fetchPageBySlug = cache(async (slug: string, locale: string) => {
+	if (!isSanityConfigured) return null;
+	const { data } = await sanityFetch({
+		query: pageBySlugQuery,
+		params: { slug, locale },
+		tags: [SANITY_CACHE_TAGS.pageSlug(slug, locale), ...EMBEDDED_CONTENT_TAGS],
+	});
+	return data;
+});
 
-/** `work` landing — one doc per locale (doc-level i18n). */
-export const fetchWorkDocument = cache(
-	async (locale: string, options?: LiveFetchOptions) => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: workQuery,
-			tags: [
-				SANITY_CACHE_TAGS.work(locale),
-				SANITY_CACHE_TAGS.workAll,
-				...EMBEDDED_CONTENT_TAGS,
-			],
-			params: { locale },
-			...options,
-		});
-		return data;
-	},
-);
+/** `work` landing for one language. */
+export const fetchWorkDocument = cache(async (locale: string) => {
+	if (!isSanityConfigured) return null;
+	const { data } = await sanityFetch({
+		query: workQuery,
+		params: { locale },
+		tags: [
+			SANITY_CACHE_TAGS.work(locale),
+			SANITY_CACHE_TAGS.workAll,
+			...EMBEDDED_CONTENT_TAGS,
+		],
+	});
+	return data;
+});
 
-/** Project detail by slug — one doc per locale. */
+/** A `project` by slug in one language. */
 export const fetchProjectBySlug = cache(
-	async (slug: string, locale: string, options?: LiveFetchOptions) => {
+	async (slug: string, locale: string) => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: projectBySlugQuery,
@@ -100,107 +83,47 @@ export const fetchProjectBySlug = cache(
 				SANITY_CACHE_TAGS.projectSlug(slug, locale),
 				...EMBEDDED_CONTENT_TAGS,
 			],
-			...options,
 		});
 		return data;
 	},
 );
 
 /**
- * `siteSettings.title` — brand string for `<title>` template (`%s | …`) and Open Graph `siteName`.
- * Falls back to `"Site"` when Sanity is off or the document/title is missing.
+ * The app shell of one language (`siteChromeQuery`): nav, cookie banner, site settings and
+ * analytics in one fetch. Read by the layout and every `generateMetadata`; call it with a
+ * validated locale, it is part of the cache key.
  */
-export const fetchSiteSettingsTitle = cache(
-	async (locale: string, options?: LiveFetchOptions): Promise<string> => {
-		if (!isSanityConfigured) return "Site";
-		const { data } = await sanityFetch({
-			query: siteSettingsTitleQuery,
-			params: { locale },
-			tags: [SANITY_CACHE_TAGS.siteSettings],
-			...options,
-		});
-		return data?.title?.trim() || "Site";
-	},
-);
+export const fetchSiteChrome = cache(async (locale: string) => {
+	if (!isSanityConfigured) return null;
+	const { data } = await sanityFetch({
+		query: siteChromeQuery,
+		params: { locale },
+		/* Embedded tags: nav links resolve page and project slugs. */
+		tags: [
+			SANITY_CACHE_TAGS.siteNav,
+			SANITY_CACHE_TAGS.siteCookieBanner,
+			SANITY_CACHE_TAGS.siteSettings,
+			SANITY_CACHE_TAGS.siteAnalyticsSettings,
+			...EMBEDDED_CONTENT_TAGS,
+		],
+	});
+	return data;
+});
 
 /**
- * `siteSettings.seo` projection for route metadata fallbacks — fetched once per request
- * (React `cache`) instead of joining on every home/page GROQ query.
+ * The 404 copy of every language in one fetch (`notFoundCopyQuery`). The 404 pages pick the
+ * URL's language on the client (`LocaleNotFoundContent`): reading it on the server would make
+ * the `[locale]` segment dynamic.
  */
-export const fetchSettingsSeoFallback = cache(
-	async (locale: string, options?: LiveFetchOptions): Promise<PageSeo> => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: siteSettingsSeoFallbackQuery,
-			params: { locale },
-			tags: [SANITY_CACHE_TAGS.siteSettings],
-			...options,
-		});
-		return data;
-	},
-);
-
-/**
- * `siteSettings.favicon` for root metadata icons (per-locale document). The
- * image field travels whole (crop + hotspot); `siteFaviconIcons` derives the
- * sizes on the Sanity CDN. Returns `null` when unset — there is no static
- * fallback icon (see `documentMetadata` in `src/components/layout/DocumentShell.tsx`).
- */
-export const fetchSiteSettingsFavicon = cache(
-	async (
-		locale: string,
-		options?: LiveFetchOptions,
-	): Promise<SiteFavicon | null> => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: siteSettingsFaviconQuery,
-			params: { locale },
-			tags: [SANITY_CACHE_TAGS.siteSettings],
-			...options,
-		});
-		return data?.favicon ?? null;
-	},
-);
-
-/**
- * App-shell chrome (nav, cookie banner, site title) of one language in one `sanityFetch`
- * instead of three — each fetch is two roundtrips (sync-tags probe + data).
- * `fetchSiteSettingsTitle` stays for the `generateMetadata` paths, which fetch with
- * `stega: false`.
- */
-export const fetchSiteChrome = cache(
-	async (locale: string, options?: LiveFetchOptions) => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: siteChromeQuery,
-			params: { locale },
-			/* `pages`: nav links resolve page slugs. */
-			tags: [
-				SANITY_CACHE_TAGS.siteNav,
-				SANITY_CACHE_TAGS.siteCookieBanner,
-				SANITY_CACHE_TAGS.siteSettings,
-				SANITY_CACHE_TAGS.pages,
-			],
-			...options,
-		});
-		return data;
-	},
-);
-
-/** Analytics & tracking providers — document id `siteAnalyticsSettings`. */
-export const fetchSiteAnalyticsSettings = cache(
-	async (options?: Omit<LiveFetchOptions, "stega">) => {
-		if (!isSanityConfigured) return null;
-		/* Literal `stega: false` keeps the clean types: tracker ids go to third-party scripts. */
-		const { data } = await sanityFetch({
-			query: siteAnalyticsSettingsQuery,
-			tags: [SANITY_CACHE_TAGS.siteAnalyticsSettings],
-			...options,
-			stega: false,
-		});
-		return data;
-	},
-);
+export const fetchNotFoundCopy = cache(async () => {
+	if (!isSanityConfigured) return [];
+	const { data } = await sanityFetch({
+		query: notFoundCopyQuery,
+		/* Embedded tags: the 404 body's links resolve page and project slugs. */
+		tags: [SANITY_CACHE_TAGS.errorSettings, ...EMBEDDED_CONTENT_TAGS],
+	});
+	return data;
+});
 
 function draftClientForSiteLanguageSettings(token: string) {
 	return client.withConfig({
@@ -237,7 +160,7 @@ async function isDraftModeEnabled(): Promise<boolean> {
  * visitor-facing render pay an uncached Sanity API round trip before anything else.
  */
 export const fetchSiteLanguageSettings = cache(
-	async (_options?: LiveFetchOptions): Promise<SiteLocaleConfig> => {
+	async (): Promise<SiteLocaleConfig> => {
 		if (!isSanityConfigured) return cachedSiteLanguageSettingsPublished();
 		const token = process.env.SANITY_API_READ_TOKEN?.trim();
 		if (!token) {
@@ -252,38 +175,5 @@ export const fetchSiteLanguageSettings = cache(
 			siteLanguageSettingsQuery,
 		);
 		return normalizeSiteLocaleConfig(data);
-	},
-);
-
-/** Document type: `errorSettings` — 404 / 500 copy from Studio (one per language). */
-export const fetchErrorSettings = cache(
-	async (locale: string, options?: LiveFetchOptions) => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: errorSettingsQuery,
-			/* `pages`: the 404 body's links resolve page slugs. */
-			tags: [SANITY_CACHE_TAGS.errorSettings, SANITY_CACHE_TAGS.pages],
-			params: { locale },
-			...options,
-		});
-		return data;
-	},
-);
-
-/**
- * `errorSettings` for every site locale. The 404 pages fetch all of them because they resolve
- * the URL's language on the client (`LocaleNotFoundContent`): reading it on the server would
- * make the `[locale]` segment dynamic.
- */
-export const fetchErrorSettingsByLocale = cache(
-	async (): Promise<Record<string, ErrorSettings | null>> => {
-		const siteLocale = await fetchSiteLanguageSettings();
-		return Object.fromEntries(
-			await Promise.all(
-				siteLocale.localeIds.map(
-					async (locale) => [locale, await fetchErrorSettings(locale)] as const,
-				),
-			),
-		);
 	},
 );

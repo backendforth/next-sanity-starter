@@ -70,65 +70,28 @@ export const siteLanguageSettingsQuery =
   defaultLanguageId
 }`);
 
-/** Minimal fetch for `app/[locale]/layout.tsx` `generateMetadata` (tab title template). */
-export const siteSettingsTitleQuery = defineQuery(
-	`*[_type == "siteSettings" && language == $locale][0]{title}`,
-);
-
 /**
- * `siteSettings.favicon` — the raw image field, `crop` and `hotspot` included:
- * the browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`),
- * so whatever an editor uploads is squared and resized on the fly. Cropping
- * the source in the Studio is what makes a wide logo usable at 32 px, which is
- * why those two fields have to travel with the asset.
+ * `siteSettings` for the shell and route metadata: the brand title, the favicon and the
+ * site-wide SEO fallback. The favicon comes from the default language's document on every
+ * route: it is the brand's, not a translation. It is the raw image field, `crop` and `hotspot`
+ * included: the browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`), so
+ * cropping the source in the Studio is what makes a wide logo usable at 32 px.
  */
-export const siteSettingsFaviconQuery =
-	defineQuery(`*[_type == "siteSettings" && language == $locale][0]{
-  "favicon": favicon${imageQuery}
-}`);
-
-/** Site-wide SEO fallback for route `generateMetadata` (deduped via `fetchSettingsSeoFallback`). */
-export const siteSettingsSeoFallbackQuery =
-	defineQuery(`*[_type == "siteSettings" && language == $locale][0]{
-  "title": seo.title,
-  "description": seo.description,
-  "imageUrl": seo.image.asset->url
-}`);
-
-/**
- * Document type: `errorSettings` (one per language) — 404 / 500 copy only. The
- * document's `modules[]` field is deliberately not projected: no error page
- * renders modules, and embedding `modulesQuery` here inflated the query from
- * ~2 KB to ~79 KB.
- */
-export const errorSettingsQuery =
-	defineQuery(`*[_type == "errorSettings" && language == $locale][0]{
-  _id,
-  language,
-  notFoundTitle,
-  "notFoundBody": notFoundBody${richTextBody},
-  serverErrorTitle,
-  "serverErrorBody": serverErrorBody${richTextBody}
-}`);
-
-/**
- * App shell for `app/[locale]/layout.tsx` in one fetch: nav menus, cookie banner copy and the
- * site title, all for `$locale`. Each `sanityFetch` is two roundtrips (sync-tags probe + data),
- * so three separate fetches cost six requests per uncached render, the bundle two. Live
- * invalidation still works: the bundle's sync tags cover every member document.
- * `siteAnalyticsSettings` stays separate, it is fetched with `stega: false`.
- */
-export const siteChromeQuery = defineQuery(`{
-  "nav": ${siteNavQuery},
-  "cookieBanner": ${siteCookieBannerQuery},
-  "title": *[_type == "siteSettings" && language == $locale][0].title
-}`);
-
-/** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */
-export const siteAnalyticsSettingsQuery =
-	defineQuery(`*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
-  _id,
+const siteSettingsQuery = `*[_type == "siteSettings" && language == $locale][0]{
   title,
+  "favicon": *[
+    _type == "siteSettings" &&
+    language == *[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0].defaultLanguageId
+  ][0].favicon${imageQuery},
+  "seo": seo{
+    title,
+    description,
+    "imageUrl": image.asset->url
+  }
+}`;
+
+/** Document id: `siteAnalyticsSettings` — tracking providers + load mode (global, not per language). */
+const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
   loadMode,
   trackers[]{
     _key,
@@ -156,4 +119,35 @@ export const siteAnalyticsSettingsQuery =
       scriptUrl
     }
   }
+}`;
+
+/**
+ * Everything around the page for `$locale` in one fetch: nav menus, cookie banner copy, site
+ * settings (brand, favicon, SEO fallback) and analytics. The layout and every route's
+ * `generateMetadata` read it, so a render costs this fetch plus the route document's — two
+ * `sanityFetch` calls, each a sync-tags probe plus the data request. Live invalidation still
+ * works: the bundle's sync tags cover every member document.
+ *
+ * Unlike `main`, the 404 copy is not part of it: the 404 pages resolve the URL's language on
+ * the client and need every language's copy (`notFoundCopyQuery`).
+ */
+export const siteChromeQuery = defineQuery(`{
+  "nav": ${siteNavQuery},
+  "cookieBanner": ${siteCookieBannerQuery},
+  "settings": ${siteSettingsQuery},
+  "analytics": ${siteAnalyticsSettingsQuery}
+}`);
+
+/**
+ * The 404 copy of every language (`errorSettings`, one document per language) in one fetch.
+ * The 404 pages pick the URL's language on the client (`LocaleNotFoundContent`): reading it on
+ * the server would make the `[locale]` segment dynamic. The `modules[]` field is deliberately
+ * not projected: no error page renders modules, and embedding `modulesQuery` inflated the
+ * query from ~2 KB to ~79 KB.
+ */
+export const notFoundCopyQuery =
+	defineQuery(`*[_type == "errorSettings" && defined(language)]{
+  language,
+  notFoundTitle,
+  "notFoundBody": notFoundBody${richTextBody}
 }`);

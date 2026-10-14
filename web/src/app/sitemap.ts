@@ -21,7 +21,7 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const [pages, siteLocale] = await Promise.all([
 		cachedSitemapPages(),
-		fetchSiteLanguageSettings({ stega: false }),
+		fetchSiteLanguageSettings(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 

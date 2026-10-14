@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
+import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
-import { fetchSiteSettingsFavicon } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
+import type { SiteFavicon } from "@/sanity/types";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
@@ -40,8 +41,8 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * (the root layout). Tab titles come from there (`siteSettings.title` + template).
  *
  * The icons come from `siteSettings.favicon` of the default locale on every route (the
- * favicon is the brand's, not a translation), with every size derived from that one
- * asset on the Sanity CDN (`siteFaviconIcons`).
+ * favicon is the brand's, not a translation; `siteChromeQuery` picks that document), with
+ * every size derived from that one asset on the Sanity CDN (`siteFaviconIcons`).
  * Declaring them here covers every route below — route metadata merges field by
  * field, so no page has to repeat them. There is deliberately no static
  * fallback: browsers, bookmarks and search crawlers probe `/favicon.ico`
@@ -49,13 +50,10 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * in `public/` showed up beside or instead of the Sanity one. With the field
  * unset the site has no favicon.
  */
-export async function documentMetadata(
-	defaultLocale: string,
-): Promise<Metadata> {
-	const favicon = await fetchSiteSettingsFavicon(defaultLocale, {
-		stega: false,
-	});
-	const icons = siteFaviconIcons(favicon);
+export function documentMetadata(
+	favicon: SiteFavicon | null | undefined,
+): Metadata {
+	const icons = siteFaviconIcons(stegaClean(favicon));
 	return {
 		metadataBase: new URL(SITE_BASE_URL),
 		...(icons ? { icons } : {}),

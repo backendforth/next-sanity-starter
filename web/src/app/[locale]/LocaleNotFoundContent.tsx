@@ -3,29 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { ErrorSettings } from "@/sanity/types";
+import type { NotFoundCopy } from "@/sanity/types";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
-	/** `errorSettings` per locale id — one document per language. */
-	errorSettingsByLocale: Readonly<Record<string, ErrorSettings | null>>;
+	/** The 404 copy of every language (`fetchNotFoundCopy`) — one `errorSettings` per language. */
+	copies: readonly NotFoundCopy[];
 };
 
-export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {
+export function LocaleNotFoundContent({ copies }: Props) {
 	const pathname = usePathname() ?? "/";
 	const { defaultLocale, localeFromPathname, localePath, siteLocale } =
 		useLanguage();
 	const locale = localeFromPathname(pathname);
-	const errorSettings =
-		errorSettingsByLocale[locale] ??
-		errorSettingsByLocale[defaultLocale] ??
-		null;
+	const copy =
+		copies.find((entry) => entry.language === locale) ??
+		copies.find((entry) => entry.language === defaultLocale);
 
-	const title =
-		errorSettings?.notFoundTitle?.trim() || uiLabel("notFoundTitle", locale);
-	const body = errorSettings?.notFoundBody ?? [];
+	const title = copy?.notFoundTitle?.trim() || uiLabel("notFoundTitle", locale);
+	const body = copy?.notFoundBody ?? [];
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">

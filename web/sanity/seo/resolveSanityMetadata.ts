@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { stegaClean } from "next-sanity";
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import {
@@ -8,7 +9,7 @@ import {
 } from "@/src/i18n/siteLocalePathUtils";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
-import type { PageSeo, RouteDocument } from "../types";
+import type { PageSeo, RouteDocument, SiteSettings } from "../types";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
@@ -43,7 +44,7 @@ export function mergePageAndSettingsSeo(
 export type ResolveSanityMetadataInput = {
 	/** Local `data.seo` from the page / singleton query. */
 	seo?: PageSeo;
-	/** Site-wide fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
+	/** Site-wide fallback, `siteSettings.seo` (`fetchSiteChrome`). */
 	settingsSeo?: PageSeo;
 	/** When the page has no meta title (e.g. localized H1 or slug). Wins over `settingsSeo.title`. */
 	titleFallback: string;
@@ -107,7 +108,17 @@ function buildAlternates(
 }
 
 /**
+ * The brand, `siteSettings.title`, clean of stega markers — tab-title suffix, Open Graph
+ * `siteName` and last-resort title. `"Site"` when unset.
+ */
+export function siteBrandTitle(site: SiteSettings | null | undefined): string {
+	return stegaClean(site?.title)?.trim() || "Site";
+}
+
+/**
  * Next.js `Metadata` from merged Sanity SEO + Open Graph + Twitter cards + `hreflang` alternates.
+ * Every string is cleaned of stega markers: the fetches are shared with the rendered page, so in
+ * Draft Mode they carry them.
  */
 export function resolveSanityMetadata({
 	seo,
@@ -126,14 +137,15 @@ export function resolveSanityMetadata({
 	 * the layout's `%s | brand` template would render as "Brand | Brand" on every page. */
 	const pageTitle = seo?.title;
 	const siteSeoTitle = settingsSeo?.title;
-	const metaTitle =
+	const brand = stegaClean(siteTitleFallback).trim();
+	const metaTitle = stegaClean(
 		(siteSeoTitleFirst
 			? firstNonEmpty(pageTitle, siteSeoTitle, titleFallback)
-			: firstNonEmpty(pageTitle, titleFallback, siteSeoTitle)) ??
-		siteTitleFallback;
-	const description = merged.description?.trim() || undefined;
-	const ogImage = merged.imageUrl?.trim() || undefined;
-	const resolvedSiteName = siteName || siteTitleFallback;
+			: firstNonEmpty(pageTitle, titleFallback, siteSeoTitle)) ?? brand,
+	);
+	const description = stegaClean(merged.description?.trim()) || undefined;
+	const ogImage = stegaClean(merged.imageUrl?.trim()) || undefined;
+	const resolvedSiteName = stegaClean(siteName) || brand;
 	const alternates = buildAlternates(
 		path,
 		currentLocale,
@@ -143,10 +155,7 @@ export function resolveSanityMetadata({
 
 	return {
 		/* A title that already is the brand skips the template, which would repeat it. */
-		title:
-			metaTitle === siteTitleFallback.trim()
-				? { absolute: metaTitle }
-				: metaTitle,
+		title: metaTitle === brand ? { absolute: metaTitle } : metaTitle,
 		description,
 		...(alternates ? { alternates } : {}),
 		openGraph: {
@@ -174,45 +183,43 @@ export type MetadataFromSanityPageDataInput = {
 	locale: string;
 	/** Meta title when the page has neither an SEO title nor a heading (e.g. the slug). */
 	segmentFallback: string;
-	/** Site-wide SEO fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
-	settingsSeo?: PageSeo;
+	/** `siteSettings` from `fetchSiteChrome`: SEO fallback and brand. */
+	site?: SiteSettings | null;
 	/** Locale config for `hreflang` alternates. */
 	siteLocale?: SiteLocaleSlice | null;
 	/** Locale-agnostic path (`/` for home, `/{slug}` for pages) — required for canonical + alternates. */
 	path?: string;
-	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */
-	siteBrandTitle?: string | null;
 	/** Home only: the site-wide SEO title wins over the heading. */
 	siteSeoTitleFirst?: boolean;
 };
 
 /**
- * `resolveSanityMetadata` for route documents (home singleton or `page` by slug).
- * Pass `settingsSeo` from `fetchSettingsSeoFallback` so empty page-level SEO
- * falls back to site settings. Under document-level translation `data.title` is
- * already in the active locale (no resolver needed).
+ * `resolveSanityMetadata` for route documents (home / work or `page` / `project` by slug).
+ * Pass `site` (`fetchSiteChrome(locale).settings`) so empty page-level SEO falls back to site
+ * settings and the brand is known. Under document-level translation `data.title` is already in
+ * the active locale (no resolver needed).
  */
 export function metadataFromSanityPageData({
 	data,
 	locale,
 	segmentFallback,
-	settingsSeo,
+	site,
 	siteLocale,
 	path,
-	siteBrandTitle,
 	siteSeoTitleFirst,
 }: MetadataFromSanityPageDataInput): Metadata {
 	const heading = data.title?.trim() ?? "";
-	const brand = typeof siteBrandTitle === "string" ? siteBrandTitle.trim() : "";
+	const brand = siteBrandTitle(site);
 	return resolveSanityMetadata({
 		seo: data.seo,
-		settingsSeo,
+		settingsSeo: site?.seo,
 		titleFallback: heading || segmentFallback,
 		siteSeoTitleFirst,
 		path,
 		currentLocale: locale,
 		siteLocale: siteLocale ?? null,
 		translations: data.translations,
-		...(brand ? { siteTitleFallback: brand, siteName: brand } : {}),
+		siteTitleFallback: brand,
+		siteName: brand,
 	});
 }

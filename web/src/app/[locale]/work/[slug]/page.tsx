@@ -4,9 +4,8 @@ import { cachedProjectSlugs } from "@/sanity/cachedSanityQuery";
 import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchProjectBySlug,
-	fetchSettingsSeoFallback,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
@@ -35,11 +34,10 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
-		fetchProjectBySlug(slug, locale, { stega: false }),
-		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle(locale, { stega: false }),
-		fetchSettingsSeoFallback(locale, { stega: false }),
+	const [data, siteLocale, chrome] = await Promise.all([
+		fetchProjectBySlug(slug, locale),
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(locale),
 	]);
 	if (!data) {
 		return {
@@ -52,10 +50,9 @@ export async function generateMetadata({
 		data,
 		locale,
 		segmentFallback: slug,
-		settingsSeo,
+		site: chrome?.settings,
 		siteLocale,
 		path: `/work/${slug}`,
-		siteBrandTitle: siteBrand,
 	});
 }
 

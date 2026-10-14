@@ -1,5 +1,5 @@
 import {
-	fetchErrorSettingsByLocale,
+	fetchNotFoundCopy,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
 import { documentFontClassName } from "@/src/components/layout/DocumentShell";
@@ -22,8 +22,8 @@ import "../assets/styles/globals.css";
  * still resolves to `[locale]/not-found.tsx` with the full site chrome.
  */
 export default async function RootNotFound() {
-	const [errorSettingsByLocale, siteLocale] = await Promise.all([
-		fetchErrorSettingsByLocale(),
+	const [copies, siteLocale] = await Promise.all([
+		fetchNotFoundCopy(),
 		fetchSiteLanguageSettings(),
 	]);
 
@@ -36,9 +36,7 @@ export default async function RootNotFound() {
 				siteLocaleConfig={siteLocale}
 			>
 				<main id="main-content" className="flex min-h-0 flex-1 flex-col">
-					<LocaleNotFoundContent
-						errorSettingsByLocale={errorSettingsByLocale}
-					/>
+					<LocaleNotFoundContent copies={copies} />
 				</main>
 			</LanguageProvider>
 		</div>

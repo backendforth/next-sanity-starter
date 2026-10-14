@@ -12,7 +12,7 @@
  *              insert it inside Portable Text). Off by default — only enable
  *              for modules that genuinely make sense inline.
  *
- * The script creates 4 new files and inserts entries into 4 existing files
+ * The script creates 4 new files and inserts entries into 5 existing files
  * (schemas index, modulesArrayField, components barrel, queries barrel,
  * types barrel — and optionally richTextMedia). It then prints the snippet
  * to add to ModulesRenderer.tsx by hand, because that file has bespoke

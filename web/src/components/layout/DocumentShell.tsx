@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
-import { VisualEditing } from "next-sanity/visual-editing";
-import {
-	fetchSiteLanguageSettings,
-	fetchSiteSettingsFavicon,
-} from "@/sanity/fetchSanityData";
+import type { ReactNode } from "react";
+import { fetchSiteSettingsFavicon } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
-import { DisableDraftMode } from "@/src/components/sanity/DisableDraftMode";
+import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
-import "../assets/styles/tokens.css";
-import "../assets/styles/globals.css";
+import "../../assets/styles/tokens.css";
+import "../../assets/styles/globals.css";
 
 /**
  * Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`).
@@ -35,18 +32,22 @@ const geistMono = Geist_Mono({
 	display: "swap",
 });
 
+/** `next/font` class names for `<html>` — also used by `app/not-found.tsx`, which has no shell. */
+export const documentFontClassName = `${geistSans.variable} ${geistMono.variable}`;
+
 /**
- * Tab titles come from `app/[locale]/layout.tsx` (`siteSettings.title` + template).
+ * Document-level metadata, merged into `app/[locale]/layout.tsx`'s `generateMetadata`
+ * (the root layout). Tab titles come from there (`siteSettings.title` + template).
  *
  * The icons come from `siteSettings.favicon`, with every size derived from that
  * one asset on the Sanity CDN (`siteFaviconIcons`). Declaring them here covers
  * every route below — route metadata merges field by field, so no page has to
- * repeat them. With the field unset the key stays absent and `public/favicon.ico`
- * is picked up by the browser's implicit `/favicon.ico` probe; it lives in
- * `public/` rather than `app/` because the file convention beats the metadata
- * object, and with both in place two icons stood in the head.
+ * repeat them. There is deliberately no static fallback: browsers, bookmarks
+ * and search crawlers probe `/favicon.ico` regardless of the `<link>` tags, so
+ * the Next.js default icon that used to sit in `public/` showed up beside or
+ * instead of the Sanity one. With the field unset the site has no favicon.
  */
-export async function generateMetadata(): Promise<Metadata> {
+export async function documentMetadata(): Promise<Metadata> {
 	const favicon = await fetchSiteSettingsFavicon({ stega: false });
 	const icons = siteFaviconIcons(favicon);
 	return {
@@ -80,17 +81,29 @@ const bootScript = `(function(){
   document.documentElement.classList.add('js-enabled');
 })();`;
 
+type Props = {
+	/** BCP-47 tag for `<html lang>` — the route's locale. */
+	lang: string;
+	children: ReactNode;
+};
+
 /**
- * Root shell only — avoid `headers()` here (keeps static routes static where possible).
- * `draftMode()` only toggles Visual Editing UI; locale chrome lives in `app/[locale]/layout.tsx`.
- * `lang` is the Sanity site default (`siteLanguageSettings.defaultLanguageId`, deduped via
- * React `cache`); `LanguageProvider` syncs `<html lang>` on the client after navigation.
+ * The `<html>` / `<body>` document for the root layout, `app/[locale]/layout.tsx`.
+ *
+ * The root layout sits on the dynamic `[locale]` segment because that is the only way the
+ * route's language reaches the server-rendered `<html lang>`: `params` never reach a layout
+ * above the segment, and reading the proxy's locale header would opt every route out of
+ * static rendering. Before, `<html lang>` always carried the site default and was corrected
+ * on the client after hydration.
+ *
+ * The cost: `app/not-found.tsx` (a URL that matched no route, so no locale) gets no root
+ * layout. It imports the stylesheets and font classes itself and must NOT render this
+ * component, which would nest a second `<html>` inside Next's built-in shell.
+ *
+ * Avoid `headers()` here (keeps static routes static). `draftMode()` only toggles Visual
+ * Editing UI.
  */
-export default async function RootLayout({
-	children,
-}: Readonly<{
-	children: React.ReactNode;
-}>) {
+export async function DocumentShell({ lang, children }: Props) {
 	const draft = await draftMode();
 	const isDraft = draft.isEnabled;
 	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
@@ -109,14 +122,14 @@ export default async function RootLayout({
 	 */
 	const shouldMountSanityLive =
 		isDraft || (hasReadToken && !hasRevalidateWebhook);
-	const siteLocale = await fetchSiteLanguageSettings();
 
 	return (
 		<html
-			lang={siteLocale.defaultLocale}
-			className={`h-full antialiased ${geistSans.variable} ${geistMono.variable}`}
+			lang={lang}
+			className={`h-full antialiased ${documentFontClassName}`}
 			suppressHydrationWarning
 		>
+			{/* biome-ignore lint/style/noHeadElement: this is the App Router root layout's document head; the rule targets `next/head` in the pages router and only fires because the shell lives outside `app/` */}
 			<head>
 				{/* Theme class + lazy-image fade-in — must run before first paint */}
 				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: controlled inline script, no user input */}
@@ -140,12 +153,7 @@ export default async function RootLayout({
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />
 				) : null}
-				{isDraft ? (
-					<>
-						<VisualEditing />
-						<DisableDraftMode />
-					</>
-				) : null}
+				{isDraft ? <LazyDraftModeOverlays /> : null}
 			</body>
 		</html>
 	);

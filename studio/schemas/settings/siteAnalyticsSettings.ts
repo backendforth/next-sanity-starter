@@ -84,13 +84,28 @@ export const siteAnalyticsSettings = defineType({
       description:
         "One entry per provider. Only enabled, fully configured providers load. Each has its own privacy notes — read them before enabling.",
       type: "array",
-      validation: (rule) =>
+      validation: (rule) => [
+        /* Each provider runs on one page-wide global (`window.posthog`, `_paq`,
+           `clarity`, `dataLayer`), so a second entry of the same type would
+           initialise it twice with competing settings or double-send events. */
+        rule.custom((trackers) => {
+          const types = (trackers ?? []).map(
+            (tracker) => (tracker as { _type?: string })._type,
+          );
+          const repeated = types.filter(
+            (type, index) => type && types.indexOf(type) !== index,
+          );
+          return repeated.length === 0
+            ? true
+            : "Each provider can only be added once — remove the duplicate entry.";
+        }),
         rule.warning().custom(async (trackers, context) => {
           const count = enabledTrackerCount(trackers);
           if (count === 0) return true;
           if (await cookieBannerIsActive(context)) return true;
           return `Cookie banner is off, so ${count === 1 ? "1 tracker runs" : `${count} trackers run`} with no consent. Loading mode has no effect without a banner.`;
         }),
+      ],
       of: [
         defineArrayMember({ type: "trackerGoogleAnalytics" }),
         defineArrayMember({ type: "trackerMatomo" }),

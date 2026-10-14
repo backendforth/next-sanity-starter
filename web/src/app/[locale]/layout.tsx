@@ -3,12 +3,15 @@ import { notFound } from "next/navigation";
 
 import {
 	fetchSiteAnalyticsSettings,
-	fetchSiteCookieBanner,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteNavMenus,
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { LazyCookieConsentBanner } from "@/src/components/cookies/LazyCookieConsentBanner";
+import {
+	DocumentShell,
+	documentMetadata,
+} from "@/src/components/layout/DocumentShell";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
@@ -25,11 +28,18 @@ type Props = {
 /** New locales from Sanity after deploy are still routable (not limited to `generateStaticParams` at build). */
 export const dynamicParams = true;
 
+/*
+ * This is the root layout: it renders `<html lang={locale}>` through `DocumentShell`, so the
+ * server markup carries the route's language. See `DocumentShell` for why, and for the root
+ * `app/not-found.tsx` that this layout cannot wrap.
+ */
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale: raw } = await params;
-	const [siteLocale, siteTitle] = await Promise.all([
+	const [siteLocale, siteTitle, documentMeta] = await Promise.all([
 		fetchSiteLanguageSettings({ stega: false }),
 		fetchSiteSettingsTitle({ stega: false }),
+		documentMetadata(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	if (!pathUtils.isAppLocale(raw)) {
@@ -37,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	}
 	const suffix = siteTitle.trim() || "Site";
 	return {
+		...documentMeta,
 		title: {
 			default: suffix,
 			template: `%s | ${suffix}`,
@@ -46,18 +57,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
-	// Parallelize: locale config (for validation + LanguageProvider) and nav
-	// menus are independent. The nav fetch when `raw` ends up invalid is
-	// wasted effort but the path is rare (404s only); the common case saves a
-	// roundtrip.
-	const [siteLocale, siteNav, cookieBanner, siteBrand, analytics] =
-		await Promise.all([
-			fetchSiteLanguageSettings(),
-			fetchSiteNavMenus(),
-			fetchSiteCookieBanner(),
-			fetchSiteSettingsTitle(),
-			fetchSiteAnalyticsSettings(),
-		]);
+	// Parallelize: locale config (for validation + LanguageProvider), the chrome
+	// bundle (nav, cookie banner, title in one query) and analytics are
+	// independent. The fetches when `raw` ends up invalid are wasted effort but
+	// the path is rare (404s only); the common case saves a roundtrip.
+	const [siteLocale, chrome, analytics] = await Promise.all([
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(),
+		fetchSiteAnalyticsSettings(),
+	]);
+	const siteNav = chrome?.nav ?? null;
+	const cookieBanner = chrome?.cookieBanner ?? null;
+	/* Same fallback as `fetchSiteSettingsTitle`: the header brand is never empty. */
+	const siteBrand = chrome?.title?.trim() || "Site";
 	const enabledTrackers = getEnabledTrackers(analytics);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
@@ -66,7 +78,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 	}
 	const locale = raw;
 
-	return (
+	const site = (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
 			<a
 				href="#main-content"
@@ -101,4 +113,6 @@ export default async function LocaleLayout({ children, params }: Props) {
 			<SiteTrackingShell />
 		</LanguageProvider>
 	);
+
+	return <DocumentShell lang={locale}>{site}</DocumentShell>;
 }

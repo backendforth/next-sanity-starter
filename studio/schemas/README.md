@@ -63,6 +63,8 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
 
+Give the slug a **Generate** button with `options.source: titleSlugSource` (`utils/titleSlugSource.ts`). Titles are `internationalizedArrayString`, so a plain `source: "title"` would not resolve to a string; the helper takes the first non-empty localized title.
+
 ## 7. Shared media objects (`media.*`)
 
 Reusable **`type: "object"`** types for image and Mux video live under **`objects/media/`**:
@@ -71,6 +73,8 @@ Reusable **`type: "object"`** types for image and Mux video live under **`object
 - **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption.
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
+
+Fields that take an image upload (the `media.image` image, both video posters, `module.carousel` slides, the SEO / OG images and the favicon) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
 
 ## 8. Content modules (`module.*`)
 
@@ -83,7 +87,7 @@ When you add a **new** module, wire it up in **both** places so behaviour stays 
 
 ### Adding a new module (checklist)
 
-> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically. See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
+> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically, and prints the `ModulesRenderer.tsx` branch to paste by hand (`pnpm check:wiring` fails until it is there). See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
 
 1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
@@ -114,6 +118,8 @@ You do **not** need a Desk structure item for a module (modules are not document
 ### Internal page references
 
 `module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
+
+Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SUGGESTIONS`** (same file) into the field’s `options`, next to any `filter`. Do the same on new reference fields.
 
 ## 9. Mux / media
 

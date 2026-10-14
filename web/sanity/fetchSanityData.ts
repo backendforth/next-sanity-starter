@@ -1,10 +1,8 @@
 import { draftMode } from "next/headers";
 import { cache } from "react";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import {
-	cachedSiteLanguageSettingsPublished,
-	SANITY_CACHE_TAGS,
-} from "./cachedSanityQuery";
+import { cachedSiteLanguageSettingsPublished } from "./cachedSanityQuery";
+import { EMBEDDED_CONTENT_TAGS, SANITY_CACHE_TAGS } from "./cacheTags";
 import { client, isSanityConfigured } from "./client";
 import { sanityFetch } from "./live";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
@@ -14,9 +12,8 @@ import {
 	pageBySlugQuery,
 	projectBySlugQuery,
 	siteAnalyticsSettingsQuery,
-	siteCookieBannerLayoutQuery,
+	siteChromeQuery,
 	siteLanguageSettingsQuery,
-	siteNavMenusQuery,
 	siteSettingsFaviconQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,
@@ -57,7 +54,7 @@ type LiveFetchOptions = {
  * `<SanityLive />` ever revalidates. Adding our webhook tags means
  * `/api/revalidate` invalidates these entries too, so published content stays
  * fresh without streaming live events to every anonymous visitor
- * (see `shouldMountSanityLive` in `app/layout.tsx`).
+ * (see `shouldMountSanityLive` in `src/components/layout/DocumentShell.tsx`).
  */
 
 /** Dedupes home fetches; pass `{ stega: false }` in `generateMetadata`. */
@@ -65,7 +62,7 @@ export const fetchHomeDocument = cache(async (options?: LiveFetchOptions) => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: homeQuery,
-		tags: [SANITY_CACHE_TAGS.home],
+		tags: [SANITY_CACHE_TAGS.home, ...EMBEDDED_CONTENT_TAGS],
 		...options,
 	});
 	return data as HomeDocument | null;
@@ -78,7 +75,7 @@ export const fetchPageBySlug = cache(
 		const { data } = await sanityFetch({
 			query: pageBySlugQuery,
 			params: { slug },
-			tags: [SANITY_CACHE_TAGS.pages, SANITY_CACHE_TAGS.pageSlug(slug)],
+			tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 			...options,
 		});
 		return data as PageDocument | null;
@@ -90,7 +87,7 @@ export const fetchWorkDocument = cache(async (options?: LiveFetchOptions) => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: workQuery,
-		tags: [SANITY_CACHE_TAGS.work],
+		tags: [SANITY_CACHE_TAGS.work, ...EMBEDDED_CONTENT_TAGS],
 		...options,
 	});
 	return data as WorkDocument | null;
@@ -103,7 +100,7 @@ export const fetchProjectBySlug = cache(
 		const { data } = await sanityFetch({
 			query: projectBySlugQuery,
 			params: { slug },
-			tags: [SANITY_CACHE_TAGS.projects, SANITY_CACHE_TAGS.projectSlug(slug)],
+			tags: [SANITY_CACHE_TAGS.projectSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 			...options,
 		});
 		return data as ProjectDocument | null;
@@ -150,8 +147,8 @@ export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
 /**
  * `siteSettings.favicon` for root metadata icons. The image field travels whole
  * (crop + hotspot); `siteFaviconIcons` derives the sizes on the Sanity CDN.
- * Returns `null` when unset — the browser's implicit `/favicon.ico` probe then
- * reaches the static `public/favicon.ico`.
+ * Returns `null` when unset — there is no static fallback icon (see
+ * `app/layout.tsx`).
  */
 export const fetchSiteSettingsFavicon = cache(
 	async (options?: LiveFetchOptions): Promise<SanityImageField | null> => {
@@ -165,28 +162,36 @@ export const fetchSiteSettingsFavicon = cache(
 	},
 );
 
-/** `siteNav` main/footer menus with resolved links; no embedded modules. */
-export const fetchSiteNavMenus = cache(async () => {
-	if (!isSanityConfigured) return null;
-	const { data } = await sanityFetch({
-		query: siteNavMenusQuery,
-		tags: [SANITY_CACHE_TAGS.siteNav],
-	});
-	return data as SiteNavMenusDocument | null;
-});
+/** `siteChromeQuery` result — what `app/[locale]/layout.tsx` renders around every page. */
+export type SiteChromeData = {
+	/** `siteNav` main/footer menus with resolved links; no embedded modules. */
+	nav: SiteNavMenusDocument | null;
+	/** Cookie banner copy for the app shell — no embedded modules. */
+	cookieBanner: SiteCookieBannerDocument | null;
+	/** `siteSettings.title`, the header brand. */
+	title: string | null;
+} | null;
 
-/** Cookie banner copy for the app shell — no embedded modules. */
-export const fetchSiteCookieBanner = cache(
-	async (
-		options?: LiveFetchOptions,
-	): Promise<SiteCookieBannerDocument | null> => {
+/**
+ * App-shell chrome (nav, cookie banner, site title) in one `sanityFetch` instead of three —
+ * each fetch is two roundtrips (sync-tags probe + data). `fetchSiteSettingsTitle` stays for
+ * the `generateMetadata` paths, which fetch with `stega: false`.
+ */
+export const fetchSiteChrome = cache(
+	async (options?: LiveFetchOptions): Promise<SiteChromeData> => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
-			query: siteCookieBannerLayoutQuery,
-			tags: [SANITY_CACHE_TAGS.siteCookieBanner],
+			query: siteChromeQuery,
+			/* `pages`: nav links resolve page slugs. */
+			tags: [
+				SANITY_CACHE_TAGS.siteNav,
+				SANITY_CACHE_TAGS.siteCookieBanner,
+				SANITY_CACHE_TAGS.siteSettings,
+				SANITY_CACHE_TAGS.pages,
+			],
 			...options,
 		});
-		return data as SiteCookieBannerDocument | null;
+		return data as SiteChromeData;
 	},
 );
 
@@ -263,7 +268,8 @@ export const fetchErrorSettings = cache(async (options?: LiveFetchOptions) => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: errorSettingsQuery,
-		tags: [SANITY_CACHE_TAGS.errorSettings],
+		/* `pages`: the 404 body's links resolve page slugs. */
+		tags: [SANITY_CACHE_TAGS.errorSettings, SANITY_CACHE_TAGS.pages],
 		...options,
 	});
 	return data as ErrorSettingsDocument | null;

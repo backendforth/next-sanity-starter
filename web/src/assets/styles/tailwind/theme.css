@@ -26,12 +26,10 @@
 	--font-headline: var(--font-family-headline), ui-monospace, monospace;
 	--font-mono: var(--font-family-mono), ui-monospace, monospace;
 
-	/* Primitives — same keys as former `theme.extend.colors` (resolve from `variables/colors.css`) */
+	/* Primitives — same keys as former `theme.extend.colors`. `white`/`black`/`grey` sit in the
+	 * `@theme reference` block below because their token names collide with Tailwind's. */
 	--color-current: currentColor;
 	--color-transparent: transparent;
-	--color-white: var(--color-white);
-	--color-black: var(--color-black);
-	--color-grey: var(--color-grey);
 
 	--color-color-brand: var(--color-brand);
 	--color-color-accent: var(--color-accent);
@@ -77,4 +75,17 @@
 	/* See `variables/sizes.css` `--container-gutter` — enable together for `p-container-gutter` / `gap-container-gutter` utilities.
 	--spacing-container-gutter: var(--container-gutter);
 	*/
+}
+
+/*
+ * Tokens whose name already is the Tailwind theme name (`--color-white` in `variables/colors.css`).
+ * Declared in plain `@theme`, Tailwind re-emits `--color-white: var(--color-white)` on `:root`
+ * after `colors.css`; the custom-property self-cycle is invalid and `bg-black` / `text-white`
+ * render transparent. `reference` registers the utilities without re-emitting the variable, so
+ * they read the `colors.css` token (and its dark-mode override) directly.
+ */
+@theme reference {
+	--color-white: var(--color-white);
+	--color-black: var(--color-black);
+	--color-grey: var(--color-grey);
 }

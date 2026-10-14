@@ -4,7 +4,7 @@
 
 ## TL;DR
 
-This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v5) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `@sanity/internationalized-array` — locales are resolved at **render time**, never inside GROQ.
+This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v6) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `sanity-plugin-internationalized-array` — locales are resolved at **render time**, never inside GROQ.
 
 Before writing code:
 
@@ -26,7 +26,7 @@ Before writing code:
 | Path | Purpose |
 |---|---|
 | `web/` | Next.js 16 app (App Router). User-facing site. |
-| `studio/` | Sanity Studio v5. Editorial UI + schemas. |
+| `studio/` | Sanity Studio v6. Editorial UI + schemas. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
@@ -52,7 +52,7 @@ When you add or rename a module, **touch all eight** files. Skipping any one sil
 | 2 | `studio/schemas/index.ts` | Import + add to `schemaTypes` array. Group with other `module.*`. |
 | 3 | `studio/schemas/objects/editors/richTextMedia.ts` | Append `{ type: "module.<id>" }` to the `of` array so the module is insertable in Portable Text. |
 | 4 | `studio/schemas/fields/modulesArrayField.ts` | Append `{ type: "module.<id>" }` to `moduleTypes` so the module is insertable in document-level `modules[]` fields. |
-| 5 | `web/src/components/modules/Module<Name>.tsx` | React component. Accept `{ data, locale, siteLocale }` (and any module-specific props). Use `data-sanity` attrs for Visual Editing. |
+| 5 | `web/src/components/modules/Module<Name>.tsx` | React component. Accept `{ module, locale, siteLocale }` (and any module-specific props), and add its `_type` branch to `renderModuleChild()` in `ModulesRenderer.tsx` — without it the module renders as `UnknownModule` (nothing in production). No `data-sanity` in the component: `ModulesRenderer` sets it. |
 | 6 | `web/src/components/modules/index.ts` | Re-export the component from the barrel. |
 | 7 | `web/sanity/queries/components/modules/<name>.ts` | GROQ projection for the module (`_key, _type, ...fields`). Re-export from `web/sanity/queries/components/modules/index.ts`. |
 | 8 | `web/sanity/types/modules/<name>.ts` | Hand-written TS type matching the GROQ projection. Re-export from `web/sanity/types/modules/index.ts`. |
@@ -130,7 +130,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm typecheck` | `tsc --noEmit` across web + studio. |
 | `pnpm lint` | `biome check .` (no writes). |
 | `pnpm format` | `biome check --write .` (auto-fix). |
-| `pnpm gen:module <Name>` | Scaffold a new module (all 8 wiring points). PascalCase name. Add `--dry-run` to preview. |
+| `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component, query and type files and patches `schemaTypes`, `moduleTypes` and the barrels (`--inline` also registers it in `richTextMedia.ts`). Prints the `ModulesRenderer.tsx` branch to paste by hand. PascalCase name. Add `--dry-run` to preview. |
 | `pnpm check:wiring` | Validate all 8 module wiring points across the monorepo. CI gate. |
 | `pnpm strip-readmes` | Remove nested READMEs after forking the starter. The root `README.md` is preserved. |
 | `pnpm strip-readmes:dry-run` | Preview what `strip-readmes` would delete. |
@@ -279,31 +279,36 @@ Always link to these; never duplicate their content.
 
 ## Branch-specific notes
 
-Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: how a document's locale is stored.
+Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: where a locale lives — in the field (`main`) or in the document (`variant`).
 
-**Verify before you trust this table.** It described a much wider divergence for months after the branches had converged, which made routine ports look like rewrites. If a row here contradicts the branch you are on, the branch wins — fix the row.
+**Verify before you trust this table.** It has been wrong in both directions: it described a much wider divergence for months after the branches had converged, and later claimed the variant still used `internationalizedArray*` fields when it had moved to plain ones (corrected 2026-10-13). If a row here contradicts the branch you are on, the branch wins — fix the row.
 
 | Aspect | `main` | `variant/document-level` |
 |---|---|---|
-| Document-level locale field | None — i18n is purely field-level via `internationalizedArray*`. | `page` has a `language` string field (`readOnly: true`, `hidden: true`, `initialValue: "en"`) set by the i18n plugin, **never edit it manually**. Title, module bodies, and other content fields still use `internationalizedArray*` and resolve through `sanityLocalizedText.ts` exactly as on `main`. |
-| Studio plugin | — | `@sanity/document-internationalization` in `studio/package.json` + registered in `sanity.config.ts`. |
-| Per-locale settings documents | `siteSettings` is a singleton; queries address it by `_id` (`*[_id == "siteSettings"][0]`). | `siteSettings` exists per locale; queries filter on it (`*[_type == "siteSettings" && language == $locale][0]`) and take a `$locale` param. |
+| Where the locale lives | In the field. One document per page; translatable fields are `internationalizedArray*` (`[{ _key, language, value }]`). | In the document. One document per language; every translatable document type (`TRANSLATABLE_SCHEMA_TYPES` in `studio/sanity.config.ts`: `page`, `project`, `projectCategory`, `work`, `home`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) has a `language` string field (`readOnly`, `hidden`, `initialValue: "en"`) set by the plugin — **never edit it manually**. Content fields are plain (`string`, `richText`, `richTextMedia`). |
+| Studio plugin | `sanity-plugin-internationalized-array`, languages from `studio/config/sync/internationalizedArrayLanguages.ts`. | `@sanity/document-internationalization`, languages from `studio/config/sync/supportedLanguages.ts`; translations are linked through `translation.metadata` documents. |
+| GROQ | No locale parameter; singletons by `_id` (`*[_id == "siteSettings"][0]`). The "never filter locale in GROQ" rule applies here. | Queries select the document for the route's language and take `$locale` (`*[_type == "siteSettings" && language == $locale][0]`). Selecting by `language` is the design here, not the anti-pattern. |
+| Render-time resolution | Every translatable field through `pickLocalizedString` / `parseLocalizedText`. | Fields already hold the route's language; render them directly. `sanityLocalizedText.ts` remains for link labels that may still carry localized arrays. |
+| Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
 
 Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/` with the `index.ts` barrel, flat `queries/components/modules/<name>.ts` + `types/modules/<name>.ts` with barrels, and the `richTextMedia.ts` inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
 ### Variant-branch rules
 
-- The `page.language` field is set programmatically by the i18n plugin; **do not edit, hide, expose, or remove it**. New page documents inherit it from `initialValue`.
-- Anything reading `siteSettings` needs the `$locale` param on this branch. Porting a settings query from `main` means adding that filter, not copying the `_id` lookup.
+- The `language` field on every translatable document type is set by the i18n plugin; **do not edit, hide, expose, or remove it**. New documents inherit it from `initialValue` or the plugin's "create translation" action.
+- Anything reading a per-language document (`home`, `work`, `page`, `project`, `projectCategory`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) needs the `$locale` param on this branch. Porting such a query from `main` means adding the `language == $locale` filter, not copying the `_id` lookup.
+- A field that is `internationalizedArray*` on `main` is plain on this branch: drop the `pickLocalizedString` call in the port, render the value directly.
 - Web fixes authored on `main` are expected to apply here with context conflicts only. If a port looks structural, re-check against the branch before adapting — the divergence table above has been wrong in that direction before.
 
 ### Updating conventions on both branches
 
-1. Edit `AGENTS.md` (+ mirrors) on `main`.
-2. Commit and merge.
-3. `git checkout variant/document-level && git checkout main -- AGENTS.md CLAUDE.md web/CLAUDE.md studio/CLAUDE.md studio/schemas/objects/modules/CLAUDE.md web/src/components/modules/CLAUDE.md web/sanity/CLAUDE.md .cursor/rules/ .github/copilot-instructions.md`.
-4. Re-read this section and adjust if a real divergence appeared.
-5. Commit on `variant/document-level`.
+`AGENTS.md` and `.github/copilot-instructions.md` are identical on both branches — the notes above describe both. The other mirrors are not: the root and subtree `CLAUDE.md` files and `.cursor/rules/*.mdc` carry the variant's document-level i18n rules on `variant/document-level`. Carry a change over by cherry-picking it, never by copying files from `main` — a copy silently overwrites those variant rules.
+
+1. Edit `AGENTS.md` (+ mirrors) on `main` and commit.
+2. On `variant/document-level`: `git cherry-pick -x <commit>`.
+3. Resolve conflicts in the mirrors by keeping the variant's i18n lines and taking everything else from `main`. A conflict outside the i18n lines is drift — reconcile it.
+4. Re-read the notes above and fix a row if the branch contradicts it.
+5. Once both are merged, `git diff main variant/document-level -- AGENTS.md .github/copilot-instructions.md` must be empty.
 
 ## Definition of done
 

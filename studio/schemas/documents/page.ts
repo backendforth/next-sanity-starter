@@ -3,6 +3,7 @@ import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
+import { titleSlugSource } from "../../utils/titleSlugSource";
 import { validateSlug } from "../../utils/validateSlug";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
@@ -39,6 +40,7 @@ export const page = defineType({
       type: "slug",
       options: {
         maxLength: 96,
+        source: titleSlugSource,
       },
       validation: validateSlug,
       group: "editorial",

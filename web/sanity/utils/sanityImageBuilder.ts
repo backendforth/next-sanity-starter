@@ -2,6 +2,7 @@ import {
 	createImageUrlBuilder,
 	type SanityImageSource,
 } from "@sanity/image-url";
+import { stegaClean } from "next-sanity";
 
 import { dataset, projectId } from "@/sanity/sanityEnv";
 
@@ -27,6 +28,7 @@ export type SanityImageField = {
 	crop?: unknown;
 	hotspot?: unknown;
 	asset?: SanityImageAssetRef | null;
+	alt?: string | null;
 } | null;
 
 type ImageFit = "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
@@ -277,7 +279,7 @@ export function sanityImageFieldFromMediaQueryPayload(
 	}
 	const o = payload as Record<string, unknown>;
 
-	if (o.kind === "video") {
+	if (stegaClean(o.kind) === "video") {
 		return null;
 	}
 
@@ -286,15 +288,12 @@ export function sanityImageFieldFromMediaQueryPayload(
 		return null;
 	}
 
-	const img: SanityImageField = {
+	return {
 		crop: o.crop,
 		hotspot: o.hotspot,
 		asset,
+		alt: typeof o.alt === "string" ? o.alt : undefined,
 	};
-	if (typeof o.alt === "string") {
-		(img as { alt?: string }).alt = o.alt;
-	}
-	return img;
 }
 
 /** `sanityImageFieldFromMediaQueryPayload` plus plain Studio image fields (no `kind`). */

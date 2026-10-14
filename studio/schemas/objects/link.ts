@@ -106,40 +106,28 @@ export const link = defineType({
   ],
   preview: {
     select: {
-      funcKey: "func.key",
-      funcParams: "func.params",
-      referenceType: "reference._type",
-      slug: "reference.slug.current",
+      type: "type",
       title: "title",
       refTitle: "reference.title",
-      type: "type",
+      referenceType: "reference._type",
+      slug: "reference.slug.current",
       url: "url",
+      funcKey: "func.key",
+      funcParams: "func.params",
     },
     prepare(selection) {
       const {
-        funcKey,
-        funcParams,
-        referenceType,
-        slug,
+        type,
         title,
         refTitle,
-        type,
+        referenceType,
+        slug,
         url,
+        funcKey,
+        funcParams,
       } = selection;
 
-      const titleText =
-        typeof title === "string" && title.trim() ? title.trim() : "";
-      const refTitleText =
-        typeof refTitle === "string" && refTitle.trim() ? refTitle.trim() : "";
-      const mainTitle =
-        titleText ||
-        refTitleText ||
-        (type === "external" && typeof url === "string" ? url : "") ||
-        (type === "function" && funcKey ? funcKey : "") ||
-        "Link";
-
       let subtitle = "";
-
       if (type === "internal") {
         if (referenceType === "home") {
           subtitle = "→ /";
@@ -162,8 +150,17 @@ export const link = defineType({
           : "→ (function)";
       }
 
+      const linkLabel = typeof title === "string" ? title.trim() : "";
+      const refLabel = typeof refTitle === "string" ? refTitle.trim() : "";
+      const label =
+        linkLabel ||
+        refLabel ||
+        (type === "external" && typeof url === "string" ? url : "") ||
+        (type === "function" && funcKey ? funcKey : "") ||
+        "Link";
+
       return {
-        title: mainTitle,
+        title: label,
         subtitle,
       };
     },

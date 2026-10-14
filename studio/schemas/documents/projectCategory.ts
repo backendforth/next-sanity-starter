@@ -5,6 +5,7 @@ export const projectCategory = defineType({
   name: "projectCategory",
   title: "Project category",
   type: "document",
+  icon: TagIcon,
   fields: [
     {
       name: "language",
@@ -20,7 +21,6 @@ export const projectCategory = defineType({
       validation: (rule) => rule.required(),
     },
   ],
-  icon: TagIcon,
   preview: {
     select: {
       title: "title",

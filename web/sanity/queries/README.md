@@ -43,7 +43,7 @@ This branch keeps **one document per language** (`@sanity/document-international
 | `errorSettings` | 404 / 500 copy |
 | `siteCookieBanner` | Cookie UI |
 
-Pattern: `*[_type == "siteSettings" && language == $locale][0]`. `siteNav` also falls back to a legacy document without `language` (see `siteNavMenusQuery`).
+Pattern: `*[_type == "siteSettings" && language == $locale][0]`. `siteNav` also falls back to a legacy document without `language` (see `siteChromeQuery`).
 
 The only fixed-id document is the global singleton **`siteLanguageSettings`** (`*[_id == "siteLanguageSettings"][0]`).
 
@@ -132,7 +132,7 @@ From `sitemapPagesQuery` (simplified — the real query also covers `work` and `
 
 ### Navigation (`siteNav`)
 
-Full query is `siteNavMenusQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (resolved links, no `modules[]`). **Smoke test** — document and raw menu fields:
+The app reads the menus through `siteChromeQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (resolved links, no `modules[]`). **Smoke test** — document and raw menu fields:
 
 ```groq
 *[_type == "siteNav" && language == $locale][0]{
@@ -144,7 +144,7 @@ Full query is `siteNavMenusQuery` in [`snippets/settings.ts`](./snippets/setting
 }
 ```
 
-To match the app’s resolved links, use the exported `siteNavMenusQuery` from code (expands each menu item with `linkQuery`).
+To match the app’s resolved links, use the exported `siteChromeQuery` from code (its `nav` expands each menu item with `linkQuery`).
 
 ### Site settings
 

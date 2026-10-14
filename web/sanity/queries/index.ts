@@ -4,8 +4,8 @@ export {
 	moduleMediaQuery,
 	modulesQuery,
 	moduleTextQuery,
-	richTextMediaQuery,
 } from "./components/modules";
+export { richTextMediaQuery } from "./components/text/richTextMedia";
 export { homeQuery } from "./pages/home";
 export { pageBySlugQuery } from "./pages/page";
 export { projectBySlugQuery } from "./pages/project";
@@ -20,12 +20,9 @@ export {
 export { pageSeoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
-	navMenusQuery,
 	siteAnalyticsSettingsQuery,
 	siteChromeQuery,
-	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
-	siteNavMenusQuery,
 	siteSettingsFaviconQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,

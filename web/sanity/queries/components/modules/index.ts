@@ -11,8 +11,6 @@ export const modulesQuery = `modules[]{
   ${moduleCarouselQuery},
   ${moduleContentRefsQuery}
 }`;
-
-export { richTextMediaQuery } from "../text/richTextMedia";
 export {
 	moduleCarouselQuery,
 	moduleContentRefsQuery,

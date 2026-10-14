@@ -3,7 +3,7 @@ import { moduleCarouselInnerFields } from "../modules/carousel";
 import { moduleMediaInnerFields } from "../modules/media";
 
 /** Portable Text blocks with resolved `link` marks. */
-const blockFields = `
+export const blockFields = `
     ...,
     _type == "block" => {
       ...,

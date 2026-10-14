@@ -1,16 +1,20 @@
+/**
+ * Published-only reads via `client.fetch` + `unstable_cache`, for paths without a request
+ * scope or Draft Mode: the sitemap, `generateStaticParams` slug lists and the published
+ * language settings. Everything that renders content goes through `fetchSanityData.ts`.
+ */
+
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import {
 	FALLBACK_SITE_LOCALE_CONFIG,
 	type SiteLocaleConfig,
 } from "@/src/i18n/fallbackSiteLocales";
-import { EMBEDDED_CONTENT_TAGS, SANITY_CACHE_TAGS } from "./cacheTags";
+import { SANITY_CACHE_TAGS } from "./cacheTags";
 import { client, isSanityConfigured } from "./client";
 import { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
-	homeQuery,
-	pageBySlugQuery,
 	pageSlugsQuery,
 	projectSlugsQuery,
 	siteLanguageSettingsQuery,
@@ -21,76 +25,9 @@ import type {
 	ProjectSlugsQueryResult,
 	SitemapPagesQueryResult,
 } from "./sanity.types.gen";
-import type { HomeDocument, PageDocument } from "./types/pages";
 import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
 export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
-
-/**
- * Published-only reads via `client.fetch` + `unstable_cache`. See `web/sanity/README.md`
- * (*Layout*) for when to use this vs the `fetchSanityData.ts` wrappers (Draft Mode /
- * Presentation paths).
- *
- * Parameterised queries need their own wrapper (e.g. `cachedPageDocumentBySlug`) with
- * primitive args — object params break React `cache()` deduplication.
- */
-export const cachedSanityQuery = cache(async <T>(query: string) => {
-	if (!isSanityConfigured) return { data: null as T | null };
-	const data = await client.fetch<T>(query);
-	return { data };
-});
-
-// ── Page-by-slug ────────────────────────────────────────────────────────────
-
-/**
- * `pageBySlugQuery` with `$slug` and `$locale` — one fetch per slug+locale per request.
- *
- * Combines React `cache()` (per-request) with `unstable_cache` (cross-request).
- * Revalidates via tag `page-{slug}-{locale}` or time-based after
- * `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS`.
- */
-export const cachedPageDocumentBySlug = cache(
-	async (slug: string, locale: string) => {
-		if (!isSanityConfigured) return { data: null as PageDocument | null };
-		const tag = SANITY_CACHE_TAGS.pageSlug(slug, locale);
-		const fetchPage = unstable_cache(
-			async () =>
-				client.fetch<PageDocument | null>(pageBySlugQuery, {
-					slug,
-					locale,
-				}),
-			[tag],
-			{
-				revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-				tags: [tag, ...EMBEDDED_CONTENT_TAGS],
-			},
-		);
-		const data = await fetchPage();
-		return { data };
-	},
-);
-
-// ── Home singleton (per language) ──────────────────────────────────────────
-
-/**
- * Home singleton — one document per language. Cross-request cached with tag
- * `home-{locale}`. React `cache` dedupes within a request when `generateMetadata`
- * and the page component both request the same locale.
- */
-export const cachedHomeDocument = cache(async (locale: string) => {
-	if (!isSanityConfigured) return { data: null as HomeDocument | null };
-	const tag = SANITY_CACHE_TAGS.home(locale);
-	const fetchHome = unstable_cache(
-		async () => client.fetch<HomeDocument | null>(homeQuery, { locale }),
-		[tag],
-		{
-			revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
-			tags: [tag, SANITY_CACHE_TAGS.homeAll, ...EMBEDDED_CONTENT_TAGS],
-		},
-	);
-	const data = await fetchHome();
-	return { data };
-});
 
 // ── Sitemap snapshot ────────────────────────────────────────────────────────
 
@@ -104,8 +41,6 @@ const fetchSitemapPagesCached = unstable_cache(
 		tags: [SANITY_CACHE_TAGS.sitemap, SANITY_CACHE_TAGS.pages],
 	},
 );
-
-export type CachedSitemapRow = SitemapRow;
 
 export const cachedSitemapPages = cache(async (): Promise<SitemapRow[]> => {
 	if (!isSanityConfigured) return [];

@@ -1,7 +1,6 @@
 import { ImageIcon } from "@sanity/icons/Image";
 import { defineType } from "sanity";
 
-import { MediaFieldPreview } from "../../../components/previews/MediaFieldPreview";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const mediaImage = defineType({
@@ -24,9 +23,6 @@ export const mediaImage = defineType({
       type: "string",
     },
   ],
-  components: {
-    preview: MediaFieldPreview,
-  },
   preview: {
     select: {
       image: "image",

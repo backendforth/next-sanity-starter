@@ -39,7 +39,7 @@ function staticLocationsForType(
     return {
       message: PRESENTATION_LOCATIONS_HEADER,
       locations: [
-        { title: "/work", href: "/work" },
+        { title: PROJECT_URL_PREFIX, href: PROJECT_URL_PREFIX },
         { title: "Home", href: "/" },
       ],
     };

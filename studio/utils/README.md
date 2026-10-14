@@ -1,10 +1,6 @@
 # Studio utilities
 
-See the [Studio readme](../README.md) for a high-level feature list. Helpers and shared constants used across the Studio package (env, image URLs, slug validation, etc.).
-
-## `constants.ts`
-
-This file **re-exports** **`PAGE_REFERENCES`** from **`schemas/constants/references.ts`** — routable document types for internal links / references. Extend it when you add a new top-level page type that should appear in the link picker.
+See the [Studio readme](../README.md) for a high-level feature list. Helpers used across the Studio package (env, image URLs, slug validation, etc.).
 
 ## Multi-language setup
 

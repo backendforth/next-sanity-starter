@@ -3,6 +3,7 @@ import { defineDocuments } from "sanity/presentation";
 import {
   PREFIXED_SLUG_DOCUMENT_TYPES,
   PROJECT_URL_PREFIX,
+  SITE_ROOT_DOCUMENT_TYPES,
   SLUG_BASED_DOCUMENT_TYPES,
 } from "./conventions";
 import { presentationLocationsResolver } from "./locationsResolver";
@@ -14,11 +15,14 @@ const typeList = (types: readonly string[]) =>
 
 /**
  * Which document opens when the Presentation iframe navigates to a route.
- * Home at `/`, `work` at `PROJECT_URL_PREFIX`, prefixed slugs below it, the other slugged types
- * at `/:slug` (`config/presentation/conventions.ts`).
+ * The site-root singleton at `/`, `work` at `PROJECT_URL_PREFIX`, prefixed slugs below it, the
+ * other slugged types at `/:slug` (`config/presentation/conventions.ts`).
  */
 export const presentationMainDocuments = defineDocuments([
-  { route: "/", type: "home" },
+  {
+    route: "/",
+    filter: `_type in [${typeList([...SITE_ROOT_DOCUMENT_TYPES])}]`,
+  },
   { route: PROJECT_URL_PREFIX, type: "work" },
   {
     route: `${PROJECT_URL_PREFIX}/:slug`,

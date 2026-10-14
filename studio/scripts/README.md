@@ -105,6 +105,31 @@ Targets `SANITY_STUDIO_DATASET` from `studio/.env` (else `development`) — run 
 
 ---
 
+## `register-hosting.mjs`
+
+**What it does**
+
+Runs `sanity deploy --external --url <SANITY_STUDIO_HOSTING_URL> --yes`: registers the Netlify-hosted Studio's URL as the project's Studio (sanity.io/manage) and uploads the schema to the schema store. Clears `SANITY_STUDIO_APP_ID` for the call — that id names the `*.sanity.studio` deployment, and the CLI would otherwise register against it instead of the URL. Extra arguments go to the CLI.
+
+**Why**
+
+- `sanity deploy` registers and uploads the schema on its own for Sanity Hosting. A Studio built and served by Netlify never runs it, so without this step the project's Studio link and the stored schema fall behind.
+
+**When it runs**
+
+- **Netlify** — after `sanity build` (`studio/netlify.toml`). Production deploys with `SANITY_AUTH_TOKEN` set register; other contexts and token-less sites log the reason and exit 0. An unset `SANITY_STUDIO_HOSTING_URL` falls back to Netlify's `URL` (the site's primary domain).
+- **Locally** — on demand, with your `sanity login` session.
+
+**Commands**
+
+| Where | Command |
+|-------|---------|
+| repo root | `pnpm studio:register --dry-run` (preview) |
+| repo root | `pnpm studio:register` |
+| `studio/` | `pnpm run register` |
+
+---
+
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary

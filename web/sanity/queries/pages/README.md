@@ -23,22 +23,15 @@ import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
 
-type PageDoc = {
-  _id: string;
-  title?: unknown;
-  slug?: { current?: string | null };
-  modules?: unknown[];
-  seo?: { title?: string | null; description?: string | null; imageUrl?: string | null };
-};
-
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const doc = await client.fetch<PageDoc | null>(pageBySlugQuery, { slug });
+  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`. No hand-written type.
+  const doc = await client.fetch(pageBySlugQuery, { slug });
   if (!doc) notFound();
 
   return (
     <main>
-      <h1>{/* resolve i18n title on the client or map here */}</h1>
+      <h1>{/* resolve the i18n title with pickLocalizedString */}</h1>
       {/* render modules */}
     </main>
   );
@@ -54,31 +47,20 @@ import { client } from "@/sanity/client";
 import { pageSlugsQuery } from "@/sanity/queries";
 
 export async function generateStaticParams() {
-  const rows = await client.fetch<Array<{ slug: string }>>(pageSlugsQuery);
-  return rows
-    .map((r) => r.slug)
-    .filter((s): s is string => typeof s === "string" && s.length > 0)
-    .map((slug) => ({ slug }));
+  const rows = await client.fetch(pageSlugsQuery);
+  return rows.map(({ slug }) => ({ slug }));
 }
 ```
 
 ## Sitemap — `sitemapPagesQuery`
 
-Returns every **public route**: the `home` singleton (`path: "/"`) and all `page` documents with a slug (`path: "/{slug}"`). Each row includes `_id`, `_type`, `_updatedAt`, optional `slug`, and **`path`** for building `loc`. Use in `app/sitemap.ts` or a Route Handler.
+Returns every **public route**: `home` (`path: "/"`), the `work` landing, and every `page` and `project` with a slug. Each row includes `_id`, `_type`, `_updatedAt` and **`path`** (`routePathProjection`) for building `loc`. Use in `app/sitemap.ts` or a Route Handler.
 
 ```ts
 import { client } from "@/sanity/client";
 import { sitemapPagesQuery } from "@/sanity/queries";
 
-const entries = await client.fetch<
-  Array<{
-    _id: string;
-    _type: string;
-    _updatedAt: string;
-    slug: string | null;
-    path: string;
-  }>
->(sitemapPagesQuery);
+const entries = await client.fetch(sitemapPagesQuery);
 ```
 
 ## Home route

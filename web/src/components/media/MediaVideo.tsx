@@ -30,7 +30,7 @@ import {
 import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 
-export type MediaVideoProps = {
+type MediaVideoProps = {
 	media: unknown;
 	caption?: string | null;
 	posterPayload?: unknown;

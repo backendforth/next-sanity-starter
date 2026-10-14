@@ -25,7 +25,7 @@ const SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2400] as const;
 export const PREVIEW_SRCSET_WIDTHS = [320, 480, 640, 768] as const;
 export const PREVIEW_MAX_SRC_WIDTH = 768;
 
-export type MediaImageProps = {
+type MediaImageProps = {
 	imagePayload: unknown;
 	/**
 	 * Mux video payload — when `imagePayload` holds no Sanity image, the Mux thumbnail is shown

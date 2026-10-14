@@ -4,7 +4,7 @@ import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
-import { ModuleContentRefsClient } from "./ModuleContentRefsClient";
+import { LazyModuleContentRefsClient } from "./LazyModuleContentRefsClient";
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ export function ModuleContentRefs({
 	return (
 		<section className={moduleSectionClassName}>
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
-			<ModuleContentRefsClient
+			<LazyModuleContentRefsClient
 				locale={locale}
 				items={items}
 				isProjectList={isProjectList}

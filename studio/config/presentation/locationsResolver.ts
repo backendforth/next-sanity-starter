@@ -41,7 +41,7 @@ function localizedFixedPath(path: string, language?: string | null): string {
   return `/${lang}${path}`;
 }
 
-const WORK_INDEX_QUERY = `*[_id in $ids][0]{ language }`;
+const LANGUAGE_QUERY = `*[_id in $ids][0]{ language }`;
 
 /**
  * Types that need fully custom locations (no convention).
@@ -82,25 +82,30 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
     return null;
   }
 
-  if (SITE_ROOT_DOCUMENT_TYPES.has(type)) {
-    return {
-      message: PRESENTATION_LOCATIONS_HEADER,
-      locations: [
-        {
-          title: type === "home" ? "Home" : "Site preview (home)",
-          href: "/",
-        },
-      ],
-    };
-  }
-
   const ids = Array.from(
     new Set([getPublishedId(id), getDraftId(id)].map(String)),
   );
 
+  if (SITE_ROOT_DOCUMENT_TYPES.has(type)) {
+    // One `home` per language: open the one being edited, prefixed like every other location.
+    return context.documentStore
+      .listenQuery(LANGUAGE_QUERY, { ids }, { perspective: "drafts" })
+      .pipe(
+        map((doc: { language?: string | null } | null) => ({
+          message: PRESENTATION_LOCATIONS_HEADER,
+          locations: [
+            {
+              title: type === "home" ? "Home" : "Site preview (home)",
+              href: localizedFixedPath("", doc?.language) || "/",
+            },
+          ],
+        })),
+      );
+  }
+
   if (type === "work") {
     return context.documentStore
-      .listenQuery(WORK_INDEX_QUERY, { ids }, { perspective: "drafts" })
+      .listenQuery(LANGUAGE_QUERY, { ids }, { perspective: "drafts" })
       .pipe(
         map((doc: { language?: string | null } | null) => {
           const workPath = localizedFixedPath(

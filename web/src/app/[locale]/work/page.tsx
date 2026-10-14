@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchSiteChrome,
 	fetchSiteLanguageSettings,
@@ -15,8 +14,6 @@ import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 type PageProps = {
 	params: Promise<{ locale: string }>;
 };
-
-export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
 	const siteLocale = await fetchSiteLanguageSettings();

@@ -31,7 +31,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). Published content stays fresh through the revalidate webhook, or — without one — through `SanityLive` for every visitor (see `web/README.md`, *Freshness*).
 
-**Sanity Studio v6** — Vision, Dashboard, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, safe production → development dataset clone. Hosted on Netlify on its own domain by default (`studio/netlify.toml`); Sanity Hosting stays one command away.
+**Sanity Studio v6** — Structure, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, safe production → development dataset clone. Hosted on Netlify on its own domain by default (`studio/netlify.toml`); Sanity Hosting stays one command away.
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 

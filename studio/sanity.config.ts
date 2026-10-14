@@ -1,5 +1,4 @@
 import { codeInput } from "@sanity/code-input";
-import { dashboardTool, projectInfoWidget } from "@sanity/dashboard";
 import { documentInternationalization } from "@sanity/document-internationalization";
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
@@ -65,9 +64,6 @@ export default defineConfig({
   dataset,
   releases: { enabled: isDev },
   plugins: [
-    dashboardTool({
-      widgets: [projectInfoWidget()],
-    }),
     structureTool({ structure }),
     presentationTool({
       title: "Web Preview",

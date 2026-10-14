@@ -8,7 +8,6 @@ import { sanityFetch } from "./live";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
 	homeQuery,
-	notFoundCopyQuery,
 	pageBySlugQuery,
 	projectBySlugQuery,
 	siteChromeQuery,
@@ -89,38 +88,24 @@ export const fetchProjectBySlug = cache(
 );
 
 /**
- * The app shell of one language (`siteChromeQuery`): nav, cookie banner, site settings and
- * analytics in one fetch. Read by the layout and every `generateMetadata`; call it with a
- * validated locale, it is part of the cache key.
+ * The app shell of one language (`siteChromeQuery`): nav, cookie banner, site settings,
+ * analytics and the 404 copy in one fetch. Read by the layout, every `generateMetadata` and the
+ * 404 pages; call it with a validated locale, it is part of the cache key.
  */
 export const fetchSiteChrome = cache(async (locale: string) => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: siteChromeQuery,
 		params: { locale },
-		/* Embedded tags: nav links resolve page and project slugs. */
+		/* Embedded tags: nav links and the 404 body's links resolve page and project slugs. */
 		tags: [
 			SANITY_CACHE_TAGS.siteNav,
 			SANITY_CACHE_TAGS.siteCookieBanner,
 			SANITY_CACHE_TAGS.siteSettings,
 			SANITY_CACHE_TAGS.siteAnalyticsSettings,
+			SANITY_CACHE_TAGS.errorSettings,
 			...EMBEDDED_CONTENT_TAGS,
 		],
-	});
-	return data;
-});
-
-/**
- * The 404 copy of every language in one fetch (`notFoundCopyQuery`). The 404 pages pick the
- * URL's language on the client (`LocaleNotFoundContent`): reading it on the server would make
- * the `[locale]` segment dynamic.
- */
-export const fetchNotFoundCopy = cache(async () => {
-	if (!isSanityConfigured) return [];
-	const { data } = await sanityFetch({
-		query: notFoundCopyQuery,
-		/* Embedded tags: the 404 body's links resolve page and project slugs. */
-		tags: [SANITY_CACHE_TAGS.errorSettings, ...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });

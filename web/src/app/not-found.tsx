@@ -1,11 +1,10 @@
 import {
-	fetchNotFoundCopy,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
 import { documentFontClassName } from "@/src/components/layout/DocumentShell";
-import { LanguageProvider } from "@/src/contexts/LanguageContext";
 
-import { LocaleNotFoundContent } from "./[locale]/LocaleNotFoundContent";
+import { NotFoundContent } from "./[locale]/NotFoundContent";
 import "../assets/styles/tokens.css";
 import "../assets/styles/globals.css";
 
@@ -17,28 +16,26 @@ import "../assets/styles/globals.css";
  * itself and carries the body classes on its own wrapper. It must not render
  * `DocumentShell` — that would nest a second `<html>` inside Next's built-in shell.
  *
- * No header or footer. The copy follows the URL's locale prefix when it has one (via
- * `LocaleNotFoundContent`), otherwise the site default. `notFound()` raised inside a real page
- * still resolves to `[locale]/not-found.tsx` with the full site chrome.
+ * No header or footer, and the copy is in the site's default locale: a URL with a valid locale
+ * never lands here (the proxy rewrites unprefixed paths to the default locale, `[...rest]`
+ * catches the rest). `notFound()` raised inside a real page resolves to
+ * `[locale]/not-found.tsx` with the full site chrome.
  */
 export default async function RootNotFound() {
-	const [copies, siteLocale] = await Promise.all([
-		fetchNotFoundCopy(),
-		fetchSiteLanguageSettings(),
-	]);
+	const siteLocale = await fetchSiteLanguageSettings();
+	const chrome = await fetchSiteChrome(siteLocale.defaultLocale);
 
 	return (
 		<div
 			className={`flex min-h-dvh flex-col bg-color-bg font-text text-color-text antialiased ${documentFontClassName}`}
 		>
-			<LanguageProvider
-				locale={siteLocale.defaultLocale}
-				siteLocaleConfig={siteLocale}
-			>
-				<main id="main-content" className="flex min-h-0 flex-1 flex-col">
-					<LocaleNotFoundContent copies={copies} />
-				</main>
-			</LanguageProvider>
+			<main id="main-content" className="flex min-h-0 flex-1 flex-col">
+				<NotFoundContent
+					copy={chrome?.notFound ?? null}
+					locale={siteLocale.defaultLocale}
+					siteLocale={siteLocale}
+				/>
+			</main>
 		</div>
 	);
 }

@@ -14,7 +14,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas �
 - **YOU MUST** pass the route `locale` into every fetch of a per-language document (`fetch*` helpers → `$locale` in GROQ), and `{ locale, siteLocale }` into anything that builds hrefs (`ModulesRenderer` → `ModuleContentRefs`, nav). The render tree starts at `app/[locale]/page.tsx`.
 - Fields arrive in the route's language (one document per language). Render them directly — no `pickLocalizedString` on content fields.
 - **NEVER** read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR and Presentation iframes.
-- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
+- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
 
 ## Sanity-side gotchas
 

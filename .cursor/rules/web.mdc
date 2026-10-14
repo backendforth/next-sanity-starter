@@ -17,7 +17,7 @@ Hard rules:
 - Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
 - No hardcoded locale codes outside `web/src/i18n/`.
 
-URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; do not concatenate locale prefixes by hand.
+URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `proxyLocaleFetch.ts`). Use them; do not concatenate locale prefixes by hand.
 
 After web changes:
 

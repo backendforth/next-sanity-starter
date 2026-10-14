@@ -184,7 +184,7 @@ Omit favicon/SEO lines if you only need to verify the document:
 
 ### Settings + nav + errors + cookie banner (one object)
 
-Four sub-queries in one GROQ object — a handy Vision smoke test for all shell documents of one language at once (the app fetches nav, cookie banner and settings together, plus analytics, through `siteChromeQuery`; the 404 copy of every language through `notFoundCopyQuery`):
+Four sub-queries in one GROQ object — a handy Vision smoke test for all shell documents of one language at once (the app fetches them together, plus analytics, through `siteChromeQuery`):
 
 ```groq
 {

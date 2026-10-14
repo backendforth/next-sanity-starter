@@ -13,7 +13,6 @@ import type { StegaBranded, StegaCleaned } from "next-sanity";
 
 import type {
 	HomeQueryResult,
-	NotFoundCopyQueryResult,
 	PageBySlugQueryResult,
 	ProjectBySlugQueryResult,
 	SiteChromeQueryResult,
@@ -81,8 +80,8 @@ export type MainMenuItem = NonNullable<SiteNav["mainMenu"]>[number];
 export type NavMenuLink = NonNullable<SiteNav["footerMenu"]>[number];
 export type SiteCookieBanner = NonNullable<SiteChrome["cookieBanner"]>;
 export type SiteSettings = NonNullable<SiteChrome["settings"]>;
-/** The 404 copy of one language (`errorSettings`); `fetchNotFoundCopy` returns every language. */
-export type NotFoundCopy = StegaAware<NotFoundCopyQueryResult>[number];
+/** The 404 copy (`errorSettings`) of the chrome's language. */
+export type NotFoundCopy = NonNullable<SiteChrome["notFound"]>;
 export type SiteFavicon = NonNullable<SiteSettings["favicon"]>;
 
 /**

@@ -27,6 +27,7 @@ import {
 import {
 	MUX_PLAYBACK_MAX_TIER,
 	type MuxPlayerResolution,
+	preconnectMux,
 	resolveMuxPlayerResolution,
 } from "@/src/utils/muxPlayback";
 import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
@@ -129,6 +130,7 @@ function isPlayerDetachedFromPage(player: MuxPlayerHandle): boolean {
 export function MediaVideo(props: MediaVideoProps) {
 	const playbackId = extractMuxPlaybackId(props.media);
 	if (!playbackId) return null;
+	preconnectMux();
 	return <MuxVideoPlayer key={playbackId} playbackId={playbackId} {...props} />;
 }
 

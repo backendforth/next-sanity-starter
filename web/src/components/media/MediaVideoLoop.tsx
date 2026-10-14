@@ -38,6 +38,7 @@ import {
 	type MuxResolutionTier,
 	muxLoopHlsSrc,
 	muxTierBelow,
+	preconnectMux,
 	resolveMuxLoopTier,
 } from "@/src/utils/muxPlayback";
 import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
@@ -90,6 +91,7 @@ const LOOP_STALL_RESCUE_MS = 4000;
 export function MediaVideoLoop(props: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(props.media);
 	if (!playbackId) return null;
+	preconnectMux();
 	return <MuxVideoLoop key={playbackId} {...props} />;
 }
 

@@ -280,10 +280,7 @@ function MuxVideoLoop({
 		Boolean(playbackId);
 	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc, {
 		audioEnabled: !muted,
-		preferModernCodecs: true,
-		useObjectCoverPick: true,
 		objectCoverVideoPx,
-		tuneForShortLoop: true,
 	});
 
 	const tryPlay = useCallback(() => {

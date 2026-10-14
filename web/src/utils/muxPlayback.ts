@@ -123,47 +123,6 @@ export type MuxResolutionTier =
 	| "2160p";
 
 /**
- * HLS URL for `stream.mux.com` (native `<video>` or hls.js).
- *
- * **`rendition_order=desc`** (default): Mux lists highest renditions first. Many native players
- * pick the first variant for the first segment — without this, playback often starts at a mid/low
- * rung even on fast connections.
- *
- * **`min_resolution_tier`** (optional): drops renditions below the tier from the manifest. For
- * background loops we don't want ABR to ever pick 240p — the visual cliff is worse than a stall.
- *
- * **`max_resolution`**: caps the manifest so ABR cannot overshoot the viewport (smaller segments,
- * same perceived quality with `object-fit: cover`).
- *
- * @see https://docs.mux.com/guides/control-playback-resolution
- */
-function muxHlsSrc(
-	playbackId: string,
-	opts: {
-		renditionOrderDesc?: boolean;
-		minResolutionTier?: MuxResolutionTier;
-		maxResolutionTier?: MuxResolutionTier;
-	} = {},
-): string {
-	const u = new URL(`https://stream.mux.com/${playbackId}.m3u8`);
-	if (opts.renditionOrderDesc !== false) {
-		u.searchParams.set("rendition_order", "desc");
-	}
-	if (opts.minResolutionTier) {
-		/* Mux's documented parameter name is `min_resolution` (not
-		 * `min_resolution_tier`) — unknown params are silently dropped, so the
-		 * previous `min_resolution_tier=...` was a no-op and the manifest
-		 * contained every rendition from the asset's lowest tier upward.
-		 * Safari then naturally started ABR from the bottom rung. */
-		u.searchParams.set("min_resolution", opts.minResolutionTier);
-	}
-	if (opts.maxResolutionTier) {
-		u.searchParams.set("max_resolution", opts.maxResolutionTier);
-	}
-	return u.toString();
-}
-
-/**
  * DPR cap for tier selection (loops and the full player). 2.0 honors retina (effective 2× CSS
  * pixels) so a 1920×1080 retina hero targets 2160p; phones with DPR=3 are clamped to 2× so
  * they don't pull 4K just because the OS reports a high density screen.
@@ -306,7 +265,7 @@ function isFinePointerDisplay(): boolean {
  * Minimum source pixels for `object-fit: cover` — only the constraining axis matters,
  * unlike using `width×DPR` and `height×DPR` independently (which over-estimates and pulls 4K).
  */
-export function computeObjectCoverTargetPx(args: {
+function computeObjectCoverTargetPx(args: {
 	containerWidthPx: number;
 	containerHeightPx: number;
 	devicePixelRatio?: number;
@@ -425,16 +384,32 @@ export function resolveMuxLoopTier(args: MuxLoopTierArgs): MuxResolutionTier {
 	return args.tierCeiling ? minResolutionTier(tier, args.tierCeiling) : tier;
 }
 
+/**
+ * `stream.mux.com` HLS URL (native `<video>` or hls.js) pinned to {@link resolveMuxLoopTier}.
+ *
+ * **`rendition_order=desc`**: Mux lists highest renditions first. Many native players pick the
+ * first variant for the first segment — without this, playback often starts at a mid/low rung
+ * even on fast connections.
+ *
+ * **`min_resolution` = `max_resolution`**: the single-tier manifest described above.
+ *
+ * @see https://docs.mux.com/guides/control-playback-resolution
+ */
 export function muxLoopHlsSrc(
 	playbackId: string,
 	args: MuxLoopTierArgs,
 ): string {
 	const resolutionTier = resolveMuxLoopTier(args);
-	return muxHlsSrc(playbackId, {
-		renditionOrderDesc: true,
-		minResolutionTier: resolutionTier,
-		maxResolutionTier: resolutionTier,
-	});
+	const u = new URL(`https://stream.mux.com/${playbackId}.m3u8`);
+	u.searchParams.set("rendition_order", "desc");
+	/* Mux's documented parameter name is `min_resolution` (not
+	 * `min_resolution_tier`) — unknown params are silently dropped, so the
+	 * previous `min_resolution_tier=...` was a no-op and the manifest
+	 * contained every rendition from the asset's lowest tier upward.
+	 * Safari then naturally started ABR from the bottom rung. */
+	u.searchParams.set("min_resolution", resolutionTier);
+	u.searchParams.set("max_resolution", resolutionTier);
+	return u.toString();
 }
 
 /**
@@ -658,23 +633,22 @@ function pickSmallestSufficientLevelIndex(
 
 /**
  * Pick the hls.js level index: smallest rendition that saturates the player (DPR-aware).
- * When `preferModernCodecs` is set, tries AV1 → HEVC → H.264 before falling back to any level.
+ * Tries AV1 → HEVC → H.264 before falling back to any level.
  */
 export function pickMuxHlsLevelIndex(
 	levels: MuxHlsLevelLike[],
 	opts: {
 		targetW: number;
 		targetH: number;
-		preferModernCodecs?: boolean;
 		/** Codec families to skip (e.g. after a MEDIA_ERROR on AV1). */
-		excludedFamilies?: ReadonlySet<MuxLevelCodecFamily>;
+		excludedFamilies: ReadonlySet<MuxLevelCodecFamily>;
 		/**
 		 * Promote a specific family to the front of the codec-order so it wins
 		 * over the static AV1→HEVC→AVC default. Used by the runtime
 		 * MediaCapabilities probe to skip software-decoded AV1 on hardware that
 		 * doesn't accelerate it.
 		 */
-		preferredCodec?: MuxLevelCodecFamily;
+		preferredCodec: MuxLevelCodecFamily;
 	},
 ): number | undefined {
 	if (!levels.length) return undefined;
@@ -686,21 +660,11 @@ export function pickMuxHlsLevelIndex(
 		family: detectMuxLevelCodecFamily(lvl.codecs),
 	}));
 
-	if (!opts.preferModernCodecs) {
-		return pickSmallestSufficientLevelIndex(
-			indexed,
-			opts.targetW,
-			opts.targetH,
-		);
-	}
-
-	const excluded = opts.excludedFamilies ?? new Set<MuxLevelCodecFamily>();
-	const codecOrder = opts.preferredCodec
-		? [
-				opts.preferredCodec,
-				...MODERN_CODEC_ORDER.filter((c) => c !== opts.preferredCodec),
-			]
-		: MODERN_CODEC_ORDER;
+	const excluded = opts.excludedFamilies;
+	const codecOrder = [
+		opts.preferredCodec,
+		...MODERN_CODEC_ORDER.filter((c) => c !== opts.preferredCodec),
+	];
 
 	for (const family of codecOrder) {
 		if (excluded.has(family) || !isMuxCodecFamilySupported(family)) continue;

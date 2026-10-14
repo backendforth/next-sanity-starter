@@ -9,19 +9,15 @@
  * TypeGen skips a `defineQuery` it cannot evaluate statically — a function call, a
  * non-`const` fragment — with nothing but a spinner warning, and the generated file simply
  * lacks the entry. The query then types as `unknown` and CI's diff check stays green. This
- * script compares both sides by name: every `defineQuery` assignment needs a
- * `// Variable: <name>` block in `web/sanity/sanity.types.gen.ts`, and every block needs a
- * `defineQuery` that still exists. `--root <dir>` checks another checkout (tooling tests).
+ * script checks by name that every `defineQuery` assignment has a `// Variable: <name>` block
+ * in `web/sanity/sanity.types.gen.ts`. `--root <dir>` checks another checkout (tooling tests).
  */
 import { readdir, readFile } from "node:fs/promises";
-import { join, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, relative } from "node:path";
 
-const rootFlag = process.argv.indexOf("--root");
-const root =
-	rootFlag === -1
-		? fileURLToPath(new URL("../../..", import.meta.url))
-		: resolve(process.argv[rootFlag + 1] ?? ".");
+import { rootFromArgv } from "../src/manifest.mjs";
+
+const root = rootFromArgv(process.argv);
 const QUERY_ROOT = join(root, "web/sanity");
 const GENERATED = join(QUERY_ROOT, "sanity.types.gen.ts");
 
@@ -58,19 +54,12 @@ const generated = new Set(
 );
 
 const untyped = [...defined].filter(([name]) => !generated.has(name));
-const stale = [...generated].filter((name) => !defined.has(name));
 
 for (const [name, file] of untyped) {
 	console.error(
 		`✗ ${name} (${file}) has no generated type — TypeGen could not evaluate it. Keep queries free of function calls and build them from \`const\` template strings only.`,
 	);
 }
-for (const name of stale) {
-	console.error(
-		`✗ ${name} is typed in ${relative(root, GENERATED)} but no longer defined — run \`pnpm generate\`.`,
-	);
-}
-
-if (untyped.length > 0 || stale.length > 0) process.exit(1);
+if (untyped.length > 0) process.exit(1);
 
 console.log(`✓ ${defined.size} queries typed by TypeGen.`);

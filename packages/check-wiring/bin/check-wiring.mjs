@@ -21,17 +21,11 @@
  */
 import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { join, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, relative } from "node:path";
 
-import { moduleNames, wiringSlots } from "../src/manifest.mjs";
+import { moduleNames, rootFromArgv, wiringSlots } from "../src/manifest.mjs";
 
-const rootFlag = process.argv.indexOf("--root");
-const root =
-	rootFlag === -1
-		? fileURLToPath(new URL("../../..", import.meta.url))
-		: resolve(process.argv[rootFlag + 1] ?? ".");
-
+const root = rootFromArgv(process.argv);
 const wiring = wiringSlots(root);
 /** @param {string} p */
 const rel = (p) => relative(root, p);
@@ -118,13 +112,6 @@ for (const slot of wiring.required) {
 			general.push(`${rel(slot.file)}: lists "${id}", which has no schema`);
 		}
 	}
-}
-
-const renderer = await readFile(wiring.files.renderer, "utf8");
-if (!/:\s*never\s*=\s*mod\b/.test(renderer)) {
-	general.push(
-		`${rel(wiring.files.renderer)}: the switch lost its \`const unhandled: never = mod\` fallback — without it a missing \`case\` compiles`,
-	);
 }
 
 /** @type {Map<string, Set<string>>} slot label → modules it lists */

@@ -26,7 +26,7 @@ Creates three files from `templates/`:
 
 Adds the module to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the same slots `pnpm check:wiring` reads): `schemas/index.ts`, `moduleTypes`, a `case` in `ModulesRenderer`, `modulesQuery`. With `--inline` also the three inline places: the Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. Inline is opt-in — use it only for a module that belongs inside text.
 
-Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written; a failed write rolls back what was written. Touched files are formatted with Biome.
+Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written. Touched files are formatted with Biome.
 
 ## After running
 

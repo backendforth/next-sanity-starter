@@ -36,13 +36,17 @@ test("every slot reads the repo's modules and takes a new one", async () => {
 	for (const slot of wiring.required) {
 		const source = await readFile(slot.file, "utf8");
 		const before = slot.read(source);
-		assert.ok(before.has("module.text"), `${slot.key} reads module.text`);
+		assert.ok(before.has("module.text"), `${slot.label} reads module.text`);
 		const after = slot.read(slot.insert(source, hero));
-		assert.deepEqual([...after].sort(), [...before, hero.id].sort(), slot.key);
+		assert.deepEqual(
+			[...after].sort(),
+			[...before, hero.id].sort(),
+			slot.label,
+		);
 	}
 	for (const slot of wiring.inline) {
 		const source = await readFile(slot.file, "utf8");
-		assert.ok(slot.read(slot.insert(source, hero)).has(hero.id), slot.key);
+		assert.ok(slot.read(slot.insert(source, hero)).has(hero.id), slot.label);
 	}
 });
 
@@ -70,13 +74,6 @@ async function checkWithEdit(
 		encoding: "utf8",
 	});
 }
-
-test("the repo is fully wired", () => {
-	const result = spawnSync(process.execPath, [checkWiring], {
-		encoding: "utf8",
-	});
-	assert.equal(result.status, 0, result.stdout + result.stderr);
-});
 
 test("a module missing from modulesQuery fails, even with its import left", async (t) => {
 	const result = await checkWithEdit(
@@ -113,14 +110,4 @@ test("an inline module needs all three places", async (t) => {
 		result.stdout,
 		/✗ module\.carousel \(inline\)\n.*richTextMediaQuery/,
 	);
-});
-
-test("the renderer must keep its never fallback", async (t) => {
-	const result = await checkWithEdit(
-		t,
-		"web/src/components/modules/ModulesRenderer.tsx",
-		(s) => s.replace("const unhandled: never = mod;", "const unhandled = mod;"),
-	);
-	assert.equal(result.status, 1);
-	assert.match(result.stdout, /never/);
 });

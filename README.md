@@ -29,7 +29,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 ## What you get
 
-**Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). `SanityLive` only mounts when it's actually useful (read token present or draft mode active).
+**Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). Published content stays fresh through the revalidate webhook, or — without one — through `SanityLive` for every visitor (see `web/README.md`, *Freshness*).
 
 **Sanity Studio v6** — Vision, Dashboard, Presentation with configurable preview origin, runtime language tabs driven by a `siteLanguageSettings` singleton, deploy-on-publish via Netlify plugin, safe production → development dataset clone. Hosted on Netlify on its own domain by default (`studio/netlify.toml`); Sanity Hosting stays one command away.
 

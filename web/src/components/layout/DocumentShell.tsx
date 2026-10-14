@@ -108,22 +108,19 @@ type Props = {
 export async function DocumentShell({ lang, children }: Props) {
 	const draft = await draftMode();
 	const isDraft = draft.isEnabled;
-	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
 	const hasRevalidateWebhook = Boolean(
 		process.env.SANITY_REVALIDATE_SECRET?.trim(),
 	);
 	/**
-	 * <SanityLive /> opens an SSE connection per open tab and refreshes the
-	 * `sanityFetch` cache through a server action on every publish event —
-	 * needed for Presentation / Draft Mode, wasted on anonymous visitors.
-	 * Their published-content freshness comes from `/api/revalidate` instead
-	 * (the `sanityFetch` wrappers tag their cache entries for it). Fallback:
-	 * with a read token but **no** webhook secret configured, keep Live mounted
-	 * for everyone so published edits still propagate on webhook-less setups.
-	 * (Env is read at render time — the prerender needs the secret at build.)
+	 * <SanityLive /> opens an SSE connection per open tab and refreshes the `sanityFetch` cache
+	 * through a server action on every publish event — needed for Presentation / Draft Mode.
+	 * With the revalidate webhook configured, anonymous visitors don't need it: `/api/revalidate`
+	 * expires the cache tags the `sanityFetch` wrappers attach. Without the webhook it runs for
+	 * everyone (no token needed for published content), so a deploy with neither webhook nor
+	 * read token still picks up publishes. (Env is read at render time — the prerender needs the
+	 * secret at build.)
 	 */
-	const shouldMountSanityLive =
-		isDraft || (hasReadToken && !hasRevalidateWebhook);
+	const shouldMountSanityLive = isDraft || !hasRevalidateWebhook;
 
 	return (
 		<html

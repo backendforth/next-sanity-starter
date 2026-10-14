@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cachedProjectSlugs } from "@/sanity/cachedSanityQuery";
-import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchProjectBySlug,
 	fetchSiteChrome,
@@ -17,8 +16,6 @@ import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
-
-export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
 	const [rows, siteLocale] = await Promise.all([

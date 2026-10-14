@@ -2,6 +2,7 @@ import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import clsx from "clsx";
 import type { LinkMark } from "@/sanity/utils/linkResolver";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import { portableTextMediaComponents } from "./portableTextComponents";
 
@@ -11,14 +12,22 @@ export type RichTextMediaLinkMark = LinkMark;
 type RichTextMediaProps = {
 	value: PortableTextBlock[];
 	className?: string;
+	/** Locale of internal links. */
+	locale?: string;
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 /**
  * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.*`).
- * Document-level variant: the document is already in one locale, so this renderer
- * takes no locale/siteLocale props.
+ * Document-level variant: the body is already in the route's language; `locale` only
+ * points internal links at that language's URLs.
  */
-export function RichTextMedia({ value, className }: RichTextMediaProps) {
+export function RichTextMedia({
+	value,
+	className,
+	locale,
+	siteLocale,
+}: RichTextMediaProps) {
 	if (!value.length) return null;
 
 	return (
@@ -27,7 +36,7 @@ export function RichTextMedia({ value, className }: RichTextMediaProps) {
 		>
 			<PortableText
 				value={value}
-				components={portableTextMediaComponents()}
+				components={portableTextMediaComponents({ locale, siteLocale })}
 				onMissingComponent={false}
 			/>
 		</div>

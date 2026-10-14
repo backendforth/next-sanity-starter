@@ -61,7 +61,10 @@ export async function generateMetadata({
 
 export default async function Project({ params }: PageProps) {
 	const { slug, locale } = await params;
-	const data = await fetchProjectBySlug(slug, locale);
+	const [data, siteLocale] = await Promise.all([
+		fetchProjectBySlug(slug, locale),
+		fetchSiteLanguageSettings(),
+	]);
 
 	if (!data) {
 		notFound();
@@ -89,7 +92,11 @@ export default async function Project({ params }: PageProps) {
 				) : null}
 				{body.length ? (
 					<article className="flex flex-col">
-						<RichTextMedia value={body} />
+						<RichTextMedia
+							value={body}
+							locale={locale}
+							siteLocale={siteLocale}
+						/>
 					</article>
 				) : null}
 			</div>

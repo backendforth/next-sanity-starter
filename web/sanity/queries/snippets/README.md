@@ -22,7 +22,7 @@ Import the snippet and **interpolate** it into your own GROQ string (same patter
 ```ts
 // app/example/example-query.ts
 import { defineQuery } from "next-sanity";
-import { linkQuery } from "@/sanity/queries";
+import { linkQuery } from "@/sanity/queries/snippets/link";
 import { client } from "@/sanity/client";
 
 const myPortableTextField = `body[]{

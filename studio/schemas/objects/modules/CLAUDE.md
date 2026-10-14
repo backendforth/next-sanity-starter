@@ -2,12 +2,12 @@
 
 Canonical: @../../../../AGENTS.md §"The module pattern". Deep doc: @../../README.md §8.
 
-This folder holds the **schema half** of every module. You are touching point 1 of the 7-point wiring.
+This folder holds the **schema half** of every module. You are touching point 1 of the 6-point wiring.
 
 ## YOU MUST
 
 1. Run `pnpm gen:module <Name>` from the repo root instead of hand-writing — it creates the module's files and wires every point, `ModulesRenderer.tsx` included. Add `--inline` only for a module that belongs inside rich text.
-2. If you do hand-write: touch all 7 points (see @../../../../AGENTS.md). Use `pnpm check:wiring` to verify.
+2. If you do hand-write: touch all 6 points (see @../../../../AGENTS.md). Use `pnpm check:wiring` to verify.
 3. Use `module.<id>` as the schema `name` (lowercase, dot-separated). It is the contract referenced by `modulesArrayField.ts`, GROQ projections, component `_type` switches and the generated types. After a field change run `pnpm generate`.
 4. Always provide a `preview` (`select` + `prepare`). Without it, Studio shows "Untitled" for every instance.
 

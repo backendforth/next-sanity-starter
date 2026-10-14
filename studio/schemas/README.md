@@ -100,7 +100,7 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 3. **Document-level `modules` arrays** — append `{ type: "module.<id>" }` to **`moduleTypes`** in **`fields/modulesArrayField.ts`**.
 4. **Inline (opt-in)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**, and on the web side to `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. All three or none.
 
-After any module change, run `pnpm generate` and `pnpm check:wiring` from the repo root; the check covers the 7 wiring points (AGENTS.md) and the inline places.
+After any module change, run `pnpm generate` and `pnpm check:wiring` from the repo root; the check covers the 6 wiring points (AGENTS.md) and the inline places.
 
 You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
 

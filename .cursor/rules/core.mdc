@@ -8,7 +8,7 @@ Canonical guardrails: `/AGENTS.md`. Read it before writing code in this repo.
 Top-level rules (do not duplicate — see AGENTS.md for the full context):
 
 - Reuse before invention; grep `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/` first.
-- Content blocks are **modules** — paired Sanity object + React component, wired in 7 places (`pnpm gen:module`). Skipping any one is a bug. Inline use in rich text is opt-in.
+- Content blocks are **modules** — paired Sanity object + React component, wired in 6 places (`pnpm gen:module`). Skipping any one is a bug. Inline use in rich text is opt-in.
 - This is `variant/document-level`: one document per language (AGENTS.md §"Branch-specific notes" wins over its field-level §i18n). Select documents in GROQ with `language == $locale`; fields are plain and render directly. Never add `internationalizedArray*` content fields here.
 - Never edit the plugin-managed `language` field on documents.
 - After schema or query edits: `pnpm generate` → `pnpm typecheck` → `pnpm format`. Never edit `*.gen.ts` or `studio/schema.json`.

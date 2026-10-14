@@ -10,7 +10,7 @@ Compares the module wiring documented in [`/AGENTS.md`](../../AGENTS.md) ("The m
 |---|---|
 | Schema file | `module<Name>.ts` with `name: "module.<id>"` and `export const module<Name>`, all three matching. |
 | Component + query files | `web/src/components/modules/Module<Name>.tsx`; `web/sanity/queries/components/modules/<name>.ts` exporting `module<Name>Query`. |
-| List slots | `schemas/index.ts` (import + `schemaTypes`), `moduleTypes`, the components barrel, a `case` in `ModulesRenderer`'s switch, `modulesQuery`. A missing entry fails; an entry for a module without a schema is stale and fails too. |
+| List slots | `schemas/index.ts` (import + `schemaTypes`), `moduleTypes`, a `case` in `ModulesRenderer`'s switch, `modulesQuery`. A missing entry fails; an entry for a module without a schema is stale and fails too. |
 | Renderer fallback | `const unhandled: never = mod` stays, so a module without a `case` fails `tsc`. |
 | Inline (opt-in) | The Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx` name the same modules. |
 

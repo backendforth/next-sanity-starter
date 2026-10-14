@@ -5,6 +5,7 @@ import { defineType, type PreviewValue } from "sanity";
 import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
 import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
 import {
+  NEWEST_FIRST_SUGGESTIONS,
   PROJECT_CATEGORY_REFERENCE_FILTER,
   sameLanguageReferenceFilter,
 } from "../constants/references";
@@ -57,6 +58,7 @@ export const project = defineType({
           type: "reference",
           to: [{ type: "projectCategory" }],
           options: {
+            ...NEWEST_FIRST_SUGGESTIONS,
             filter: sameLanguageReferenceFilter(
               PROJECT_CATEGORY_REFERENCE_FILTER,
             ),
@@ -73,6 +75,7 @@ export const project = defineType({
       type: "slug",
       options: {
         maxLength: 96,
+        source: "title",
         isUnique: isUniqueLocaleAgnostic,
       },
       validation: validateSlug,

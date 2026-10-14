@@ -5,6 +5,7 @@ import {
   type ContentRefSelectionMode,
   type ContentRefSourceScope,
   contentRefReferenceFilter,
+  NEWEST_FIRST_SUGGESTIONS,
   PAGE_REFERENCES,
   PROJECT_REFERENCES,
   sameLanguageReferenceFilter,
@@ -92,6 +93,7 @@ export const moduleContentRefs = defineType({
           weak: true,
           to: [...PAGE_REFERENCES, ...PROJECT_REFERENCES],
           options: {
+            ...NEWEST_FIRST_SUGGESTIONS,
             filter: sameLanguageReferenceFilter(({ parent }) =>
               contentRefReferenceFilter(
                 scopeFromParent(parent as ContentRefsParent),

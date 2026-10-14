@@ -3,6 +3,7 @@ import { defineType } from "sanity";
 
 import { MediaVideoPreview } from "../../../components/previews/MediaVideoPreview";
 import { getDurationString } from "../../../utils/helpers";
+import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 /**
  * Silent Mux video loop — separate from `media.video` because the editor intent is
@@ -37,7 +38,7 @@ export const mediaVideoLoop = defineType({
       name: "poster",
       title: "Poster image",
       type: "image",
-      description: "Shown before the first frame is decoded and as fallback.",
+      description: `Shown before the first frame is decoded and as fallback. ${IMAGE_COLOR_PROFILE_HINT}`,
       options: { hotspot: true },
     },
     {

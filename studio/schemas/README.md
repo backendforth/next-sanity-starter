@@ -63,6 +63,8 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
 
+Give the slug a **Generate** button with `options.source: "title"`. On this branch each language variant is its own document with a plain-string `title`, so `source` points at it directly (`main` needs a helper for its localized titles).
+
 ## 7. Shared media objects (`media.*`)
 
 Reusable **`type: "object"`** types for image and Mux video live under **`objects/media/`**:
@@ -71,6 +73,8 @@ Reusable **`type: "object"`** types for image and Mux video live under **`object
 - **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption.
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
+
+Fields that take an image upload (the `media.image` image, both video posters, `module.carousel` slides, the SEO / OG images and the favicon) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
 
 ## 8. Content modules (`module.*`)
 
@@ -114,6 +118,8 @@ You do **not** need a Desk structure item for a module (modules are not document
 ### Internal page references
 
 `module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/projects/{slug}`).
+
+Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SUGGESTIONS`** (same file) into the field’s `options`, next to any `filter`. Do the same on new reference fields.
 
 ## 9. Mux / media
 

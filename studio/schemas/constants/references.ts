@@ -82,3 +82,21 @@ export function contentRefReferenceFilter(
       return `${PAGE_REFERENCE_FILTER} || (${PROJECT_REFERENCE_FILTER})`;
   }
 }
+
+/**
+ * Reference-picker `options` fragment: list suggestions newest first.
+ *
+ * An empty picker search is ranked by a relevance `_score` that ties across
+ * every candidate, so the order looks arbitrary. `sort` becomes the search
+ * query's `order()` clause, applied before the result slice, so the document an
+ * editor just created is on top. Spread it into a reference field's `options`
+ * next to `filter`.
+ *
+ * `sort` is `@internal` in Sanity (absent from the public `ReferenceOptions`
+ * type), which is why it lives in this one constant: an upgrade may drop it,
+ * and suggestions then fall back to the default order without breaking. It
+ * also replaces relevance ranking for typed queries in the picker.
+ */
+export const NEWEST_FIRST_SUGGESTIONS = {
+  sort: [{ field: "_createdAt", direction: "desc" as const }],
+};

@@ -25,6 +25,7 @@ interface ImportMetaEnv {
     | string;
   readonly SANITY_STUDIO_PREVIEW_ORIGIN?: string;
   readonly SANITY_STUDIO_WEB_PREVIEW_ORIGINS?: string;
+  readonly SANITY_STUDIO_HOSTING_URL?: string;
   readonly SANITY_STUDIO_NETLIFY_BUILD_HOOK?: string;
   readonly SANITY_STUDIO_NETLIFY_SITE_ID?: string;
   readonly SANITY_STUDIO_NETLIFY_BRANCH_NAME?: string;
@@ -47,5 +48,8 @@ declare namespace NodeJS {
       | string;
     SANITY_STUDIO_DATASET_RESOLVER_TOKEN?: string;
     SANITY_API_READ_TOKEN?: string;
+    SANITY_STUDIO_HOSTING_URL?: string;
+    SANITY_STUDIO_APP_ID?: string;
+    SANITY_AUTH_TOKEN?: string;
   }
 }

@@ -1,12 +1,16 @@
 # Netlify — Next.js app in `web/` (pnpm monorepo).
 #
+# The Studio is a second Netlify site from the same repository, configured by
+# `studio/netlify.toml` (package directory `studio`). This file is the web site's only.
+#
 # Build runs from the repository root so pnpm can resolve workspace packages.
 # In the Netlify UI, keep the base directory at the repo root unless you mirror this layout elsewhere.
 #
 # Set in Site settings → Environment variables (Build + Runtime as needed):
-#   SANITY_STUDIO_PROJECT_ID  — required for Next ↔ Sanity
-#   SANITY_STUDIO_DATASET     — optional if you pin a dataset
-#   NEXT_PUBLIC_SANITY_*      — optional client fallbacks
+#   SANITY_STUDIO_PROJECT_ID       — required for Next ↔ Sanity
+#   SANITY_STUDIO_DATASET          — optional if you pin a dataset
+#   NEXT_PUBLIC_SANITY_STUDIO_URL  — the Studio's hosting URL (CSP `frame-ancestors`, edit links)
+#   NEXT_PUBLIC_SANITY_*           — optional client fallbacks
 # Full list: `web/.env.example`
 #
 # Publish directory (why not `dist/`?):

@@ -1,9 +1,7 @@
 import type { PreviewProps } from "sanity";
 
-/**
- * Object preview for `media.video` (Mux).
- */
-export function MediaVideoPreview(props: PreviewProps) {
+/** Object preview for the `media.image`, `media.video` and `media.videoLoop` fields: title and subtitle. */
+export function MediaFieldPreview(props: PreviewProps) {
   const { title, subtitle } = props;
 
   return (

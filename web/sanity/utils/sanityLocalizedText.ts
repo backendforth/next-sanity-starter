@@ -163,6 +163,11 @@ function looksLikeIntlEntryArray(value: unknown): value is IntlTextEntry[] {
 	);
 }
 
+function isEmbeddedModule(value: object): boolean {
+	const type = (value as { _type?: unknown })._type;
+	return typeof type === "string" && type.startsWith("module.");
+}
+
 function deepResolveLocalizedTree(
 	value: unknown,
 	locale: string,
@@ -193,6 +198,11 @@ function deepResolveLocalizedTree(
 	}
 
 	if (typeof value === "object") {
+		/* Embedded modules resolve their own i18n fields when they render (`ModuleCarousel` picks
+		 * `heading` itself). Flattening them here left that lookup with a string, i.e. nothing. */
+		if (isEmbeddedModule(value)) {
+			return value;
+		}
 		const out: Record<string, unknown> = {};
 		for (const [propertyKey, propertyValue] of Object.entries(
 			value as object,
@@ -206,8 +216,8 @@ function deepResolveLocalizedTree(
 }
 
 /**
- * Picks the locale for `internationalizedArrayRichText*` and resolves all embedded i18n
- * fields in blocks, mark defs, and modules.
+ * Picks the locale for `internationalizedArrayRichText*` and resolves the i18n fields in its
+ * blocks and mark defs. Embedded `module.*` objects pass through; their renderers resolve them.
  */
 export function resolveLocalizedPortableTextDeep(
 	entries: IntlRichTextEntry[] | null | undefined,

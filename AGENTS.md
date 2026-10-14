@@ -183,7 +183,7 @@ The starter does **not** filter locales in GROQ. Every translatable field is an 
 |---|---|
 | `pickLocalizedString(entries, locale, siteLocale)` | Single i18n string field (title, alt, label). |
 | `parseLocalizedText({ value, locale, siteLocale, as })` | Polymorphic: `as: "auto" \| "string" \| "blocks"` — handles string or Portable Text. |
-| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with embedded i18n fields (used inside RichTextMedia + modules in rich text). |
+| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with i18n fields in its blocks and link marks. Embedded `module.*` objects pass through untouched — their renderers resolve their own fields. |
 
 **Fallback chain (must-know):** exact locale → base tag (`en-US` → `en`) → `siteLocale.localeIds` in order → first non-empty entry.
 

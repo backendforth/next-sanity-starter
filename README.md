@@ -146,7 +146,7 @@ All from the repo root.
 | Script | What it does |
 |--------|--------------|
 | `pnpm dev` | Run `web` + `studio` in parallel |
-| `pnpm web:dev` | Web only (`next dev --webpack`) |
+| `pnpm web:dev` | Web only (`next dev`) |
 | `pnpm studio:dev` | Studio only |
 | `pnpm build` | Build all workspaces |
 | `pnpm studio:build` | Build the Studio (`studio/dist`) |

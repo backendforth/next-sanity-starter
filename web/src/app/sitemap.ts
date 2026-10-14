@@ -5,13 +5,6 @@ import { hreflangLanguages } from "@/sanity/seo/resolveSanityMetadata";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
-/**
- * Refresh on tag invalidation (`pages`, `home`, `site-language-settings`, `site-pages`)
- * via `/api/revalidate`. The 1 h fail-safe revalidate ensures editors who skip the
- * webhook still get fresh sitemaps within reasonable time.
- */
-export const revalidate = 3600;
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const [pages, siteLocale] = await Promise.all([
 		cachedSitemapPages(),

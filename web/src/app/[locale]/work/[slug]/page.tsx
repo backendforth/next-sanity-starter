@@ -61,7 +61,6 @@ export async function generateMetadata({
 		segmentFallback: slug,
 		site: chrome?.settings,
 		siteLocale,
-		path: `/work/${slug}`,
 	});
 }
 

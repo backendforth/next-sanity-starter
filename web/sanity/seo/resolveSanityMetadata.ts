@@ -191,8 +191,6 @@ export type MetadataFromSanityPageDataInput = {
 	site?: SiteSettings | null;
 	/** Locale config for `hreflang` alternates and SEO-field fallback order. */
 	siteLocale?: SiteLocaleSlice | null;
-	/** Locale-agnostic path (`/` for home, `/{slug}` for pages) — required for canonical + alternates. */
-	path?: string;
 	/** Home only: the site-wide SEO title wins over the heading. */
 	siteSeoTitleFirst?: boolean;
 };
@@ -208,7 +206,6 @@ export function metadataFromSanityPageData({
 	segmentFallback,
 	site,
 	siteLocale,
-	path,
 	siteSeoTitleFirst,
 }: MetadataFromSanityPageDataInput): Metadata {
 	const heading = pickLocalizedString(data.title, locale, siteLocale);
@@ -218,7 +215,9 @@ export function metadataFromSanityPageData({
 		settingsSeo: site?.seo,
 		titleFallback: heading || segmentFallback,
 		siteSeoTitleFirst,
-		path,
+		/* `routePathProjection`: canonical + `hreflang` alternates. A path starts with `/`, so
+		 * stega never encodes it. */
+		path: data.path ?? undefined,
 		currentLocale: locale,
 		siteLocale: siteLocale ?? null,
 		siteTitleFallback: brand,

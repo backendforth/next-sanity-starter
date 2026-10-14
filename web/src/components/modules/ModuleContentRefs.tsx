@@ -4,7 +4,6 @@ import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
-import { contentRefTargetHref } from "@/src/utils/contentRefHref";
 
 import { ModuleContentRefsClient } from "./ModuleContentRefsClient";
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
@@ -35,12 +34,12 @@ export function ModuleContentRefs({
 	priority = false,
 }: Props) {
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
-	const { localePath } = createLanguagePathUtils(siteLocale);
+	const { hrefFor } = createLanguagePathUtils(siteLocale);
 	const items: ContentRefListItem[] = (module.references ?? [])
 		.filter((item) => item != null)
 		.map((item) => ({
 			...item,
-			href: contentRefTargetHref(item, localePath, locale),
+			href: hrefFor(item.path, locale),
 		}));
 	/* In Presentation the value carries invisible stega markers; compare the clean string. */
 	const isProjectList = stegaClean(module.sourceScope) === "projects";

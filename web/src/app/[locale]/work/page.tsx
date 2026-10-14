@@ -40,7 +40,6 @@ export async function generateMetadata({
 		segmentFallback: "Work",
 		site: chrome?.settings,
 		siteLocale,
-		path: "/work",
 	});
 }
 

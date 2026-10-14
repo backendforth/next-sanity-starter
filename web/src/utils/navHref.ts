@@ -70,34 +70,19 @@ function labelFor(
 	return "Link";
 }
 
-/**
- * Nav links reference `home` or `page` (`PAGE_REFERENCES` in the Studio), and TypeGen narrows
- * `route` to `"page"` (home, or a dangling reference) or `"slug"`. A dangling one goes home.
- */
-function internalHref(
-	link: Extract<NavMenuLink, { resolvedReference: unknown }>,
-	locale: string,
-	localePath: LanguagePathUtils["localePath"],
-): string | null {
-	if (stegaClean(link.route) === "page") {
-		return localePath("/", locale);
-	}
-	const slug = link.slug?.trim();
-	return slug ? localePath(`/${slug}`, locale) : null;
-}
-
 export function resolveNavMenuLink(
 	link: NavMenuLink,
 	locale: string,
 	index: number,
-	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	pathUtils: Pick<LanguagePathUtils, "hrefFor">,
 	idPrefix = "nav",
 	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow | null {
 	const label = labelFor(link, locale, siteLocale);
 
 	if (isStegaVariant(link, "linkType", "linkInternal")) {
-		const href = internalHref(link, locale, pathUtils.localePath);
+		/* `path` is `null` for a deleted or unpublished target: the row is dropped. */
+		const href = pathUtils.hrefFor(link.resolvedReference?.path, locale);
 		if (!href) {
 			return null;
 		}
@@ -164,7 +149,7 @@ export function resolveNavMenuLink(
 export function resolveMenuRows(
 	menu: NavMenuLink[] | null | undefined,
 	locale: string,
-	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	pathUtils: Pick<LanguagePathUtils, "hrefFor">,
 	idPrefix: string,
 	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow[] {
@@ -191,7 +176,7 @@ export function resolveMenuRows(
 export function resolveMainMenuRows(
 	mainMenu: NavMenuLink[] | null | undefined,
 	locale: string,
-	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	pathUtils: Pick<LanguagePathUtils, "hrefFor">,
 	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow[] {
 	return resolveMenuRows(mainMenu, locale, pathUtils, "nav", siteLocale);
@@ -212,7 +197,7 @@ function mainMenuEntryId(item: MainMenuItem, index: number): string {
 export function resolveMainMenuEntries(
 	mainMenu: MainMenuItem[] | null | undefined,
 	locale: string,
-	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	pathUtils: Pick<LanguagePathUtils, "hrefFor">,
 	siteLocale?: SiteLocaleSlice | null,
 ): MainMenuEntry[] {
 	if (!mainMenu?.length) {
@@ -252,7 +237,7 @@ export function resolveMainMenuEntries(
 export function resolveFooterMenuRows(
 	footerMenu: NavMenuLink[] | null | undefined,
 	locale: string,
-	pathUtils: Pick<LanguagePathUtils, "localePath">,
+	pathUtils: Pick<LanguagePathUtils, "hrefFor">,
 	siteLocale?: SiteLocaleSlice | null,
 ): ResolvedNavRow[] {
 	return resolveMenuRows(footerMenu, locale, pathUtils, "footer", siteLocale);

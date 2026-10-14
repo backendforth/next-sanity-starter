@@ -1,10 +1,7 @@
 /**
- * Polymorphic URL/anchor resolver for Sanity link marks and document refs.
- *
- * Extracted from `RichTextMedia` so the same resolution logic is reusable from
- * any renderer (cards, callouts, embedded module links). For nav menus see
- * `web/src/utils/navHref.ts` — that file consumes a different shape
- * (`NavMenuLink`) and handles `route` / function actions specific to nav rows.
+ * Resolves a Portable Text `link` mark into anchor props. Internal targets carry their `path`
+ * from GROQ (`routePathProjection`); with `locale` and `siteLocale` it gets the locale prefix
+ * (`hrefFor`), without them it stays locale-agnostic. For nav rows see `src/utils/navHref.ts`.
  */
 
 import type { LinkMark } from "@/sanity/types";
@@ -19,12 +16,6 @@ export type LinkLocaleOptions = {
 	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
 };
 
-/** The part of a resolved reference that decides its route. */
-export type LinkResolvedRef = {
-	_type?: string;
-	slug?: string | null;
-};
-
 export type ResolvedLink =
 	| {
 			kind: "anchor";
@@ -34,32 +25,6 @@ export type ResolvedLink =
 	  }
 	| { kind: "function" }
 	| null;
-
-function refPath(ref: LinkResolvedRef | null | undefined): string | undefined {
-	if (ref?._type === "home") return "/";
-	if (ref?._type === "page" && ref.slug) return `/${ref.slug}`;
-	if (ref?._type === "work") return "/work";
-	if (ref?._type === "project" && ref.slug) return `/work/${ref.slug}`;
-	return undefined;
-}
-
-/**
- * URL for a polymorphic document reference (`home`, `page`, `work`, `project`). Returns
- * `undefined` for unknown ref shapes so callers can skip rendering the link.
- *
- * With `locale` and `siteLocale` the path goes through `localePath` (`/de/about`, no prefix
- * for the default locale); without them it stays locale-agnostic.
- */
-export function resolveRefHref(
-	ref: LinkResolvedRef | null | undefined,
-	options?: LinkLocaleOptions,
-): string | undefined {
-	const path = refPath(ref);
-	if (!path) return undefined;
-	const { locale, siteLocale } = options ?? {};
-	if (!locale || !siteLocale) return path;
-	return createLanguagePathUtils(siteLocale).localePath(path, locale);
-}
 
 /**
  * Resolve a Portable Text `link` mark into a payload the renderer can spread
@@ -85,7 +50,12 @@ export function resolveLinkMark(
 	}
 
 	if (isStegaVariant(mark, "linkType", "linkInternal")) {
-		const href = resolveRefHref(mark.resolvedReference, options);
+		const path = mark.resolvedReference?.path;
+		const { locale, siteLocale } = options ?? {};
+		const href =
+			locale && siteLocale
+				? createLanguagePathUtils(siteLocale).hrefFor(path, locale)
+				: (path ?? null);
 		return href ? { kind: "anchor", href } : null;
 	}
 

@@ -41,7 +41,6 @@ export async function generateMetadata({
 		site: chrome?.settings,
 		siteSeoTitleFirst: true,
 		siteLocale,
-		path: "/",
 	});
 }
 

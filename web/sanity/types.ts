@@ -21,12 +21,10 @@ import type {
 
 // ── Route documents ─────────────────────────────────────────────────────────
 
-export type HomeDocument = NonNullable<StegaBranded<HomeQueryResult>>;
-export type PageDocument = NonNullable<StegaBranded<PageBySlugQueryResult>>;
-export type WorkDocument = NonNullable<StegaBranded<WorkQueryResult>>;
-export type ProjectDocument = NonNullable<
-	StegaBranded<ProjectBySlugQueryResult>
->;
+type HomeDocument = NonNullable<StegaBranded<HomeQueryResult>>;
+type PageDocument = NonNullable<StegaBranded<PageBySlugQueryResult>>;
+type WorkDocument = NonNullable<StegaBranded<WorkQueryResult>>;
+type ProjectDocument = NonNullable<StegaBranded<ProjectBySlugQueryResult>>;
 export type RouteDocument =
 	| HomeDocument
 	| PageDocument
@@ -40,7 +38,7 @@ export type PageSeo = RouteDocument["seo"];
 
 /** One entry of a document's `modules[]` — the union `ModulesRenderer` switches on. */
 export type ContentModule = NonNullable<HomeDocument["modules"]>[number];
-export type ModuleType = ContentModule["_type"];
+type ModuleType = ContentModule["_type"];
 /** The projected shape of one module type, e.g. `ModuleOf<"module.text">`. */
 export type ModuleOf<T extends ModuleType> = Extract<
 	ContentModule,
@@ -72,8 +70,8 @@ export type LinkMark = Extract<RichTextMarkDef, { _type: "link" }>;
 
 // ── App shell ───────────────────────────────────────────────────────────────
 
-export type SiteChrome = StegaBranded<SiteChromeQueryResult>;
-export type SiteNav = NonNullable<SiteChrome["nav"]>;
+type SiteChrome = StegaBranded<SiteChromeQueryResult>;
+type SiteNav = NonNullable<SiteChrome["nav"]>;
 export type MainMenuItem = NonNullable<SiteNav["mainMenu"]>[number];
 /** A link row in either menu, told apart by `linkType`. */
 export type NavMenuLink = NonNullable<SiteNav["footerMenu"]>[number];

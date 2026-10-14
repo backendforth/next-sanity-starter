@@ -15,10 +15,10 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
-| `types.ts` | App-facing names derived from it: `HomeDocument`, `PageDocument`, `ModuleOf<"module.x">`, `RichTextMediaValue`, `SiteNav`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
-| `utils/` | Localization (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`), `isStegaVariant`, `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
+| `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
+| `utils/` | Localization (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`), `isStegaVariant`, `sanityImageBuilder`, `getSanityModuleLabel` |
 
-Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
+Import full queries from **`@/sanity/queries`**, utilities from their file (`@/sanity/utils/sanityImageBuilder`, …).
 
 ---
 
@@ -33,7 +33,10 @@ Sanity uses **`internationalizedArray*`** fields: arrays of `{ _key, language, v
 - **`pickLocalizedValue(entries, locale?, siteLocale?)`** — any other value type.
 
 ```ts
-import { pickLocalizedPortableTextBlocks, pickLocalizedString } from "@/sanity/utils";
+import {
+  pickLocalizedPortableTextBlocks,
+  pickLocalizedString,
+} from "@/sanity/utils/sanityLocalizedText";
 
 const heading = pickLocalizedString(doc.title, "de", siteLocale);
 const blocks = pickLocalizedPortableTextBlocks(module.body, "de", siteLocale);
@@ -61,7 +64,7 @@ import {
   buildFetchedImageUrl,
   getImageOrientation,
   type SanityImageField,
-} from "@/sanity/utils";
+} from "@/sanity/utils/sanityImageBuilder";
 
 function HeroImage({ image }: { image: SanityImageField | null }) {
   if (!image) return null;
@@ -103,7 +106,7 @@ This example fetches a page with its i18n `title` and the `modules` array from `
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
-import { pickLocalizedString } from "@/sanity/utils";
+import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 
 export default async function Page({
   params,

@@ -6,11 +6,10 @@ import { tagsForWebhookDocument } from "@/sanity/cacheTags";
 
 const REVALIDATE_SECRET = process.env.SANITY_REVALIDATE_SECRET?.trim();
 
-/** The webhook projection, `{_type, slug, language}`. `parseBody` only hands it over signed. */
+/** The webhook projection, `{_type, slug}`. `parseBody` only hands it over signed. */
 type WebhookPayload = {
 	_type?: string;
 	slug?: { current?: string } | null;
-	language?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -40,7 +39,6 @@ export async function POST(request: NextRequest) {
 	const tags = tagsForWebhookDocument(
 		parsed.body?._type,
 		parsed.body?.slug?.current,
-		parsed.body?.language,
 	);
 	if (tags.length === 0) {
 		return NextResponse.json({

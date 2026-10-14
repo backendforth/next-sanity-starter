@@ -26,7 +26,11 @@ export type SanityDatasetResolveEnv = {
 	SANITY_STUDIO_DATASET_DEVELOPMENT?: string | undefined;
 	SANITY_STUDIO_DATASET_PRODUCTION?: string | undefined;
 	SANITY_STUDIO_DEPLOYMENT_TARGET?: string | undefined;
-	SANITY_STUDIO_DATASET_RESOLVER_TOKEN?: string | undefined;
+	/**
+	 * Management API token for listing datasets. Deliberately not `SANITY_STUDIO_*`: the
+	 * Studio build inlines every variable with that prefix into its public bundle.
+	 */
+	SANITY_DATASET_RESOLVER_TOKEN?: string | undefined;
 	SANITY_AUTH_TOKEN?: string | undefined;
 	VERCEL?: string | undefined;
 	VERCEL_ENV?: string | undefined;
@@ -138,8 +142,7 @@ export async function resolveStudioDatasetAsync(
 	const preferDevWarn = warnPreferDevContext(env);
 
 	const token =
-		env.SANITY_STUDIO_DATASET_RESOLVER_TOKEN?.trim() ||
-		env.SANITY_AUTH_TOKEN?.trim();
+		env.SANITY_DATASET_RESOLVER_TOKEN?.trim() || env.SANITY_AUTH_TOKEN?.trim();
 
 	if (!options.skipProbe && projectId && token) {
 		const names = await fetchProjectDatasetNames(projectId, token);

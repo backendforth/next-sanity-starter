@@ -52,22 +52,22 @@ function needsNativeHlsPlayback(video: HTMLVideoElement): boolean {
 }
 
 /**
- * Warm-up: start fetching the hls.js chunk the moment this module evaluates —
- * while React is still hydrating — instead of first inside the attach effect.
- * That effect fires only after hydration + container measurement, so the chunk
- * download sat serially in front of the manifest/segment fetches; with the
- * warm-up it overlaps hydration and the attach path's `import("hls.js")`
- * resolves from the in-flight request.
+ * Warm-up: start fetching the hls.js chunk as soon as a video mounts, instead of first inside
+ * the attach effect. That effect fires only after container measurement, so the chunk download
+ * sat serially in front of the manifest/segment fetches; with the warm-up it overlaps the
+ * measurement and the attach path's `import("hls.js")` resolves from the in-flight request.
  *
- * Mirrors the attach path's native fallback ({@link needsNativeHlsPlayback}):
- * native HLS never touches hls.js, so those browsers skip the download
- * entirely. Module scope only runs in the browser bundle of pages that render
- * video components.
+ * It used to run at module scope, which fires on every page whose bundle merely contains the
+ * video components. In an effect it runs only where a video renders.
+ *
+ * Mirrors the attach path's native fallback ({@link needsNativeHlsPlayback}): native HLS never
+ * touches hls.js, so those browsers skip the download entirely.
  */
-if (
-	typeof window !== "undefined" &&
-	!needsNativeHlsPlayback(document.createElement("video"))
-) {
+let hlsWarmedUp = false;
+function warmUpHls(): void {
+	if (hlsWarmedUp) return;
+	hlsWarmedUp = true;
+	if (needsNativeHlsPlayback(document.createElement("video"))) return;
 	void import("hls.js").catch(() => {
 		/* Fetch hiccup — the attach effect's own import retries. */
 	});
@@ -128,6 +128,7 @@ export function useMuxHlsSource(
 	const tuneForShortLoop = opts.tuneForShortLoop === true;
 	const loadingPaused = opts.loadingPaused === true;
 	const hlsRef = useRef<HlsInstance | null>(null);
+	useEffect(warmUpHls, []);
 	/* Exposed by the lifecycle effect so the ResizeObserver effect can re-pick
 	 * the rendition without rebuilding hls. `null` until the manifest is parsed
 	 * and after `detach()`. */

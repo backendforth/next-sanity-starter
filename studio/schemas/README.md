@@ -26,14 +26,14 @@ export const schemaTypes = [
 
 Order can matter for UI in rare cases; keep related types together. Anything omitted here is **invisible** to Studio and APIs.
 
-After schema changes, regenerate and commit Studio typegen artifacts:
+After schema changes, regenerate and commit the typegen artifacts (Studio schema and types, and the web query types that follow from them):
 
 ```bash
-pnpm studio:generate
-git add studio/schema.json studio/sanity.types.gen.ts
+pnpm generate
+git add studio/schema.json studio/sanity.types.gen.ts web/sanity/sanity.types.gen.ts
 ```
 
-CI fails if `studio:generate` produces a diff. `web/sanity/types/*` remain hand-maintained for now; keep them aligned when fields change.
+CI fails if `pnpm generate` produces a diff. The web app has no hand-written Sanity types: `web/sanity/types.ts` derives them from the generated file.
 
 ## 3. Desk structure (not automatic)
 
@@ -80,29 +80,27 @@ Fields that take an image upload (the `media.image` image, both video posters, `
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
-1. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`).
-2. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons).
-
-When you add a **new** module, wire it up in **both** places so behaviour stays consistent: inline in text **and** in the stacked `modules` list.
+1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons). Every module.
+2. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`). **Opt-in**: only modules that belong inside text (today `module.media` and `module.carousel`).
 
 ### Adding a new module (checklist)
 
-> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root and it creates all studio + web files plus barrel insertions atomically, and prints the `ModulesRenderer.tsx` branch to paste by hand (`pnpm check:wiring` fails until it is there). See `packages/scaffold-module/README.md`. The steps below describe what the scaffolder does, and are still useful when hand-editing an existing module.
+> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root (`--inline` for a rich-text module): it creates the studio + web files and wires every point, the `ModulesRenderer.tsx` `case` included, or writes nothing if an anchor is missing. See `packages/scaffold-module/README.md`. The steps below describe the Studio half of what it does.
 
 1. **Define the object** — create `schemas/objects/modules/<name>.ts` with `defineType`:
    - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
    - **`type: "object"`** — fields, `preview`, optional `icon`, etc.
 2. **Register the type** — export it and add it to **`schemas/index.ts`** → `schemaTypes` (keep module types together with other `module.*` entries).
-3. **Rich text (inline blocks)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**.
-4. **Document-level `modules` arrays** — append the same `{ type: "module.<id>" }` to **`moduleTypes`** in **`fields/modulesArrayField.ts`**.
+3. **Document-level `modules` arrays** — append `{ type: "module.<id>" }` to **`moduleTypes`** in **`fields/modulesArrayField.ts`**.
+4. **Inline (opt-in)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**, and on the web side to `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. All three or none.
 
-After any module change, run `pnpm check:wiring` from the repo root to verify the full 8-point wiring (steps 1–4 above plus the four web-side files).
+After any module change, run `pnpm generate` and `pnpm check:wiring` from the repo root; the check covers the 7 wiring points (AGENTS.md) and the inline places.
 
 You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
 
-### Keep lists in sync
+### Inline is a choice per module
 
-`richTextMedia` and **`moduleTypes`** (in **`fields/modulesArrayField.ts`**) should expose the **same** set of `module.*` types unless you intentionally restrict a module to only one context (unusual). If they drift, editors will see different insert options in the body vs. the **Modules** field.
+**`moduleTypes`** lists every module; `richTextMedia` lists only the inline ones. A block-level module like `module.contentRefs` makes no sense inside a paragraph, which is why the two lists differ by design. What must not differ are the three inline places — a type in the editor's `of` without its query branch and component handler can be inserted but renders nothing.
 
 ### Module overview
 

@@ -17,7 +17,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas �
 
 ## Sanity-side gotchas
 
-- `web/sanity/types/*` are **hand-maintained**. After schema or GROQ projection changes, update the type in the same commit. `pnpm check:wiring` catches missing files; field renames slip through silently.
+- Sanity data is typed by TypeGen: `web/sanity/types.ts` derives the names (`ModuleOf<"module.x">`, `HomeDocument`, …). After a schema or projection change run `pnpm generate`; `tsc` flags what no longer fits. Never write these types by hand.
 - **NEVER** import from `studio/sanity.types.gen.ts` — wrong direction, breaks the build.
 - Don't set `data-sanity` in module components. `ModulesRenderer` wraps every module in an element with its field-level path (built with `dataAttr`); Visual Editing click-to-edit depends on rendering modules through it.
 

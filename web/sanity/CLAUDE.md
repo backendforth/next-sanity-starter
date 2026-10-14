@@ -2,14 +2,14 @@
 
 Canonical: @../../AGENTS.md §i18n. Deep doc: @./README.md and @./queries/README.md.
 
-This is the **data layer**: GROQ queries, hand-maintained TS shapes, and resolver utilities.
+This is the **data layer**: GROQ queries, the names for their generated types, and resolver utilities.
 
 ## YOU MUST
 
 1. **NEVER** filter locale inside GROQ. Project the full `{ _key, _type, language, value }` array. Locale resolves at React render time. `coalesce(field[language=="en"]...)` is forbidden — breaks fallback.
 2. Reuse snippets from `queries/snippets/`. Check there before adding `slug`, `seo`, `link`, `media`, or module shapes inline.
 3. Use `pickLocalizedString` / `pickLocalizedPortableTextBlocks` / `pickLocalizedValue` from `utils/sanityLocalizedText.ts` for **all** locale resolution. Don't index i18n arrays directly.
-4. Keep `types/modules/<name>.ts` in sync with `queries/components/modules/<name>.ts` — they are hand-maintained, in the same commit.
+4. Fragments are plain `const` template strings; every full query is a `defineQuery`. No function calls in queries — TypeGen skips them and `pnpm generate` fails (`check:typegen`). Name result types in `types.ts`, derived from `sanity.types.gen.ts`; never hand-write them.
 5. **NEVER** import from `studio/sanity.types.gen.ts`. Wrong direction.
 
 ## Layout
@@ -20,10 +20,10 @@ This is the **data layer**: GROQ queries, hand-maintained TS shapes, and resolve
 | `queries/components/modules/` | Per-module projections (one file per `module.<id>`) + barrel. |
 | `queries/components/` | Per-component (non-module) projections. |
 | `queries/pages/` | Per-route projections. |
-| `types/modules/` | Hand-maintained TS shapes per module + barrel. |
-| `types/pages.ts` | Page-level types. |
+| `types.ts` | Names for the generated query types (`HomeDocument`, `ModuleOf<…>`, …) and `StegaAware`. |
+| `sanity.types.gen.ts` | TypeGen output (`pnpm generate`). Never edit. |
 | `utils/sanityLocalizedText.ts` | **Canonical** locale resolver — extend here, don't fork. |
-| `utils/` | Image builder, module labels, link resolvers, `dataAttr`. |
+| `utils/` | Image builder, module labels, link resolvers, `dataAttr`, `isStegaVariant`. |
 
 ## Resolver utilities
 
@@ -41,4 +41,5 @@ If you need a new resolver, extend `sanityLocalizedText.ts` — don't write a pa
 - `coalesce(field[language==$locale].value, ...)` in GROQ.
 - Importing from `studio/sanity.types.gen.ts`.
 - Re-implementing `slug { current, _type }`, `seo { ... }`, or `link { ... }` inline instead of reusing snippets.
-- Querying without a matching hand type in `web/sanity/types/`.
+- A query outside `defineQuery`, or an `as` cast on fetched data.
+- Comparing a fetched string to a literal without `stegaClean` / `isStegaVariant` (always `false` in Presentation).

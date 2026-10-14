@@ -1,6 +1,6 @@
 # `web/sanity` — data layer for Sanity + Next.js
 
-This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** for fetched module shapes, and **utilities** (localization, images, labels). It is designed so pages and components can stay thin: fetch at the route, map types, render.
+This folder holds the **Sanity client**, **GROQ queries**, the **names for their generated types**, and **utilities** (localization, images, labels). It is designed so pages and components can stay thin: fetch at the route, map types, render.
 
 ## Contents
 
@@ -14,9 +14,9 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers: `fetchHomeDocument`, `fetchPageBySlug`, `fetchSiteChrome` (nav + cookie banner + title for the layout, one query), `fetchErrorSettings` — use for app routes with preview/VE (pass `{ stega: false }` in `generateMetadata`) |
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
-| `types/pages.ts` | `HomeDocument`, `PageDocument`, `PageSeo` — import in **`app/**/page.tsx`** next to route fetches (barrel: `types/index.ts`) |
-| `types/modules/` | TS types for `module.*` payloads (and shared image types) |
-| `utils/` | Localization (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`), `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
+| `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
+| `types.ts` | App-facing names derived from it: `HomeDocument`, `PageDocument`, `ModuleOf<"module.x">`, `RichTextMediaValue`, `SiteNav`, `LinkMark`, `StegaAware`, … |
+| `utils/` | Localization (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`), `isStegaVariant`, `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
 
 Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
 
@@ -45,7 +45,7 @@ Pass **`siteLocale`** (`{ localeIds, defaultLocale }` from **`fetchSiteLanguageS
 
 ## Image builder (`utils/sanityImageBuilder.ts`)
 
-Builds optimized CDN URLs from fetched **`image`** fields (`SanityImageField` from `@/sanity/types/modules`) using `@sanity/image-url`, and exposes metadata helpers.
+Builds optimized CDN URLs from fetched **`image`** fields using `@sanity/image-url`, and exposes metadata helpers. Its input type `SanityImageField` (exported from the same file) is the shape `imageQuery` projects, checked at runtime by `resolveSanityImageFieldForUrl`.
 
 Common exports:
 
@@ -57,8 +57,11 @@ Common exports:
 Example:
 
 ```ts
-import { buildFetchedImageUrl, getImageOrientation } from "@/sanity/utils";
-import type { SanityImageField } from "@/sanity/types/modules";
+import {
+  buildFetchedImageUrl,
+  getImageOrientation,
+  type SanityImageField,
+} from "@/sanity/utils";
 
 function HeroImage({ image }: { image: SanityImageField | null }) {
   if (!image) return null;

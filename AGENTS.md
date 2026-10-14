@@ -4,20 +4,20 @@
 
 ## TL;DR
 
-This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v6) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in eight places. Multilingual content uses `sanity-plugin-internationalized-array` — locales are resolved at **render time**, never inside GROQ.
+This is a pnpm monorepo with two apps (`web` Next.js 16 App Router, `studio` Sanity v6) and shared `packages/*`. Editorial content is rendered via a strict **module pattern**: every renderable content block is a paired `module.<name>` Sanity object **plus** a `Module<Name>.tsx` React component, wired in seven places (inline use in rich text is opt-in). Multilingual content uses `sanity-plugin-internationalized-array` — locales are resolved at **render time**, never inside GROQ.
 
 Before writing code:
 
 1. Search for an existing module, util, snippet, or query that already does what you need.
-2. If you need a new content block → it is a **module**; wire all 8 points or revert.
-3. After any schema change → run `pnpm studio:generate`, then `pnpm typecheck`, then `pnpm format`.
+2. If you need a new content block → it is a **module**; `pnpm gen:module <Name>` wires all 7 points.
+3. After any schema or query change → run `pnpm generate`, then `pnpm typecheck`, then `pnpm format`.
 
 ## Principles (priority order — apply top-down when in doubt)
 
 1. **Reuse before invention.** Grep `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/`, `web/sanity/utils/` first.
 2. **Pair or don't ship.** A schema without its component (or vice versa) is a bug, not a partial commit.
-3. **All 8 wiring points or revert.** A partially wired module silently breaks the editor or the renderer. Atomic.
-4. **Typegen is the source of truth for Studio types.** Never hand-edit `studio/sanity.types.gen.ts` or `studio/schema.json`. `web/sanity/types/*` are hand-maintained for now — keep them aligned with schema field changes.
+3. **All 7 wiring points or revert.** A partially wired module silently breaks the editor or the renderer. Atomic.
+4. **Typegen is the only source of types for Sanity data.** Never hand-edit the generated files. Web types come from `defineQuery` results via `web/sanity/types.ts` (`ModuleOf<"module.x">`, `HomeDocument`, …) — never write a Sanity-shaped type by hand.
 5. **Locale-aware at render time, not query time.** Never `coalesce(field[language=="en"]...)` in GROQ. Always resolve via `pickLocalizedString` / `pickLocalizedPortableTextBlocks`.
 6. **READMEs are deep docs.** Per-folder `README.md` files are authoritative for the local pattern — link to them, do not duplicate.
 
@@ -29,11 +29,13 @@ Before writing code:
 | `studio/` | Sanity Studio v6. Editorial UI + schemas. |
 | `studio/netlify.toml` | Netlify pipeline for the Studio — the default hosting, a second Netlify site with package directory `studio`. The root `netlify.toml` is the web site's. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
+| `packages/check-wiring/` | `check:wiring`, `check:typegen` and the wiring manifest (`src/manifest.mjs`) both checks and the scaffolder use. |
+| `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module. |
 | `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
 | `web/src/components/modules/` | **Component half** of every module. |
 | `web/sanity/queries/components/modules/` | GROQ projection per module. |
-| `web/sanity/types/modules/` | Hand-maintained TS shapes per module. |
+| `web/sanity/types.ts` | Names for the generated query types (`sanity.types.gen.ts`). Derived only. |
 | `web/src/i18n/` | Locale routing, fallback config, path utils. |
 
 ## The module pattern (the most important concept)
@@ -43,39 +45,54 @@ A **module** is one content block. It exists as two halves that must always evol
 - **Studio half** — `defineType({ name: "module.<id>", type: "object", ... })` in `studio/schemas/objects/modules/module<Name>.ts`.
 - **Web half** — a React component `Module<Name>.tsx` in `web/src/components/modules/`, rendered by `ModulesRenderer.tsx` via `_type` switch.
 
-### 8-step wiring checklist
+### 7-point wiring checklist
 
-When you add or rename a module, **touch all eight** files. Skipping any one silently breaks either the editor experience or the renderer.
+`pnpm gen:module <Name>` creates the files and patches every list below; `pnpm check:wiring` compares them exactly (a missing entry fails, and so does an entry without a schema). By hand, touch all seven.
 
 | # | File | What |
 |---|---|---|
 | 1 | `studio/schemas/objects/modules/module<Name>.ts` | `defineType` with `name: "module.<id>"`, fields, `preview`, optional `icon`. |
 | 2 | `studio/schemas/index.ts` | Import + add to `schemaTypes` array. Group with other `module.*`. |
-| 3 | `studio/schemas/objects/editors/richTextMedia.ts` | Append `{ type: "module.<id>" }` to the `of` array so the module is insertable in Portable Text. |
-| 4 | `studio/schemas/fields/modulesArrayField.ts` | Append `{ type: "module.<id>" }` to `moduleTypes` so the module is insertable in document-level `modules[]` fields. |
-| 5 | `web/src/components/modules/Module<Name>.tsx` | React component. Accept `{ module, locale, siteLocale }` (and any module-specific props), and add its `_type` branch to `renderModuleChild()` in `ModulesRenderer.tsx` — without it the module renders as `UnknownModule` (nothing in production). No `data-sanity` in the component: `ModulesRenderer` sets it. |
+| 3 | `studio/schemas/fields/modulesArrayField.ts` | Append `{ type: "module.<id>" }` to `moduleTypes` so the module is insertable in document-level `modules[]` fields. |
+| 4 | `web/src/components/modules/Module<Name>.tsx` | React component typed `module: ModuleOf<"module.<id>">`. Accept `{ module, locale, siteLocale }` (and any module-specific props). No `data-sanity` in the component: `ModulesRenderer` sets it. |
+| 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch ends in `const unhandled: never = mod`, so a module the query returns without a `case` fails `tsc`. |
 | 6 | `web/src/components/modules/index.ts` | Re-export the component from the barrel. |
-| 7 | `web/sanity/queries/components/modules/<name>.ts` | GROQ projection for the module (`_key, _type, ...fields`). Re-export from `web/sanity/queries/components/modules/index.ts`. |
-| 8 | `web/sanity/types/modules/<name>.ts` | Hand-written TS type matching the GROQ projection. Re-export from `web/sanity/types/modules/index.ts`. |
+| 7 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` — the GROQ projection (`_type == "module.<id>" => { ...fields }`), listed in `modulesQuery` in `queries/components/modules/index.ts`. |
 
-After step 1–4 land, run `pnpm studio:generate` and commit `studio/schema.json` + `studio/sanity.types.gen.ts`. CI rejects a diff.
+Then `pnpm generate` and commit `studio/schema.json`, `studio/sanity.types.gen.ts` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types.
+
+### Inline modules (opt-in)
+
+A module can also be insertable inside rich text (`richTextMedia`). That is a choice per module, not a default: `module.media` and `module.carousel` are inline, `module.text` and `module.contentRefs` are not. An inline module is registered in **all three** of these places or in none — `pnpm check:wiring` fails on anything in between, and `tsc` fails when the query returns an inline type the components map doesn't handle:
+
+1. `studio/schemas/objects/editors/richTextMedia.ts` — `{ type: "module.<id>" }` in `of`.
+2. `web/sanity/queries/components/text/richTextMedia.ts` — `${module<Name>Query}` in `richTextMediaQuery`.
+3. `web/src/components/text/portableTextComponents.tsx` — a `"module.<id>"` handler in `types`.
+
+`pnpm gen:module <Name> --inline` does all three.
 
 ### DO / DON'T
 
 | ✅ DO | ❌ DON'T |
 |---|---|
-| Ship schema + component + query + type in **one** commit. | Land a Studio schema without its web counterpart (or vice versa). |
+| Ship schema + component + query + generated types in **one** commit. | Land a Studio schema without its web counterpart (or vice versa). |
 | Render new content via `ModulesRenderer`. | Add an ad-hoc page section directly inside a page template. |
 | Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`. | Re-declare image/video field shapes inline in a new module. |
-| Run `pnpm studio:generate` after every schema edit. | Hand-edit `studio/sanity.types.gen.ts` or `studio/schema.json`. |
-| Keep `richTextMedia.ts` and `modulesArrayField.ts` in sync (same module set). | Restrict a module to only one of the two unless explicitly intended. |
+| Run `pnpm generate` after every schema or query edit. | Hand-edit `studio/sanity.types.gen.ts`, `web/sanity/sanity.types.gen.ts` or `studio/schema.json`. |
+| Make a module inline only when it belongs inside text, and then in all three places. | Register an inline type in one place and not the others. |
 | Use `pnpm typecheck` to catch wiring drift. | Mark work "done" without typecheck + format passing. |
+
+## Sanity data types (TypeGen) and stega
+
+- **Queries.** Fragments are plain `const` template strings; every full query goes through `defineQuery(...)`. No function calls anywhere in a query: TypeGen skips what it can't evaluate statically, and `pnpm generate` fails on it (`check:typegen`). Filter singletons by type as well, `*[_type == "siteSettings" && _id == "siteSettings"][0]` — an `_id` alone gives TypeGen no document type to narrow to.
+- **Types.** `web/sanity/types.ts` derives app-facing names from `web/sanity/sanity.types.gen.ts` (`HomeDocument`, `ModuleOf<"module.text">`, `RichTextMediaValue`, `SiteNav`, …). Fetchers return what `sanityFetch` returns; no `as` on Sanity data.
+- **Stega.** In Presentation `sanityFetch` appends invisible markers to strings, and the types say so (`StegaString`). Compare such a value to a literal through `stegaClean(value)`, or narrow a union with `isStegaVariant(obj, "kind", "loop")` (`web/sanity/utils/stegaVariant.ts`). Never `stegaClean` a whole document: the markers are what click-to-edit reads. Fetch with a literal `stega: false` only where values leave the page unrendered (analytics ids).
 
 ## Where things live — decision tree
 
 Ask yourself, in order:
 
-1. **Is this a content block authored in Studio?** → It is a **module**. Follow the 8-step wiring.
+1. **Is this a content block authored in Studio?** → It is a **module**. Follow the 7-point wiring.
 2. **Is this a layout primitive (header, footer, container, theme toggle)?** → `web/src/components/{navigation,theme,…}/`.
 3. **Is this a Sanity-only helper (slug validator, structure item, presentation resolver)?** → `studio/utils/` or `studio/config/`.
 4. **Is this code or types shared by web AND studio?** → A package in `packages/*`.
@@ -94,11 +111,11 @@ If a piece of code does not fit any branch, stop and ask — do not invent a new
 
 ## Tooling priorities (run in this order)
 
-After any schema edit:
+After any schema or query edit:
 
 ```bash
-pnpm studio:generate       # regenerate studio/schema.json + studio/sanity.types.gen.ts
-pnpm check:wiring          # YOU MUST verify all 8 module wiring points are consistent
+pnpm generate              # schema extract + both typegens + check:typegen
+pnpm check:wiring          # YOU MUST verify the module wiring is consistent
 pnpm typecheck             # web + studio
 pnpm format                # biome check --write .
 ```
@@ -108,6 +125,7 @@ The pre-commit hook formats and re-stages the staged files; the pre-push hook ru
 **IMPORTANT — never edit:**
 
 - `studio/sanity.types.gen.ts`
+- `web/sanity/sanity.types.gen.ts`
 - `studio/schema.json`
 - Any `*.gen.*` file
 - Lockfiles (`pnpm-lock.yaml`) unless you ran a dependency command
@@ -127,13 +145,16 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm studio:build` | Build the Studio only. |
 | `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`, production target) — the alternative to Netlify. |
 | `pnpm studio:register` | Register the Netlify-hosted Studio URL (`SANITY_STUDIO_HOSTING_URL`) with Sanity and upload the schema. Netlify production deploys run it when `SANITY_AUTH_TOKEN` is set. |
-| `pnpm studio:generate` | Regenerate `studio/schema.json` + `studio/sanity.types.gen.ts`. **Run after every schema edit.** |
+| `pnpm generate` | Studio schema extract + typegen, web query typegen, then `check:typegen`. **Run after every schema or query edit.** |
+| `pnpm studio:generate` | Alias for `pnpm generate`. |
 | `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
 | `pnpm typecheck` | `tsc --noEmit` across web + studio. |
 | `pnpm lint` | `biome check .` (no writes). |
 | `pnpm format` | `biome check --write .` (auto-fix). |
-| `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component, query and type files and patches `schemaTypes`, `moduleTypes` and the barrels (`--inline` also registers it in `richTextMedia.ts`). Prints the `ModulesRenderer.tsx` branch to paste by hand. PascalCase name. Add `--dry-run` to preview. |
-| `pnpm check:wiring` | Validate all 8 module wiring points across the monorepo. CI gate. |
+| `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component and query files and wires all 7 points, the `ModulesRenderer` `case` included (`--inline` also registers it in the three inline places). Writes nothing if any anchor is missing. PascalCase name. Add `--dry-run` to preview. |
+| `pnpm check:wiring` | Compare every module wiring list with the module schemas, both ways, and the inline places with each other. CI gate. |
+| `pnpm check:typegen` | Every `defineQuery` in `web/sanity/` got a generated type (TypeGen skips queries it can't evaluate silently). Part of `pnpm generate`. |
+| `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including an end-to-end scaffold. CI gate. |
 | `pnpm strip-readmes` | Remove nested READMEs after forking the starter. The root `README.md` is preserved. |
 | `pnpm strip-readmes:dry-run` | Preview what `strip-readmes` would delete. |
 | `pnpm update` | `pnpm up --stream -r` (interactive upgrade across workspaces). |
@@ -149,7 +170,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm typecheck` | `tsc --noEmit` (web only). |
 | `pnpm lint` | Biome on `web/`. |
 | `pnpm format` | Biome write on `web/`. |
-| `pnpm generate` | `sanity typegen generate` (web-side typegen — currently unused, web types are hand-maintained). |
+| `pnpm generate` | `sanity typegen generate` — query types into `sanity/sanity.types.gen.ts`. Run via the root `pnpm generate`. |
 
 ### studio (run from `studio/` or via `pnpm --filter studio run …`)
 
@@ -160,7 +181,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm build` | `sanity build`. |
 | `pnpm deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). |
 | `pnpm register` | `node scripts/register-hosting.mjs` → `sanity deploy --external`. Pass `--dry-run` to preview. |
-| `pnpm generate` | `sanity schema extract --enforce-required-fields && sanity typegen generate`. |
+| `pnpm generate` | `sanity schema extract --enforce-required-fields --force && sanity typegen generate`. Run via the root `pnpm generate`. |
 | `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
 | `pnpm migrate:project-body-rich-text` | One-off migration. Only run when explicitly needed. |
 | `pnpm typecheck` | `tsc --noEmit` (studio only). |
@@ -227,21 +248,23 @@ URL /[locale]/[slug]
 ## Anti-patterns (stop if you're about to do any of these)
 
 - Creating a one-off `<section>` directly in `app/[locale]/page.tsx` instead of a module.
-- Hand-writing a Sanity-shaped type without a matching GROQ projection.
+- Hand-writing a type for Sanity data instead of deriving it from the generated query types (`web/sanity/types.ts`).
+- Comparing a fetched string to a literal without `stegaClean` / `isStegaVariant` — it is always `false` in Presentation.
 - Filtering an i18n field by language inside the query.
 - Adding a language by editing `fallbackSiteLocales.ts` only and forgetting the Studio singleton.
 - Importing from `studio/` inside `web/` or vice versa (use a `packages/*` package).
 - Bypassing the pre-commit hook with `--no-verify`.
-- Editing `studio/sanity.types.gen.ts` to "fix" a type error — fix the schema or the hand type instead.
+- Editing a `*.gen.ts` file to "fix" a type error — fix the schema or the query instead.
 
 ## Cookbook
 
 ### Add a content module
 
-1. Read `studio/schemas/README.md` §8 "Content modules" — it has the canonical narrative.
-2. Touch all 8 wiring points (see table above).
-3. `pnpm studio:generate` → commit gen artifacts.
-4. `pnpm typecheck && pnpm format`.
+1. `pnpm gen:module <Name>` (add `--inline` only if it belongs inside rich text) — or touch all 7 wiring points by hand (see table above).
+2. Fill in the schema fields and the GROQ projection, then `pnpm generate` → the component's `ModuleOf<"module.<id>">` has the fields. Commit the generated files.
+3. `pnpm check:wiring && pnpm typecheck && pnpm format`.
+
+`studio/schemas/README.md` §8 "Content modules" has the long version.
 
 ### Add a document type (page-like)
 
@@ -249,7 +272,7 @@ URL /[locale]/[slug]
 2. Add a structure item under `studio/config/structure/items/` and wire into `studio/config/structure/index.ts`.
 3. Decide Presentation behaviour — touch `studio/config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`) and `resolve.ts` / `locationsResolver.ts` as needed.
 4. If internally linkable, add to `studio/schemas/constants/references.ts` (`PAGE_REFERENCES`).
-5. `pnpm studio:generate` → typecheck → format.
+5. `pnpm generate` → typecheck → format.
 
 See `studio/config/README.md` and `studio/config/structure/README.md` for details.
 
@@ -258,7 +281,7 @@ See `studio/config/README.md` and `studio/config/structure/README.md` for detail
 1. Read `web/sanity/queries/README.md` and `web/sanity/queries/snippets/README.md`.
 2. Compose from existing snippets — do not re-write `slug`, `seo`, `link`, `media`, `modules` shapes.
 3. Project i18n fields as full arrays.
-4. Add a matching hand type in `web/sanity/types/` if the query returns a new shape.
+4. Wrap the full query in `defineQuery`, run `pnpm generate`, and name its result in `web/sanity/types.ts` if components need it.
 
 ### Add a locale
 
@@ -294,7 +317,7 @@ Always link to these; never duplicate their content.
 
 ## Branch-specific notes
 
-Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: where a locale lives — in the field (`main`) or in the document (`variant`). Every row below is that difference or follows from it.
+Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the seven wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: where a locale lives — in the field (`main`) or in the document (`variant`). Every row below is that difference or follows from it.
 
 **Verify before you trust this table.** It has been wrong in both directions: it described a much wider divergence for months after the branches had converged, and later claimed the variant still used `internationalizedArray*` fields when it had moved to plain ones (corrected 2026-10-13). If a row here contradicts the branch you are on, the branch wins — fix the row.
 
@@ -308,7 +331,7 @@ Both `main` and `variant/document-level` ship this file. The two branches have c
 | Layout chrome | `app/[locale]/layout.tsx` fetches the chrome bundle (nav, cookie banner, title) in parallel with the locale check. | Fetches it after `isAppLocale(locale)`: the bundle is per language, so its cache key needs a validated locale. |
 | Dangling internal links | Point to the home page. | Render without a link (`navHref`). |
 
-Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/` with the `index.ts` barrel, flat `queries/components/modules/<name>.ts` + `types/modules/<name>.ts` with barrels, and the `richTextMedia.ts` inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
+Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/` with the `index.ts` barrel, flat `queries/components/modules/<name>.ts` with the barrel, the derived `web/sanity/types.ts`, the wiring tooling in `packages/`, and the inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
 ### Variant-branch rules
 
@@ -342,8 +365,8 @@ Before declaring a task complete, all of the following must hold:
 
 - [ ] `pnpm typecheck` passes (web + studio).
 - [ ] `pnpm format` produces no diff.
-- [ ] `pnpm studio:generate` (after schema edits) produces no uncommitted diff.
-- [ ] For a new/renamed module: all 8 wiring points touched, schema + component land in the same commit.
+- [ ] `pnpm generate` (after schema or query edits) produces no uncommitted diff.
+- [ ] `pnpm check:wiring` passes; for a new/renamed module all 7 wiring points land in the same commit as the schema.
 - [ ] For i18n changes: `siteLanguageSettings` singleton updated **before** `fallbackSiteLocales.ts`, never the reverse-only.
 - [ ] No edits to `*.gen.*` files.
 - [ ] No `--no-verify` commits, no `coalesce(...language==...)` GROQ, no hardcoded locale literals outside `web/src/i18n/`.

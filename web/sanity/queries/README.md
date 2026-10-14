@@ -18,7 +18,15 @@ This folder holds **GROQ** strings for the Next.js app: reusable **snippets**, *
 | [`components/`](./components/README.md) | `components/modules/` — `modulesQuery` and per-`module.*` projections; `components/text/richTextMedia.ts` — `richTextMediaQuery` for portable text bodies. |
 | [`pages/`](./pages/README.md) | Full document queries: `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery`. |
 
-**Flow:** `pages/*.ts` and `snippets/settings.ts` **import** snippets and `modulesQuery`, then **interpolate** them into template strings. The exported constants are the **final** GROQ strings your app passes to `client.fetch()`.
+**Flow:** `pages/*.ts` and `snippets/settings.ts` **import** snippets and `modulesQuery`, then **interpolate** them into template strings. The exported constants are the **final** GROQ strings your app passes to `client.fetch()` / `sanityFetch`.
+
+## Typed queries (TypeGen)
+
+Every full query is a `defineQuery(...)`; `pnpm generate` writes its result type to `web/sanity/sanity.types.gen.ts`, and `sanityFetch` / `client.fetch` return that type on their own. Three rules keep it working:
+
+1. **Fragments are plain `const` template strings**, built only from other `const` strings. A function call anywhere in the chain (`fragment(name)`, `JSON.stringify(...)`) makes TypeGen skip the query silently; `check:typegen` (part of `pnpm generate`) then fails.
+2. **Singletons filter by type too:** `*[_type == "siteSettings" && _id == "siteSettings"][0]`. An `_id` alone gives TypeGen no document type to narrow to.
+3. **Name results in `web/sanity/types.ts`**, derived from the generated types (`NonNullable<HomeQueryResult>`, `ModuleOf<"module.x">`). Never hand-write a Sanity-shaped type, never `as` fetched data.
 
 ## Parameters
 

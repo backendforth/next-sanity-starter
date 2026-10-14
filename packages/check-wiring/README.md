@@ -1,38 +1,29 @@
 # @repo/check-wiring
 
-Validates that every module declared under `studio/schemas/objects/modules/` is wired across all 8 points of the module pattern documented in [`/AGENTS.md`](../../AGENTS.md).
+Two CI gates and the wiring manifest they and `gen:module` share.
 
-## Usage
+## `pnpm check:wiring`
 
-From the repo root:
+Compares the module wiring documented in [`/AGENTS.md`](../../AGENTS.md) ("The module pattern") with the module schemas under `studio/schemas/objects/modules/`, as sets, both ways:
 
-```bash
-pnpm check:wiring
-```
+| Point | Checked |
+|---|---|
+| Schema file | `module<Name>.ts` with `name: "module.<id>"` and `export const module<Name>`, all three matching. |
+| Component + query files | `web/src/components/modules/Module<Name>.tsx`; `web/sanity/queries/components/modules/<name>.ts` exporting `module<Name>Query`. |
+| List slots | `schemas/index.ts` (import + `schemaTypes`), `moduleTypes`, the components barrel, a `case` in `ModulesRenderer`'s switch, `modulesQuery`. A missing entry fails; an entry for a module without a schema is stale and fails too. |
+| Renderer fallback | `const unhandled: never = mod` stays, so a module without a `case` fails `tsc`. |
+| Inline (opt-in) | The Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx` name the same modules. |
 
-Exits 0 when every module is fully wired. Exits 1 with a per-module report when drift is found.
+The module's TS type is not checked here: it is `ModuleOf<"module.<id>">`, and `tsc` covers it. `--root <dir>` checks another checkout.
 
-## Designed for both branches
+## `pnpm check:typegen`
 
-The repo has two long-lived branches with slightly different module layouts (see `AGENTS.md §Branch-specific notes`). The checker treats branch-specific divergences as **skips**, not failures:
+Part of `pnpm generate`. Sanity TypeGen skips a `defineQuery` it cannot evaluate statically (a function call, a non-`const` fragment) with nothing but a spinner warning; the query then types as `unknown`. This compares every `defineQuery` in `web/sanity/` with the `// Variable:` blocks in `web/sanity/sanity.types.gen.ts`, both ways.
 
-- Missing `web/src/components/modules/index.ts` barrel (variant/document-level) → barrel check skipped.
-- Missing `web/src/components/modules/Module<Name>.tsx` is tolerated when `ModulesRenderer.tsx` defines a `Module<Name>Placeholder` (variant's ContentRefs is intentionally a placeholder).
-- A module not registered as an inline block in `richTextMedia.ts` is reported as a **warning**, not a failure — many modules don't make sense inline.
+## The manifest (`@repo/check-wiring/manifest`)
 
-## What it checks
+`src/manifest.mjs` describes each list slot once: the file, a header pattern that opens the list, and bracket matching to find its end — no marker comments. Each slot can `read` the module ids it holds and `insert` one more. `check:wiring` reads through it; `gen:module` writes through it, so the two cannot disagree about where a module goes.
 
-| # | Point | Failure mode |
-|---|---|---|
-| 1 | `studio/schemas/objects/modules/module<Name>.ts` with valid `name: "module.<id>"` and `export const module<Name>`. | Source of truth — if missing, the module isn't picked up at all. |
-| 2 | `studio/schemas/index.ts` imports and re-exports the schema in `schemaTypes`. | Schema is invisible to Studio/APIs without this. |
-| 3 | `studio/schemas/objects/editors/richTextMedia.ts` includes the type — **optional**, warned. | Editors can't insert inline if needed. |
-| 4 | `studio/schemas/fields/modulesArrayField.ts` includes the type. | Editors can't add the module to document-level `modules[]`. |
-| 5 | `web/src/components/modules/Module<Name>.tsx` OR a `Module<Name>Placeholder` in `ModulesRenderer.tsx`, **and** a `"module.<id>"` branch in `ModulesRenderer.tsx` (`pnpm gen:module` only prints that branch). | Renderer falls through to `UnknownModule`: a dashed placeholder in dev, nothing in production. |
-| 6 | Components barrel re-exports the component — **skipped on branches without a barrel**. | Stale imports drift silently. |
-| 7 | `web/sanity/queries/components/modules/<name>.ts` exists and the barrel references the `module<Name>Query` const. | Query returns no projection for the module's fields. |
-| 8 | `web/sanity/types/modules/<name>.ts` exists and the barrel references `Module<Name>Data`. | TypeScript loses the union member; `mod as Module<Name>Data` silently `any`s. |
+## Tests
 
-## CI
-
-The script is wired into the format/typecheck workflow on the workspace root. Pre-push and pre-commit hooks deliberately stay narrow (Biome + `typecheck`) — wiring drift is a separate signal best handled at PR time.
+`pnpm test:tooling` runs `test/*.test.mjs` here and in `@repo/scaffold-module`: the manifest against the repo's files, each failure mode of `check:wiring` on a modified copy, and an end-to-end scaffold. CI runs it in the verify job.

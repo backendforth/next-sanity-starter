@@ -16,8 +16,8 @@ Claude Code additionally auto-loads scoped rules from subtree `CLAUDE.md` files 
 
 ## Quick reminders (the full versions live in AGENTS.md)
 
-- **YOU MUST** run all 8 module wiring points when adding/renaming a module. Skipping any is a bug.
-- **YOU MUST** run `pnpm studio:generate` after schema edits, then `pnpm check:wiring`, then `pnpm typecheck`.
+- **YOU MUST** wire all 7 module points when adding/renaming a module (`pnpm gen:module <Name>` does it). Skipping any is a bug.
+- **YOU MUST** run `pnpm generate` after schema or query edits, then `pnpm check:wiring`, then `pnpm typecheck`.
 - **NEVER** edit `studio/sanity.types.gen.ts`, `studio/schema.json`, or any `*.gen.*` file.
 - Select per-language documents in GROQ with `language == $locale`; their fields are plain and render directly. **NEVER** add `internationalizedArray*` fields or `pickLocalizedString` calls for content on this branch.
 - **NEVER** edit the plugin-managed `language` field on documents.

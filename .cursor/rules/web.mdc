@@ -12,7 +12,7 @@ Hard rules:
 - Select per-language documents in GROQ with `language == $locale`; only the global `siteLanguageSettings` is fetched by `_id`. This is the design on `variant/document-level`, not the "no locale in GROQ" anti-pattern from `main`.
 - Fields are plain values in the route's language — render them directly. `web/sanity/utils/sanityLocalizedText.ts` is only used by `resolveLinkLabel` for link titles that arrive as arrays.
 - Content blocks are **modules** (see `.cursor/rules/modules.mdc`). No ad-hoc `<section>` in route files.
-- `web/sanity/types/*` are hand-maintained. Update them in the same commit as the GROQ projection.
+- Types for Sanity data are generated: wrap full queries in `defineQuery`, run `pnpm generate`, use the names in `web/sanity/types.ts`. No `as` on fetched data.
 - Don't set `data-sanity` in module components — `ModulesRenderer` wraps every module with its field-level path, and Visual Editing depends on rendering modules through it.
 - Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
 - No hardcoded locale codes outside `web/src/i18n/`.

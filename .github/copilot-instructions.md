@@ -11,18 +11,18 @@ Full guardrails live in `AGENTS.md` at the repo root. This file is a condensed m
 ## Top rules
 
 1. Reuse before invention — check `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/`, `web/sanity/utils/` first.
-2. New content block → it is a **module**. Touch all 8 wiring points or revert:
+2. New content block → it is a **module**. `pnpm gen:module <Name>` wires all 7 points; by hand, touch all or revert:
    - `studio/schemas/objects/modules/module<Name>.ts`
    - `studio/schemas/index.ts`
-   - `studio/schemas/objects/editors/richTextMedia.ts`
    - `studio/schemas/fields/modulesArrayField.ts`
-   - `web/src/components/modules/Module<Name>.tsx`
-   - `web/src/components/modules/index.ts` (+ register in `ModulesRenderer.tsx`)
-   - `web/sanity/queries/components/modules/<name>.ts` (+ barrel)
-   - `web/sanity/types/modules/<name>.ts` (+ barrel)
-3. After every schema edit: `pnpm studio:generate`, then `pnpm typecheck`, then `pnpm format`.
-4. Never edit `studio/sanity.types.gen.ts` or `studio/schema.json` — generated.
-5. `web/sanity/types/*` are hand-maintained — update them when schema fields change.
+   - `web/src/components/modules/Module<Name>.tsx` (`module: ModuleOf<"module.<id>">`)
+   - `web/src/components/modules/ModulesRenderer.tsx` (`case`)
+   - `web/src/components/modules/index.ts`
+   - `web/sanity/queries/components/modules/<name>.ts` (+ `modulesQuery`)
+   Inline use in rich text is opt-in: Studio `richTextMedia.ts`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`, all three or none.
+3. After every schema or query edit: `pnpm generate`, then `pnpm typecheck`, then `pnpm format`.
+4. Never edit `*.gen.ts` or `studio/schema.json` — generated.
+5. Sanity data types come from TypeGen via `web/sanity/types.ts`; never hand-write them. Compare fetched strings to literals through `stegaClean` / `isStegaVariant`.
 6. Locale-aware always: use `pickLocalizedString(field, locale, siteLocale)` or `pickLocalizedPortableTextBlocks(body, locale, siteLocale)`. Never `field[0].value` or `field.find(t => t.language === locale)`. Never `coalesce(field[language==$locale].value, ...)` in GROQ.
 7. Add a new language only via the `siteLanguageSettings` Studio singleton (offline fallback: `web/src/i18n/fallbackSiteLocales.ts`). No schema, query, or component change.
 8. No hardcoded locale codes outside `web/src/i18n/`.
@@ -54,6 +54,6 @@ Treat any other difference between the branches as drift to be reconciled, not i
 
 ## Definition of done
 
-`pnpm typecheck` passes, `pnpm format` clean, gen artifacts committed if schema changed, all 8 module wiring points touched (when applicable), no `--no-verify`.
+`pnpm typecheck` passes, `pnpm format` clean, `pnpm generate` leaves no diff, `pnpm check:wiring` passes, no `--no-verify`.
 
 <!-- smoke-test: Slack PR notification pipeline (v2) -->

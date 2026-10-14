@@ -8,6 +8,7 @@ import {
   NEWEST_FIRST_SUGGESTIONS,
   PAGE_REFERENCES,
   PROJECT_REFERENCES,
+  sameLanguageReferenceFilter,
 } from "../../constants/references";
 
 type ContentRefsParent = {
@@ -93,16 +94,11 @@ export const moduleContentRefs = defineType({
           to: [...PAGE_REFERENCES, ...PROJECT_REFERENCES],
           options: {
             ...NEWEST_FIRST_SUGGESTIONS,
-            filter: ({ parent, document }) => {
-              const scope = scopeFromParent(parent as ContentRefsParent);
-              const language = (document as { language?: string } | null)
-                ?.language;
-              const base = contentRefReferenceFilter(scope);
-              return {
-                filter: `(${base}) && language == $language`,
-                params: { language: language ?? "" },
-              };
-            },
+            filter: sameLanguageReferenceFilter(({ parent }) =>
+              contentRefReferenceFilter(
+                scopeFromParent(parent as ContentRefsParent),
+              ),
+            ),
           },
         },
       ],

@@ -1,5 +1,7 @@
 import { defineQuery } from "next-sanity";
 
+import { routePathProjection, translationsQuery } from "./translations";
+
 /**
  * Minimal list of routable page slugs across all languages — for
  * `generateStaticParams` and simple slug lists. Home is excluded (it lives
@@ -26,6 +28,8 @@ export const projectSlugsQuery =
  * - `path`: URL path from site root, without the locale prefix (the route
  *   layer adds it per `language`).
  * - `language`: the document's locale (one row per language variant).
+ * - `translations`: every language variant of the row (itself included) for
+ *   the sitemap's `hreflang` alternates.
  *
  * Extend the filter when you add new routable types.
  */
@@ -43,10 +47,6 @@ export const sitemapPagesQuery = defineQuery(`*[
     _type in ["home", "work"] => null,
     slug.current
   ),
-  "path": select(
-    _type == "home" => "/",
-    _type == "work" => "/work",
-    _type == "project" => "/work/" + slug.current,
-    "/" + slug.current
-  )
+  "path": ${routePathProjection},
+  ${translationsQuery}
 }`);

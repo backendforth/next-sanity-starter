@@ -9,6 +9,7 @@ import {
 	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
+import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 
 type PageProps = {
@@ -73,6 +74,11 @@ export default async function Project({ params }: PageProps) {
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
+			<LocaleAlternates
+				locale={locale}
+				path={`/work/${slug}`}
+				translations={data.translations}
+			/>
 			<main className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{projectTitle || hasTitleMedia ? (
 					<header className="flex flex-col gap-sm">

@@ -5,6 +5,7 @@ import {
   NEWEST_FIRST_SUGGESTIONS,
   PAGE_REFERENCE_FILTER,
   PAGE_REFERENCES,
+  sameLanguageReferenceFilter,
 } from "../constants/references";
 
 export const link = defineType({
@@ -53,7 +54,7 @@ export const link = defineType({
       to: [...PAGE_REFERENCES],
       options: {
         ...NEWEST_FIRST_SUGGESTIONS,
-        filter: PAGE_REFERENCE_FILTER,
+        filter: sameLanguageReferenceFilter(PAGE_REFERENCE_FILTER),
       },
       hidden: ({ parent }) => parent?.type !== "internal",
       validation: (rule) =>

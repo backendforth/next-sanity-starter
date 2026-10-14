@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { cachedSitemapPages } from "@/sanity/cachedSanityQuery";
 import { fetchSiteLanguageSettings } from "@/sanity/fetchSanityData";
+import { hreflangLanguages } from "@/sanity/seo/resolveSanityMetadata";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
@@ -13,10 +14,9 @@ export const revalidate = 3600;
 
 /**
  * One sitemap entry per language variant of a routable document. With
- * document-level translation each language is its own document — slugs may
- * differ between languages, and the cross-locale relationship lives in
- * `translation.metadata` (not queried here). Hreflang alternates are
- * therefore omitted; add them in a follow-up if you need them.
+ * document-level translation each language is its own document and slugs may
+ * differ, so the `hreflang` alternates come from the row's `translations`
+ * (linked via `translation.metadata`), not from the row's own path.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const [pages, siteLocale] = await Promise.all([
@@ -41,6 +41,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 			lastModified: page._updatedAt,
 			changeFrequency: page._type === "home" ? "daily" : "weekly",
 			priority: page._type === "home" ? 1.0 : 0.8,
+			alternates: {
+				languages: hreflangLanguages(
+					{ language, path: page.path },
+					page.translations,
+					siteLocale,
+				),
+			},
 		});
 	}
 

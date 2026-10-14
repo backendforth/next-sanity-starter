@@ -25,6 +25,14 @@ export const mediaVideoLoop = defineType({
       name: "video",
       type: "mux.video",
       /** Required when this object is used as the active loop block; enforced on `module.media` / callers, not here (hidden field + `enforce-required-fields`). */
+      /**
+       * Encoding ceiling for loops: QHD. Loops are background motion, and 1440p
+       * keeps the first segment light. To raise it, change this value to
+       * `"2160p"` only (the web player already allows 2160p for loops, so
+       * encoding is the only knob). Assets uploaded before the change keep
+       * their old ladder until they are re-encoded in Mux.
+       */
+      options: { max_resolution_tier: "1440p" },
     },
     {
       name: "poster",

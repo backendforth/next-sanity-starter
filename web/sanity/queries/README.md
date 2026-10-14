@@ -146,7 +146,7 @@ The app fetches `siteSettings` field-scoped (`siteSettingsTitleQuery`, `siteSett
     crop,
     hotspot,
     "alt": asset->altText,
-    "asset": asset->{ _id, url, metadata{ dimensions{ width, height, aspectRatio }, lqip } }
+    "asset": asset->{ _id, url, metadata{ dimensions{ width, height, aspectRatio } } }
   },
   seo {
     title,

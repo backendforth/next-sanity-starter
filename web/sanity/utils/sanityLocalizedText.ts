@@ -8,6 +8,7 @@
  * own block union (embedded modules included, untouched — they resolve their own fields).
  */
 import type { TypedObject } from "@portabletext/types";
+import { stegaClean } from "next-sanity";
 
 import {
 	FALLBACK_SITE_LOCALE_CONFIG,
@@ -73,9 +74,12 @@ function getLocaleFallbackChain(
 	return chain;
 }
 
-/** Blank strings and empty arrays count as missing, so the fallback chain moves on. */
+/**
+ * Blank strings and empty arrays count as missing, so the fallback chain moves on. Strings are
+ * cleaned first: in Presentation a blank value still carries (non-whitespace) stega markers.
+ */
 function hasContent(value: unknown): boolean {
-	if (typeof value === "string") return value.trim().length > 0;
+	if (typeof value === "string") return stegaClean(value).trim().length > 0;
 	if (Array.isArray(value)) return value.length > 0;
 	return value != null;
 }

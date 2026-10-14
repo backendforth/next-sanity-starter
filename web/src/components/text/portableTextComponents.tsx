@@ -1,4 +1,8 @@
-import type { InferComponents, InferStrictComponents } from "next-sanity";
+import {
+	type InferComponents,
+	type InferStrictComponents,
+	stegaBrand,
+} from "next-sanity";
 import type { ReactNode } from "react";
 
 import type { LinkMark, RichTextMediaValue } from "@/sanity/types";
@@ -36,7 +40,8 @@ function LinkMarkRenderer({
  * Components for a `richTextMedia` body: blocks, lists, link marks and the inline modules.
  * Internal links point at `locale`'s version of the target; without it they stay
  * locale-agnostic. The `types` map is checked strictly: `tsc` fails when an inline module type
- * the query returns has no handler here, or a handler names a type it never returns.
+ * the query returns has no handler here, or a handler names a type it never returns. Handlers
+ * get `value` typed clean-or-branded; `stegaBrand` (identity) types it as fetched, branded.
  */
 export function portableTextMediaComponents({
 	locale,
@@ -74,7 +79,7 @@ export function portableTextMediaComponents({
 		types: {
 			"module.media": ({ value }) => (
 				<div className="rich-text-embed rich-text-embed-media min-w-0">
-					<ModuleMedia module={value} variant="embed" />
+					<ModuleMedia module={stegaBrand(value)} variant="embed" />
 				</div>
 			),
 			"module.carousel": ({ value }) => {
@@ -82,7 +87,7 @@ export function portableTextMediaComponents({
 				return (
 					<div className="rich-text-embed w-full min-w-0">
 						<ModuleCarousel
-							module={value}
+							module={stegaBrand(value)}
 							locale={locale}
 							siteLocale={siteLocale}
 							variant="embed"

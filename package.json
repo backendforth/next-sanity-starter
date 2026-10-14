@@ -12,6 +12,8 @@
 		"gen:module": "pnpm --filter @repo/scaffold-module run gen --",
 		"check:wiring": "pnpm --filter @repo/check-wiring run check",
 		"check:typegen": "pnpm --filter @repo/check-wiring run check:typegen",
+		"//test:tooling": "node:test suites for check-wiring and scaffold-module, including an end-to-end scaffold of two modules (one inline) through generate, check:wiring and tsc.",
+		"test:tooling": "node --test packages/*/test/*.test.mjs",
 		"//generate": "Both typegens (Studio schema + types, then the web query types) and a check that every web query got a type. Run after every schema or query edit.",
 		"generate": "pnpm --filter studio run generate && pnpm --filter web run generate && pnpm run check:typegen",
 		"prepare": "husky",

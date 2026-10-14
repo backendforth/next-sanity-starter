@@ -1,11 +1,16 @@
-import type { __MODULE_DATA_TYPE__ } from "@/sanity/types/modules";
+import type { ModuleOf } from "@/sanity/types";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	module: __MODULE_DATA_TYPE__;
+	/** Typed by TypeGen from the projection in `queries/components/modules/` — run `pnpm generate`. */
+	module: ModuleOf<"__MODULE_NAME__">;
+	/** For hrefs only — the fields are already in the document's language. */
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -15,7 +20,7 @@ type Props = {
  * Document-level i18n: fields are plain values (document is in one locale).
  */
 export function __MODULE_COMPONENT__({ module }: Props) {
-	const title = typeof module.title === "string" ? module.title.trim() : "";
+	const title = module.title?.trim() ?? "";
 
 	return (
 		<section className={moduleSectionClassName}>

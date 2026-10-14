@@ -41,6 +41,9 @@ jobs:
       # hand-edits routinely miss a file. This gate catches partial wirings
       # before they reach main.
       - run: pnpm run check:wiring
+      # Unit tests for the wiring manifest plus an end-to-end `gen:module` run
+      # (two modules, one inline) through typegen, check:wiring and tsc.
+      - run: pnpm run test:tooling
 
   schema-typegen:
     name: schema typegen

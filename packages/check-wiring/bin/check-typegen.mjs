@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 /**
  * Checks that Sanity TypeGen typed every query in `web/sanity/`.
  *
@@ -10,13 +11,17 @@
  * lacks the entry. The query then types as `unknown` and CI's diff check stays green. This
  * script compares both sides by name: every `defineQuery` assignment needs a
  * `// Variable: <name>` block in `web/sanity/sanity.types.gen.ts`, and every block needs a
- * `defineQuery` that still exists.
+ * `defineQuery` that still exists. `--root <dir>` checks another checkout (tooling tests).
  */
 import { readdir, readFile } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL("../../..", import.meta.url));
+const rootFlag = process.argv.indexOf("--root");
+const root =
+	rootFlag === -1
+		? fileURLToPath(new URL("../../..", import.meta.url))
+		: resolve(process.argv[rootFlag + 1] ?? ".");
 const QUERY_ROOT = join(root, "web/sanity");
 const GENERATED = join(QUERY_ROOT, "sanity.types.gen.ts");
 

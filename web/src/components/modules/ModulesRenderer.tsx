@@ -10,7 +10,7 @@ import { LazyModulesRendererClient } from "./LazyModulesRendererClient";
 import { ModuleCarousel } from "./ModuleCarousel";
 import { ModuleContentRefs } from "./ModuleContentRefs";
 import { ModuleMedia } from "./ModuleMedia";
-import type { PrerenderedModule } from "./ModulesRendererClient";
+import { ModulesStack, type PrerenderedModule } from "./ModulesStack";
 import { ModuleText } from "./ModuleText";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -88,21 +88,10 @@ function renderModuleChild(
 	}
 }
 
-/** The module stack as plain server markup — the same DOM `ModulesRendererClient` renders. */
-function ModuleStack({ modules }: { modules: PrerenderedModule[] }) {
-	return (
-		<div className="flex flex-col gap-lg">
-			{modules.map((m) => (
-				<div key={m._key}>{m.rendered}</div>
-			))}
-		</div>
-	);
-}
-
 /**
  * Renders the document `modules[]` stack. Each module is rendered server-side with the active
  * locale baked in, so module code stays out of the client bundle and translations resolve
- * before crossing the RSC seam. Visitors get `ModuleStack`, plain markup. In Draft Mode the
+ * before crossing the RSC seam. Visitors get `ModulesStack`, plain markup. In Draft Mode the
  * same nodes go to `ModulesRendererClient` (lazy), which reorders them optimistically when
  * Visual Editing dispatches a document update.
  *
@@ -141,7 +130,7 @@ export async function ModulesRenderer({
 	});
 
 	if (!(await draftMode()).isEnabled) {
-		return <ModuleStack modules={initialModules} />;
+		return <ModulesStack modules={initialModules} />;
 	}
 	return (
 		<LazyModulesRendererClient

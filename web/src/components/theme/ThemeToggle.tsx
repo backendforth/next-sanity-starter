@@ -35,7 +35,7 @@ export function ThemeToggle() {
 	return (
 		<fieldset
 			aria-label={uiLabel("colorScheme", currentLocale)}
-			className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
+			className={navControlGroupClass}
 		>
 			{OPTIONS.map((option) => {
 				const selected = theme === option.value;

@@ -1,12 +1,8 @@
 "use client";
 
 import { useOptimistic } from "next-sanity/hooks";
-import type { ReactNode } from "react";
 
-export type PrerenderedModule = {
-	_key: string;
-	rendered: ReactNode;
-};
+import { ModulesStack, type PrerenderedModule } from "./ModulesStack";
 
 type DocumentShape = {
 	_id?: string;
@@ -47,11 +43,5 @@ export function ModulesRendererClient({ documentId, initialModules }: Props) {
 		},
 	);
 
-	return (
-		<div className="flex flex-col gap-lg">
-			{modules.map((m) => (
-				<div key={m._key}>{m.rendered}</div>
-			))}
-		</div>
-	);
+	return <ModulesStack modules={modules} />;
 }

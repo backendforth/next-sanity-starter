@@ -120,9 +120,11 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 1. **Explicit pin** wins — `SANITY_STUDIO_DATASET` / `NEXT_PUBLIC_SANITY_DATASET`.
 2. Otherwise, `SANITY_STUDIO_DEPLOYMENT_TARGET` decides preference order:
    - `production` → prefer `production`, fall back to `development`.
-   - `development` / `preview` / unset → prefer `development`, fall back to `production`.
+   - `development` / `preview` → prefer `development`, fall back to `production`.
+   - unset → `production` first on a Netlify / Vercel production build (`CONTEXT` / `VERCEL_ENV`), `development` first everywhere else.
+   - any other value (e.g. `staging`) → that dataset first, then the two above.
 3. Canonical names are configurable (`SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION`).
-4. If needed, the resolver enumerates actual datasets via the Management API (`SANITY_DATASET_RESOLVER_TOKEN` / `SANITY_AUTH_TOKEN`) to avoid requesting one that doesn't exist.
+4. Each candidate is probed on the public Data API (no token; 404 = missing), and the first that exists wins. Offline, or with no project id, the first preferred name is used — never a silent switch to production.
 
 Consumed by `web/next.config.ts` (resolved once per build and inlined, so queries and image URLs share it) and `studio/config/sync/studioDataset.ts`.
 

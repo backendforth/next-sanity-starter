@@ -145,7 +145,7 @@ For production, swap the `<pre>` block for `ModulesRenderer`, which switches on 
 
 ## Environment
 
-See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. Further options (Management API tokens, `SANITY_USE_CDN`, site URL, revalidate) live in **`@repo/sanity-dataset-resolve`** and this README when needed.
+See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. Further options (`SANITY_USE_CDN`, site URL, revalidate) are covered in this README.
 
 ### Presentation & Visual Editing (checklist)
 

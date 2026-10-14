@@ -9,7 +9,7 @@ import {
 	getMuxDisplayDimensions,
 	muxThumbnailTimeSec,
 	muxThumbnailUrl,
-} from "@/src/utils/muxPlayback";
+} from "@/src/utils/muxImage";
 
 /** `srcset` ladder for posters (Sanity CDN and `image.mux.com`). */
 const POSTER_SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2560, 3840] as const;

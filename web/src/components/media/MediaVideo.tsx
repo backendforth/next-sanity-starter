@@ -21,10 +21,12 @@ import { resolveSanityImageFieldForUrl } from "@/sanity/utils/sanityImageBuilder
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
-	MUX_PLAYBACK_MAX_TIER,
-	type MuxPlayerResolution,
 	muxThumbnailRequestWidthPx,
 	muxThumbnailTimeSec,
+} from "@/src/utils/muxImage";
+import {
+	MUX_PLAYBACK_MAX_TIER,
+	type MuxPlayerResolution,
 	resolveMuxPlayerResolution,
 } from "@/src/utils/muxPlayback";
 import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";

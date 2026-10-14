@@ -67,3 +67,21 @@
     # (`DENY` / `SAMEORIGIN`) would lock it out. Presentation is unaffected: it frames the web
     # app, which has its own `frame-ancestors` in `web/next.config.ts`.
     Content-Security-Policy = "frame-ancestors 'self' https://*.sanity.io"
+
+# Vite names every script, stylesheet and font in `dist/static` by content hash, so a changed
+# file gets a new URL and these can be cached for good. Favicons and the web manifest in the
+# same folder keep fixed names, which is why the rules list extensions instead of `/static/*`.
+[[headers]]
+  for = "/static/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/static/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/static/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

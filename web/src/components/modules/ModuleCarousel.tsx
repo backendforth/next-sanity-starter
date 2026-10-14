@@ -1,8 +1,6 @@
-"use client";
-
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
-import { CarouselViewport } from "@/src/components/carousel/CarouselViewport";
+import { LazyCarouselViewport } from "@/src/components/carousel/LazyCarouselViewport";
 import { normalizeCarouselSlides } from "@/src/components/carousel/normalizeCarouselSlides";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
@@ -31,7 +29,8 @@ const DEFAULT_AUTOPLAY_DELAY_MS = 5000;
 
 /**
  * `module.carousel` — heading + Embla viewport. Behavior fields come from Sanity
- * (`loop`, `showThumbnails`, `showNavDots`, `multipleSlides`, `autoplay`, …).
+ * (`loop`, `showThumbnails`, `showNavDots`, `multipleSlides`, `autoplay`, …). A server
+ * component: the heading and slides resolve here, the viewport is the lazy client part.
  */
 export function ModuleCarousel({
 	module,
@@ -49,7 +48,7 @@ export function ModuleCarousel({
 	return (
 		<section className={sectionClassName}>
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
-			<CarouselViewport
+			<LazyCarouselViewport
 				slides={slides}
 				options={{
 					loop: module.loop === true,

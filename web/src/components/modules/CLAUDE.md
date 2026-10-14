@@ -52,4 +52,5 @@ export function ModuleFoo({ module, locale, siteLocale }: Props) {
 - `module.kind === "video"` on fetched data → always `false` in Presentation (stega); use `isStegaVariant(module, "kind", "video")`.
 - Reading locale via `useRouter()` / `usePathname()` → wrong locale during SSR.
 - Rendering a module outside `ModulesRenderer` → no `data-sanity` wrapper, editor click-to-edit breaks on it.
+- `"use client"` on a module, or a static import of a heavy client component (player, carousel) → it lands in every route's first-load JS. Modules are server components; put the interactive part behind a lazy client boundary like `media/LazyVideo.tsx` or `carousel/LazyCarouselViewport.tsx` (`next/dynamic` in a `"use client"` file, SSR on).
 - Importing from `studio/...` — illegal across packages.

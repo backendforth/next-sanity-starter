@@ -6,7 +6,8 @@ import {
 	type LinkLocaleOptions,
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
-import { ModuleCarousel, ModuleMedia } from "@/src/components/modules";
+import { ModuleCarousel } from "@/src/components/modules/ModuleCarousel";
+import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
 
 function LinkMarkRenderer({
 	children,

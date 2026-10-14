@@ -1,6 +1,5 @@
 import { defineQuery } from "next-sanity";
 
-import { moduleMediaInnerFields } from "../components/modules/media";
 import { richTextMediaQuery } from "../components/text/richTextMedia";
 import { routePathProjection } from "../snippets/routePath";
 import { pageSeoQuery } from "../snippets/seo";
@@ -12,12 +11,7 @@ export const projectBySlugQuery =
   _id,
   title,
   "path": ${routePathProjection},
-  slug,
   language,
-  titleMedia{
-    _type,
-    ${moduleMediaInnerFields}
-  },
   body[]{
     ${richTextMediaQuery}
   },

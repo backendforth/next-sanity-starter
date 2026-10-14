@@ -64,8 +64,6 @@ export default async function Project({ params }: PageProps) {
 	}
 
 	const projectTitle = typeof data.title === "string" ? data.title.trim() : "";
-	const titleMedia = data.titleMedia;
-	const hasTitleMedia = Boolean(titleMedia?.resolvedMedia?.media);
 	const body = data.body ?? [];
 
 	return (
@@ -76,7 +74,7 @@ export default async function Project({ params }: PageProps) {
 				translations={data.translations}
 			/>
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{projectTitle || hasTitleMedia ? (
+				{projectTitle ? (
 					<header className="flex flex-col gap-sm">
 						{projectTitle ? (
 							<h2 className="content-title">{projectTitle}</h2>

@@ -82,7 +82,7 @@ const analyticsSources = {
  *
  * Directive notes:
  * - `script-src 'unsafe-inline'`: the synchronous boot script in
- *   `app/layout.tsx` must run before first paint, and the Google Analytics
+ *   `DocumentShell.tsx` must run before first paint, and the Google Analytics
  *   loader is an injected inline script. To drop it, hash the boot script
  *   (`'sha256-…'`) and move the GA snippet to a file. `'unsafe-eval'` is
  *   development-only (Next dev runtime + source maps).

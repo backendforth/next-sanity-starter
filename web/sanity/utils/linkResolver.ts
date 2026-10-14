@@ -1,7 +1,7 @@
 /**
  * Resolves a Portable Text `link` mark into anchor props. Internal targets carry their `path`
- * from GROQ (`routePathProjection`); with `locale` and `siteLocale` it gets the locale prefix
- * (`hrefFor`), without them it stays locale-agnostic. For nav rows see `src/utils/navHref.ts`.
+ * from GROQ (`routePathProjection`) and get the locale prefix (`hrefFor`). For nav rows see
+ * `src/utils/navHref.ts`.
  */
 
 import type { LinkMark } from "@/sanity/types";
@@ -12,8 +12,8 @@ import { isStegaVariant } from "./stegaVariant";
 
 /** The active locale plus the config that decides whether it gets a path prefix. */
 export type LinkLocaleOptions = {
-	locale?: string;
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 export type ResolvedLink =
@@ -34,7 +34,7 @@ export type ResolvedLink =
  */
 export function resolveLinkMark(
 	mark: LinkMark | null | undefined,
-	options?: LinkLocaleOptions,
+	{ locale, siteLocale }: LinkLocaleOptions,
 ): ResolvedLink {
 	if (!mark) return null;
 
@@ -50,12 +50,10 @@ export function resolveLinkMark(
 	}
 
 	if (isStegaVariant(mark, "linkType", "linkInternal")) {
-		const path = mark.resolvedReference?.path;
-		const { locale, siteLocale } = options ?? {};
-		const href =
-			locale && siteLocale
-				? createLanguagePathUtils(siteLocale).hrefFor(path, locale)
-				: (path ?? null);
+		const href = createLanguagePathUtils(siteLocale).hrefFor(
+			mark.resolvedReference?.path,
+			locale,
+		);
 		return href ? { kind: "anchor", href } : null;
 	}
 

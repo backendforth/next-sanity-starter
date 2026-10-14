@@ -1,4 +1,3 @@
-export { dataAttr } from "./dataAttr";
 export {
 	type LinkLocaleOptions,
 	type ResolvedLink,

@@ -3,6 +3,12 @@
 import { useEffect } from "react";
 import * as CookieConsent from "vanilla-cookieconsent";
 
+/* Base CSS + theme overrides live here (not in `globals.css`) so they belong to
+ * this module's chunk — loaded only when `LazyCookieConsentBanner` mounts the
+ * banner, in this order (base first, overrides second). */
+import "vanilla-cookieconsent/dist/cookieconsent.css";
+import "@/src/assets/styles/components/cookieConsent.css";
+
 import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
 import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
 import {
@@ -10,7 +16,11 @@ import {
 	consentDescriptionHtml,
 	sectionsJsonFromSanity,
 } from "@/src/components/tracking/lib/cookieConsentConfig";
-import { notifyAnalyticsConsentChange } from "./cookieConsentApi";
+import {
+	markConsentLibraryStarted,
+	notifyAnalyticsConsentChange,
+	registerConsentLibrary,
+} from "./cookieConsentApi";
 import { defaultSectionsFor } from "./defaultSections";
 
 type Props = {
@@ -109,9 +119,12 @@ function buildConfig(
 export function CookieConsentBanner({ doc, locale, trackers = [] }: Props) {
 	useEffect(() => {
 		if (!doc?.useCookieBanner) return;
-		CookieConsent.run(buildConfig(doc, locale, trackers)).catch((err) => {
-			console.warn("[CookieConsent] run() failed:", err);
-		});
+		registerConsentLibrary(CookieConsent);
+		CookieConsent.run(buildConfig(doc, locale, trackers))
+			.then(markConsentLibraryStarted)
+			.catch((err) => {
+				console.warn("[CookieConsent] run() failed:", err);
+			});
 	}, [doc, locale, trackers]);
 
 	return null;

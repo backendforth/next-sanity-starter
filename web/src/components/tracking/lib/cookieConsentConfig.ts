@@ -105,7 +105,12 @@ function withTrackerRows(
 		linkedCategory: "analytics",
 		cookieTable: {
 			...cookieTable,
-			body: [...(cookieTable.body ?? []), ...trackers.map(trackerCookieRow)],
+			// `sections` is free-form CMS JSON: a `body` that isn't an array would
+			// throw here, before the banner ever starts.
+			body: [
+				...(Array.isArray(cookieTable.body) ? cookieTable.body : []),
+				...trackers.map(trackerCookieRow),
+			],
 		},
 	};
 }

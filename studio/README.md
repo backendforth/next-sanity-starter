@@ -24,7 +24,7 @@ Other plugins in this Studio include the **dashboard**, **structure** (custom si
 
 ## Quick start
 
-1. Copy `studio/.env.example` to `studio/.env` and set `SANITY_STUDIO_PROJECT_ID` (and preview origin if needed).
+1. Copy `studio/.env.example` to `studio/.env` and set `SANITY_STUDIO_PROJECT_ID` (and preview origin if needed). Every `SANITY_STUDIO_*` value ends up in the public Studio bundle, so secrets (`MUX_TOKEN_*`, `SANITY_DATASET_RESOLVER_TOKEN`, `SANITY_AUTH_TOKEN`) use plain names; `sanity.cli.ts` stops `sanity build` / `sanity deploy` when a `SANITY_STUDIO_*TOKEN|SECRET|PASSWORD` variable is set.
 2. Run `pnpm dev` from the repo root or `pnpm dev` inside `studio/` (shows a **sync hint**; run `sanity dev` directly if you want to skip it).
 3. Run `pnpm build` in `studio/` for a production Studio bundle.
 
@@ -47,12 +47,12 @@ Two targets. **Netlify is the default**: the Studio runs on its own domain (e.g.
 
 ### Netlify (default)
 
-`netlify.toml` in this folder is the whole pipeline: on every push Netlify installs the workspace, runs `sanity build`, publishes `studio/dist`, and serves every route from `index.html`. Commits that don't touch `studio/` or its shared package skip the build. Deploy previews prefer the `development` dataset, production prefers `production` — unless `SANITY_STUDIO_DATASET` pins one.
+`netlify.toml` in this folder is the whole pipeline: on every push Netlify installs the workspace, runs `sanity build`, publishes `studio/dist`, and serves every route from `index.html`. Pushes that change nothing in `studio/`, its shared package or the workspace manifests since the last build skip it. Deploy previews prefer the `development` dataset, production prefers `production`; setting `SANITY_STUDIO_DATASET` per deploy context makes that explicit and spares the Studio a dataset probe on every load.
 
 One-time setup:
 
 1. **Netlify site** — import this repository as a new project. Base directory: empty (repo root). **Package directory: `studio`**. Leave build command and publish directory empty; they come from `studio/netlify.toml`.
-2. **Environment variables** on that site (see the *Deployment* block in `.env.example`): `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`, `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL`, and as needed `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`, `SANITY_AUTH_TOKEN` and the Mux tokens.
+2. **Environment variables** on that site (see the *Deployment* block in `.env.example`): `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET` (per deploy context: Production `production`, Deploy Previews + Branch deploys `development`), `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL`, and as needed `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`, `SANITY_AUTH_TOKEN` and the Mux tokens.
 3. **Domain** — add the Studio domain under Domain management.
 4. **CORS** — add the same origin in sanity.io/manage → API → CORS origins with **Allow credentials**; without it, login on the custom domain fails. From the CLI: `pnpm --filter studio exec sanity cors add https://studio.your-domain.tld --credentials`.
 5. **Web site** — set `NEXT_PUBLIC_SANITY_STUDIO_URL` to the Studio URL and redeploy the web app, so its CSP lets Presentation embed it (`frame-ancestors`) and click-to-edit links open this Studio.

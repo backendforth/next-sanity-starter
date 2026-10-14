@@ -4,8 +4,8 @@
  * that still use premium / 2160p encoding (re-upload or Mux dashboard re-encode).
  *
  * Requires in studio/.env:
- *   SANITY_STUDIO_MUX_TOKEN_ID=
- *   SANITY_STUDIO_MUX_TOKEN_SECRET=
+ *   MUX_TOKEN_ID=
+ *   MUX_TOKEN_SECRET=
  *
  * Usage:
  *   node scripts/mux-migrate-assets.mjs           # dry-run (default)
@@ -17,14 +17,22 @@ import { loadEnvFile, studioRootFromScript } from "./loadEnvFile.mjs";
 const root = studioRootFromScript(import.meta.url);
 loadEnvFile(`${root}/.env`);
 
-const tokenId = process.env.SANITY_STUDIO_MUX_TOKEN_ID;
-const tokenSecret = process.env.SANITY_STUDIO_MUX_TOKEN_SECRET;
+// The old `SANITY_STUDIO_MUX_*` names still work here, but the Studio build inlines every
+// `SANITY_STUDIO_*` variable into its public bundle, so `sanity build` now refuses them.
+const legacyTokenId = process.env.SANITY_STUDIO_MUX_TOKEN_ID;
+const legacyTokenSecret = process.env.SANITY_STUDIO_MUX_TOKEN_SECRET;
+const tokenId = process.env.MUX_TOKEN_ID || legacyTokenId;
+const tokenSecret = process.env.MUX_TOKEN_SECRET || legacyTokenSecret;
 const apply = process.argv.includes("--apply");
 
-if (!tokenId || !tokenSecret) {
-  console.error(
-    "Missing SANITY_STUDIO_MUX_TOKEN_ID or SANITY_STUDIO_MUX_TOKEN_SECRET in studio/.env",
+if (legacyTokenId || legacyTokenSecret) {
+  console.warn(
+    "SANITY_STUDIO_MUX_TOKEN_ID / _SECRET are deprecated: rename them to MUX_TOKEN_ID / MUX_TOKEN_SECRET in studio/.env. Any SANITY_STUDIO_* value ships in the public Studio bundle.",
   );
+}
+
+if (!tokenId || !tokenSecret) {
+  console.error("Missing MUX_TOKEN_ID or MUX_TOKEN_SECRET in studio/.env");
   process.exit(1);
 }
 

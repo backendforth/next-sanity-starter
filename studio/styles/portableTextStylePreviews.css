@@ -9,9 +9,10 @@
  */
 
 :root {
-  --pt-preview-font-text: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --pt-preview-font-headline: "Geist Mono", ui-monospace, monospace;
-  --pt-preview-font-mono: "Geist Mono", ui-monospace, monospace;
+  --pt-preview-font-text:
+    "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --pt-preview-font-headline: "Geist Mono Variable", ui-monospace, monospace;
+  --pt-preview-font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
   --pt-font-size-md: 0.875rem;
   --pt-font-size-lg: 1.125rem;

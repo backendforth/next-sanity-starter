@@ -147,7 +147,7 @@ export function ModuleContentRefsClient({
 					{showFilters ? (
 						<fieldset
 							aria-label={uiLabel("filterByCategory", locale)}
-							className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
+							className={navControlGroupClass}
 						>
 							<button
 								type="button"
@@ -175,7 +175,7 @@ export function ModuleContentRefsClient({
 					{showSort ? (
 						<fieldset
 							aria-label={uiLabel("sortProjects", locale)}
-							className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
+							className={navControlGroupClass}
 						>
 							<button
 								type="button"

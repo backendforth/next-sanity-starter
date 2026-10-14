@@ -38,8 +38,7 @@ function LinkMarkRenderer({
 
 /**
  * Components for a `richTextMedia` body: blocks, lists, link marks and the inline modules.
- * Internal links point at `locale`'s version of the target; without it they stay
- * locale-agnostic. The `types` map is checked strictly: `tsc` fails when an inline module type
+ * Internal links point at `locale`'s version of the target. The `types` map is checked strictly: `tsc` fails when an inline module type
  * the query returns has no handler here, or a handler names a type it never returns. Handlers
  * get `value` typed clean-or-branded; `stegaBrand` (identity) types it as fetched, branded.
  */
@@ -82,19 +81,16 @@ export function portableTextMediaComponents({
 					<ModuleMedia module={stegaBrand(value)} variant="embed" />
 				</div>
 			),
-			"module.carousel": ({ value }) => {
-				if (!locale || !siteLocale) return null;
-				return (
-					<div className="rich-text-embed w-full min-w-0">
-						<ModuleCarousel
-							module={stegaBrand(value)}
-							locale={locale}
-							siteLocale={siteLocale}
-							variant="embed"
-						/>
-					</div>
-				);
-			},
+			"module.carousel": ({ value }) => (
+				<div className="rich-text-embed w-full min-w-0">
+					<ModuleCarousel
+						module={stegaBrand(value)}
+						locale={locale}
+						siteLocale={siteLocale}
+						variant="embed"
+					/>
+				</div>
+			),
 		} satisfies InferStrictComponents<RichTextMediaValue>["types"],
 	} satisfies InferComponents<RichTextMediaValue>;
 }

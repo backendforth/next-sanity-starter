@@ -16,7 +16,7 @@ type RichTextMediaProps = LinkLocaleOptions & {
 /**
  * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.*`).
  * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields. `locale` points
- * internal links at that locale and is required to render an embedded `module.carousel`.
+ * internal links at that locale's version of the target.
  */
 export function RichTextMedia({
 	value,

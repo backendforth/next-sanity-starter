@@ -30,15 +30,7 @@ export const moduleMediaResolvedMediaQuery = `
   )
 `;
 
-/**
- * `module.media` (`objects/modules/moduleMedia.ts`): only the resolved shape. The raw
- * `imageContent` / `videoContent` / `videoLoopContent` objects are not projected, the renderer
- * reads `resolvedMedia` alone.
- */
-export const moduleMediaInnerFields = `
-  "resolvedMedia": ${moduleMediaResolvedMediaQuery}
-`;
-
+/** `module.media` (`objects/modules/moduleMedia.ts`): the renderer reads `resolvedMedia` alone. */
 export const moduleMediaQuery = `_type == "module.media" => {
-  ${moduleMediaInnerFields}
+  "resolvedMedia": ${moduleMediaResolvedMediaQuery}
 }`;

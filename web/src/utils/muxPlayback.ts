@@ -26,28 +26,21 @@ export function extractMuxPlaybackId(media: unknown): string | null {
 	return null;
 }
 
-type MuxThumbnailFormat = "webp" | "jpg";
-
-type MuxThumbnailOptions = {
-	/** CSS-pixel width; Mux downscales from source. Callers should cap to retina × container. */
-	width?: number;
-	/**
-	 * @default "webp" — about a third of the JPG's bytes. Mux delivers both untagged (no ICC
-	 * profile), so the browser treats both as sRGB and the format cannot shift colour.
-	 */
-	format?: MuxThumbnailFormat;
-};
-
+/**
+ * `image.mux.com` thumbnail as WebP — about a third of the JPG's bytes. Mux delivers both
+ * untagged (no ICC profile), so the browser treats both as sRGB and the format cannot shift
+ * colour. `widthPx` is CSS pixels; Mux downscales from source. Callers cap it to retina ×
+ * container.
+ */
 export function muxThumbnailUrl(
 	playbackId: string,
-	timeSec = 0,
-	opts?: MuxThumbnailOptions,
+	timeSec: number,
+	widthPx: number,
 ): string {
-	const format = opts?.format ?? "webp";
-	const u = new URL(`https://image.mux.com/${playbackId}/thumbnail.${format}`);
+	const u = new URL(`https://image.mux.com/${playbackId}/thumbnail.webp`);
 	u.searchParams.set("time", String(timeSec));
-	if (opts?.width !== undefined && opts.width > 0) {
-		u.searchParams.set("width", String(Math.round(opts.width)));
+	if (widthPx > 0) {
+		u.searchParams.set("width", String(Math.round(widthPx)));
 	}
 	return u.toString();
 }
@@ -405,8 +398,6 @@ type MuxLoopTierArgs = {
 	containerWidthPx?: number;
 	containerHeightPx?: number;
 	devicePixelRatio?: number;
-	/** Override the rounding rule; defaults to {@link isFinePointerDisplay}. */
-	roundTierUp?: boolean;
 	/** Extra ceiling min-ed into the pick — the loop's stall rescue. */
 	tierCeiling?: MuxResolutionTier;
 };
@@ -426,7 +417,7 @@ export function resolveMuxLoopTier(args: MuxLoopTierArgs): MuxResolutionTier {
 			devicePixelRatio: args.devicePixelRatio,
 			videoWidthPx: vw,
 			videoHeightPx: vh,
-			roundTierUp: args.roundTierUp ?? isFinePointerDisplay(),
+			roundTierUp: isFinePointerDisplay(),
 		}).maxResolutionTier;
 	}
 

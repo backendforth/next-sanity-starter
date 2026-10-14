@@ -164,7 +164,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 
 | Command | Purpose |
 |---|---|
-| `pnpm dev` | `next dev --webpack`. |
+| `pnpm dev` | `next dev` (Turbopack). |
 | `pnpm build` | `next build`. |
 | `pnpm start` | `next start` (after `build`). |
 | `pnpm typecheck` | `tsc --noEmit` (web only). |

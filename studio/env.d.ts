@@ -41,7 +41,6 @@ declare namespace NodeJS {
       | "preview"
       | "production"
       | string;
-    SANITY_DATASET_RESOLVER_TOKEN?: string;
     SANITY_API_READ_TOKEN?: string;
     SANITY_STUDIO_HOSTING_URL?: string;
     SANITY_STUDIO_APP_ID?: string;

@@ -38,4 +38,4 @@ Nothing in this repo auto-registers new types in the sidebar or in Presentation;
 
 ## Dataset resolution
 
-`config/sync/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, optional Management API, and dev-first vs prod-first order by deploy context). `config/sync/supportedLanguages.ts` supplies the runtime language list for `@sanity/document-internationalization`. See `studio/utils/README.md` for editor-facing notes.
+`config/sync/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, and dev-first vs prod-first order by deploy context). `config/sync/supportedLanguages.ts` supplies the runtime language list for `@sanity/document-internationalization`. See `studio/utils/README.md` for editor-facing notes.

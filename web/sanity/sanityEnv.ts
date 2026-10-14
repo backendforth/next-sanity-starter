@@ -7,14 +7,3 @@
  */
 export const projectId = process.env.SANITY_STUDIO_PROJECT_ID?.trim() || "";
 export const dataset = process.env.SANITY_STUDIO_DATASET?.trim() || "";
-
-/**
- * True when the resolved dataset name matches the configured development dataset name.
- */
-export function isSanityStudioDevContext(
-	env: NodeJS.ProcessEnv = process.env,
-): boolean {
-	const devName =
-		env.SANITY_STUDIO_DATASET_DEVELOPMENT?.trim() ?? "development";
-	return dataset === devName;
-}

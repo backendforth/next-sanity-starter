@@ -359,8 +359,7 @@ export function useMuxHlsSource(
 						 * number of full restarts is the last resort, not an infinite
 						 * hammer against a dead endpoint (ad-blocker, offline). Paused
 						 * slides don't restart loading at all: that would reintroduce
-						 * exactly the parallel-fetch contention `stopLoad()` prevents;
-						 * their `loadingPaused` effect calls `startLoad()` on activation. */
+						 * exactly the parallel-fetch contention `stopLoad()` prevents. */
 						if (fatalNetworkRetries < 3 && !loadingPausedRef.current) {
 							fatalNetworkRetries += 1;
 							hls.startLoad();
@@ -383,8 +382,8 @@ export function useMuxHlsSource(
 						hls.recoverMediaError();
 					} else {
 						/* Unrecoverable (KEY/MUX/OTHER): tear down hls and fall back to a
-						 * native src. Clear the shared refs too — the audio and
-						 * loading-pause effects must not poke the destroyed instance. */
+						 * native src. Clear the shared refs too — the audio effect and the
+						 * resize re-pick must not poke the destroyed instance. */
 						hls.destroy();
 						hls = null;
 						hlsRef.current = null;
@@ -429,17 +428,6 @@ export function useMuxHlsSource(
 			hls.audioTrack = -1;
 		}
 	}, [audioEnabled]);
-
-	/* Pause segment fetches without tearing down the MSE pipeline (carousel slides). */
-	useEffect(() => {
-		const hls = hlsRef.current;
-		if (!hls) return;
-		if (loadingPaused) {
-			hls.stopLoad();
-		} else {
-			hls.startLoad();
-		}
-	}, [loadingPaused]);
 
 	/* Re-pick the rendition when the video element resizes — but only when the
 	 * resize *increased* the player size. Debounced to the trailing edge of a

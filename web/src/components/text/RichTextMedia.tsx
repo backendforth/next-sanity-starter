@@ -12,7 +12,7 @@ export type RichTextMediaLinkMark = LinkMark;
 type RichTextMediaProps = {
 	value: PortableTextBlock[];
 	className?: string;
-	/** Required when rich text bodies may embed `module.carousel` (localized heading). */
+	/** Locale of internal links; also required to render an embedded `module.carousel`. */
 	locale?: string;
 	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };

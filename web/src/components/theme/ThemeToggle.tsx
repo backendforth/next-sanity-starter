@@ -1,22 +1,36 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
 import {
 	navControlGroupClass,
 	navUtilityButtonClass,
 } from "@/src/components/navigation/navControlStyles";
 import { useLanguage } from "@/src/contexts/LanguageContext";
-import type { Theme } from "@/src/contexts/ThemeContext";
-import { useTheme } from "@/src/contexts/ThemeContext";
 import { type UiLabelKey, uiLabel } from "@/src/i18n/uiLabels";
 import { cn } from "@/src/utils/cn";
 
-const OPTIONS: { value: Theme; label: UiLabelKey }[] = [
+import {
+	type ColorScheme,
+	readAppliedColorScheme,
+	storeColorScheme,
+	subscribeToColorScheme,
+} from "./colorScheme";
+
+const OPTIONS: { value: ColorScheme; label: UiLabelKey }[] = [
 	{ value: "light", label: "themeLight" },
 	{ value: "dark", label: "themeDark" },
 ];
 
+/** Hydration renders the server snapshot (`light`), so the markup matches; the stored value applies right after. */
+const serverColorScheme = (): ColorScheme => "light";
+
 export function ThemeToggle() {
-	const { theme, setTheme } = useTheme();
+	const theme = useSyncExternalStore(
+		subscribeToColorScheme,
+		readAppliedColorScheme,
+		serverColorScheme,
+	);
 	const { currentLocale } = useLanguage();
 
 	return (
@@ -32,7 +46,7 @@ export function ThemeToggle() {
 						type="button"
 						className={navUtilityButtonClass(selected)}
 						aria-pressed={selected}
-						onClick={() => setTheme(option.value)}
+						onClick={() => storeColorScheme(option.value)}
 					>
 						{uiLabel(option.label, currentLocale)}
 					</button>

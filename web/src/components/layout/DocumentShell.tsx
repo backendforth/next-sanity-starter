@@ -8,7 +8,7 @@ import { siteFaviconIcons } from "@/sanity/seo";
 import type { SiteFavicon } from "@/sanity/types";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
-import { ThemeProvider } from "@/src/contexts/ThemeContext";
+import { ThemeSync } from "@/src/components/theme/ThemeSync";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../../assets/styles/tokens.css";
 import "../../assets/styles/globals.css";
@@ -148,7 +148,8 @@ export async function DocumentShell({ lang, children }: Props) {
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<ThemeProvider>{children}</ThemeProvider>
+				<ThemeSync />
+				{children}
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />
 				) : null}

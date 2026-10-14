@@ -8,6 +8,10 @@
  * Reads `web/.next/diagnostics/route-bundle-stats.json`, which `next build` writes with the
  * chunk list of every route, and gzips each chunk (level 9). Writes a Markdown table to
  * `$GITHUB_STEP_SUMMARY` when set (the `build (web)` job), to stdout otherwise.
+ *
+ * Budget gate: `.github/bundle-budget.json` maps routes to a ceiling in KB gzip. A route over
+ * its ceiling fails the run (exit 1) after the table is written; a route without one only
+ * shows `—`.
  */
 
 import { appendFileSync, readFileSync } from "node:fs";
@@ -17,6 +21,12 @@ import { gzipSync } from "node:zlib";
 
 const webDir = fileURLToPath(new URL("../../web", import.meta.url));
 const statsFile = join(webDir, ".next/diagnostics/route-bundle-stats.json");
+const budgetFile = fileURLToPath(
+	new URL("../bundle-budget.json", import.meta.url),
+);
+
+/** @type {Record<string, number>} route → ceiling in KB gzip */
+const budgets = JSON.parse(readFileSync(budgetFile, "utf8")).routes;
 
 /** @type {{ route: string; firstLoadChunkPaths: string[] }[]} */
 const routes = JSON.parse(readFileSync(statsFile, "utf8"));
@@ -45,17 +55,23 @@ const rows = routes.map(({ route, firstLoadChunkPaths }) => {
 		raw += size.raw;
 		gzip += size.gzip;
 	}
-	return { route, chunks: firstLoadChunkPaths.length, raw, gzip };
+	const budget = budgets[route];
+	const over = budget !== undefined && gzip / 1024 > budget;
+	return { route, chunks: firstLoadChunkPaths.length, raw, gzip, budget, over };
 });
 
 const table = [
 	"### First-load JS per route",
 	"",
-	"| Route | Chunks | Raw | Gzip |",
-	"|---|---:|---:|---:|",
+	"| Route | Chunks | Raw | Gzip | Budget |",
+	"|---|---:|---:|---:|---:|",
 	...rows.map(
 		(row) =>
-			`| \`${row.route}\` | ${row.chunks} | ${kb(row.raw)} | **${kb(row.gzip)}** |`,
+			`| \`${row.route}\` | ${row.chunks} | ${kb(row.raw)} | **${kb(row.gzip)}** | ${
+				row.budget === undefined
+					? "—"
+					: `${row.over ? "❌" : "✅"} ${row.budget} KB`
+			} |`,
 	),
 	"",
 ].join("\n");
@@ -63,3 +79,11 @@ const table = [
 const summary = process.env.GITHUB_STEP_SUMMARY;
 if (summary) appendFileSync(summary, `${table}\n`);
 else console.log(table);
+
+const overBudget = rows.filter((row) => row.over);
+for (const row of overBudget) {
+	console.error(
+		`✗ ${row.route}: ${kb(row.gzip)} gzip exceeds its ${row.budget} KB budget (.github/bundle-budget.json).`,
+	);
+}
+if (overBudget.length > 0) process.exit(1);

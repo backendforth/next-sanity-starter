@@ -148,7 +148,7 @@ export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
  * `siteSettings.favicon` for root metadata icons. The image field travels whole
  * (crop + hotspot); `siteFaviconIcons` derives the sizes on the Sanity CDN.
  * Returns `null` when unset — there is no static fallback icon (see
- * `app/layout.tsx`).
+ * `documentMetadata` in `src/components/layout/DocumentShell.tsx`).
  */
 export const fetchSiteSettingsFavicon = cache(
 	async (options?: LiveFetchOptions): Promise<SanityImageField | null> => {

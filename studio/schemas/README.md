@@ -119,11 +119,13 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (per-language singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`, prefixed with `/{language}` for non-default languages).
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Every picker (links, content refs, project categories) is wrapped in **`sameLanguageReferenceFilter`**, so it only offers documents in the edited document's `language`. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (per-language singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`, prefixed with `/{language}` for non-default languages).
 
 ## 9. Mux / media
 
 Video fields use types provided by **`sanity-plugin-mux-input`** (e.g. `mux.video`). The plugin is already registered in **`sanity.config.ts`**; your object schema only references the field `type`. **`module.media`** and **`media.video`** use **`mux.video`** for all video.
+
+The encoding ceiling is set per field: `options: { max_resolution_tier }` on a `mux.video` field overrides the plugin default and is both the preset and the maximum in the upload dialog. **`media.video`** encodes up to **2160p**, **`media.videoLoop`** up to **1440p**. To raise loops to 4K, change only the `videoLoop.ts` value to `"2160p"`; existing assets keep their ladder until re-encoded. No progressive MP4 (`mp4_support: "none"`).
 
 ## 10. Initial value templates (optional)
 

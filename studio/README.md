@@ -48,4 +48,4 @@ To publish the Studio to **Sanity Hosting** (`*.sanity.studio`), run the Sanity 
 - **From this package:** `pnpm deploy` or `pnpm exec sanity deploy` (both run `sanity deploy`).
 - **From the monorepo root:** `pnpm studio:deploy` (runs the same deploy in the `studio` workspace).
 
-The CLI will prompt for a hostname if needed and upload the production build. Ensure production env (dataset, `SANITY_STUDIO_PREVIEW_ORIGIN`, etc.) matches your deployment targets—see `.env.example` and `utils/README.md` for dataset behaviour.
+The CLI will prompt for a hostname on the first deploy and upload the production build. Set **`SANITY_STUDIO_APP_ID`** in `studio/.env` to the app id it prints, and later deploys update that Studio without asking (`sanity.cli.ts` → `deployment.appId`). Ensure production env (dataset, `SANITY_STUDIO_PREVIEW_ORIGIN`, etc.) matches your deployment targets—see `.env.example` and `utils/README.md` for dataset behaviour.

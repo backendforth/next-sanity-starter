@@ -21,6 +21,7 @@ const ALLOWED_DOCUMENT_TYPES = new Set([
 	"siteCookieBanner",
 	"errorSettings",
 	"siteLanguageSettings",
+	"translation.metadata",
 ] as const);
 
 type SanityWebhookPayload = {
@@ -130,14 +131,18 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 		return tags;
 	}
 
+	// Every route document projects its other-language variants
+	// (`translationsQuery`) for hreflang and the language switch, so a publish
+	// in one language must refresh its siblings too. `pages` / `projects`
+	// already span all languages; home and work need their `*-all` tags.
 	if (_type === "home") {
 		if (lang) tags.push(`home-${lang}`);
-		tags.push("site-pages");
+		tags.push("home-all", "site-pages");
 	}
 
 	if (_type === "work") {
 		if (lang) tags.push(`work-${lang}`);
-		tags.push("site-pages");
+		tags.push("work-all", "site-pages");
 	}
 
 	if (_type === "page") {
@@ -178,6 +183,11 @@ function getTagsForDocument(payload: SanityWebhookPayload): string[] {
 
 	if (_type === "siteLanguageSettings") {
 		tags.push("site-language-settings");
+	}
+
+	// Linking or unlinking translations in Studio only edits this document.
+	if (_type === "translation.metadata") {
+		tags.push("pages", "projects", "home-all", "work-all", "site-pages");
 	}
 
 	return tags;

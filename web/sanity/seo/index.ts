@@ -1,4 +1,5 @@
 export {
+	hreflangLanguages,
 	mergePageAndSettingsSeo,
 	metadataFromSanityPageData,
 	type ResolveSanityMetadataInput,

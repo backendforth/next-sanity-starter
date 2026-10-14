@@ -16,6 +16,7 @@ Hard rules:
 - Document-level i18n (`@sanity/document-internationalization`): a translatable document type has the hidden, read-only `language` field (copy from `studio/schemas/documents/page.ts`; never edit it) and is listed in `TRANSLATABLE_SCHEMA_TYPES` in `studio/sanity.config.ts`. Content fields stay plain (`string`, `richText`, `richTextMedia`) — never `internationalizedArray*` on this branch.
 - Slug fields use `validateSlug` from `studio/utils/validateSlug.ts`.
 - Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
+- Mux encoding ceilings live on the `mux.video` field (`options.max_resolution_tier`: video 2160p, loop 1440p). See "Mux video resolution" in `AGENTS.md`.
 
 After every schema edit:
 

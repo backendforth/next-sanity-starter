@@ -37,7 +37,7 @@ export const siteLanguageSettings = defineType({
       title: "Available languages",
       type: "array",
       description:
-        "Order defines fallback order on the website when a translation is missing.",
+        "Order of the language switch on the website and of the translations menu in Studio. There is no fallback between languages: a page that doesn't exist in a language isn't shown in it.",
       validation: (rule) => rule.required().min(1),
       of: [
         {

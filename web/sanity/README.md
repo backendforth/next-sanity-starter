@@ -45,7 +45,7 @@ Common exports:
 - **`buildFetchedImageUrl(image, { width, height, quality, fit, auto, dpr })`**
 - **`urlForFetchedImage(image, width)`** — convenience default (format + quality)
 - **`getImageOrientation`**, **`isPortraitImage`**, **`isLandscapeImage`**
-- **`getImageAspectRatio`**, **`getImageLqip`**, **`getImageDimensions`**
+- **`getImageAspectRatio`**, **`getImageDimensions`**
 
 Example:
 

@@ -8,6 +8,7 @@ export type {
 } from "./contentRefs";
 export type { ModuleMediaData, ResolvedMediaPayload } from "./media";
 export type {
+	MuxVideoPayload,
 	SanityImageAssetRef,
 	SanityImageDimensions,
 	SanityImageField,

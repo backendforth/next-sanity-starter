@@ -125,12 +125,12 @@ function MobileMenuButton({
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Header({ mainMenu, siteTitle }: Props) {
-	const { currentLocale, localePath, siteLocale } = useLanguage();
+	const { currentLocale, localePath, hrefFor, siteLocale } = useLanguage();
 
 	const entries = resolveMainMenuEntries(
 		mainMenu,
 		currentLocale,
-		{ localePath },
+		{ hrefFor },
 		siteLocale,
 	);
 	const homeHref = localePath("/", currentLocale);

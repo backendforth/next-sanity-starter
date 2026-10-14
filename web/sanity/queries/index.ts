@@ -22,7 +22,4 @@ export {
 	projectSlugsQuery,
 	sitemapPagesQuery,
 } from "./snippets/sitemap";
-export {
-	routePathProjection,
-	translationsQuery,
-} from "./snippets/translations";
+export { translationsQuery } from "./snippets/translations";

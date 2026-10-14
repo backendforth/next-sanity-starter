@@ -10,7 +10,7 @@ import { NavItem } from "./NavItem";
 type Props = {
 	locale: string;
 	footerMenu?: NavMenuLink[] | null;
-	pathUtils: Pick<LanguagePathUtils, "localePath">;
+	pathUtils: Pick<LanguagePathUtils, "hrefFor">;
 	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
 };
 

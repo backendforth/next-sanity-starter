@@ -1,10 +1,8 @@
 export { dataAttr } from "./dataAttr";
 export {
 	type LinkLocaleOptions,
-	type LinkResolvedRef,
 	type ResolvedLink,
 	resolveLinkMark,
-	resolveRefHref,
 } from "./linkResolver";
 export {
 	type ResolveLinkLabelInput,

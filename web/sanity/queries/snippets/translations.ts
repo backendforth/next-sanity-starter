@@ -1,14 +1,4 @@
-/**
- * URL path of a routable document without the locale prefix — the route
- * layer adds it per `language` (`createLanguagePathUtils().localePath`).
- * Extend when adding routable types.
- */
-export const routePathProjection = `select(
-  _type == "home" => "/",
-  _type == "work" => "/work",
-  _type == "project" => "/work/" + slug.current,
-  "/" + slug.current
-)`;
+import { routePathProjection } from "./routePath";
 
 /**
  * Every language variant of the current document as `{ language, path }`,

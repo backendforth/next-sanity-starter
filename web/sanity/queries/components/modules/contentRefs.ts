@@ -1,4 +1,5 @@
 import { imageQuery } from "../../snippets/media";
+import { routePathProjection } from "../../snippets/routePath";
 
 /**
  * One list entry: a page, the home singleton or a project, with its card preview. Document-level
@@ -11,11 +12,7 @@ const contentRefTargetProjection = `
   language,
   title,
   "slug": slug.current,
-  "route": select(
-    _type == "home" => "index",
-    _type == "project" => "project",
-    "slug"
-  ),
+  "path": ${routePathProjection},
   "previewImage": select(
     _type != "project" => null,
     titleMedia.type == "image" => titleMedia.imageContent.image${imageQuery},

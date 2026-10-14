@@ -7,7 +7,7 @@ import {
 	type TranslationPath,
 	translationPathsByLocale,
 } from "@/src/i18n/siteLocalePathUtils";
-import { SITE_BASE_URL } from "@/src/utils/siteUrl";
+import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
 import type { PageSeo, RouteDocument, SiteSettings } from "../types";
 
@@ -82,10 +82,10 @@ export function hreflangLanguages(
 	);
 	const languages: Record<string, string> = {};
 	for (const [id, path] of Object.entries(byLocale)) {
-		languages[id] = `${SITE_BASE_URL}${path}`;
+		languages[id] = absoluteSiteUrl(path);
 	}
 	const defaultPath = byLocale[siteLocale.defaultLocale];
-	if (defaultPath) languages["x-default"] = `${SITE_BASE_URL}${defaultPath}`;
+	if (defaultPath) languages["x-default"] = absoluteSiteUrl(defaultPath);
 	return languages;
 }
 
@@ -98,7 +98,7 @@ function buildAlternates(
 	if (!path || !currentLocale || !siteLocale) return undefined;
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	return {
-		canonical: `${SITE_BASE_URL}${pathUtils.localePath(path, currentLocale)}`,
+		canonical: absoluteSiteUrl(pathUtils.localePath(path, currentLocale)),
 		languages: hreflangLanguages(
 			{ language: currentLocale, path },
 			translations,

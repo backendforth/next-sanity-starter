@@ -11,8 +11,8 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata uses `fetchSettingsSeoFallback` (via `siteSettingsSeoFallbackQuery`) for site-wide fallback instead of an embedded join. |
 | `settings.ts` includes | `siteSettingsSeoFallbackQuery` | Standalone `siteSettings.seo` projection used once per request for route `generateMetadata` fallbacks. |
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
-| `link.ts` | `linkQuery` | Portable Text `link` marks: `internal` (route, slug, `resolvedReference`), `external` (href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
-| `settings.ts` | `siteNavMenusQuery`, `navMenusQuery`, `errorSettingsQuery`, `siteCookieBannerLayoutQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery` | Lean singleton projections for the app shell (each fetched via its `fetch*` helper in `fetchSanityData.ts`) |
+| `link.ts` | `linkQuery` | `link` marks and nav rows, one `select` branch per type (`linkType` tells them apart): `internal` (route, slug, `resolvedReference`), `external` (url/href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
+| `settings.ts` | `siteChromeQuery`, `errorSettingsQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery`, `siteAnalyticsSettingsQuery` | Lean singleton queries for the app shell, each a `defineQuery` fetched via its `fetch*` helper in `fetchSanityData.ts`. `siteChromeQuery` bundles nav menus, cookie banner and site title |
 | `sitemap.ts` | `pageSlugsQuery`, `sitemapPagesQuery` | Slug list for `[slug]` routes; sitemap rows include `home` + all `page` docs with `path` / `lastmod` fields |
 
 ## Using a snippet in a custom query (Next.js)
@@ -21,6 +21,7 @@ Import the snippet and **interpolate** it into your own GROQ string (same patter
 
 ```ts
 // app/example/example-query.ts
+import { defineQuery } from "next-sanity";
 import { linkQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
@@ -32,34 +33,35 @@ const myPortableTextField = `body[]{
   }
 }`;
 
-export const myQuery = `*[_type == "article" && slug.current == $slug][0]{
+export const myQuery = defineQuery(`*[_type == "article" && slug.current == $slug][0]{
   _id,
   title,
   ${myPortableTextField}
-}`;
+}`);
 
-// Server Component or route handler
+// Server Component or route handler — `doc` is typed by `pnpm generate`
 const doc = await client.fetch(myQuery, { slug: "hello" });
 ```
+
+Fragments are plain `const` template strings and the full query goes through `defineQuery`; a function call anywhere in the chain keeps TypeGen from typing the query (`pnpm generate` fails on it).
 
 Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, playback ids, Studio poster frame).
 
 ## Singleton settings
 
-- **`siteNavMenusQuery`** — `siteNav` document with resolved main + footer menus (no `modules[]`).
-- **`navMenusQuery`** — only the `mainMenu` / `footerMenu` projections (embed in a larger query if needed).
+- **`siteChromeQuery`** — `siteNav` with resolved main + footer menus, the cookie banner copy and the site title in one fetch (no `modules[]`).
 - **`errorSettingsQuery`** — 404 / 500 copy; deliberately no `modules[]` (no error page renders modules).
 
-Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from `navMenusQuery` + the lean projections instead if you need a custom shape.
+Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
 
 Example:
 
 ```ts
-import { navMenusQuery } from "@/sanity/queries";
+import { siteChromeQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
-const shellNavQuery = `*[_id == "siteNav"][0]{ _id, title, ${navMenusQuery} }`;
-const nav = await client.fetch(shellNavQuery);
+const chrome = await client.fetch(siteChromeQuery);
+const footerLinks = chrome.nav?.footerMenu ?? [];
 ```
 
 ## Using snippets with a client-side store
@@ -73,11 +75,11 @@ Example pattern with a small API route that wraps a snippet-based query:
 
 ```ts
 // app/api/site-shell/route.ts
-import { siteNavMenusQuery } from "@/sanity/queries";
+import { siteChromeQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
 export async function GET() {
-  const data = await client.fetch(siteNavMenusQuery);
+  const data = await client.fetch(siteChromeQuery);
   return Response.json(data);
 }
 ```

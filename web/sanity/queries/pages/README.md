@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_id == "home"][0]` or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). Site-wide SEO fallbacks are fetched separately via **`fetchSettingsSeoFallback`** (deduped per request) and passed into `metadataFromSanityPageData`.
+**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_type == "home" && _id == "home"][0]` (the `_type` lets TypeGen narrow the result to that document type) or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). Site-wide SEO fallbacks are fetched separately via **`fetchSettingsSeoFallback`** (deduped per request) and passed into `metadataFromSanityPageData`.
 
 Import from `@/sanity/queries`.
 
@@ -104,7 +104,7 @@ const data = await fetchPageBySlug(slug);
 const meta = await fetchPageBySlug(slug, { stega: false });
 ```
 
-**Option A2 — published-only + `unstable_cache`:** **`cachedSanityQuery`** / **`cachedPageDocumentBySlug`** in `@/sanity/cachedSanityQuery` use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
+**Option A2 — published-only + `unstable_cache`:** the helpers in `@/sanity/cachedSanityQuery` (`cachedSitemapPages`, `cachedPageSlugs`, …) use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
 
 **Option B — Zustand (client):** fetch via `/api/...` or Server Action, then `set({ page: data })`.
 

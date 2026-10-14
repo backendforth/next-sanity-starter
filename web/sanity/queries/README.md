@@ -121,7 +121,7 @@ From `sitemapPagesQuery`:
 
 ### Navigation (`siteNav`)
 
-Full query is `siteNavMenusQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (resolved links, no `modules[]`). **Smoke test** — document and raw menu fields:
+The app reads the menus through `siteChromeQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (resolved links, no `modules[]`). **Smoke test** — document and raw menu fields:
 
 ```groq
 *[_id == "siteNav"][0]{
@@ -132,7 +132,7 @@ Full query is `siteNavMenusQuery` in [`snippets/settings.ts`](./snippets/setting
 }
 ```
 
-To match the app’s resolved links, use the exported `siteNavMenusQuery` from code (expands each menu item with `linkQuery`).
+To match the app’s resolved links, use the exported `siteChromeQuery` from code (its `nav` expands each menu item with `linkQuery`).
 
 ### Site settings
 

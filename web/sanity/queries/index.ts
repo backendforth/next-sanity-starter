@@ -6,10 +6,6 @@ export {
 	moduleTextQuery,
 } from "./components/modules";
 export {
-	internationalizedRichTextBodyQuery,
-	richTextQuery,
-} from "./components/text/richText";
-export {
 	internationalizedRichTextMediaBodyQuery,
 	richTextMediaQuery,
 } from "./components/text/richTextMedia";
@@ -27,12 +23,9 @@ export {
 export { pageSeoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
-	navMenusQuery,
 	siteAnalyticsSettingsQuery,
 	siteChromeQuery,
-	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
-	siteNavMenusQuery,
 	siteSettingsFaviconQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,

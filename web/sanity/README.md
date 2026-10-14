@@ -10,7 +10,7 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | `live.ts` | `defineLive` → **`sanityFetch`**, **`SanityLive`** — required for Presentation, Draft Mode, and Visual Editing (Stega) |
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
 | `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
-| `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only; tags/time revalidation + React `cache` helpers (`cachedHomeDocument`, `cachedPageDocumentBySlug`). Not for routes that need Presentation / Draft Mode |
+| `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers: `fetchHomeDocument`, `fetchPageBySlug`, `fetchSiteChrome` (nav + cookie banner + title for the layout, one query), `fetchErrorSettings` — use for app routes with preview/VE (pass `{ stega: false }` in `generateMetadata`) |
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + localized title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
@@ -103,7 +103,7 @@ Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (f
 ## Queries
 
 - **Overview** — GROQ basics, folder layout, Sanity Vision examples (home, pages, nav, settings). See `queries/README.md`.
-- **Snippets** — reusable GROQ string pieces (`linkQuery`, `pageSeoQuery`, `siteSettingsSeoFallbackQuery`, `siteNavMenusQuery`, …). See `queries/snippets/README.md`.
+- **Snippets** — reusable GROQ string pieces (`linkQuery`, `pageSeoQuery`, `mediaQuery`, …). See `queries/snippets/README.md`.
 - **Components** — `modulesQuery`, `richTextMediaQuery`, per-module projections. See `queries/components/README.md`.
 - **Pages** — `homeQuery`, `pageBySlugQuery`. See `queries/pages/README.md`.
 - **Sitemap / slugs** — `pageSlugsQuery`, `sitemapPagesQuery` in `queries/snippets/sitemap.ts`.

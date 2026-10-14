@@ -141,7 +141,7 @@ export const fetchSettingsSeoFallback = cache(
 	},
 );
 
-/** Result of `siteSettingsFaviconQuery` — typegen cannot evaluate that query (interpolation). */
+/** Result of `siteSettingsFaviconQuery`. */
 export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
 
 /**

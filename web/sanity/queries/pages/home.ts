@@ -1,9 +1,11 @@
+import { defineQuery } from "next-sanity";
+
 import { modulesQuery } from "../components/modules";
 import { pageSeoQuery } from "../snippets/seo";
 
-export const homeQuery = `*[_id == "home"][0]{
+export const homeQuery = defineQuery(`*[_type == "home" && _id == "home"][0]{
   _id,
   title,
   ${modulesQuery},
   ${pageSeoQuery}
-}`;
+}`);

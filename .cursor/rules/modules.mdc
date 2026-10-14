@@ -13,7 +13,7 @@ A **module** is a paired Sanity object (`module.<id>`) plus a React component (`
 2. `studio/schemas/index.ts` — import + add to `schemaTypes`.
 3. `studio/schemas/objects/editors/richTextMedia.ts` — append `{ type: "module.<id>" }` to `of`.
 4. `studio/schemas/fields/modulesArrayField.ts` — append `{ type: "module.<id>" }` to `moduleTypes`.
-5. `web/src/components/modules/Module<Name>.tsx` — accepts `{ module }` (plus `locale` / `siteLocale` only if it builds hrefs), plus a `_type` branch in `renderModuleChild()` in `ModulesRenderer.tsx`. No `data-sanity` — `ModulesRenderer` sets it on the container.
+5. `web/src/components/modules/Module<Name>.tsx` — accepts `{ module }` (plus `locale` / `siteLocale` only if it builds hrefs), plus a `_type` branch in `renderModuleChild()` in `ModulesRenderer.tsx`. No `data-sanity` in the component — `ModulesRenderer` wraps every module with it.
 6. `web/src/components/modules/index.ts` — re-export from barrel.
 7. `web/sanity/queries/components/modules/<name>.ts` — GROQ projection of the plain fields, re-export from `index.ts`.
 8. `web/sanity/types/modules/<name>.ts` — hand-maintained TS shape, re-export from `index.ts`.

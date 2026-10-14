@@ -284,7 +284,7 @@ YOU MUST add the following by hand to web/src/components/modules/ModulesRenderer
      import { ${componentName} } from "./${componentName}";
 
 3. Add a branch inside renderModuleChild() (fields are plain values on this
-   branch; pass ctx.locale / ctx.siteLocale only if the module builds hrefs):
+   branch; pass locale / siteLocale only if the module builds hrefs):
      if (mod._type === "${moduleId}") {
        return <${componentName} module={mod as ${moduleDataType}} />;
      }

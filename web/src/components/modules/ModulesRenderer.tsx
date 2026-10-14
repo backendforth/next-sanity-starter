@@ -9,6 +9,7 @@ import type {
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+
 import { ModuleContentRefs } from "./ModuleContentRefs";
 import { ModuleMedia } from "./ModuleMedia";
 import { ModulesRendererClient } from "./ModulesRendererClient";
@@ -27,15 +28,10 @@ const ModuleCarousel = dynamic(() =>
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type ModuleContextProps = {
-	/** Active route locale id — required for `module.contentRefs` href building. */
-	locale: string;
-	/** Site locale config — required for `module.contentRefs` href building. */
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-};
-
-type Props = ModuleContextProps & {
+type Props = {
 	modules: ContentModule[];
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/** Document `_id` of the page rendering these modules. Used to mark each
 	 * module as Presentation-tool clickable via `data-sanity`. */
 	documentId: string;
@@ -69,7 +65,8 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 
 function renderModuleChild(
 	mod: ContentModule,
-	ctx: ModuleContextProps,
+	locale: string,
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
 	priority: boolean,
 ) {
 	if (mod._type === "module.text") {
@@ -85,8 +82,8 @@ function renderModuleChild(
 		return (
 			<ModuleContentRefs
 				module={mod as ModuleContentRefsData}
-				locale={ctx.locale}
-				siteLocale={ctx.siteLocale}
+				locale={locale}
+				siteLocale={siteLocale}
 				priority={priority}
 			/>
 		);
@@ -96,21 +93,13 @@ function renderModuleChild(
 
 /**
  * Renders the document `modules[]` stack. Each module is rendered server-side
- * (so module bundles stay out of the page's client chunk) and handed to a thin
- * client wrapper that orchestrates optimistic reordering when Visual Editing
- * dispatches a document update.
+ * with the active locale baked in (so module bundles stay out of the page's
+ * client chunk and translations are resolved before crossing the RSC seam),
+ * then handed to a thin client wrapper that orchestrates optimistic reordering
+ * when Visual Editing dispatches a document update.
  *
- * Variant note: this is the `document-level` translation branch, so the
- * Presentation `data-sanity` attribute targets the `modules` array as a whole
- * (one attribute on the outer container) — clicking any module opens the
- * modules array in Studio, scoped to this document. The field-level (`main`)
- * branch attaches per-module attributes with deeper paths into the specific
- * localized sub-field instead.
- *
- * `@sanity/visual-editing-csm` rejects empty paths at runtime, so true
- * doc-only scopes (`{ id, type }` without path) are not possible — the
- * shallowest valid scope is the top-level field name.
- *
+ * Each module wrapper carries a field-level `data-sanity` path
+ * (`modules[_key=="..."]`) so Presentation jumps directly to the right slot.
  * Modules without `_key` are kept in the initial order but cannot participate
  * in optimistic reordering — they'd lose their slot on the next Sanity update.
  * Production data from Sanity always carries `_key`s; this branch is only for
@@ -118,23 +107,28 @@ function renderModuleChild(
  */
 export function ModulesRenderer({
 	modules,
-	documentId,
-	documentType,
 	locale,
 	siteLocale,
+	documentId,
+	documentType,
 }: Props) {
-	const containerSanityAttr = dataAttr({
-		id: documentId,
-		type: documentType,
-		path: "modules",
-	});
-	const ctx: ModuleContextProps = { locale, siteLocale };
 	const initialModules = modules.map((mod, index) => {
 		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
+		const sanityAttr = mod._key
+			? dataAttr({
+					id: documentId,
+					type: documentType,
+					path: `modules[_key=="${mod._key}"]`,
+				})
+			: undefined;
 		return {
 			_key: key,
-			// The first module is the LCP candidate — its media loads eagerly.
-			rendered: renderModuleChild(mod, ctx, index === 0),
+			rendered: (
+				<div data-sanity={sanityAttr}>
+					{/* The first module is the LCP candidate — its media loads eagerly. */}
+					{renderModuleChild(mod, locale, siteLocale, index === 0)}
+				</div>
+			),
 		};
 	});
 
@@ -142,7 +136,6 @@ export function ModulesRenderer({
 		<ModulesRendererClient
 			documentId={documentId}
 			initialModules={initialModules}
-			containerSanityAttr={containerSanityAttr}
 		/>
 	);
 }

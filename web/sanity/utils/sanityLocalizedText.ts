@@ -1,7 +1,7 @@
 /**
  * Resolves `sanity-plugin-internationalized-array` fields for a requested locale.
  * Fallback order: exact language tag → base tag → other configured site locales → any entry with content.
- * Pass `siteLocale` from `fetchSiteLanguageSettings()` when resolving; otherwise built-in fallback (en/de) is used.
+ * Pass `siteLocale` from `fetchSiteLanguageSettings()` when resolving; otherwise the built-in `en` fallback is used.
  */
 import type { PortableTextBlock } from "@portabletext/types";
 

@@ -23,7 +23,7 @@ This is the **data layer**: GROQ queries, hand-maintained TS shapes, and resolve
 | `types/modules/` | Hand-maintained TS shapes per module + barrel. |
 | `types/pages.ts` | Page-level types. |
 | `utils/sanityLocalizedText.ts` | **Canonical** locale resolver — extend here, don't fork. |
-| `utils/` | Image builder, module labels, slug utils, dataset resolve. |
+| `utils/` | Image builder, module labels, link resolvers, `dataAttr`. |
 
 ## Resolver utilities
 

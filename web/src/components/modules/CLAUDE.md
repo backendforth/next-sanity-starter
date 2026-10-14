@@ -25,19 +25,19 @@ import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 type Props = {
-  module: ModuleFooData;
-  locale: string;
-  siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+	module: ModuleFooData;
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 export function ModuleFoo({ module, locale, siteLocale }: Props) {
-  const title = pickLocalizedString(module.title, locale, siteLocale);
-  return (
-    <section className={moduleSectionClassName}>
-      {title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
-      {/* render */}
-    </section>
-  );
+	const title = pickLocalizedString(module.title, locale, siteLocale);
+	return (
+		<section className={moduleSectionClassName}>
+			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
+			{/* render */}
+		</section>
+	);
 }
 ```
 

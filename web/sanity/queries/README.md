@@ -16,7 +16,7 @@ This folder holds **GROQ** strings for the Next.js app: reusable **snippets**, *
 | [`index.ts`](./index.ts) | Barrel: re-exports all public query constants. |
 | [`snippets/`](./snippets/README.md) | Small fragments: `linkQuery`, `pageSeoQuery`, `imageQuery`, settings singletons (incl. `siteSettingsSeoFallbackQuery`), sitemap helpers. Composed into larger strings, not usually run alone. |
 | [`components/`](./components/README.md) | `components/modules/` — `modulesQuery` and per-`module.*` projections; `components/text/richTextMedia.ts` — `richTextMediaQuery` for portable text bodies. |
-| [`pages/`](./pages/README.md) | Full document queries: `homeQuery`, `pageBySlugQuery`. |
+| [`pages/`](./pages/README.md) | Full document queries: `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery`. |
 
 **Flow:** `pages/*.ts` and `snippets/settings.ts` **import** snippets and `modulesQuery`, then **interpolate** them into template strings. The exported constants are the **final** GROQ strings your app passes to `client.fetch()`.
 

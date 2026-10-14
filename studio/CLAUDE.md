@@ -24,7 +24,7 @@ Routable types need explicit wiring in `config/presentation/`:
 - `resolve.ts` — `presentationMainDocuments` for non-`/:slug` routes.
 - `locationsResolver.ts` — custom paths / error pages.
 
-Internal links use `PAGE_REFERENCES` (and `PROJECT_REFERENCES` on `main`) from `schemas/constants/references.ts`.
+Internal `link` fields use `PAGE_REFERENCES`; `module.contentRefs` adds `PROJECT_REFERENCES` (both in `schemas/constants/references.ts`).
 
 ## Reuse before invention
 

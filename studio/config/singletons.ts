@@ -39,6 +39,18 @@ export function singletonTypesWithRole(
     .map(([type]) => type);
 }
 
+/**
+ * Singletons are opened from the structure (fixed ids), never created from the global "Create"
+ * menu: a second document of the type would be invisible to the structure and the queries.
+ * Matches the default template (id = schema type) and per-language ones (`<type>-<language>`).
+ */
+export function isSingletonTemplate(templateId: string): boolean {
+  for (const type of SINGLETON_SCHEMA_TYPES) {
+    if (templateId === type || templateId.startsWith(`${type}-`)) return true;
+  }
+  return false;
+}
+
 const LOCKED_SINGLETON_ACTIONS = new Set(["delete", "unpublish", "duplicate"]);
 
 export function filterSingletonDocumentActions<T extends { action?: string }>(

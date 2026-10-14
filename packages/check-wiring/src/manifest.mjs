@@ -366,7 +366,7 @@ export function wiringSlots(root) {
 				this.file,
 			);
 			const block = findBlock(withImport, INLINE_TYPES, this.file);
-			const handler = `\n\t\t\t"${mod.id}": ({ value }) =>\n\t\t\t\tlocale && siteLocale ? (\n\t\t\t\t\t<div className="rich-text-embed w-full min-w-0">\n\t\t\t\t\t\t<${mod.component} module={value} locale={locale} siteLocale={siteLocale} />\n\t\t\t\t\t</div>\n\t\t\t\t) : null,`;
+			const handler = `\n\t\t\t"${mod.id}": ({ value }) =>\n\t\t\t\tlocale && siteLocale ? (\n\t\t\t\t\t<div className="rich-text-embed w-full min-w-0">\n\t\t\t\t\t\t<${mod.component} module={stegaBrand(value)} locale={locale} siteLocale={siteLocale} />\n\t\t\t\t\t</div>\n\t\t\t\t) : null,`;
 			return appendToBlock(withImport, block, handler);
 		},
 	};

@@ -4,12 +4,11 @@
  * types on the next generate, and `tsc` then points at every consumer that no longer fits.
  *
  * Render-path data comes from `sanityFetch`, which types every string that may carry stega
- * markers in Presentation as `StegaString` (all but `_`-prefixed keys and slugs). `StegaAware`
- * accepts both that and the clean shape (`client.fetch`, `stegaClean`). Compare such a value
- * to a literal through `stegaClean()` or `isStegaVariant()` — never clean a whole document, that
- * strips the markers the click-to-edit overlays need.
+ * markers in Presentation as `StegaString` (all but `_`-prefixed keys and slugs), so a literal
+ * comparison does not compile. Compare through `stegaClean()` or `isStegaVariant()` — never
+ * clean a whole document, that strips the markers the click-to-edit overlays need.
  */
-import type { StegaBranded, StegaCleaned } from "next-sanity";
+import type { StegaBranded } from "next-sanity";
 
 import type {
 	HomeQueryResult,
@@ -20,15 +19,14 @@ import type {
 	WorkQueryResult,
 } from "./sanity.types.gen";
 
-/** A query result as `sanityFetch` may return it: clean or stega-branded. */
-export type StegaAware<T> = StegaCleaned<T> | StegaBranded<T>;
-
 // ── Route documents ─────────────────────────────────────────────────────────
 
-export type HomeDocument = NonNullable<StegaAware<HomeQueryResult>>;
-export type PageDocument = NonNullable<StegaAware<PageBySlugQueryResult>>;
-export type WorkDocument = NonNullable<StegaAware<WorkQueryResult>>;
-export type ProjectDocument = NonNullable<StegaAware<ProjectBySlugQueryResult>>;
+export type HomeDocument = NonNullable<StegaBranded<HomeQueryResult>>;
+export type PageDocument = NonNullable<StegaBranded<PageBySlugQueryResult>>;
+export type WorkDocument = NonNullable<StegaBranded<WorkQueryResult>>;
+export type ProjectDocument = NonNullable<
+	StegaBranded<ProjectBySlugQueryResult>
+>;
 export type RouteDocument =
 	| HomeDocument
 	| PageDocument
@@ -73,7 +71,7 @@ export type LinkMark = Extract<RichTextMarkDef, { _type: "link" }>;
 
 // ── App shell ───────────────────────────────────────────────────────────────
 
-export type SiteChrome = StegaAware<SiteChromeQueryResult>;
+export type SiteChrome = StegaBranded<SiteChromeQueryResult>;
 export type SiteNav = NonNullable<SiteChrome["nav"]>;
 export type MainMenuItem = NonNullable<SiteNav["mainMenu"]>[number];
 /** A link row in either menu, told apart by `linkType`. */
@@ -85,7 +83,7 @@ export type NotFoundCopy = NonNullable<SiteChrome["notFound"]>;
 export type SiteFavicon = NonNullable<SiteSettings["favicon"]>;
 
 /**
- * Clean, not `StegaAware`: the layout hands `stegaClean(chrome.analytics)` on, because tracker
+ * Clean, not `StegaBranded`: the layout hands `stegaClean(chrome.analytics)` on, because tracker
  * ids go to third-party scripts.
  */
 export type SiteAnalyticsSettings = NonNullable<

@@ -76,7 +76,11 @@ export function renderPreviewMedia(
   if (src) {
     return <img src={src} alt="" style={fillStyle} />;
   }
-  if (typeof media === "function") {
+  /* A component: `@sanity/icons` are `forwardRef` objects, not functions. */
+  if (
+    typeof media === "function" ||
+    (typeof media === "object" && "$$typeof" in media)
+  ) {
     const Icon = media as ComponentType<{ style?: CSSProperties }>;
     return (
       <Icon

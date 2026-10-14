@@ -23,7 +23,7 @@ Full guardrails live in `AGENTS.md` at the repo root. This file is a condensed m
 3. After every schema edit: `pnpm studio:generate`, then `pnpm typecheck`, then `pnpm format`.
 4. Never edit `studio/sanity.types.gen.ts` or `studio/schema.json` — generated.
 5. `web/sanity/types/*` are hand-maintained — update them when schema fields change.
-6. Locale-aware always: use `pickLocalizedString(field, locale, siteLocale)` or `parseLocalizedText({ value, locale, siteLocale, as })`. Never `field[0].value` or `field.find(t => t.language === locale)`. Never `coalesce(field[language==$locale].value, ...)` in GROQ.
+6. Locale-aware always: use `pickLocalizedString(field, locale, siteLocale)` or `pickLocalizedPortableTextBlocks(body, locale, siteLocale)`. Never `field[0].value` or `field.find(t => t.language === locale)`. Never `coalesce(field[language==$locale].value, ...)` in GROQ.
 7. Add a new language only via the `siteLanguageSettings` Studio singleton (offline fallback: `web/src/i18n/fallbackSiteLocales.ts`). No schema, query, or component change.
 8. No hardcoded locale codes outside `web/src/i18n/`.
 9. No imports from `studio/` inside `web/` (or vice versa). Share via `packages/*`.

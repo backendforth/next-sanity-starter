@@ -18,7 +18,7 @@ Before writing code:
 2. **Pair or don't ship.** A schema without its component (or vice versa) is a bug, not a partial commit.
 3. **All 8 wiring points or revert.** A partially wired module silently breaks the editor or the renderer. Atomic.
 4. **Typegen is the source of truth for Studio types.** Never hand-edit `studio/sanity.types.gen.ts` or `studio/schema.json`. `web/sanity/types/*` are hand-maintained for now — keep them aligned with schema field changes.
-5. **Locale-aware at render time, not query time.** Never `coalesce(field[language=="en"]...)` in GROQ. Always resolve via `pickLocalizedString` / `parseLocalizedText`.
+5. **Locale-aware at render time, not query time.** Never `coalesce(field[language=="en"]...)` in GROQ. Always resolve via `pickLocalizedString` / `pickLocalizedPortableTextBlocks`.
 6. **READMEs are deep docs.** Per-folder `README.md` files are authoritative for the local pattern — link to them, do not duplicate.
 
 ## Repository map
@@ -182,8 +182,8 @@ The starter does **not** filter locales in GROQ. Every translatable field is an 
 | Utility | Use for |
 |---|---|
 | `pickLocalizedString(entries, locale, siteLocale)` | Single i18n string field (title, alt, label). |
-| `parseLocalizedText({ value, locale, siteLocale, as })` | Polymorphic: `as: "auto" \| "string" \| "blocks"` — handles string or Portable Text. |
-| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with i18n fields in its blocks and link marks. Embedded `module.*` objects pass through untouched — their renderers resolve their own fields. |
+| `pickLocalizedPortableTextBlocks(entries, locale, siteLocale)` | `internationalizedArrayRichText*` bodies — the block array for the locale, `[]` when empty. Embedded `module.*` objects stay untouched; their renderers resolve their own fields. |
+| `pickLocalizedValue(entries, locale, siteLocale)` | Any other i18n value. All three are generic over the entry's `value`, so the generated query types come back typed. |
 
 **Fallback chain (must-know):** exact locale → base tag (`en-US` → `en`) → `siteLocale.localeIds` in order → first non-empty entry.
 
@@ -196,7 +196,7 @@ URL /[locale]/[slug]
           └─ render({ locale, siteLocale, page })
               ├─ pickLocalizedString(page.title, locale, siteLocale)
               └─ ModulesRenderer({ locale, siteLocale, modules })
-                  └─ ModuleText: parseLocalizedText({ value: body, locale, siteLocale, as: "blocks" })
+                  └─ ModuleText: pickLocalizedPortableTextBlocks(module.body, locale, siteLocale)
 ```
 
 `siteLocale` (typed `SiteLocaleConfig`, defined in `web/src/i18n/fallbackSiteLocales.ts`) must be threaded into every render path. It is loaded from `siteLanguageSettings` at request time, with `FALLBACK_SITE_LOCALE_CONFIG` as the offline default.
@@ -206,7 +206,7 @@ URL /[locale]/[slug]
 | ✅ DO | ❌ DON'T |
 |---|---|
 | Project full i18n arrays in GROQ. | `coalesce(field[language=="en"].value, …)` — breaks fallback chain. |
-| Read fields via `pickLocalizedString` / `parseLocalizedText` in components. | Index arrays directly (`title[0].value`, `title.find(t => t.language === locale)`). |
+| Read fields via `pickLocalizedString` / `pickLocalizedPortableTextBlocks` in components. | Index arrays directly (`title[0].value`, `title.find(t => t.language === locale)`). |
 | Add a new language **only** by editing the `siteLanguageSettings` singleton in Studio. | Hardcode `"en"` / `"de"` outside `web/src/i18n/`. |
 | Pass `{ locale, siteLocale }` as props through every render boundary. | Read locale from `useRouter()` inside a module — breaks SSR + Visual Editing. |
 | Mark translatable schema fields with `internationalizedArray*`. | Use a plain `string` or `array` field for translatable content. |
@@ -303,7 +303,7 @@ Both `main` and `variant/document-level` ship this file. The two branches have c
 | Where the locale lives | In the field. One document per page; translatable fields are `internationalizedArray*` (`[{ _key, language, value }]`). | In the document. One document per language; every translatable document type (`TRANSLATABLE_SCHEMA_TYPES` in `studio/sanity.config.ts`: `page`, `project`, `projectCategory`, `work`, `home`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) has a `language` string field (`readOnly`, `hidden`, `initialValue: "en"`) set by the plugin — **never edit it manually**. Content fields are plain (`string`, `richText`, `richTextMedia`). |
 | Studio plugin | `sanity-plugin-internationalized-array`, languages from `studio/config/sync/internationalizedArrayLanguages.ts`. | `@sanity/document-internationalization`, languages from `studio/config/sync/supportedLanguages.ts`; translations are linked through `translation.metadata` documents. |
 | GROQ | No locale parameter; singletons by `_id` (`*[_id == "siteSettings"][0]`). The "never filter locale in GROQ" rule applies here. | Queries select the document for the route's language and take `$locale` (`*[_type == "siteSettings" && language == $locale][0]`). Selecting by `language` is the design here, not the anti-pattern. |
-| Render-time resolution | Every translatable field through `pickLocalizedString` / `parseLocalizedText`. | Fields already hold the route's language; render them directly. `sanityLocalizedText.ts` remains for link labels that may still carry localized arrays. |
+| Render-time resolution | Every translatable field through `pickLocalizedString` / `pickLocalizedPortableTextBlocks`. | Fields already hold the route's language; render them directly. `sanityLocalizedText.ts` remains for link labels that may still carry localized arrays. |
 | Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
 | Layout chrome | `app/[locale]/layout.tsx` fetches the chrome bundle (nav, cookie banner, title) in parallel with the locale check. | Fetches it after `isAppLocale(locale)`: the bundle is per language, so its cache key needs a validated locale. |
 | Dangling internal links | Point to the home page. | Render without a link (`navHref`). |

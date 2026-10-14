@@ -16,7 +16,7 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `types/pages.ts` | `HomeDocument`, `PageDocument`, `PageSeo` — import in **`app/**/page.tsx`** next to route fetches (barrel: `types/index.ts`) |
 | `types/modules/` | TS types for `module.*` payloads (and shared image types) |
-| `utils/` | Localization (`parseLocalizedText`, `pickLocalizedString`, `pickLocalizedPortableTextBlocks`, …), `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
+| `utils/` | Localization (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`), `sanityImageBuilder`, `getSanityModuleLabel` — see barrel `utils/index.ts` |
 
 Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
 
@@ -26,41 +26,20 @@ Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/ut
 
 **Which locale the page uses** comes from the URL (`[locale]` route segment). Language ids and order match the Sanity singleton **`siteLanguageSettings`** (`fetchSiteLanguageSettings` in **`fetchSanityData.ts`**). See **`web/README.md`** (*Languages*) and **`web/src/i18n/README.md`**.
 
-Sanity uses **`internationalizedArray*`** fields: arrays of `{ language | _key, value }`.
+Sanity uses **`internationalizedArray*`** fields: arrays of `{ _key, language, value }`. Three resolvers, one fallback chain (requested tag → base tag such as `en` for `en-US` → **Site languages** order → any entry with content). They are generic over `value`, so the generated query types come back typed:
 
-Use a single entry point:
-
-**`parseLocalizedText({ entries, locale?, as? })`**
-
-- **`entries`** — the array field from your fetched document (e.g. `doc.title`, `module.body`).
-- **`locale`** — optional; defaults to `"en"`. Locale tags like `en-US` also try the base language (`en`).
-- **`as`** — optional; default **`"auto"`**:
-  - **`auto`** — returns a **string** or **Portable Text blocks**, depending on what that field stores; if the requested locale is missing, falls back to another language that has content.
-  - **`string`** — returns `string | undefined` (rich-text fields resolve to `undefined`).
-  - **`blocks`** — returns `PortableTextBlock[]` (plain-string fields resolve to `[]`).
-
-Example:
+- **`pickLocalizedString(entries, locale?, siteLocale?)`** — string fields, trimmed; `undefined` when every entry is empty.
+- **`pickLocalizedPortableTextBlocks(entries, locale, siteLocale?)`** — rich-text bodies; the locale's block array, `[]` when empty. Embedded modules come back untouched (they resolve their own fields). Pass the blocks to **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`).
+- **`pickLocalizedValue(entries, locale?, siteLocale?)`** — any other value type.
 
 ```ts
-import { parseLocalizedText } from "@/sanity/utils";
+import { pickLocalizedPortableTextBlocks, pickLocalizedString } from "@/sanity/utils";
 
-const title = parseLocalizedText({ entries: doc.title, locale: "de", as: "string" });
-const body = parseLocalizedText({ entries: module.body, locale: "de", as: "blocks" });
-
-// Or let the field shape decide (string vs blocks):
-const either = parseLocalizedText({ entries: someField, locale: "de" });
+const heading = pickLocalizedString(doc.title, "de", siteLocale);
+const blocks = pickLocalizedPortableTextBlocks(module.body, "de", siteLocale);
 ```
 
-For **React** components, prefer **`pickLocalizedString`** and **`pickLocalizedPortableTextBlocks`** (same resolution rules, including nested i18n inside Portable Text). Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`) — aligned with schema **`richTextMedia`**.
-
-```ts
-import { pickLocalizedString, pickLocalizedPortableTextBlocks } from "@/sanity/utils";
-
-const heading = pickLocalizedString(doc.title, "de");
-const blocks = pickLocalizedPortableTextBlocks(module.body, "de");
-```
-
-Pass an optional third argument **`siteLocale`** (`{ localeIds, defaultLocale }` from **`fetchSiteLanguageSettings()`**) so fallback order matches **Site languages** in Sanity. **`parseLocalizedText`** accepts **`siteLocale`** in its options object.
+Pass **`siteLocale`** (`{ localeIds, defaultLocale }` from **`fetchSiteLanguageSettings()`**) so the fallback order matches **Site languages** in Sanity; without it the built-in `en` fallback applies.
 
 ---
 
@@ -114,21 +93,14 @@ Central export: `import { ... } from "@/sanity/queries"`.
 
 ## Example: page-level fetch with title + modules (Next.js App Router)
 
-This example assumes your page document has i18n `title` and a `modules` array matching `modulesQuery`. Adjust types to your app.
+This example fetches a page with its i18n `title` and the `modules` array from `modulesQuery`; the result type comes from TypeGen.
 
 ```tsx
 // app/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
-import { parseLocalizedText, type IntlStringEntry } from "@/sanity/utils";
-import type { ContentModule } from "@/sanity/types/modules";
-
-type PageDocument = {
-  _id: string;
-  title?: IntlStringEntry[] | null;
-  modules?: ContentModule[] | null;
-};
+import { pickLocalizedString } from "@/sanity/utils";
 
 export default async function Page({
   params,
@@ -136,13 +108,14 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const doc = await client.fetch<PageDocument | null>(pageBySlugQuery, { slug });
+  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`.
+  const doc = await client.fetch(pageBySlugQuery, { slug });
 
   if (!doc) {
     notFound();
   }
 
-  const heading = parseLocalizedText({ entries: doc.title, as: "string" }) ?? slug;
+  const heading = pickLocalizedString(doc.title, "en") ?? slug;
   const modules = doc.modules ?? [];
 
   return (
@@ -161,7 +134,7 @@ export default async function Page({
 }
 ```
 
-For production, swap the `<pre>` block for your real module renderer that switches on `mod._type` and narrows with `ContentModule` / specific `ModuleTextData` types.
+For production, swap the `<pre>` block for `ModulesRenderer`, which switches on `mod._type`.
 
 ---
 

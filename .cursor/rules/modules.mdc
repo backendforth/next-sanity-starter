@@ -25,7 +25,7 @@ DO:
 - Ship all 8 in a single commit.
 - Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
 - Project i18n fields as full `{ _key, _type, language, value }` arrays.
-- Read i18n via `pickLocalizedString` / `parseLocalizedText`.
+- Read i18n via `pickLocalizedString` / `pickLocalizedPortableTextBlocks`.
 
 DON'T:
 

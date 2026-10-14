@@ -8,7 +8,7 @@ This is the **data layer**: GROQ queries, hand-maintained TS shapes, and resolve
 
 1. **NEVER** filter locale inside GROQ. Project the full `{ _key, _type, language, value }` array. Locale resolves at React render time. `coalesce(field[language=="en"]...)` is forbidden — breaks fallback.
 2. Reuse snippets from `queries/snippets/`. Check there before adding `slug`, `seo`, `link`, `media`, or module shapes inline.
-3. Use `pickLocalizedString` / `parseLocalizedText` / `resolveLocalizedPortableTextDeep` from `utils/sanityLocalizedText.ts` for **all** locale resolution. Don't index i18n arrays directly.
+3. Use `pickLocalizedString` / `pickLocalizedPortableTextBlocks` / `pickLocalizedValue` from `utils/sanityLocalizedText.ts` for **all** locale resolution. Don't index i18n arrays directly.
 4. Keep `types/modules/<name>.ts` in sync with `queries/components/modules/<name>.ts` — they are hand-maintained, in the same commit.
 5. **NEVER** import from `studio/sanity.types.gen.ts`. Wrong direction.
 
@@ -30,8 +30,8 @@ This is the **data layer**: GROQ queries, hand-maintained TS shapes, and resolve
 | Utility | Use for |
 |---|---|
 | `pickLocalizedString(entries, locale, siteLocale)` | Single i18n string. |
-| `parseLocalizedText({ value, locale, siteLocale, as })` | String or Portable Text (`as: "auto" \| "string" \| "blocks"`). |
-| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with i18n marks; embedded modules resolve their own fields. |
+| `pickLocalizedPortableTextBlocks(entries, locale, siteLocale)` | Rich-text bodies; embedded modules resolve their own fields. |
+| `pickLocalizedValue(entries, locale, siteLocale)` | Any other i18n value, typed by the entry. |
 
 If you need a new resolver, extend `sanityLocalizedText.ts` — don't write a parallel one in a component.
 

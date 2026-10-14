@@ -9,7 +9,7 @@ Top-level rules (do not duplicate — see AGENTS.md for the full context):
 
 - Reuse before invention; grep `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/` first.
 - Content blocks are **modules** — paired Sanity object + React component, wired in 8 places. Skipping any one is a bug.
-- Locale-aware at render time, never inside GROQ. Always use `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`.
+- Locale-aware at render time, never inside GROQ. Always use `pickLocalizedString` / `pickLocalizedPortableTextBlocks` from `web/sanity/utils/sanityLocalizedText.ts`.
 - After schema edits: `pnpm studio:generate` → `pnpm typecheck` → `pnpm format`. Never edit `studio/sanity.types.gen.ts` or `studio/schema.json`.
 - `web/sanity/types/*` are hand-maintained; keep aligned with field changes.
 - Fixes land on `main` first and reach `variant/document-level` by `git cherry-pick -x`; every PR names its `Variant-Port` (AGENTS.md → "Porting fixes between branches").

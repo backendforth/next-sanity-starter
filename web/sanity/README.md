@@ -15,10 +15,10 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + document title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
-| `types.ts` | App-facing names derived from it: `HomeDocument`, `PageDocument`, `ModuleOf<"module.x">`, `RichTextMediaValue`, `SiteNav`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
-| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) — see barrel `utils/index.ts` |
+| `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
+| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) |
 
-Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
+Import full queries from **`@/sanity/queries`**, utilities from their file (`@/sanity/utils/sanityImageBuilder`, …).
 
 ---
 
@@ -54,7 +54,7 @@ import {
   buildFetchedImageUrl,
   getImageOrientation,
   type SanityImageField,
-} from "@/sanity/utils";
+} from "@/sanity/utils/sanityImageBuilder";
 
 function HeroImage({ image }: { image: SanityImageField | null }) {
   if (!image) return null;

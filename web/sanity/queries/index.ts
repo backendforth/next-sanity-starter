@@ -1,17 +1,8 @@
-export { modulesQuery } from "./components/modules";
-export { richTextMediaQuery } from "./components/text/richTextMedia";
+/** Full queries (`defineQuery`) for the fetchers. Fragments are imported from their file. */
 export { homeQuery } from "./pages/home";
 export { pageBySlugQuery } from "./pages/page";
 export { projectBySlugQuery } from "./pages/project";
 export { workQuery } from "./pages/work";
-export { linkQuery } from "./snippets/link";
-export {
-	imageQuery,
-	mediaQuery,
-	mediaQuerySpread,
-	videoQuery,
-} from "./snippets/media";
-export { pageSeoQuery } from "./snippets/seo";
 export {
 	siteChromeQuery,
 	siteLanguageSettingsQuery,
@@ -21,4 +12,3 @@ export {
 	projectSlugsQuery,
 	sitemapPagesQuery,
 } from "./snippets/sitemap";
-export { translationsQuery } from "./snippets/translations";

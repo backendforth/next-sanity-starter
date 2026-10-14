@@ -20,7 +20,7 @@ Creates three files from `templates/`:
 
 | File | |
 |---|---|
-| `studio/schemas/objects/modules/module<Name>.ts` | schema with an i18n `title` |
+| `studio/schemas/objects/modules/module<Name>.ts` | schema with a `title` field |
 | `web/src/components/modules/Module<Name>.tsx` | component typed `module: ModuleOf<"module.<id>">` |
 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` projection |
 

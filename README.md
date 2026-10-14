@@ -43,7 +43,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Cookie consent (optional)** — Sanity-driven [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner with light/dark theming via `--color-*` tokens, editable copy and per-category sections in JSON, plus `en` / `de` defaults when the doc is empty. An `open-cookie-preferences` link function lets any nav item reopen the preferences modal, and `hasConsent(category)` is exposed for gating analytics scripts. Toggle it on under **Settings → Cookie Banner**; the banner stays inert until `useCookieBanner` is `true`.
 
-**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration. (Hybrid coverage on `main`; **full coverage** on the `variant/document-level` branch — no recursive fragment to block the analyser.)
+**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration; `check:typegen` fails when TypeGen skips a query.
 
 **Tailwind CSS v4** — CSS-first config (`@theme`), token-driven dark mode without class hacks, PostCSS pipeline with custom `rem()` helper. Design tokens live in `web/src/assets/styles/`.
 
@@ -59,8 +59,8 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
 | **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
-| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and prints the `ModulesRenderer.tsx` branch to paste |
-| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` — validates module wiring across schema, component, query, and type files (CI gate) |
+| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and wires it, the `ModulesRenderer.tsx` `case` included |
+| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` and `check:typegen` — module wiring and query typing (CI gates) |
 
 ---
 
@@ -153,7 +153,8 @@ All from the repo root.
 | `pnpm studio:register` | Register the Netlify-hosted Studio URL with Sanity and upload the schema (`--dry-run` to preview) |
 | `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`) — the alternative to Netlify |
 | `pnpm generate` | Schema extract, Studio + web typegen, `check:typegen` (`studio:generate` is an alias) |
-| `pnpm check:wiring` | Module wiring check (`gen:module` scaffolds a wired module) |
+| `pnpm gen:module <Name>` | Scaffold a content module and wire it, the `ModulesRenderer.tsx` `case` included. PascalCase name; `--inline` also registers it inside rich text, `--dry-run` previews |
+| `pnpm check:wiring` | Check the module wiring against the module schemas, both ways, and the inline places with each other. Runs in CI |
 | `pnpm test:tooling` | Tests for the wiring check and the scaffolder |
 | `pnpm studio:sync-prod-to-dev` | Clone `production` → `development` dataset |
 | `pnpm lint` | Biome check (repo-wide) |
@@ -161,8 +162,6 @@ All from the repo root.
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
 | `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
-| `pnpm gen:module <Name>` | Scaffold a new content module (files, barrels, `schemaTypes`, `moduleTypes`; prints the `ModulesRenderer.tsx` branch to paste). PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
-| `pnpm check:wiring` | Validate the 8-point module wiring (schema, component, query, type, and their barrels/registrations). Runs in CI. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.
 

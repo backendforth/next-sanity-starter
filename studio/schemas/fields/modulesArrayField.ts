@@ -5,7 +5,7 @@ import { moduleRowPreview } from "../../components/previews/ModuleRowPreview";
 const MediaRowPreview = moduleRowPreview("Media");
 const CarouselRowPreview = moduleRowPreview();
 
-/** Types allowed in document-level `modules` arrays (keep in sync with `richTextMedia` block types). */
+/** Every module, for document-level `modules` arrays. `richTextMedia` lists only the opt-in inline ones. */
 export const moduleTypes = [
   defineArrayMember({
     type: "module.media",

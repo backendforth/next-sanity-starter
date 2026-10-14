@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_type == "home" && _id == "home"][0]` (the `_type` lets TypeGen narrow the result to that document type) or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome().settings`) and is passed into `metadataFromSanityPageData`.
+**End-to-end GROQ strings** for routable (or singleton) documents: they include filters like `*[_type == "home" && _id == "home"][0]` (the `_type` lets TypeGen narrow the result to that document type) or `*[_type == "page" && slug.current == $slug][0]` plus field projections (title, `path`, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome().settings`) and is passed into `metadataFromSanityPageData`.
 
 Import from `@/sanity/queries`.
 
@@ -10,6 +10,8 @@ Import from `@/sanity/queries`.
 |------|--------|-------------|
 | `home.ts` | `homeQuery` | Home singleton (`_id == "home"`) |
 | `page.ts` | `pageBySlugQuery` | Single page by `slug` param |
+| `work.ts` | `workQuery` | Work singleton (`_id == "work"`) |
+| `project.ts` | `projectBySlugQuery` | Single project by `slug` param |
 
 Slug lists and sitemap-oriented queries live in **`queries/snippets/sitemap.ts`** (`pageSlugsQuery`, `sitemapPagesQuery`).
 

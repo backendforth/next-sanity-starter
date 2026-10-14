@@ -26,9 +26,9 @@ export function extractMuxPlaybackId(media: unknown): string | null {
 	return null;
 }
 
-export type MuxThumbnailFormat = "webp" | "jpg";
+type MuxThumbnailFormat = "webp" | "jpg";
 
-export type MuxThumbnailOptions = {
+type MuxThumbnailOptions = {
 	/** CSS-pixel width; Mux downscales from source. Callers should cap to retina × container. */
 	width?: number;
 	/**
@@ -144,7 +144,7 @@ export type MuxResolutionTier =
  *
  * @see https://docs.mux.com/guides/control-playback-resolution
  */
-export function muxHlsSrc(
+function muxHlsSrc(
 	playbackId: string,
 	opts: {
 		renditionOrderDesc?: boolean;
@@ -175,7 +175,7 @@ export function muxHlsSrc(
  * pixels) so a 1920×1080 retina hero targets 2160p; phones with DPR=3 are clamped to 2× so
  * they don't pull 4K just because the OS reports a high density screen.
  */
-export const LOOP_VIDEO_DPR_CAP = 2.0;
+const LOOP_VIDEO_DPR_CAP = 2.0;
 
 /**
  * Hard manifest ceiling for all site playback (loops and the full player). What a visitor
@@ -269,9 +269,7 @@ export function computeLoopVideoTarget(args: {
  * cellular data is precious; desktop-class displays use
  * {@link muxCoveringResolutionTierFromHeight}.
  */
-export function muxResolutionTierFromHeight(
-	heightPx: number,
-): MuxResolutionTier {
+function muxResolutionTierFromHeight(heightPx: number): MuxResolutionTier {
 	if (heightPx >= 2160) return "2160p";
 	if (heightPx >= 1440) return "1440p";
 	if (heightPx >= 1080) return "1080p";
@@ -288,7 +286,7 @@ export function muxResolutionTierFromHeight(
  * viewport lands between two rungs (a DPR-2 MacBook hero needs ~1700–2000 px), so the floor
  * mapper served one rung below the display there.
  */
-export function muxCoveringResolutionTierFromHeight(
+function muxCoveringResolutionTierFromHeight(
 	heightPx: number,
 ): MuxResolutionTier {
 	if (heightPx <= 270) return "270p";
@@ -306,7 +304,7 @@ export function muxCoveringResolutionTierFromHeight(
  * (upscaling is visible at arm's length), touch displays keep the floor tier (invisible at
  * phone pixel density, and one rung can double the bitrate over cellular). SSR-safe: `false`.
  */
-export function isFinePointerDisplay(): boolean {
+function isFinePointerDisplay(): boolean {
 	if (typeof window === "undefined" || !window.matchMedia) return false;
 	return window.matchMedia(FINE_POINTER_DISPLAY_QUERY).matches;
 }
@@ -357,7 +355,7 @@ export function computeObjectCoverTargetPx(args: {
  * unpins its resolution, `MediaVideoLoop` steps its pinned tier down
  * ({@link muxTierBelow}).
  */
-export function getNetworkAwareTierCeiling(): MuxResolutionTier {
+function getNetworkAwareTierCeiling(): MuxResolutionTier {
 	if (typeof navigator === "undefined") return MUX_PLAYBACK_MAX_TIER;
 	type NetworkInformation = {
 		effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
@@ -401,7 +399,7 @@ export function getNetworkAwareTierCeiling(): MuxResolutionTier {
  * Result: a desktop visitor on wifi sees up to the asset's top rendition, a
  * phone on LTE sees 1080p–1440p, a phone on 3G sees 720p — all without ramp-up.
  */
-export type MuxLoopTierArgs = {
+type MuxLoopTierArgs = {
 	videoWidthPx?: number;
 	videoHeightPx?: number;
 	containerWidthPx?: number;
@@ -452,7 +450,7 @@ export function muxLoopHlsSrc(
  * Tiers the full player can pin — the intersection of Mux Player's
  * `minResolution` (480p–2160p) and `maxResolution` (720p–2160p) domains.
  */
-export type MuxPlayerResolutionTier = "720p" | "1080p" | "1440p" | "2160p";
+type MuxPlayerResolutionTier = "720p" | "1080p" | "1440p" | "2160p";
 
 export type MuxPlayerResolution = {
 	minResolution?: MuxPlayerResolutionTier;
@@ -537,29 +535,13 @@ export function resolveMuxPlayerResolution(args: {
 	return { minResolution: pinned, maxResolution: pinned };
 }
 
-/**
- * `player.mux.com` iframe URL — retained for fallback / debugging. Production `MediaVideo` uses
- * the React component `<MuxPlayer/>` directly.
- */
-export function muxPlayerSrc(
-	playbackId: string,
-	opts: { autoplay?: boolean | null; muted?: boolean } = {},
-): string {
-	const url = new URL(`https://player.mux.com/${playbackId}`);
-	if (opts.autoplay) {
-		url.searchParams.set("autoplay", "true");
-		url.searchParams.set("muted", String(opts.muted !== false));
-	}
-	return url.toString();
-}
-
 /** Codec family parsed from an HLS `#EXT-X-STREAM-INF` CODECS attribute. */
 export type MuxLevelCodecFamily = "av1" | "hevc" | "avc";
 
 const MODERN_CODEC_ORDER: MuxLevelCodecFamily[] = ["av1", "hevc", "avc"];
 
 /** Minimal hls.js level shape for rendition picking (no hls.js import). */
-export type MuxHlsLevelLike = {
+type MuxHlsLevelLike = {
 	width?: number;
 	height?: number;
 	codecs?: string;
@@ -580,7 +562,7 @@ export function detectMuxLevelCodecFamily(
 }
 
 /** Client-only: MSE can decode baseline AV1 in fMP4. */
-export function isAv1MseSupported(): boolean {
+function isAv1MseSupported(): boolean {
 	if (typeof window === "undefined") return false;
 	const MS = window.MediaSource;
 	if (!MS) return false;
@@ -588,7 +570,7 @@ export function isAv1MseSupported(): boolean {
 }
 
 /** Client-only: MSE can decode HEVC in fMP4 (Chrome 107+ on many platforms). */
-export function isHevcMseSupported(): boolean {
+function isHevcMseSupported(): boolean {
 	if (typeof window === "undefined") return false;
 	const MS = window.MediaSource;
 	if (!MS) return false;

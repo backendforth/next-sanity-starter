@@ -42,7 +42,7 @@ import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 import { useMuxHlsSource } from "@/src/utils/useMuxHlsSource";
 
-export type MediaVideoLoopProps = {
+type MediaVideoLoopProps = {
 	media: unknown;
 	caption?: string | null;
 	posterPayload?: unknown;

@@ -17,7 +17,7 @@ const POSTER_SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2560, 3840] as const;
 /** Hard cap for poster request widths — matches `muxThumbnailRequestWidthPx`. */
 const POSTER_MAX_WIDTH_PX = 3840;
 
-export type ResolveMediaPosterOptions = {
+type ResolveMediaPosterOptions = {
 	/** Editorial poster (`poster` image field on `media.video` / `media.videoLoop`). */
 	posterPayload?: unknown;
 	/** Mux video payload (`videoQuery`) — its thumbnail is the fallback poster. */
@@ -33,7 +33,7 @@ export type ResolveMediaPosterOptions = {
 	muxMaxWidthPx?: number;
 };
 
-export type ResolvedMediaPosterUrls = {
+type ResolvedMediaPosterUrls = {
 	src: string;
 	srcSet?: string;
 	/** Intrinsic size of the poster (cropped Sanity image or Mux video track). */

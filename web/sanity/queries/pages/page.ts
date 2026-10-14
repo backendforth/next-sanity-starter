@@ -9,7 +9,6 @@ export const pageBySlugQuery =
   _id,
   title,
   "path": ${routePathProjection},
-  slug,
   ${modulesQuery},
   ${pageSeoQuery}
 }`);

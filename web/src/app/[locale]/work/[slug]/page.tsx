@@ -76,14 +76,12 @@ export default async function Project({ params }: PageProps) {
 	}
 
 	const projectTitle = pickLocalizedString(data.title, locale, siteLocale);
-	const titleMedia = data.titleMedia;
-	const hasTitleMedia = Boolean(titleMedia?.resolvedMedia?.media);
 	const body = pickLocalizedPortableTextBlocks(data.body, locale, siteLocale);
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{projectTitle || hasTitleMedia ? (
+				{projectTitle ? (
 					<header className="flex flex-col gap-sm">
 						{projectTitle ? (
 							<h2 className="content-title">{projectTitle}</h2>

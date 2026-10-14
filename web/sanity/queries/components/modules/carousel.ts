@@ -1,30 +1,20 @@
 import { mediaQuery } from "../../snippets/media";
-import { moduleMediaInnerFields, moduleMediaResolvedMediaQuery } from "./media";
+import { moduleMediaResolvedMediaQuery } from "./media";
 
 /**
- * `module.carousel` (`objects/modules/moduleCarousel.ts`): `imagesOnly` → `slides` (plain
- * `image` items); otherwise `slidesMedia` (`module.media` = image or video). An unset
- * `imagesOnly` counts as on, like in the Studio, which shows `slides` until it is switched off.
+ * `module.carousel` (`objects/modules/moduleCarousel.ts`): `resolvedSlides` holds `slides`
+ * (plain `image` items) when `imagesOnly` is on, otherwise `slidesMedia` (`module.media` =
+ * image or video). An unset `imagesOnly` counts as on, like in the Studio, which shows `slides`
+ * until it is switched off. Only the resolved list is projected; the renderer reads nothing else.
  */
 export const moduleCarouselInnerFields = `
   heading,
-  imagesOnly,
   loop,
   showThumbnails,
   showNavDots,
   multipleSlides,
   autoplay,
   autoplayDelayMs,
-  "slides": slides[]{
-    _key,
-    _type,
-    "media": ${mediaQuery}
-  },
-  "slidesMedia": slidesMedia[]{
-    _key,
-    _type,
-    ${moduleMediaInnerFields}
-  },
   "resolvedSlides": select(
     imagesOnly != false => slides[]{
       _key,

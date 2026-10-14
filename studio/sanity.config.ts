@@ -112,9 +112,11 @@ export default defineConfig({
   document: {
     actions: (prev, { schemaType }) =>
       filterSingletonDocumentActions(prev, schemaType),
+    // `global` is the "Create" menu, `document` feeds the "Create new" button of reference
+    // inputs in a document pane; only `structure` items open singletons (by fixed id).
     newDocumentOptions: (prev, { creationContext }) =>
-      creationContext.type === "global"
-        ? prev.filter((item) => !isSingletonTemplate(item.templateId))
-        : prev,
+      creationContext.type === "structure"
+        ? prev
+        : prev.filter((item) => !isSingletonTemplate(item.templateId)),
   },
 });

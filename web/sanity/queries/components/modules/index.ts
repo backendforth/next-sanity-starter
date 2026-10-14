@@ -11,9 +11,3 @@ export const modulesQuery = `modules[]{
   ${moduleCarouselQuery},
   ${moduleContentRefsQuery}
 }`;
-export {
-	moduleCarouselQuery,
-	moduleContentRefsQuery,
-	moduleMediaQuery,
-	moduleTextQuery,
-};

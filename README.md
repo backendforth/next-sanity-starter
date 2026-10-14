@@ -190,7 +190,7 @@ Set on the host: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` (optional),
 
 ### Netlify (Studio) — default
 
-The Studio is a second Netlify site from the same repository: package directory `studio`, configured by [`studio/netlify.toml`](studio/netlify.toml) (build, SPA routing, dataset per deploy context, `noindex`). Commits that only touch the web app don't rebuild it.
+The Studio is a second Netlify site from the same repository: package directory `studio`, configured by [`studio/netlify.toml`](studio/netlify.toml) (build, SPA routing, dataset per deploy context, `noindex`, `frame-ancestors` against clickjacking). Commits that only touch the web app don't rebuild it.
 
 Set on that site: `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET`, `SANITY_STUDIO_PREVIEW_ORIGIN` (production web origin), `SANITY_STUDIO_HOSTING_URL`, optionally `SANITY_AUTH_TOKEN`. Then add the domain to the Sanity project's CORS origins with credentials, set `NEXT_PUBLIC_SANITY_STUDIO_URL` on the web site, and register the Studio (`pnpm studio:register`). Step by step: [`studio/README.md`](studio/README.md#deploying-the-studio).
 

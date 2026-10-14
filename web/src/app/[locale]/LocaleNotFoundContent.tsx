@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { ErrorSettingsDocument } from "@/sanity/types/errorSettings";
+import type { ErrorSettings } from "@/sanity/types";
 import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
@@ -13,7 +13,7 @@ import { useLanguage } from "@/src/contexts/LanguageContext";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
-	errorSettings: ErrorSettingsDocument | null;
+	errorSettings: ErrorSettings | null;
 };
 
 export function LocaleNotFoundContent({ errorSettings }: Props) {

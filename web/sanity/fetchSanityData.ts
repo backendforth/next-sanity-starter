@@ -19,28 +19,7 @@ import {
 	siteSettingsTitleQuery,
 	workQuery,
 } from "./queries";
-import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
-import type { ErrorSettingsDocument } from "./types/errorSettings";
-import type { SanityImageField } from "./types/modules";
-import type { SiteNavMenusDocument } from "./types/nav";
-import type {
-	HomeDocument,
-	PageDocument,
-	PageSeo,
-	ProjectDocument,
-	WorkDocument,
-} from "./types/pages";
-import type { SiteAnalyticsSettingsDocument } from "./types/siteAnalyticsSettings";
-import type { SiteCookieBannerDocument } from "./types/siteCookieBanner";
-import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
-
-export type {
-	HomeDocument,
-	PageDocument,
-	PageSeo,
-	ProjectDocument,
-	WorkDocument,
-};
+import type { PageSeo, SiteFavicon } from "./types";
 
 type LiveFetchOptions = {
 	stega?: boolean;
@@ -65,7 +44,7 @@ export const fetchHomeDocument = cache(async (options?: LiveFetchOptions) => {
 		tags: [SANITY_CACHE_TAGS.home, ...EMBEDDED_CONTENT_TAGS],
 		...options,
 	});
-	return data as HomeDocument | null;
+	return data;
 });
 
 /** Dedupes page fetches; pass `{ stega: false }` in `generateMetadata`. */
@@ -78,7 +57,7 @@ export const fetchPageBySlug = cache(
 			tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 			...options,
 		});
-		return data as PageDocument | null;
+		return data;
 	},
 );
 
@@ -90,7 +69,7 @@ export const fetchWorkDocument = cache(async (options?: LiveFetchOptions) => {
 		tags: [SANITY_CACHE_TAGS.work, ...EMBEDDED_CONTENT_TAGS],
 		...options,
 	});
-	return data as WorkDocument | null;
+	return data;
 });
 
 /** Dedupes project fetches; pass `{ stega: false }` in `generateMetadata`. */
@@ -103,7 +82,7 @@ export const fetchProjectBySlug = cache(
 			tags: [SANITY_CACHE_TAGS.projectSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 			...options,
 		});
-		return data as ProjectDocument | null;
+		return data;
 	},
 );
 
@@ -119,9 +98,7 @@ export const fetchSiteSettingsTitle = cache(
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		const row = data as SiteSettingsTitleQueryResult;
-		const t = typeof row?.title === "string" ? row.title.trim() : "";
-		return t || "Site";
+		return data?.title?.trim() || "Site";
 	},
 );
 
@@ -137,12 +114,9 @@ export const fetchSettingsSeoFallback = cache(
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		return data as PageSeo;
+		return data;
 	},
 );
-
-/** Result of `siteSettingsFaviconQuery`. */
-export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
 
 /**
  * `siteSettings.favicon` for root metadata icons. The image field travels whole
@@ -151,63 +125,50 @@ export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
  * `documentMetadata` in `src/components/layout/DocumentShell.tsx`).
  */
 export const fetchSiteSettingsFavicon = cache(
-	async (options?: LiveFetchOptions): Promise<SanityImageField | null> => {
+	async (options?: LiveFetchOptions): Promise<SiteFavicon | null> => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: siteSettingsFaviconQuery,
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		return (data as SiteFaviconData)?.favicon ?? null;
+		return data?.favicon ?? null;
 	},
 );
-
-/** `siteChromeQuery` result — what `app/[locale]/layout.tsx` renders around every page. */
-export type SiteChromeData = {
-	/** `siteNav` main/footer menus with resolved links; no embedded modules. */
-	nav: SiteNavMenusDocument | null;
-	/** Cookie banner copy for the app shell — no embedded modules. */
-	cookieBanner: SiteCookieBannerDocument | null;
-	/** `siteSettings.title`, the header brand. */
-	title: string | null;
-} | null;
 
 /**
  * App-shell chrome (nav, cookie banner, site title) in one `sanityFetch` instead of three —
  * each fetch is two roundtrips (sync-tags probe + data). `fetchSiteSettingsTitle` stays for
  * the `generateMetadata` paths, which fetch with `stega: false`.
  */
-export const fetchSiteChrome = cache(
-	async (options?: LiveFetchOptions): Promise<SiteChromeData> => {
-		if (!isSanityConfigured) return null;
-		const { data } = await sanityFetch({
-			query: siteChromeQuery,
-			/* `pages`: nav links resolve page slugs. */
-			tags: [
-				SANITY_CACHE_TAGS.siteNav,
-				SANITY_CACHE_TAGS.siteCookieBanner,
-				SANITY_CACHE_TAGS.siteSettings,
-				SANITY_CACHE_TAGS.pages,
-			],
-			...options,
-		});
-		return data as SiteChromeData;
-	},
-);
+export const fetchSiteChrome = cache(async (options?: LiveFetchOptions) => {
+	if (!isSanityConfigured) return null;
+	const { data } = await sanityFetch({
+		query: siteChromeQuery,
+		/* `pages`: nav links resolve page slugs. */
+		tags: [
+			SANITY_CACHE_TAGS.siteNav,
+			SANITY_CACHE_TAGS.siteCookieBanner,
+			SANITY_CACHE_TAGS.siteSettings,
+			SANITY_CACHE_TAGS.pages,
+		],
+		...options,
+	});
+	return data;
+});
 
 /** Analytics & tracking providers — document id `siteAnalyticsSettings`. */
 export const fetchSiteAnalyticsSettings = cache(
-	async (
-		options?: LiveFetchOptions,
-	): Promise<SiteAnalyticsSettingsDocument | null> => {
+	async (options?: Omit<LiveFetchOptions, "stega">) => {
 		if (!isSanityConfigured) return null;
+		/* Literal `stega: false` keeps the clean types: tracker ids go to third-party scripts. */
 		const { data } = await sanityFetch({
 			query: siteAnalyticsSettingsQuery,
 			tags: [SANITY_CACHE_TAGS.siteAnalyticsSettings],
-			stega: false,
 			...options,
+			stega: false,
 		});
-		return data as SiteAnalyticsSettingsDocument | null;
+		return data;
 	},
 );
 
@@ -256,9 +217,9 @@ export const fetchSiteLanguageSettings = cache(
 		if (!useDrafts) {
 			return cachedSiteLanguageSettingsPublished();
 		}
-		const data = await draftClientForSiteLanguageSettings(
-			token,
-		).fetch<SiteLanguageSettingsDocument | null>(siteLanguageSettingsQuery);
+		const data = await draftClientForSiteLanguageSettings(token).fetch(
+			siteLanguageSettingsQuery,
+		);
 		return normalizeSiteLocaleConfig(data);
 	},
 );
@@ -272,5 +233,5 @@ export const fetchErrorSettings = cache(async (options?: LiveFetchOptions) => {
 		tags: [SANITY_CACHE_TAGS.errorSettings, SANITY_CACHE_TAGS.pages],
 		...options,
 	});
-	return data as ErrorSettingsDocument | null;
+	return data;
 });

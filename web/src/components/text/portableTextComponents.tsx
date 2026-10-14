@@ -1,17 +1,12 @@
-import type { PortableTextComponents } from "@portabletext/react";
+import type { InferComponents, InferStrictComponents } from "next-sanity";
 import type { ReactNode } from "react";
 
-import type {
-	ModuleCarouselData,
-	ModuleMediaData,
-} from "@/sanity/types/modules";
+import type { LinkMark, RichTextMediaValue } from "@/sanity/types";
 import {
 	type LinkLocaleOptions,
-	type LinkMark,
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
 import { ModuleCarousel, ModuleMedia } from "@/src/components/modules";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 function LinkMarkRenderer({
 	children,
@@ -37,12 +32,15 @@ function LinkMarkRenderer({
 }
 
 /**
- * Blocks, lists, and marks shared by `richText` and `richTextMedia`. Internal links point at
- * `locale`'s version of the target; without it they stay locale-agnostic.
+ * Components for a `richTextMedia` body: blocks, lists, link marks and the inline modules.
+ * Internal links point at `locale`'s version of the target; without it they stay
+ * locale-agnostic. The `types` map is checked strictly: `tsc` fails when an inline module type
+ * the query returns has no handler here, or a handler names a type it never returns.
  */
-export function portableTextBlockComponents(
-	localeOptions: LinkLocaleOptions = {},
-): Partial<PortableTextComponents> {
+export function portableTextMediaComponents({
+	locale,
+	siteLocale,
+}: LinkLocaleOptions) {
 	return {
 		block: {
 			normal: ({ children }) => <p className="text">{children}</p>,
@@ -67,31 +65,15 @@ export function portableTextBlockComponents(
 			em: ({ children }) => <em className="font-mono italic">{children}</em>,
 			code: ({ children }) => <code>{children}</code>,
 			link: ({ children, value }) => (
-				<LinkMarkRenderer
-					value={value as LinkMark}
-					localeOptions={localeOptions}
-				>
+				<LinkMarkRenderer value={value} localeOptions={{ locale, siteLocale }}>
 					{children}
 				</LinkMarkRenderer>
 			),
 		},
-	};
-}
-
-/** `richTextMedia` — blocks plus embedded `module.*` types. */
-export function portableTextMediaComponents({
-	locale,
-	siteLocale,
-}: {
-	locale?: string;
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-}): Partial<PortableTextComponents> {
-	return {
-		...portableTextBlockComponents({ locale, siteLocale }),
 		types: {
 			"module.media": ({ value }) => (
 				<div className="rich-text-embed rich-text-embed-media min-w-0">
-					<ModuleMedia module={value as ModuleMediaData} variant="embed" />
+					<ModuleMedia module={value} variant="embed" />
 				</div>
 			),
 			"module.carousel": ({ value }) => {
@@ -99,7 +81,7 @@ export function portableTextMediaComponents({
 				return (
 					<div className="rich-text-embed w-full min-w-0">
 						<ModuleCarousel
-							module={value as ModuleCarouselData}
+							module={value}
 							locale={locale}
 							siteLocale={siteLocale}
 							variant="embed"
@@ -107,6 +89,6 @@ export function portableTextMediaComponents({
 					</div>
 				);
 			},
-		},
-	};
+		} satisfies InferStrictComponents<RichTextMediaValue>["types"],
+	} satisfies InferComponents<RichTextMediaValue>;
 }

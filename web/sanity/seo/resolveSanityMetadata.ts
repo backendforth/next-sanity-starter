@@ -4,17 +4,19 @@ import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
-import type {
-	HomeDocument,
-	PageDocument,
-	PageSeo,
-	ProjectDocument,
-	WorkDocument,
-} from "../types/pages";
-import { pickLocalizedString } from "../utils/sanityLocalizedText";
+import type { PageSeo, RouteDocument } from "../types";
+import {
+	type LocalizedEntry,
+	pickLocalizedString,
+} from "../utils/sanityLocalizedText";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-type SeoText = NonNullable<PageSeo>["title"];
+/** An SEO text field: i18n entries, or a plain string from before `migrate:seo-i18n`. */
+type SeoText =
+	| ReadonlyArray<LocalizedEntry<string>>
+	| string
+	| null
+	| undefined;
 
 function firstNonEmpty(
 	...values: (string | null | undefined)[]
@@ -32,7 +34,7 @@ function firstNonEmpty(
  * resolves to nothing instead of breaking metadata (and with it prerender).
  */
 function localizedSeoText(
-	value: SeoText | undefined,
+	value: SeoText,
 	locale: string | undefined,
 	siteLocale: SiteLocaleSlice | null | undefined,
 ): string | undefined {
@@ -171,7 +173,7 @@ export function resolveSanityMetadata({
 
 export type MetadataFromSanityPageDataInput = {
 	/** Route document (home / work singletons or `page` / `project` by slug). */
-	data: HomeDocument | PageDocument | WorkDocument | ProjectDocument;
+	data: RouteDocument;
 	/** Active route locale id. */
 	locale: string;
 	/** Meta title when the page has neither an SEO title nor a heading (e.g. the slug). */

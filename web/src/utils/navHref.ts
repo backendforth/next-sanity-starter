@@ -1,5 +1,8 @@
-import type { MainMenuItem, NavMenuLink } from "@/sanity/types/nav";
+import { stegaClean } from "next-sanity";
+
+import type { MainMenuItem, NavMenuLink } from "@/sanity/types";
 import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
+import { isStegaVariant } from "@/sanity/utils/stegaVariant";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
@@ -40,7 +43,7 @@ function labelFor(
 	locale: string,
 	siteLocale: SiteLocaleSlice | null | undefined,
 ): string {
-	if (link.type === "internal" && link.linkType === "linkInternal") {
+	if (isStegaVariant(link, "linkType", "linkInternal")) {
 		return resolveLinkLabel({
 			linkTitle: link.title,
 			referenceTitle: link.resolvedReference?.title,
@@ -48,7 +51,7 @@ function labelFor(
 			siteLocale,
 		});
 	}
-	if (link.type === "external" && link.linkType === "linkExternal") {
+	if (isStegaVariant(link, "linkType", "linkExternal")) {
 		return resolveLinkLabel({
 			linkTitle: link.title,
 			externalUrl: link.href,
@@ -56,7 +59,7 @@ function labelFor(
 			siteLocale,
 		});
 	}
-	if (link.type === "function" && link.linkType === "linkFunction") {
+	if (isStegaVariant(link, "linkType", "linkFunction")) {
 		return resolveLinkLabel({
 			linkTitle: link.title,
 			functionKey: link.func?.key,
@@ -67,31 +70,20 @@ function labelFor(
 	return "Link";
 }
 
+/**
+ * Nav links reference `home` or `page` (`PAGE_REFERENCES` in the Studio), and TypeGen narrows
+ * `route` to `"page"` (home, or a dangling reference) or `"slug"`. A dangling one goes home.
+ */
 function internalHref(
-	link: Extract<NavMenuLink, { type: "internal" }>,
+	link: Extract<NavMenuLink, { resolvedReference: unknown }>,
 	locale: string,
 	localePath: LanguagePathUtils["localePath"],
 ): string | null {
-	const refType = link.resolvedReference?._type;
-	const route = link.route;
-	const slug = typeof link.slug === "string" ? link.slug.trim() : "";
-
-	if (refType === "home" || route === "page") {
+	if (stegaClean(link.route) === "page") {
 		return localePath("/", locale);
 	}
-	if (refType === "work" || route === "work") {
-		return localePath("/work", locale);
-	}
-	if (refType === "project" || route === "project") {
-		if (!slug) {
-			return null;
-		}
-		return localePath(`/work/${slug}`, locale);
-	}
-	if (slug.length > 0) {
-		return localePath(`/${slug}`, locale);
-	}
-	return null;
+	const slug = link.slug?.trim();
+	return slug ? localePath(`/${slug}`, locale) : null;
 }
 
 export function resolveNavMenuLink(
@@ -104,7 +96,7 @@ export function resolveNavMenuLink(
 ): ResolvedNavRow | null {
 	const label = labelFor(link, locale, siteLocale);
 
-	if (link.type === "internal" && link.linkType === "linkInternal") {
+	if (isStegaVariant(link, "linkType", "linkInternal")) {
 		const href = internalHref(link, locale, pathUtils.localePath);
 		if (!href) {
 			return null;
@@ -117,7 +109,7 @@ export function resolveNavMenuLink(
 		};
 	}
 
-	if (link.type === "external" && link.linkType === "linkExternal") {
+	if (isStegaVariant(link, "linkType", "linkExternal")) {
 		const href = typeof link.href === "string" ? link.href.trim() : "";
 		if (!href) {
 			return null;
@@ -132,8 +124,8 @@ export function resolveNavMenuLink(
 		};
 	}
 
-	if (link.type === "function" && link.linkType === "linkFunction") {
-		const key = link.func?.key;
+	if (isStegaVariant(link, "linkType", "linkFunction")) {
+		const key = stegaClean(link.func?.key);
 		const params =
 			typeof link.func?.params === "string" ? link.func.params : null;
 

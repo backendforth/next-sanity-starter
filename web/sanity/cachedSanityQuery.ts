@@ -25,7 +25,6 @@ import type {
 	ProjectSlugsQueryResult,
 	SitemapPagesQueryResult,
 } from "./sanity.types.gen";
-import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
 
 export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 
@@ -34,7 +33,7 @@ export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalid
 type SitemapRow = SitemapPagesQueryResult[number];
 
 const fetchSitemapPagesCached = unstable_cache(
-	async () => client.fetch<SitemapRow[]>(sitemapPagesQuery),
+	async () => client.fetch(sitemapPagesQuery),
 	["sitemap-pages"],
 	{
 		revalidate: 3600,
@@ -56,7 +55,7 @@ export const cachedSitemapPages = cache(async (): Promise<SitemapRow[]> => {
 // ── `generateStaticParams` slug list ────────────────────────────────────────
 
 const fetchPageSlugsCached = unstable_cache(
-	async () => client.fetch<PageSlugsQueryResult | null>(pageSlugsQuery),
+	async () => client.fetch(pageSlugsQuery),
 	["page-slugs"],
 	{
 		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
@@ -72,7 +71,7 @@ export const cachedPageSlugs = cache(
 );
 
 const fetchProjectSlugsCached = unstable_cache(
-	async () => client.fetch<ProjectSlugsQueryResult | null>(projectSlugsQuery),
+	async () => client.fetch(projectSlugsQuery),
 	["project-slugs"],
 	{
 		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
@@ -93,9 +92,7 @@ export const cachedProjectSlugs = cache(
 // stays in `fetchSanityData.ts` and is not cached cross-request.
 const fetchSiteLanguageSettingsPublishedCached = unstable_cache(
 	async (): Promise<SiteLocaleConfig> => {
-		const data = await client.fetch<SiteLanguageSettingsDocument | null>(
-			siteLanguageSettingsQuery,
-		);
+		const data = await client.fetch(siteLanguageSettingsQuery);
 		return normalizeSiteLocaleConfig(data);
 	},
 	["site-language-settings"],

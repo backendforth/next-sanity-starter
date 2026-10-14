@@ -1,9 +1,6 @@
 import { stegaClean } from "next-sanity";
 
-import type {
-	ModuleContentRefListItem,
-	ModuleContentRefsData,
-} from "@/sanity/types/modules";
+import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
@@ -14,8 +11,11 @@ import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/** A list entry with its locale-aware href, resolved on the server. */
+export type ContentRefListItem = ContentRefTarget & { href: string | null };
+
 type Props = {
-	module: ModuleContentRefsData;
+	module: ModuleOf<"module.contentRefs">;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/**
@@ -36,10 +36,8 @@ export function ModuleContentRefs({
 }: Props) {
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 	const { localePath } = createLanguagePathUtils(siteLocale);
-	const items: ModuleContentRefListItem[] = (module.references ?? [])
-		.filter(
-			(item): item is NonNullable<typeof item> => item != null && !!item._type,
-		)
+	const items: ContentRefListItem[] = (module.references ?? [])
+		.filter((item) => item != null)
 		.map((item) => ({
 			...item,
 			href: contentRefTargetHref(item, localePath, locale),

@@ -3,12 +3,12 @@
 import clsx from "clsx";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
-import type { SanityImageField } from "@/sanity/types/modules";
 import {
 	buildFetchedImageUrl,
 	cssObjectPositionFromSanityImageField,
 	getCroppedImageDisplayDimensions,
 	resolveSanityImageFieldForUrl,
+	type SanityImageField,
 } from "@/sanity/utils/sanityImageBuilder";
 import {
 	getMuxDisplayDimensions,

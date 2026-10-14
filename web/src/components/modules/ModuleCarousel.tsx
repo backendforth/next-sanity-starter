@@ -1,6 +1,6 @@
 "use client";
 
-import type { ModuleCarouselData } from "@/sanity/types/modules";
+import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import { CarouselViewport } from "@/src/components/carousel/CarouselViewport";
 import { normalizeCarouselSlides } from "@/src/components/carousel/normalizeCarouselSlides";
@@ -10,8 +10,13 @@ import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/** A `modules[]` entry or the same module inline in rich text. */
+export type CarouselModule =
+	| ModuleOf<"module.carousel">
+	| RichTextEmbedOf<"module.carousel">;
+
 type Props = {
-	module: ModuleCarouselData;
+	module: CarouselModule;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */

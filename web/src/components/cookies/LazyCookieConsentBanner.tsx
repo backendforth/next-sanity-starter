@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
-import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
+import type { AnalyticsTracker, SiteCookieBanner } from "@/sanity/types";
 
 /**
  * Lazy client boundary around the cookie banner.
@@ -26,7 +25,7 @@ const CookieConsentBanner = dynamic(
 );
 
 type Props = {
-	doc: SiteCookieBannerDocument | null;
+	doc: SiteCookieBanner | null;
 	locale: string;
 	trackers?: AnalyticsTracker[];
 };

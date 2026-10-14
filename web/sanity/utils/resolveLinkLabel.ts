@@ -11,12 +11,18 @@
  */
 
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
-import type { IntlStringEntry } from "./sanityLocalizedText";
-import { pickLocalizedString } from "./sanityLocalizedText";
+import {
+	type LocalizedEntry,
+	pickLocalizedString,
+} from "./sanityLocalizedText";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
-type LocalizableLabel = IntlStringEntry[] | string | null | undefined;
+type LocalizableLabel =
+	| ReadonlyArray<LocalizedEntry<string>>
+	| string
+	| null
+	| undefined;
 
 function trimToUndefined(value: string | undefined): string | undefined {
 	if (!value) return undefined;

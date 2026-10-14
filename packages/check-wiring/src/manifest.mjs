@@ -128,7 +128,6 @@ export function wiringSlots(root) {
 		modulesArray: join(root, "studio/schemas/fields/modulesArrayField.ts"),
 		inlineSchema: join(root, "studio/schemas/objects/editors/richTextMedia.ts"),
 		componentDir: join(root, "web/src/components/modules"),
-		componentBarrel: join(root, "web/src/components/modules/index.ts"),
 		renderer: join(root, "web/src/components/modules/ModulesRenderer.tsx"),
 		inlineComponents: join(
 			root,
@@ -148,18 +147,14 @@ export function wiringSlots(root) {
 	const MODULE_TYPES = /export const moduleTypes = \[/;
 	const INLINE_OF =
 		/export const richTextMedia = defineType\(\{[\s\S]*?\bof: \[/;
-	const BARREL_EXPORT = /^export \{ (Module\w+) \} from "\.\/Module\w+";$/;
 	const RENDERER_SWITCH = /switch \(mod\._type\) \{/;
 	const RENDERER_IMPORT = /^import \{ (Module\w+) \} from "\.\/Module\w+";$/;
 	const MODULES_QUERY = /export const modulesQuery = `/;
 	const INLINE_QUERY = /export const richTextMediaQuery = `/;
 	const QUERY_IMPORT = /^import \{ (module\w+Query) \} from "\.\.?\/[\w/]+";$/;
 	const INLINE_TYPES = /\btypes: \{/;
-	/* Direct imports, not the barrel: the barrel also re-exports `ModulesRenderer`. */
 	const COMPONENT_IMPORT =
 		/^import \{ (Module\w+) \} from "@\/src\/components\/modules\/Module\w+";$/;
-	/** Barrel exports that aren't modules. */
-	const NOT_MODULES = new Set(["ModulesRenderer"]);
 
 	/** @type {ListSlot} */
 	const schemaIndex = {
@@ -215,27 +210,6 @@ export function wiringSlots(root) {
 		insert(source, mod) {
 			const block = findBlock(source, MODULE_TYPES, this.file);
 			return appendToBlock(source, block, `\n  { type: "${mod.id}" },`);
-		},
-	};
-
-	/** @type {ListSlot} */
-	const componentBarrel = {
-		key: "componentBarrel",
-		label: "components/modules/index.ts — barrel export",
-		file: files.componentBarrel,
-		read(source) {
-			const names = collect(source, new RegExp(BARREL_EXPORT.source, "gm"));
-			return new Set(
-				[...names].filter((n) => !NOT_MODULES.has(n)).map(idFromIdentifier),
-			);
-		},
-		insert(source, mod) {
-			return insertAfterLastLine(
-				source,
-				BARREL_EXPORT,
-				`export { ${mod.component} } from "./${mod.component}";`,
-				this.file,
-			);
 		},
 	};
 
@@ -374,13 +348,7 @@ export function wiringSlots(root) {
 	return {
 		files,
 		/** Every module needs an entry in each of these. */
-		required: [
-			schemaIndex,
-			modulesArray,
-			componentBarrel,
-			renderer,
-			queryBarrel,
-		],
+		required: [schemaIndex, modulesArray, renderer, queryBarrel],
 		/** Inline is opt-in: a module is in all three or in none. */
 		inline: [inlineSchema, inlineQuery, inlineComponents],
 		/** Files a module owns, created by the scaffolder. @param {ModuleNames} mod */

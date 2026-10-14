@@ -5,19 +5,18 @@ Full guardrails live in `AGENTS.md` at the repo root. This file is a condensed m
 ## Repo at a glance
 
 - pnpm monorepo: `web` (Next.js 16 App Router), `studio` (Sanity v6), shared `packages/*`.
-- Editorial content is rendered via the **module pattern**: every content block is a paired `module.<name>` Sanity object + `Module<Name>.tsx` React component, wired in 8 places.
+- Editorial content is rendered via the **module pattern**: every content block is a paired `module.<name>` Sanity object + `Module<Name>.tsx` React component, wired in 6 places.
 - Multilingual content uses `sanity-plugin-internationalized-array`. Locale is resolved at **render time** via `web/sanity/utils/sanityLocalizedText.ts`, never inside GROQ.
 
 ## Top rules
 
 1. Reuse before invention — check `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/`, `web/sanity/utils/` first.
-2. New content block → it is a **module**. `pnpm gen:module <Name>` wires all 7 points; by hand, touch all or revert:
+2. New content block → it is a **module**. `pnpm gen:module <Name>` wires all 6 points; by hand, touch all or revert:
    - `studio/schemas/objects/modules/module<Name>.ts`
    - `studio/schemas/index.ts`
    - `studio/schemas/fields/modulesArrayField.ts`
    - `web/src/components/modules/Module<Name>.tsx` (`module: ModuleOf<"module.<id>">`)
    - `web/src/components/modules/ModulesRenderer.tsx` (`case`)
-   - `web/src/components/modules/index.ts`
    - `web/sanity/queries/components/modules/<name>.ts` (+ `modulesQuery`)
    Inline use in rich text is opt-in: Studio `richTextMedia.ts`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`, all three or none.
 3. After every schema or query edit: `pnpm generate`, then `pnpm typecheck`, then `pnpm format`.

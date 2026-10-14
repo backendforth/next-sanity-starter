@@ -2,7 +2,7 @@
 
 Canonical: @../../../../AGENTS.md §"The module pattern".
 
-This folder holds the **component half** of every module. You are touching points 4–6 of the 7-point wiring.
+This folder holds the **component half** of every module. You are touching points 4–5 of the 6-point wiring.
 
 ## YOU MUST
 
@@ -11,7 +11,7 @@ This folder holds the **component half** of every module. You are touching point
 3. Accept `{ module, locale, siteLocale }` props — even if the module doesn't read i18n today. `ModulesRenderer` always passes them; consistency matters when fields become translatable.
 4. Resolve i18n via `pickLocalizedString` / `pickLocalizedPortableTextBlocks` / `pickLocalizedValue` from `@/sanity/utils/sanityLocalizedText`. **NEVER** index arrays directly or call `.find(t => t.language === locale)`.
 5. Don't set `data-sanity` yourself. `ModulesRenderer` wraps every module in an element carrying its field-level `data-sanity` path (built with `dataAttr`) — Visual Editing click-to-edit depends on that wrapper, so always render through it.
-6. Register in `ModulesRenderer.tsx` (a `case` in the `_type` switch — its `never` fallback turns a missing one into a `tsc` error) and the barrel `index.ts`.
+6. Register in `ModulesRenderer.tsx` (a `case` in the `_type` switch — its `never` fallback turns a missing one into a `tsc` error).
 7. Type `module` as `ModuleOf<"module.<id>">` from `@/sanity/types`. Compare fetched strings to literals through `stegaClean` / `isStegaVariant` — in Presentation they carry stega markers.
 
 ## Component shape

@@ -24,7 +24,7 @@ Creates three files from `templates/`:
 | `web/src/components/modules/Module<Name>.tsx` | component typed `module: ModuleOf<"module.<id>">` |
 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` projection |
 
-Adds the module to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the same slots `pnpm check:wiring` reads): `schemas/index.ts`, `moduleTypes`, the components barrel, a `case` in `ModulesRenderer`, `modulesQuery`. With `--inline` also the three inline places: the Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. Inline is opt-in — use it only for a module that belongs inside text.
+Adds the module to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the same slots `pnpm check:wiring` reads): `schemas/index.ts`, `moduleTypes`, a `case` in `ModulesRenderer`, `modulesQuery`. With `--inline` also the three inline places: the Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. Inline is opt-in — use it only for a module that belongs inside text.
 
 Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written; a failed write rolls back what was written. Touched files are formatted with Biome.
 

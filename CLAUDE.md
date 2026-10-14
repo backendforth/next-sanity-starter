@@ -14,7 +14,7 @@ Claude Code additionally auto-loads scoped rules from subtree `CLAUDE.md` files 
 
 ## Quick reminders (the full versions live in AGENTS.md)
 
-- **YOU MUST** wire all 7 module points when adding/renaming a module (`pnpm gen:module <Name>` does it). Skipping any is a bug.
+- **YOU MUST** wire all 6 module points when adding/renaming a module (`pnpm gen:module <Name>` does it). Skipping any is a bug.
 - **YOU MUST** run `pnpm generate` after schema or query edits, then `pnpm check:wiring`, then `pnpm typecheck`.
 - **NEVER** edit `studio/sanity.types.gen.ts`, `studio/schema.json`, or any `*.gen.*` file.
 - **NEVER** filter locale inside GROQ. Locale resolves at render time via `pickLocalizedString` / `pickLocalizedPortableTextBlocks`.

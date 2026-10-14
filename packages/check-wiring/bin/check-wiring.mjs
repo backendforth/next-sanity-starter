@@ -8,7 +8,7 @@
  *
  * Every `module.<id>` schema under studio/schemas/objects/modules/ must have its component and
  * GROQ projection file and an entry in each list slot of `src/manifest.mjs`: schema index,
- * `moduleTypes`, components barrel, the `ModulesRenderer` switch, `modulesQuery`. A slot that
+ * `moduleTypes`, the `ModulesRenderer` switch, `modulesQuery`. A slot that
  * lists a module without a schema is stale and fails too. Inline modules are opt-in: the
  * Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in
  * `portableTextComponents.tsx` must name the same modules.

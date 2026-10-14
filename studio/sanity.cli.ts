@@ -16,7 +16,8 @@ function assertNoSecretsInPublicEnv(): void {
   );
   if (names.length === 0) return;
 
-  const [command] = process.argv.slice(2);
+  // The first non-option argument, so an option placed before the command can't hide it.
+  const command = process.argv.slice(2).find((arg) => !arg.startsWith("-"));
   const bundles =
     command === "build" ||
     (command === "deploy" &&

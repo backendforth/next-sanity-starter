@@ -6,7 +6,6 @@ import {
 	type ReactNode,
 	useCallback,
 	useContext,
-	useEffect,
 	useMemo,
 	useRef,
 } from "react";
@@ -133,10 +132,6 @@ export function LanguageProvider({
 		}),
 		[currentLocale, pathUtils, setLocale, setTranslations, siteLocaleConfig],
 	);
-
-	useEffect(() => {
-		document.documentElement.lang = currentLocale;
-	}, [currentLocale]);
 
 	return (
 		<LanguageContext.Provider value={value}>

@@ -4,7 +4,6 @@ import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { titleSlugSource } from "../../utils/titleSlugSource";
-import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
 import { validateSlug } from "../../utils/validateSlug";
 import { NEWEST_FIRST_SUGGESTIONS } from "../constants/references";
 
@@ -38,7 +37,8 @@ export const project = defineType({
       title: "Title media",
       type: "module.media",
       group: "editorial",
-      validation: (rule) => rule.required().custom(validateModuleMediaRequired),
+      /* `module.media` checks its own type and asset fields. */
+      validation: (rule) => rule.required(),
     },
     {
       name: "categories",

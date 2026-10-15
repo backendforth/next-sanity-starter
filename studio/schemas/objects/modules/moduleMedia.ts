@@ -3,7 +3,11 @@ import { PlayIcon } from "@sanity/icons/Play";
 import { defineType, type PreviewValue } from "sanity";
 
 import { getDurationString } from "../../../utils/helpers";
-import { hasMuxAsset } from "../../../utils/validateModuleMedia";
+
+/** Whether a `mux.video` value has an uploaded asset. */
+function hasMuxAsset(mux: { asset?: unknown } | null | undefined): boolean {
+  return mux?.asset != null;
+}
 
 export const moduleMedia = defineType({
   title: "Media",

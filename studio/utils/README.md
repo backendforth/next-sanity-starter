@@ -20,5 +20,4 @@ To refresh `development` from `production`: `pnpm studio:sync-prod-to-dev` ([`sc
 
 - **`imageUrl.ts`** — `@sanity/image-url` builder for the project id and the resolved **`studioDataset`**.
 - **`validateSlug.ts`**, **`helpers.ts`** — validation and small helpers as used by schemas or structure.
-- **`validateModuleMedia.ts`** — `validateModuleMediaRequired` for an embedded `module.media` (the project's `titleMedia`) and `hasMuxAsset` (a Mux field has an uploaded asset).
 - **`titleSlugSource.ts`** — slug `options.source` that uses the first non-empty localized `title` (via **`firstLocalizedLabel.ts`**), so the slug's Generate button works on `internationalizedArrayString` titles.

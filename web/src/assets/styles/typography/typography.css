@@ -51,13 +51,6 @@
 	line-height: var(--line-height-md);
 }
 
-/* lg — quotes (body face, not headings) */
-@utility quote-paragraph {
-	@apply font-normal font-text italic;
-	font-size: var(--font-size-lg);
-	line-height: var(--line-height-lg);
-}
-
 /* lg — big text (Geist Sans regular) */
 @utility big-text {
 	@apply font-normal font-text not-italic;
@@ -128,15 +121,6 @@
 	html {
 		font-size: var(--font-size-root);
 		text-wrap: balance;
-
-		@variant lg {
-			font-size: clamp(1rem, 1.111111vw, 1.5rem);
-		}
-	}
-
-	h5,
-	h6 {
-		@apply text font-mono;
 	}
 
 	p {
@@ -145,14 +129,6 @@
 
 	a {
 		@apply font-semibold no-underline hover:text-color-hover;
-	}
-
-	small {
-		@apply text-small;
-	}
-
-	blockquote {
-		@apply quote-paragraph;
 	}
 
 	figcaption {
@@ -165,11 +141,6 @@
 	[type="reset"],
 	[role="button"] {
 		@apply text-button;
-	}
-
-	blockquote p {
-		font: inherit;
-		letter-spacing: inherit;
 	}
 
 	code {
@@ -187,17 +158,17 @@
 	}
 
 	/* Bold / emphasis inside body text → Geist Mono semibold (single text accent face). */
-	:is(p, li, blockquote, figcaption, small) :is(strong, b) {
+	:is(p, li, figcaption) :is(strong, b) {
 		@apply font-mono font-semibold;
 	}
 
-	:is(p, li, blockquote, figcaption, small) :is(em, i) {
+	:is(p, li, figcaption) :is(em, i) {
 		@apply font-mono italic;
 		font-weight: inherit;
 	}
 
 	/* Inside headings, inline emphasis inherits weight + family — single weight per heading. */
-	:is(h1, h2, h3, h4, h5, h6) :is(strong, em, i, b) {
+	:is(h1, h2, h3, h4) :is(strong, em, i, b) {
 		font-family: inherit;
 		font-weight: inherit;
 	}

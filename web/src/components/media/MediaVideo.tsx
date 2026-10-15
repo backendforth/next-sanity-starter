@@ -17,10 +17,10 @@ import {
 	useState,
 } from "react";
 
+import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
-	muxThumbnailRequestWidthPx,
 	muxThumbnailTimeSec,
 } from "@/src/utils/muxImage";
 import {
@@ -29,7 +29,6 @@ import {
 	preconnectMux,
 	resolveMuxPlayerResolution,
 } from "@/src/utils/muxPlayback";
-import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
 import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 type MediaVideoProps = {
@@ -346,18 +345,12 @@ function MuxVideoPlayer({
 	}, [playerReady, autoplay, resumeAutoplay]);
 
 	/* One URL for the server HTML, the lazy placeholder and the player, so the poster is in the
-	 * first paint and downloads once. Not sized to the slot: measuring after mount changed the
-	 * URL and fetched it twice; retina-wide (capped by the asset) covers full-width players. */
-	const thumbnailTime = muxThumbnailTimeSec(media);
-	const posterUrl = resolveMediaPosterUrl({
-		posterPayload,
+	 * first paint and downloads once. It is the `src` `MediaImage` builds for the same poster, the
+	 * one a carousel shows while the slide is inactive. */
+	const posterUrl = resolveMediaImageSource({
+		image: posterPayload,
 		muxMedia: media,
-		thumbWidthPx: muxThumbnailRequestWidthPx({
-			containerWidthPx: undefined,
-			assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
-		}),
-		muxTimeSec: thumbnailTime,
-	});
+	})?.src;
 
 	/* `getMuxDisplayDimensions` already falls back to 16×9. */
 	const aspectCss = `${dims.width} / ${dims.height}`;
@@ -399,7 +392,7 @@ function MuxVideoPlayer({
 				poster={posterUrl ?? undefined}
 				/* The lazy wrapper paints only `placeholder` until the player chunk loads. */
 				placeholder={posterUrl ?? undefined}
-				thumbnailTime={thumbnailTime}
+				thumbnailTime={muxThumbnailTimeSec(media)}
 				startTime={resumeAtSec}
 				/* `"muted"` rather than `true`: playback-core forces the element muted before
 				 * play() and retries muted if an unmuted attempt is denied, instead of failing

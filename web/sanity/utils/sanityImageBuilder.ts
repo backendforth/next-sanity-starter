@@ -170,17 +170,6 @@ export function buildFetchedImageUrl(
 	return imageBuilder.url();
 }
 
-export function urlForFetchedImage(
-	image: SanityImageField,
-	width = 1600,
-): string | null {
-	return buildFetchedImageUrl(image, {
-		width,
-		auto: "format",
-		quality: 85,
-	});
-}
-
 /**
  * The image field in a fetched payload (`imageQuery`, or a raw Studio field), or `null` for
  * anything else — a Mux payload (`videoQuery`, it carries `playbackId`) included.

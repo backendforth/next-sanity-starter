@@ -28,11 +28,10 @@ import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
+import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
-	LOOP_POSTER_MAX_WIDTH_PX,
-	muxThumbnailRequestWidthPx,
 } from "@/src/utils/muxImage";
 import {
 	type MuxResolutionTier,
@@ -41,7 +40,6 @@ import {
 	preconnectMux,
 	resolveMuxLoopTier,
 } from "@/src/utils/muxPlayback";
-import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 import { useMuxHlsSource } from "@/src/utils/useMuxHlsSource";
 import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
@@ -72,6 +70,12 @@ type MediaVideoLoopProps = {
 	 */
 	allowUnmute?: boolean;
 };
+
+/**
+ * Poster cap: the still shows only until the first frame, and 1920 stays retina-sharp up to a
+ * 960 px slot (about 1 MB as WebP for a Mux thumbnail).
+ */
+const LOOP_POSTER_MAX_WIDTH_PX = 1920;
 
 /**
  * Measurement gate fallback: a zero-size or hidden container never reports a size, so after
@@ -165,26 +169,18 @@ function MuxVideoLoop({
 		? undefined
 		: { width: videoWidthPx, height: videoHeightPx };
 
-	/* Not sized to the slot, like `MediaVideo`: measuring after mount changed the URL and the
-	 * eager hero poster downloaded twice. `srcset` + `sizes` pick the variant instead. */
-	const thumbWidthPx = muxThumbnailRequestWidthPx({
-		containerWidthPx: undefined,
-		assetMaxWidthPx: knownDims?.width,
-	});
-
+	/* Not sized to the measured slot: the URL would change after mount and the eager hero
+	 * poster download twice. The uploaded poster wins (accepting a possible one-frame step at
+	 * the fade); the Mux fallback stays at t=0, the frame playback starts on. */
 	const poster = useMemo(
 		() =>
-			resolveMediaPosterUrls({
-				posterPayload,
+			resolveMediaImageSource({
+				image: posterPayload,
 				muxMedia: media,
-				thumbWidthPx,
-				/* The uploaded poster wins, so a video shows the same still everywhere
-				 * (accepting a possible one-frame step at the fade). The Mux fallback
-				 * stays at t=0, the frame playback starts on. */
 				muxTimeSec: 0,
-				muxMaxWidthPx: LOOP_POSTER_MAX_WIDTH_PX,
+				maxWidthPx: LOOP_POSTER_MAX_WIDTH_PX,
 			}),
-		[posterPayload, media, thumbWidthPx],
+		[posterPayload, media],
 	);
 
 	/* Attach only once the container measurement and DPR have landed, so the first `hlsSrc`
@@ -480,7 +476,7 @@ function MuxVideoLoop({
 			<img
 				src={poster.src}
 				srcSet={poster.srcSet}
-				sizes={poster.srcSet ? sizes : undefined}
+				sizes={sizes}
 				alt={caption || ""}
 				width={knownDims?.width}
 				height={knownDims?.height}

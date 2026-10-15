@@ -4,11 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
-import {
-	MediaImage,
-	PREVIEW_MAX_SRC_WIDTH,
-	PREVIEW_SRCSET_WIDTHS,
-} from "@/src/components/media/MediaImage";
+import { MediaImage } from "@/src/components/media/MediaImage";
 import {
 	contentRefsFilterButtonClass,
 	navControlGroupClass,
@@ -216,11 +212,9 @@ export function ModuleContentRefsClient({
 									alt={label}
 									fillParent
 									objectFit="cover"
-									className="!min-h-0"
-									maxSrcWidth={PREVIEW_MAX_SRC_WIDTH}
-									srcsetWidths={PREVIEW_SRCSET_WIDTHS}
 									quality={75}
-									sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+									/* One column, `sm:` two, `lg:` three (`breakpoints.css`). */
+									sizes="(max-width: 899px) 100vw, (max-width: 1439px) 50vw, 33vw"
 									priority={priority && index === 0}
 								/>
 							</div>

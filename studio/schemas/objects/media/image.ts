@@ -26,7 +26,6 @@ export const mediaImage = defineType({
   preview: {
     select: {
       image: "image",
-      poster: "image.asset",
       filename: "image.asset.originalFilename",
       dimensions: "image.asset.metadata.dimensions",
       caption: "caption",

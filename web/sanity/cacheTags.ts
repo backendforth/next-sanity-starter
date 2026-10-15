@@ -53,14 +53,18 @@ export const EMBEDDED_CONTENT_TAGS: readonly string[] = [
  * ignored by `/api/revalidate`, so forged payloads cannot force cache churn.
  */
 const WEBHOOK_TAG_MAP: Record<string, readonly string[]> = {
-	/* `home` is a page reference too (`PAGE_REFERENCES`): content-refs lists and internal links
-	 * embed its title, so it purges the embedding entries like a page does. */
+	/* Content-refs lists and internal links embed the titles of `home` and `work` as well, so
+	 * they purge the embedding entries like a page does. */
 	home: [
 		SANITY_CACHE_TAGS.home,
 		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.sitemap,
 	],
-	work: [SANITY_CACHE_TAGS.work, SANITY_CACHE_TAGS.sitemap],
+	work: [
+		SANITY_CACHE_TAGS.work,
+		SANITY_CACHE_TAGS.pages,
+		SANITY_CACHE_TAGS.sitemap,
+	],
 	page: [SANITY_CACHE_TAGS.pages, SANITY_CACHE_TAGS.sitemap],
 	project: [SANITY_CACHE_TAGS.projects, SANITY_CACHE_TAGS.sitemap],
 	/* Category titles render inside project pages and content-refs lists, not on a route of

@@ -10,7 +10,7 @@ pnpm web:dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-`pnpm web:dev` runs **`next dev --webpack`** because the default Turbopack dev server can hit internal panics on some setups (Next 16.2). Production **`next build`** is unchanged. To try Turbopack locally: `cd web && pnpm exec next dev --turbopack`.
+`pnpm web:dev` runs **`next dev`** on Turbopack, the same bundler as `next build`. Next 16.2 could hit internal Turbopack panics here, so dev used `--webpack` until 16.3; if one comes back, `cd web && pnpm exec next dev --webpack` is the fallback.
 
 ---
 

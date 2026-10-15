@@ -2,7 +2,11 @@
 
 import clsx from "clsx";
 
-import { MediaImage, MediaVideo, MediaVideoLoop } from "@/src/components/media";
+import {
+	LazyMediaVideo,
+	LazyMediaVideoLoop,
+} from "@/src/components/media/LazyVideo";
+import { MediaImage } from "@/src/components/media/MediaImage";
 
 export type NormalizedSlide = {
 	key: string;
@@ -78,7 +82,7 @@ export function CarouselSlide({
 
 	if (slide.kind === "loop") {
 		return (
-			<MediaVideoLoop
+			<LazyMediaVideoLoop
 				media={slide.media}
 				caption={slide.caption}
 				posterPayload={slide.poster}
@@ -92,7 +96,7 @@ export function CarouselSlide({
 
 	if (isLoopIntent(slide.videoSettings)) {
 		return (
-			<MediaVideoLoop
+			<LazyMediaVideoLoop
 				media={slide.media}
 				caption={slide.caption}
 				posterPayload={slide.poster}
@@ -118,7 +122,7 @@ export function CarouselSlide({
 	}
 
 	return (
-		<MediaVideo
+		<LazyMediaVideo
 			media={slide.media}
 			caption={slide.caption}
 			posterPayload={slide.poster}

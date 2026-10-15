@@ -1,0 +1,130 @@
+/**
+ * Mux asset / `mediaQuery` video payload from Sanity — resolve `playbackId`, display size and
+ * `image.mux.com` thumbnail URLs. Image and poster code (`MediaImage`, `resolveMediaPoster`)
+ * sits on the eager LCP path, so it imports only this file, never the HLS code in
+ * `muxPlayback.ts`.
+ */
+
+export function extractMuxPlaybackId(media: unknown): string | null {
+	if (!media || typeof media !== "object") return null;
+	const m = media as Record<string, unknown>;
+	if (typeof m.playbackId === "string" && m.playbackId.length > 0) {
+		return m.playbackId;
+	}
+	const asset = m.asset;
+	if (!asset || typeof asset !== "object") return null;
+	const a = asset as Record<string, unknown>;
+	if (typeof a.playbackId === "string" && a.playbackId.length > 0) {
+		return a.playbackId;
+	}
+	const data = a.data;
+	if (!data || typeof data !== "object") return null;
+	const d = data as Record<string, unknown>;
+	if (typeof d.playbackId === "string" && d.playbackId.length > 0) {
+		return d.playbackId;
+	}
+	const ids = d.playback_ids;
+	if (Array.isArray(ids) && ids[0] && typeof ids[0] === "object") {
+		const id = (ids[0] as { id?: string }).id;
+		if (typeof id === "string" && id.length > 0) return id;
+	}
+	return null;
+}
+
+/**
+ * `image.mux.com` thumbnail as WebP — about a third of the JPG's bytes. Mux delivers both
+ * untagged (no ICC profile), so the browser treats both as sRGB and the format cannot shift
+ * colour. `widthPx` is CSS pixels; Mux downscales from source. Callers cap it to retina ×
+ * container.
+ */
+export function muxThumbnailUrl(
+	playbackId: string,
+	timeSec: number,
+	widthPx: number,
+): string {
+	const u = new URL(`https://image.mux.com/${playbackId}/thumbnail.webp`);
+	u.searchParams.set("time", String(timeSec));
+	if (widthPx > 0) {
+		u.searchParams.set("width", String(Math.round(widthPx)));
+	}
+	return u.toString();
+}
+
+/**
+ * Pixel width for `image.mux.com` thumbnails: ~2× layout width, capped by the source asset and
+ * the Mux practical upper bound (3840). Falls back to 1280 when the container width is unknown.
+ */
+export function muxThumbnailRequestWidthPx(args: {
+	containerWidthPx: number | undefined;
+	assetMaxWidthPx: number | undefined;
+}): number {
+	const assetCap =
+		args.assetMaxWidthPx && args.assetMaxWidthPx > 0
+			? args.assetMaxWidthPx
+			: 3840;
+	const base =
+		typeof args.containerWidthPx === "number" && args.containerWidthPx > 0
+			? args.containerWidthPx
+			: 1280;
+	const retina = Math.ceil(base * 2);
+	return Math.min(3840, assetCap, retina);
+}
+
+/**
+ * Prefer Mux `asset.data.tracks` video dimensions; otherwise `isFallback` + 16:9 for `aspect-ratio`.
+ */
+export function getMuxDisplayDimensions(media: unknown): {
+	width: number;
+	height: number;
+	isFallback: boolean;
+} {
+	const fallback = { width: 16, height: 9, isFallback: true as const };
+	if (!media || typeof media !== "object") {
+		return fallback;
+	}
+	const m = media as Record<string, unknown>;
+	const asset = m.asset;
+	if (!asset || typeof asset !== "object") {
+		return fallback;
+	}
+	const data = (asset as Record<string, unknown>).data;
+	if (!data || typeof data !== "object") {
+		return fallback;
+	}
+	const tracks = (data as Record<string, unknown>).tracks;
+	if (!Array.isArray(tracks)) {
+		return fallback;
+	}
+	for (const t of tracks) {
+		if (!t || typeof t !== "object") continue;
+		const tr = t as { type?: string; max_width?: number; max_height?: number };
+		if (tr.type !== "video") continue;
+		if (
+			typeof tr.max_width === "number" &&
+			typeof tr.max_height === "number" &&
+			tr.max_width > 0 &&
+			tr.max_height > 0
+		) {
+			return {
+				width: tr.max_width,
+				height: tr.max_height,
+				isFallback: false,
+			};
+		}
+	}
+	return fallback;
+}
+
+/** Poster width cap — hero loops; `srcset` tops out here (still retina-sharp at ~1 MB WebP). */
+export const LOOP_POSTER_MAX_WIDTH_PX = 1920;
+
+/**
+ * Mux `asset.thumbTime` — the time (in seconds) selected in Studio for the poster frame.
+ */
+export function muxThumbnailTimeSec(media: unknown): number {
+	if (!media || typeof media !== "object") return 0;
+	const asset = (media as Record<string, unknown>).asset;
+	if (!asset || typeof asset !== "object") return 0;
+	const t = (asset as Record<string, unknown>).thumbTime;
+	return typeof t === "number" ? t : 0;
+}

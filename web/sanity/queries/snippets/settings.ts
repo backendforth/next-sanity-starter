@@ -122,32 +122,26 @@ const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id ==
 }`;
 
 /**
+ * `errorSettings` for `$locale` — the 404 copy. Its `modules[]` field is deliberately not
+ * projected: no error page renders modules, and embedding `modulesQuery` inflated the query from
+ * ~2 KB to ~79 KB.
+ */
+const notFoundQuery = `*[_type == "errorSettings" && language == $locale][0]{
+  notFoundTitle,
+  "notFoundBody": notFoundBody${richTextBody}
+}`;
+
+/**
  * Everything around the page for `$locale` in one fetch: nav menus, cookie banner copy, site
- * settings (brand, favicon, SEO fallback) and analytics. The layout and every route's
- * `generateMetadata` read it, so a render costs this fetch plus the route document's — two
- * `sanityFetch` calls, each a sync-tags probe plus the data request. Live invalidation still
- * works: the bundle's sync tags cover every member document.
- *
- * Unlike `main`, the 404 copy is not part of it: the 404 pages resolve the URL's language on
- * the client and need every language's copy (`notFoundCopyQuery`).
+ * settings (brand, favicon, SEO fallback), analytics and the 404 copy. The layout, every
+ * route's `generateMetadata` and the 404 pages read it, so a render costs this fetch plus the
+ * route document's — two `sanityFetch` calls, each a sync-tags probe plus the data request.
+ * Live invalidation still works: the bundle's sync tags cover every member document.
  */
 export const siteChromeQuery = defineQuery(`{
   "nav": ${siteNavQuery},
   "cookieBanner": ${siteCookieBannerQuery},
   "settings": ${siteSettingsQuery},
-  "analytics": ${siteAnalyticsSettingsQuery}
-}`);
-
-/**
- * The 404 copy of every language (`errorSettings`, one document per language) in one fetch.
- * The 404 pages pick the URL's language on the client (`LocaleNotFoundContent`): reading it on
- * the server would make the `[locale]` segment dynamic. The `modules[]` field is deliberately
- * not projected: no error page renders modules, and embedding `modulesQuery` inflated the
- * query from ~2 KB to ~79 KB.
- */
-export const notFoundCopyQuery =
-	defineQuery(`*[_type == "errorSettings" && defined(language)]{
-  language,
-  notFoundTitle,
-  "notFoundBody": notFoundBody${richTextBody}
+  "analytics": ${siteAnalyticsSettingsQuery},
+  "notFound": ${notFoundQuery}
 }`);

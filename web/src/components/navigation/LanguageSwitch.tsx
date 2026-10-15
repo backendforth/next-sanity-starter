@@ -2,7 +2,6 @@
 
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { uiLabel } from "@/src/i18n/uiLabels";
-import { cn } from "@/src/utils/cn";
 
 import {
 	navControlGroupClass,
@@ -10,25 +9,17 @@ import {
 } from "./navControlStyles";
 
 export type LanguageSwitchProps = {
-	className?: string;
 	/** After `setLocale` (e.g. close mobile nav). */
 	onAfterLocaleChange?: () => void;
 };
 
-export function LanguageSwitch({
-	className,
-	onAfterLocaleChange,
-}: LanguageSwitchProps) {
+export function LanguageSwitch({ onAfterLocaleChange }: LanguageSwitchProps) {
 	const { currentLocale, languages, setLocale } = useLanguage();
 
 	return (
 		<fieldset
 			aria-label={uiLabel("language", currentLocale)}
-			className={cn(
-				navControlGroupClass,
-				"m-0 min-w-0 border-0 p-0",
-				className,
-			)}
+			className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
 		>
 			{languages.map((languageOption) => {
 				const active = currentLocale === languageOption.id;

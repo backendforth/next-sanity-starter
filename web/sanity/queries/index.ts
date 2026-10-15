@@ -13,7 +13,6 @@ export {
 } from "./snippets/media";
 export { pageSeoQuery } from "./snippets/seo";
 export {
-	notFoundCopyQuery,
 	siteChromeQuery,
 	siteLanguageSettingsQuery,
 } from "./snippets/settings";

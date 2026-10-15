@@ -10,10 +10,9 @@ import {
 } from "@/src/components/media/MediaImage";
 import {
 	contentRefsFilterButtonClass,
-	contentRefsFilterGroupClass,
+	navControlGroupClass,
 } from "@/src/components/navigation/navControlStyles";
 import { uiLabel } from "@/src/i18n/uiLabels";
-import { cn } from "@/src/utils/cn";
 
 import type { ContentRefListItem } from "./ModuleContentRefs";
 
@@ -125,10 +124,7 @@ export function ModuleContentRefsClient({
 					{showFilters ? (
 						<fieldset
 							aria-label={uiLabel("filterByCategory", locale)}
-							className={cn(
-								contentRefsFilterGroupClass,
-								"m-0 min-w-0 border-0 p-0",
-							)}
+							className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
 						>
 							<button
 								type="button"
@@ -156,10 +152,7 @@ export function ModuleContentRefsClient({
 					{showSort ? (
 						<fieldset
 							aria-label={uiLabel("sortProjects", locale)}
-							className={cn(
-								contentRefsFilterGroupClass,
-								"m-0 min-w-0 border-0 p-0",
-							)}
+							className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
 						>
 							<button
 								type="button"

@@ -3,7 +3,6 @@ const config = {
 	plugins: {
 		"postcss-import": {},
 		"@tailwindcss/postcss": {},
-		"postcss-nested-ancestors": {},
 		"postcss-functions": {
 			functions: {
 				rem: (value) => {

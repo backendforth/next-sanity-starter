@@ -32,17 +32,20 @@ import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
 	LOOP_POSTER_MAX_WIDTH_PX,
+	muxThumbnailRequestWidthPx,
+} from "@/src/utils/muxImage";
+import {
 	type MuxResolutionTier,
 	muxLoopHlsSrc,
-	muxThumbnailRequestWidthPx,
 	muxTierBelow,
+	preconnectMux,
 	resolveMuxLoopTier,
 } from "@/src/utils/muxPlayback";
 import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 import { useMuxHlsSource } from "@/src/utils/useMuxHlsSource";
 
-export type MediaVideoLoopProps = {
+type MediaVideoLoopProps = {
 	media: unknown;
 	caption?: string | null;
 	posterPayload?: unknown;
@@ -54,16 +57,8 @@ export type MediaVideoLoopProps = {
 	 * Typical use: carousel slides that are not active.
 	 */
 	isActive?: boolean;
-	/** Called once after the first video frame is decoded. */
-	onLoaded?: () => void;
-	loop?: boolean;
 	/** For above-the-fold loops — sets `priority` / `fetchpriority=high` on the poster. */
 	posterPriority?: boolean;
-	/**
-	 * Skip the `IntersectionObserver` gate (e.g. hero video should load immediately even if the
-	 * initial render is briefly off-screen during hydration).
-	 */
-	skipVisibilityGate?: boolean;
 	/**
 	 * When true, render a small overlay button (bottom-right) that lets the visitor toggle
 	 * audio on/off. The loop starts muted regardless — browser autoplay policies forbid
@@ -73,33 +68,6 @@ export type MediaVideoLoopProps = {
 	 * so silent background loops (hero, decorative motion) remain truly silent.
 	 */
 	allowUnmute?: boolean;
-	/** Fires on `<video>.timeupdate` (~4×/s by browser). For external progress UI. */
-	onTimeUpdate?: (currentTime: number, duration: number) => void;
-	/** Fires on `<video>.ended`. Only meaningful when `loop={false}`. */
-	onEnded?: () => void;
-	/**
-	 * Reports network/buffer load progress 0 → 1 monotonically. Reaches 1 at the
-	 * `canplay` event (= when playback actually starts). Drives the wordmark
-	 * loading-bridge in `ModuleIntro` — the logo stroke + fill animate exactly
-	 * in step with how much of the first segment has buffered.
-	 */
-	onLoadProgress?: (progress: number) => void;
-	/**
-	 * Stacked carousel slide: eager poster + preload, play/poster handlers only
-	 * when {@link isActive} (prevents inactive slides from hiding their poster).
-	 */
-	stackedSlide?: boolean;
-	/** Next carousel slide — attach HLS paused for smooth crossfade on advance. */
-	isNextSlide?: boolean;
-	/**
-	 * Delay the HLS attach (manifest fetch + hls.js init) by this many ms after
-	 * mount. Used to stagger multiple stacked loops on initial page-load so they
-	 * don't all instantiate hls.js + fetch their manifests in the same 100 ms
-	 * burst. Only takes effect when `skipVisibilityGate` is set (otherwise the
-	 * `IntersectionObserver` already gates attach). Default 0 = attach
-	 * immediately when the visibility gate clears.
-	 */
-	hlsAttachDelayMs?: number;
 };
 
 /**
@@ -123,6 +91,7 @@ const LOOP_STALL_RESCUE_MS = 4000;
 export function MediaVideoLoop(props: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(props.media);
 	if (!playbackId) return null;
+	preconnectMux();
 	return <MuxVideoLoop key={playbackId} {...props} />;
 }
 
@@ -133,17 +102,8 @@ function MuxVideoLoop({
 	fillParent = false,
 	className,
 	isActive = true,
-	onLoaded,
-	loop = true,
 	posterPriority = false,
-	skipVisibilityGate = false,
 	allowUnmute = false,
-	onTimeUpdate,
-	onEnded,
-	onLoadProgress,
-	stackedSlide = false,
-	isNextSlide = false,
-	hlsAttachDelayMs = 0,
 }: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(media);
 	const locale =
@@ -161,29 +121,8 @@ function MuxVideoLoop({
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const isActiveRef = useRef(isActive);
 	isActiveRef.current = isActive;
-	const loadedEmitted = useRef(false);
 	const [posterHidden, setPosterHidden] = useState(false);
-	const [shouldAttachHls, setShouldAttachHls] = useState(
-		skipVisibilityGate && hlsAttachDelayMs === 0,
-	);
-	/* Staggered HLS init: when several stacked loops mount simultaneously
-	 * (e.g. the intro carousel) we delay later slides' hls.js instantiation
-	 * + manifest fetch so they don't all hammer the main thread in the same
-	 * 100 ms window. Only relevant on the visibility-gate-bypass path; the
-	 * `IntersectionObserver` branch already paces attach by viewport entry. */
-	useEffect(() => {
-		if (shouldAttachHls) return;
-		if (!skipVisibilityGate) return;
-		if (hlsAttachDelayMs <= 0) {
-			setShouldAttachHls(true);
-			return;
-		}
-		const t = window.setTimeout(
-			() => setShouldAttachHls(true),
-			hlsAttachDelayMs,
-		);
-		return () => window.clearTimeout(t);
-	}, [hlsAttachDelayMs, skipVisibilityGate, shouldAttachHls]);
+	const [shouldAttachHls, setShouldAttachHls] = useState(false);
 	const [reducedMotion, setReducedMotion] = useState(false);
 	/**
 	 * Audio toggle state. Always starts `true` (muted) — browser autoplay policy. Flipped
@@ -218,129 +157,6 @@ function MuxVideoLoop({
 		sync();
 		mq.addEventListener?.("change", sync);
 		return () => mq.removeEventListener?.("change", sync);
-	}, []);
-
-	/* Monotonic load-progress 0 → 1 for the loading bridge. Fed by native
-	 * `<video>` events so it works for both hls.js (MSE) and native HLS:
-	 *   - `loadstart` kicks the value off 0 so the UI begins reacting immediately
-	 *   - `loadedmetadata` lifts to ~0.15 once dimensions/duration are known
-	 *   - `progress` events advance based on `buffered.end(0)` versus a 2.5 s
-	 *     target (typical buffer needed before `canplay`)
-	 *   - `canplay` lifts to 0.95 — buffered, but the hardware decoder hasn't
-	 *     ramped to steady-state yet (first ~30–60 frames can drop on M1 / M2
-	 *     while the decode pipeline warms up — exactly the visible jank we're
-	 *     here to avoid)
-	 *   - `requestVideoFrameCallback` after a handful of painted frames snaps
-	 *     to 1.0 — only at that point is playback actually smooth, so only
-	 *     then is it safe to dismiss the bridge */
-	const onLoadProgressRef = useRef(onLoadProgress);
-	onLoadProgressRef.current = onLoadProgress;
-	useEffect(() => {
-		if (!onLoadProgressRef.current) return;
-		const el = videoRef.current;
-		if (!el) return;
-		let current = 0;
-		const emit = (p: number) => {
-			const next = Math.max(current, Math.min(1, p));
-			if (next === current) return;
-			current = next;
-			onLoadProgressRef.current?.(next);
-		};
-		const onLoadStart = () => emit(0.05);
-		const onLoadedMetadata = () => emit(0.15);
-		const onProgress = () => {
-			const b = el.buffered;
-			if (b.length === 0) return;
-			const bufferedSec = b.end(0);
-			/* 2.5 s of buffered media is roughly what hls.js needs before canplay
-			 * fires for a Mux loop. Map to 0.15 → 0.95 so the very last beat is
-			 * reserved for the canplay snap. */
-			const ratio = Math.min(bufferedSec / 2.5, 1);
-			emit(0.15 + 0.8 * ratio);
-		};
-		/* Safety net: if no painted frame ever arrives after canplay — autoplay
-		 * denied (rare on muted videos but possible), tab backgrounded right at
-		 * this moment, decoder error swallowed — don't leave the loading bridge
-		 * stuck at 0.95 forever. After this many ms past canplay, force the
-		 * snap to 1.0 so the user at least sees the poster + first frame. */
-		const FORCE_READY_AFTER_CANPLAY_MS = 1500;
-		let forceReadyTimer: number | undefined;
-		const onCanPlay = () => {
-			emit(0.95);
-			if (forceReadyTimer === undefined) {
-				forceReadyTimer = window.setTimeout(() => {
-					emit(1);
-				}, FORCE_READY_AFTER_CANPLAY_MS);
-			}
-		};
-
-		/* requestVideoFrameCallback fires once per actually-painted video frame.
-		 * Counting a few consecutive callbacks is a cheap, accurate signal that
-		 * the decode → composite pipeline is producing frames steadily. We don't
-		 * measure frame timing — just *that* frames arrive — because by the time
-		 * 4 of them have, any decoder ramp-up is over. */
-		const STABLE_FRAMES_REQUIRED = 4;
-		const supportsRVFC =
-			typeof (
-				el as HTMLVideoElement & {
-					requestVideoFrameCallback?: unknown;
-				}
-			).requestVideoFrameCallback === "function";
-		let rVFCHandle: number | undefined;
-		let stableFrameCount = 0;
-		const onPaintedFrame = () => {
-			stableFrameCount += 1;
-			if (stableFrameCount >= STABLE_FRAMES_REQUIRED) {
-				emit(1);
-				return;
-			}
-			rVFCHandle = el.requestVideoFrameCallback(onPaintedFrame);
-		};
-		const onPlaying = () => {
-			if (supportsRVFC && rVFCHandle === undefined) {
-				rVFCHandle = el.requestVideoFrameCallback(onPaintedFrame);
-			}
-		};
-		/* Fallback for browsers without rVFC (older Firefox): timeupdate fires
-		 * ~4× per second once playback advances. currentTime ≥ 0.3 s is a strong
-		 * indicator that the decoder is producing frames at a normal cadence. */
-		const onTimeUpdateFallback = () => {
-			if (supportsRVFC) return;
-			if (el.currentTime >= 0.3) emit(1);
-		};
-
-		el.addEventListener("loadstart", onLoadStart);
-		el.addEventListener("loadedmetadata", onLoadedMetadata);
-		el.addEventListener("progress", onProgress);
-		el.addEventListener("canplay", onCanPlay);
-		el.addEventListener("playing", onPlaying);
-		el.addEventListener("timeupdate", onTimeUpdateFallback);
-		/* If the video is already past these events at mount (warm HTTP cache),
-		 * surface the correct buffered progress immediately. The frame-watcher
-		 * still gates the final snap to 1.0 — even on a warm cache the decoder
-		 * needs to spin up for this *element* after mount. */
-		if (el.readyState >= 3) {
-			emit(0.95);
-			if (supportsRVFC && !el.paused) {
-				rVFCHandle = el.requestVideoFrameCallback(onPaintedFrame);
-			}
-		} else if (el.readyState >= 1) {
-			onLoadedMetadata();
-		}
-		return () => {
-			el.removeEventListener("loadstart", onLoadStart);
-			el.removeEventListener("loadedmetadata", onLoadedMetadata);
-			el.removeEventListener("progress", onProgress);
-			el.removeEventListener("canplay", onCanPlay);
-			el.removeEventListener("playing", onPlaying);
-			el.removeEventListener("timeupdate", onTimeUpdateFallback);
-			if (rVFCHandle !== undefined && supportsRVFC) {
-				el.cancelVideoFrameCallback(rVFCHandle);
-			}
-			if (forceReadyTimer !== undefined) {
-				window.clearTimeout(forceReadyTimer);
-			}
-		};
 	}, []);
 
 	const dims = playbackId ? getMuxDisplayDimensions(media) : null;
@@ -444,13 +260,6 @@ function MuxVideoLoop({
 		dims && !dims.isFallback
 			? { width: dims.width, height: dims.height }
 			: undefined;
-	const stackedFill = stackedSlide && fillParent;
-	/* Once visible we attach HLS for every slide and keep it for the carousel's
-	 * whole lifetime. Inactive stacked slides have `loadingPaused = true` so
-	 * `hls.stopLoad()` runs after the first manifest parse — MSE buffer stays
-	 * intact, so A → B → A re-activation plays from cache (no segment re-fetch).
-	 * Previously we gated attach on `isActive || isNextSlide` and tore HLS down
-	 * for the rest, which forced a fresh manifest + full re-buffer on return. */
 	/* Attach only once the container measurement and DPR have landed, so the first `hlsSrc`
 	 * is the final URL. Without the gate, `useMuxHlsSource` attaches the bare-ceiling URL and
 	 * the measured re-render one commit later changes `src` — a full teardown that refetches
@@ -473,28 +282,10 @@ function MuxVideoLoop({
 		shouldAttachHls &&
 		(measurementsReady || attachFallback) &&
 		Boolean(playbackId);
-	/* Pre-buffer the next slide so its `play()` after activation doesn't have
-	 * to wait for the first segment fetch — that wait is what causes the
-	 * mid-crossfade "video freezes for ~300 ms before snapping into motion"
-	 * stutter when the carousel advances. Inactive non-next slides still
-	 * `stopLoad()` immediately after manifest-parsed → no parallel segment
-	 * storms. After a slide has played once, its MSE buffer survives the
-	 * subsequent pause cycle so A → B → A still costs zero extra bytes. */
-	const hlsLoadingPaused = stackedSlide && !isActive && !isNextSlide;
 	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc, {
 		audioEnabled: !muted,
-		preferModernCodecs: true,
-		useObjectCoverPick: true,
 		objectCoverVideoPx,
-		tuneForShortLoop: true,
-		loadingPaused: hlsLoadingPaused,
 	});
-
-	const emitLoadedOnce = useCallback(() => {
-		if (loadedEmitted.current) return;
-		loadedEmitted.current = true;
-		onLoaded?.();
-	}, [onLoaded]);
 
 	const tryPlay = useCallback(() => {
 		const el = videoRef.current;
@@ -503,8 +294,8 @@ function MuxVideoLoop({
 		 * loaded its metadata. The promise rejects with NotAllowedError
 		 * otherwise — Safari interprets each such rejection as an autoplay-
 		 * abuse signal and decrements the per-origin MediaEngagement score.
-		 * After two of these (which mount currently triggers — useLayoutEffect
-		 * tryPlay + the isActive effect both fire before useMuxHlsSource has
+		 * After two of these (mount can trigger them: the visibility observer
+		 * and the isActive effect both fire before useMuxHlsSource has
 		 * assigned `src`) Safari blacklists autoplay for the whole session,
 		 * and the *legitimate* canplay-triggered play() then also fails. The
 		 * canplay listener is what actually plays the video on Safari — this
@@ -550,7 +341,6 @@ function MuxVideoLoop({
 	 * browsers without rVFC keep the previous event-driven behaviour. */
 	const posterHideFrameHandle = useRef<number | undefined>(undefined);
 	const hidePosterWhenReady = useCallback(() => {
-		if (stackedSlide && !isActiveRef.current) return;
 		const el = videoRef.current;
 		const supportsRVFC =
 			el &&
@@ -558,20 +348,14 @@ function MuxVideoLoop({
 				.requestVideoFrameCallback === "function";
 		if (!el || !supportsRVFC) {
 			setPosterHidden(true);
-			emitLoadedOnce();
 			return;
 		}
 		if (posterHideFrameHandle.current !== undefined) return;
 		posterHideFrameHandle.current = el.requestVideoFrameCallback(() => {
 			posterHideFrameHandle.current = undefined;
-			/* Activation may have changed between arming and the frame paint
-			 * (stacked slide deactivated → its pending callback fires on the
-			 * next play) — re-check so a background slide keeps its poster. */
-			if (stackedSlide && !isActiveRef.current) return;
 			setPosterHidden(true);
-			emitLoadedOnce();
 		});
-	}, [emitLoadedOnce, stackedSlide]);
+	}, []);
 	useEffect(() => {
 		const el = videoRef.current;
 		return () => {
@@ -582,17 +366,9 @@ function MuxVideoLoop({
 	}, []);
 
 	const tryPlayIfActive = useCallback(() => {
-		if (stackedSlide && !isActiveRef.current) return;
 		if (reducedMotion) return;
 		tryPlay();
-	}, [tryPlay, reducedMotion, stackedSlide]);
-
-	useLayoutEffect(() => {
-		if (!skipVisibilityGate || !isActive || !playbackId || reducedMotion) {
-			return;
-		}
-		tryPlay();
-	}, [skipVisibilityGate, isActive, playbackId, tryPlay, reducedMotion]);
+	}, [tryPlay, reducedMotion]);
 
 	useEffect(() => {
 		const el = videoRef.current;
@@ -600,19 +376,6 @@ function MuxVideoLoop({
 		if (!isActive) {
 			el.pause();
 			return;
-		}
-		/* Stacked intro slides always restart on activation (manual pick or auto-advance). */
-		if (stackedSlide || el.ended) {
-			el.currentTime = 0;
-		}
-		/* Inactive slides may have hidden the poster during background HLS decode — restore
-		 * until this slide actually plays. */
-		if (
-			stackedSlide &&
-			el.paused &&
-			el.readyState < HTMLMediaElement.HAVE_FUTURE_DATA
-		) {
-			setPosterHidden(false);
 		}
 		if (reducedMotion) return;
 
@@ -628,10 +391,9 @@ function MuxVideoLoop({
 			el.addEventListener("canplay", play, { once: true });
 			return () => el.removeEventListener("canplay", play);
 		}
-	}, [isActive, reducedMotion, stackedSlide]);
+	}, [isActive, reducedMotion]);
 
 	useEffect(() => {
-		if (skipVisibilityGate) return;
 		const root = containerRef.current;
 		if (!root || !playbackId) return;
 
@@ -658,14 +420,7 @@ function MuxVideoLoop({
 			io.disconnect();
 			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
 		};
-	}, [
-		playbackId,
-		isActive,
-		tryPlay,
-		containerRef,
-		skipVisibilityGate,
-		reducedMotion,
-	]);
+	}, [playbackId, isActive, tryPlay, containerRef, reducedMotion]);
 
 	/* Safari autoplay rescue: Low Power Mode (iOS/macOS) and the per-site "Never Auto-Play"
 	 * setting deny even muted `playsinline` autoplay — iOS then draws a struck-through play
@@ -729,14 +484,9 @@ function MuxVideoLoop({
 		<div
 			ref={containerRef}
 			className={clsx(
-				stackedFill
-					? "h-full w-full overflow-hidden"
-					: "relative w-full overflow-hidden",
+				"relative w-full overflow-hidden",
 				fillParent &&
-					!stackedFill &&
 					"h-full min-h-[100dvh] w-full [&_video]:min-h-full [&_video]:min-w-full [&_video]:object-cover",
-				stackedFill &&
-					"[&_video]:min-h-full [&_video]:min-w-full [&_video]:object-cover",
 				/* Skip layout + paint + style cost while off-screen. The element
 				 * keeps its size (we have explicit dimensions / aspect-ratio) so
 				 * scroll position stays stable. Above-the-fold heros are visible
@@ -745,7 +495,7 @@ function MuxVideoLoop({
 				"[content-visibility:auto]",
 				className,
 			)}
-			style={fillParent || stackedFill ? undefined : { aspectRatio: aspectCss }}
+			style={fillParent ? undefined : { aspectRatio: aspectCss }}
 		>
 			<video
 				ref={videoRef}
@@ -766,19 +516,9 @@ function MuxVideoLoop({
 				)}
 				muted
 				playsInline
-				autoPlay={!reducedMotion && (!stackedSlide || isActive)}
-				loop={loop}
-				preload={
-					reducedMotion
-						? "none"
-						: stackedSlide
-							? isActive
-								? "auto"
-								: isNextSlide
-									? "metadata"
-									: "none"
-							: "metadata"
-				}
+				autoPlay={!reducedMotion}
+				loop
+				preload={reducedMotion ? "none" : "metadata"}
 				disablePictureInPicture
 				aria-label={caption || undefined}
 				onLoadedData={hidePosterWhenReady}
@@ -793,15 +533,6 @@ function MuxVideoLoop({
 				}}
 				onWaiting={onVideoWaiting}
 				onPause={disarmStallTimer}
-				onTimeUpdate={
-					onTimeUpdate
-						? (e) => {
-								const el = e.currentTarget;
-								onTimeUpdate(el.currentTime, el.duration);
-							}
-						: undefined
-				}
-				onEnded={onEnded}
 			/>
 			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity / Mux URLs — next/image optimizer would cause SSR/CSR URL drift. */}
 			<img
@@ -811,7 +542,7 @@ function MuxVideoLoop({
 				alt={caption || ""}
 				width={dims && !dims.isFallback ? dims.width : undefined}
 				height={dims && !dims.isFallback ? dims.height : undefined}
-				loading={posterPriority || stackedSlide ? "eager" : "lazy"}
+				loading={posterPriority ? "eager" : "lazy"}
 				fetchPriority={posterPriority ? "high" : "auto"}
 				decoding={posterPriority ? "sync" : "async"}
 				className={clsx(

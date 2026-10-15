@@ -27,7 +27,8 @@ const LANGUAGE_IDS = `*[_id == "siteLanguageSettings"][0].availableLanguages[].i
  * The web serves the default locale unprefixed and the others under `/:locale/…`. One document
  * holds every language, so a prefixed route opens the same document. Presentation takes the
  * first route that matches: the literal `work` routes come before the `:locale` patterns, and a
- * single segment (`/de` or `/about`) is a locale when it is one of the language ids.
+ * single segment (`/de` or `/about`) is a locale when it is one of the language ids, never a
+ * page (the web serves the locale's home there too).
  */
 export const presentationMainDocuments = defineDocuments([
   { route: "/", filter: rootFilter },
@@ -39,7 +40,7 @@ export const presentationMainDocuments = defineDocuments([
     route: "/:segment",
     filter:
       SLUG_BASED_DOCUMENT_TYPES.length > 0
-        ? `(${rootFilter} && $segment in ${LANGUAGE_IDS}) || (_type in [${slugTypeList}] && slug.current == $segment)`
+        ? `(${rootFilter} && $segment in ${LANGUAGE_IDS}) || (_type in [${slugTypeList}] && slug.current == $segment && !($segment in ${LANGUAGE_IDS}))`
         : `${rootFilter} && $segment in ${LANGUAGE_IDS}`,
   },
   ...(SLUG_BASED_DOCUMENT_TYPES.length > 0

@@ -44,6 +44,7 @@ import {
 import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 import { useMuxHlsSource } from "@/src/utils/useMuxHlsSource";
+import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 type MediaVideoLoopProps = {
 	media: unknown;
@@ -123,7 +124,7 @@ function MuxVideoLoop({
 	isActiveRef.current = isActive;
 	const [posterHidden, setPosterHidden] = useState(false);
 	const [shouldAttachHls, setShouldAttachHls] = useState(false);
-	const [reducedMotion, setReducedMotion] = useState(false);
+	const reducedMotion = usePrefersReducedMotion();
 	/**
 	 * Audio toggle state. Always starts `true` (muted) — browser autoplay policy. Flipped
 	 * by the overlay control rendered when `allowUnmute === true`. The click counts as the
@@ -148,15 +149,6 @@ function MuxVideoLoop({
 		if (!el) return;
 		el.muted = true;
 		el.defaultMuted = true;
-	}, []);
-
-	useEffect(() => {
-		if (typeof window === "undefined" || !window.matchMedia) return;
-		const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const sync = () => setReducedMotion(mq.matches);
-		sync();
-		mq.addEventListener?.("change", sync);
-		return () => mq.removeEventListener?.("change", sync);
 	}, []);
 
 	/* 16×9 when the asset has no video track data (`isFallback`). */

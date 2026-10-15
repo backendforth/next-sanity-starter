@@ -26,7 +26,8 @@ type ResolveMediaPosterOptions = {
 	thumbWidthPx: number;
 	/**
 	 * Mux thumbnail time in seconds. Defaults to the asset's `thumbTime` (the poster frame
-	 * picked in Studio), then `0`. Loops pass `0` so the fallback still matches their first frame.
+	 * picked in Studio), then Mux's default frame. Loops pass `0` so the fallback matches their
+	 * first frame.
 	 */
 	muxTimeSec?: number;
 	/** Tighter cap for the Mux poster width (loops pass `LOOP_POSTER_MAX_WIDTH_PX`). */
@@ -68,7 +69,7 @@ function resolveSanityPoster(
 function resolveMuxPoster(
 	muxMedia: unknown,
 	thumbWidthPx: number,
-	timeSec: number,
+	timeSec: number | undefined,
 	maxWidthPx: number,
 ): ResolvedMediaPosterUrls | null {
 	const playbackId = extractMuxPlaybackId(muxMedia);

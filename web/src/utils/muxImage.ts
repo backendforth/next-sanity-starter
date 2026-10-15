@@ -39,11 +39,12 @@ export function extractMuxPlaybackId(media: unknown): string | null {
  */
 export function muxThumbnailUrl(
 	playbackId: string,
-	timeSec: number,
+	timeSec: number | undefined,
 	widthPx: number,
 ): string {
 	const u = new URL(`https://image.mux.com/${playbackId}/thumbnail.webp`);
-	u.searchParams.set("time", String(timeSec));
+	/* No `time`: Mux picks its default frame, not the (often black) first one. */
+	if (timeSec !== undefined) u.searchParams.set("time", String(timeSec));
 	if (widthPx > 0) {
 		u.searchParams.set("width", String(Math.round(widthPx)));
 	}
@@ -121,10 +122,10 @@ export const LOOP_POSTER_MAX_WIDTH_PX = 1920;
 /**
  * Mux `asset.thumbTime` — the time (in seconds) selected in Studio for the poster frame.
  */
-export function muxThumbnailTimeSec(media: unknown): number {
-	if (!media || typeof media !== "object") return 0;
+export function muxThumbnailTimeSec(media: unknown): number | undefined {
+	if (!media || typeof media !== "object") return undefined;
 	const asset = (media as Record<string, unknown>).asset;
-	if (!asset || typeof asset !== "object") return 0;
+	if (!asset || typeof asset !== "object") return undefined;
 	const t = (asset as Record<string, unknown>).thumbTime;
-	return typeof t === "number" ? t : 0;
+	return typeof t === "number" ? t : undefined;
 }

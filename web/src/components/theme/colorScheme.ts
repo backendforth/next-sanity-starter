@@ -1,25 +1,35 @@
 /*
  * The color scheme lives in `data-theme` on `<html>`: `variables/colors.css` and the Tailwind
- * `dark:` variant key off it. The inline script in `DocumentShell` sets it from `localStorage`
- * before the first paint; `ThemeSync` restores it when React recreates `<html>`; `ThemeToggle`
- * reads and writes it. OS preference is intentionally ignored.
+ * `dark:` variant key off it. `applyBootState` sets it from `localStorage` before the first paint
+ * and again when React recreates `<html>`; `ThemeToggle` reads and writes it. OS preference is
+ * intentionally ignored.
  */
 
 export type ColorScheme = "light" | "dark";
 
-/** Same key the inline script in `DocumentShell` reads. */
+/** Same key `applyBootState` reads. */
 const STORAGE_KEY = "color-scheme";
 
-export function readStoredColorScheme(): ColorScheme {
+/**
+ * Puts the state the CSS keys off onto `<html>`:
+ * - the stored scheme as `data-theme` (light without a stored choice or without storage);
+ * - `js-enabled`, so lazy images can start at opacity 0 (`animations.css`). The `img-loaded`
+ *   class is `MediaImage`'s, set in an effect so SSR and the first client render agree.
+ *
+ * `DocumentShell` inlines this function's source as the blocking boot script, and `ThemeSync`
+ * calls it again after a root-layout remount. Inlined, it can't see module scope, so the
+ * storage key is a literal and it calls nothing else from this file.
+ */
+export function applyBootState(): void {
+	const root = document.documentElement;
+	let dark = false;
 	try {
-		return localStorage.getItem(STORAGE_KEY) === "dark" ? "dark" : "light";
+		dark = localStorage.getItem("color-scheme") === "dark";
 	} catch {
-		return "light"; // private mode / blocked storage
+		/* blocked storage: light */
 	}
-}
-
-export function applyColorScheme(scheme: ColorScheme): void {
-	document.documentElement.setAttribute("data-theme", scheme);
+	root.setAttribute("data-theme", dark ? "dark" : "light");
+	root.classList.add("js-enabled");
 }
 
 export function storeColorScheme(scheme: ColorScheme): void {
@@ -28,7 +38,7 @@ export function storeColorScheme(scheme: ColorScheme): void {
 	} catch {
 		// private mode / blocked storage: the choice lasts for this page only
 	}
-	applyColorScheme(scheme);
+	document.documentElement.setAttribute("data-theme", scheme);
 }
 
 export function readAppliedColorScheme(): ColorScheme {

@@ -8,6 +8,7 @@ import type { SiteFavicon } from "@/sanity/types";
 import { documentFontClassName } from "@/src/components/layout/documentFonts";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
+import { applyBootState } from "@/src/components/theme/colorScheme";
 import { ThemeSync } from "@/src/components/theme/ThemeSync";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../../assets/styles/tokens.css";
@@ -37,27 +38,11 @@ export function documentMetadata(
 }
 
 /**
- * Tiny blocking inline script — runs synchronously before hydration.
- *
- * 1. Applies the stored theme override (`localStorage["color-scheme"]`) as
- *    `data-theme="light" | "dark"` on <html> **before** the first paint.
- *    Without JS, `<html>` carries no attribute and the `:root` light defaults
- *    in `variables/colors.css` apply — OS preference is deliberately ignored.
- * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
- *
- * The lazy-image `img-loaded` class is not set here: `MediaImage` adds it in
- * `useEffect`, so SSR and the first client render agree (a pre-hydration
- * script would race React's streaming hydration on cached images).
- *
- * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
+ * Tiny blocking inline script, run before the first paint: `applyBootState` sets the stored
+ * theme (`data-theme`) and `js-enabled` on <html>. Without JS `<html>` carries neither, so the
+ * light `:root` tokens apply and images stay fully visible.
  */
-const bootScript = `(function(){
-  try{
-    var t=localStorage.getItem('color-scheme');
-    document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');
-  }catch(e){}
-  document.documentElement.classList.add('js-enabled');
-})();`;
+const bootScript = `(${applyBootState})();`;
 
 type Props = {
 	/** BCP-47 tag for `<html lang>` — the route's locale. */

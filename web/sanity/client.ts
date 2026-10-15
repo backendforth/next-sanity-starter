@@ -9,9 +9,10 @@ import { dataset, projectId } from "./sanityEnv";
  * Sanity. Instead we warn loudly and construct a placeholder client; any real `.fetch()` call
  * will then surface a clear error at runtime. Routes that touch Sanity must provide the real env.
  */
-const hasSanityConfig = Boolean(projectId && dataset);
+/** True when a real Sanity project id + dataset are configured. Data-fetching helpers can short-circuit. */
+export const isSanityConfigured = Boolean(projectId && dataset);
 
-if (!hasSanityConfig) {
+if (!isSanityConfigured) {
 	const isBuild = process.env.NEXT_PHASE === "phase-production-build";
 	const missing: string[] = [];
 	if (!projectId) missing.push("SANITY_STUDIO_PROJECT_ID");
@@ -45,6 +46,3 @@ export const client = createClient({
 			process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ?? "http://localhost:3333",
 	},
 });
-
-/** True when a real Sanity project id + dataset are configured. Data-fetching helpers can short-circuit. */
-export const isSanityConfigured = hasSanityConfig;

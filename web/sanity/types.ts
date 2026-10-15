@@ -31,9 +31,6 @@ export type RouteDocument =
 	| WorkDocument
 	| ProjectDocument;
 
-/** A route document's own `seo` (`pageSeoQuery`), or the site-wide fallback of the same shape. */
-export type PageSeo = RouteDocument["seo"];
-
 // ── Modules ─────────────────────────────────────────────────────────────────
 
 /** One entry of a document's `modules[]` — the union `ModulesRenderer` switches on. */

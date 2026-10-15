@@ -10,7 +10,7 @@ import { dataset, projectId } from "@/sanity/sanityEnv";
  * Studio image field). Their input contract, checked at runtime by
  * `resolveSanityImageFieldForUrl`; the query result types themselves come from TypeGen.
  */
-export type SanityImageAssetRef = {
+type SanityImageAssetRef = {
 	_id?: string;
 	_ref?: string;
 	url?: string | null;
@@ -34,7 +34,6 @@ type ImageFit = "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
 type ImageAuto = "format";
 /** Explicit output format — use instead of `auto` where the consumer cannot content-negotiate (browser icons). */
 type ImageFormat = "png" | "jpg" | "webp";
-type ImageOrientation = "portrait" | "landscape" | "square" | "unknown";
 
 type BuildImageUrlOptions = {
 	width?: number;
@@ -86,19 +85,6 @@ function toSanityImageSource(
 	} satisfies SanityImageSource;
 }
 
-export function getImageDimensions(image: SanityImageField): {
-	width?: number;
-	height?: number;
-	aspectRatio?: number;
-} {
-	const dims = image?.asset?.metadata?.dimensions;
-	return {
-		width: dims?.width,
-		height: dims?.height,
-		aspectRatio: dims?.aspectRatio,
-	};
-}
-
 /**
  * Pixel size of the cropped image area (Studio crop uses 0–1 fractions of the original asset).
  * Matches how `sanity/image-url` interprets `crop` when building URLs.
@@ -132,85 +118,24 @@ export function getCroppedImageDisplayDimensions(
 	return { width: cw, height: ch };
 }
 
-/** Sanity image hotspot (normalized 0–1 on the original asset) — Studio “focus” UI. */
-export type SanityImageHotspot = {
-	x?: number;
-	y?: number;
-	width?: number;
-	height?: number;
-};
-
 /**
- * Maps Sanity `hotspot` to CSS `object-position` for use with `object-fit` (`cover`, `contain`, …).
- * `x` / `y` are 0–1 from the left / top; output is percentage pair as required by CSS.
+ * Maps the field's `hotspot` (0–1 from the left / top of the original asset) to CSS
+ * `object-position` for `object-fit: cover`. GROQ must project `hotspot`.
  *
  * @see https://www.sanity.io/docs/image-type#hotspot
  */
-export function cssObjectPositionFromSanityHotspot(
-	hotspot: unknown,
+export function cssObjectPositionFromSanityImageField(
+	image: SanityImageField | null | undefined,
 ): string | undefined {
-	if (hotspot == null || typeof hotspot !== "object") {
-		return undefined;
-	}
-	const h = hotspot as SanityImageHotspot;
-	const x = typeof h.x === "number" && Number.isFinite(h.x) ? h.x : undefined;
-	const y = typeof h.y === "number" && Number.isFinite(h.y) ? h.y : undefined;
+	const h = image?.hotspot as { x?: number; y?: number } | null | undefined;
+	const x = typeof h?.x === "number" && Number.isFinite(h.x) ? h.x : undefined;
+	const y = typeof h?.y === "number" && Number.isFinite(h.y) ? h.y : undefined;
 	if (x === undefined || y === undefined) {
 		return undefined;
 	}
 	const xp = Math.min(1, Math.max(0, x));
 	const yp = Math.min(1, Math.max(0, y));
 	return `${xp * 100}% ${yp * 100}%`;
-}
-
-/** Reads `hotspot` from a resolved image field (GROQ must project `hotspot`). */
-export function cssObjectPositionFromSanityImageField(
-	image: SanityImageField | null | undefined,
-): string | undefined {
-	if (!image?.hotspot) {
-		return undefined;
-	}
-	return cssObjectPositionFromSanityHotspot(image.hotspot);
-}
-
-export function getImageOrientation(image: SanityImageField): ImageOrientation {
-	const { width, height } = getImageDimensions(image);
-	if (!width || !height) {
-		return "unknown";
-	}
-	if (width === height) {
-		return "square";
-	}
-	return width > height ? "landscape" : "portrait";
-}
-
-export function isPortraitImage(image: SanityImageField): boolean {
-	return getImageOrientation(image) === "portrait";
-}
-
-export function isLandscapeImage(image: SanityImageField): boolean {
-	return getImageOrientation(image) === "landscape";
-}
-
-export function getImageAspectRatio(
-	image: SanityImageField,
-	fallback = 16 / 9,
-): number {
-	const dims = getImageDimensions(image);
-	if (
-		typeof dims.aspectRatio === "number" &&
-		Number.isFinite(dims.aspectRatio)
-	) {
-		return dims.aspectRatio;
-	}
-	if (
-		typeof dims.width === "number" &&
-		typeof dims.height === "number" &&
-		dims.height > 0
-	) {
-		return dims.width / dims.height;
-	}
-	return fallback;
 }
 
 export function buildFetchedImageUrl(

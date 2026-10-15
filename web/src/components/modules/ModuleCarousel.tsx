@@ -4,6 +4,7 @@ import type { NormalizedSlide } from "@/src/components/carousel/CarouselSlide";
 import { LazyCarouselViewport } from "@/src/components/carousel/LazyCarouselViewport";
 import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
@@ -57,6 +58,16 @@ export function ModuleCarousel({
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<LazyCarouselViewport
 				slides={slides}
+				labels={{
+					prev: uiLabel("carouselPrev", locale),
+					next: uiLabel("carouselNext", locale),
+					goToSlide: slides.map((_, i) =>
+						uiLabel("carouselGoTo", locale, { n: i + 1 }),
+					),
+					showSlide: slides.map((_, i) =>
+						uiLabel("carouselShow", locale, { n: i + 1 }),
+					),
+				}}
 				priority={priority}
 				options={{
 					loop: module.loop === true,

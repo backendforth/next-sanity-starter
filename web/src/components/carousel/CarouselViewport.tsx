@@ -5,9 +5,6 @@ import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
-import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
-import { uiLabel } from "@/src/i18n/uiLabels";
 import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
@@ -23,9 +20,18 @@ type CarouselOptions = {
 	autoplayDelayMs: number;
 };
 
+/** Control `aria-label`s, resolved to the page locale on the server; one per slide for the lists. */
+type CarouselLabels = {
+	prev: string;
+	next: string;
+	goToSlide: string[];
+	showSlide: string[];
+};
+
 type Props = {
 	slides: NormalizedSlide[];
 	options: CarouselOptions;
+	labels: CarouselLabels;
 	/** The page's LCP candidate: the first slide loads eagerly. */
 	priority?: boolean;
 };
@@ -48,10 +54,12 @@ function thumbnailUrlForSlide(slide: NormalizedSlide): string | null {
  * Embla viewport with optional autoplay, prev/next, dots, and a synced thumbnail strip.
  * Reduced-motion users get a still carousel: autoplay is suspended but interaction works.
  */
-export function CarouselViewport({ slides, options, priority = false }: Props) {
-	const locale =
-		useOptionalLanguage()?.currentLocale ??
-		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
+export function CarouselViewport({
+	slides,
+	options,
+	labels,
+	priority = false,
+}: Props) {
 	const reducedMotion = usePrefersReducedMotion();
 
 	/* Lazy init: `useRef(Autoplay(...))` evaluates its argument on every render, which built
@@ -184,7 +192,7 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 						type="button"
 						onClick={scrollPrev}
 						disabled={!options.loop && !canScrollPrev}
-						aria-label={uiLabel("carouselPrev", locale)}
+						aria-label={labels.prev}
 						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
 					>
 						<svg
@@ -205,7 +213,7 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 						type="button"
 						onClick={scrollNext}
 						disabled={!options.loop && !canScrollNext}
-						aria-label={uiLabel("carouselNext", locale)}
+						aria-label={labels.next}
 						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
 					>
 						<svg
@@ -234,7 +242,7 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 								key={`dot-${slide.key}`}
 								type="button"
 								onClick={() => scrollTo(index)}
-								aria-label={uiLabel("carouselGoTo", locale, { n: index + 1 })}
+								aria-label={labels.goToSlide[index]}
 								aria-current={isActive ? "true" : undefined}
 								className={clsx(
 									"h-2 w-2 rounded-full transition",
@@ -259,7 +267,7 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 									key={`thumb-${slide.key}`}
 									type="button"
 									onClick={() => scrollTo(index)}
-									aria-label={uiLabel("carouselShow", locale, { n: index + 1 })}
+									aria-label={labels.showSlide[index]}
 									aria-current={isActive ? "true" : undefined}
 									className={clsx(
 										"relative aspect-video w-24 shrink-0 overflow-hidden rounded border transition",

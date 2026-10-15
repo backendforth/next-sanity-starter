@@ -24,9 +24,6 @@ import {
 } from "react";
 import { VolumeMutedIcon } from "@/src/components/icons/VolumeMutedIcon";
 import { VolumeOnIcon } from "@/src/components/icons/VolumeOnIcon";
-import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
-import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
-import { uiLabel } from "@/src/i18n/uiLabels";
 
 import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import {
@@ -44,6 +41,9 @@ import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
 import { useMuxHlsSource } from "@/src/utils/useMuxHlsSource";
 import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
+/** The sound toggle's `aria-label`s, resolved to the page locale on the server. */
+export type SoundToggleLabels = { soundOn: string; soundOff: string };
+
 type MediaVideoLoopProps = {
 	media: unknown;
 	caption?: string | null;
@@ -60,14 +60,14 @@ type MediaVideoLoopProps = {
 	/** `sizes` for the poster `srcset`: the width the loop occupies. Defaults to `"100vw"`. */
 	sizes?: string;
 	/**
-	 * When true, render a small overlay button (bottom-right) that lets the visitor toggle
+	 * When set, render a small overlay button (bottom-right) that lets the visitor toggle
 	 * audio on/off. The loop starts muted regardless — browser autoplay policies forbid
 	 * unmuted autoplay without a user gesture, and the button click is that gesture.
 	 *
-	 * Driven from Sanity via the `media.videoLoop.allowUnmute` field; default is `false`
-	 * so silent background loops (hero, decorative motion) remain truly silent.
+	 * Set from the Sanity `media.videoLoop.allowUnmute` field (default `false`), so silent
+	 * background loops (hero, decorative motion) remain truly silent.
 	 */
-	allowUnmute?: boolean;
+	soundLabels?: SoundToggleLabels;
 };
 
 /**
@@ -110,11 +110,8 @@ function MuxVideoLoop({
 	isActive = true,
 	priority = false,
 	sizes = "100vw",
-	allowUnmute = false,
+	soundLabels,
 }: MediaVideoLoopProps & { playbackId: string }) {
-	const locale =
-		useOptionalLanguage()?.currentLocale ??
-		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
 	const [containerRef, slotWidthPx, slotHeightPx] =
 		useContainerPixelWidth<HTMLDivElement>();
 	/* DPR snapshotted once via lazy initializer: it never reaches rendered markup (SSR stays
@@ -132,7 +129,7 @@ function MuxVideoLoop({
 	const reducedMotion = usePrefersReducedMotion();
 	/**
 	 * Audio toggle icon state. Always starts `true` (muted) — browser autoplay policy. The
-	 * overlay control (`allowUnmute`) writes `el.muted` itself; the click counts as the required
+	 * overlay control (`soundLabels`) writes `el.muted` itself; the click counts as the required
 	 * user gesture, so the `tryPlay()` after unmuting is allowed to produce sound.
 	 */
 	const [muted, setMuted] = useState(true);
@@ -483,11 +480,11 @@ function MuxVideoLoop({
 				)}
 				aria-hidden={posterHidden ? "true" : undefined}
 			/>
-			{allowUnmute ? (
+			{soundLabels ? (
 				<button
 					type="button"
 					onClick={onToggleMute}
-					aria-label={uiLabel(muted ? "soundOn" : "soundOff", locale)}
+					aria-label={muted ? soundLabels.soundOn : soundLabels.soundOff}
 					aria-pressed={!muted}
 					className={clsx(
 						"absolute right-sm bottom-sm z-20",

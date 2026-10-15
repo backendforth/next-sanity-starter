@@ -41,7 +41,7 @@ const dataset = studioDataset;
  * have their own — so it comes from the env, never from source. `sanity deploy` prints it after
  * the first deploy; it is also listed under the project's Studios in sanity.io/manage.
  *
- * The default hosting, Netlify (`netlify.toml`), doesn't use it: `pnpm studio:register`
+ * The default hosting, Netlify (`studio/netlify.toml`), doesn't use it: `pnpm studio:register`
  * clears it so the external URL is registered as its own Studio.
  */
 const appId = process.env.SANITY_STUDIO_APP_ID?.trim();

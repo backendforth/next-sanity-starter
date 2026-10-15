@@ -58,7 +58,7 @@ export function portableTextMediaComponents({
 }) {
 	return {
 		block: {
-			normal: ({ children }) => <p className="text">{children}</p>,
+			normal: ({ children }) => <p>{children}</p>,
 			bigText: ({ children }) => <p className="big-text">{children}</p>,
 			h1: ({ children }) => <h2 className="heading-1">{children}</h2>,
 			h2: ({ children }) => <h2 className="heading-2">{children}</h2>,

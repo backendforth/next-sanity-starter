@@ -149,6 +149,19 @@ pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id
 pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id> --dataset development --no-dry-run
 ```
 
+### `rename-text-module-title`
+
+**What it does** (both branches) — moves a text module's `title` to `heading`, the name `module.carousel` and `module.contentRefs` use. The value keeps its shape (i18n array on `main`, string on the variant). Modules that already have a `heading` are skipped, so a re-run is safe.
+
+**When** — merge, deploy the web and the Studio, then migrate right away. Until then text modules render without their heading; nothing breaks.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run rename-text-module-title --project <id> --dataset development
+pnpm exec sanity migration run rename-text-module-title --project <id> --dataset development --no-dry-run
+```
+
 ---
 
 ## Related docs

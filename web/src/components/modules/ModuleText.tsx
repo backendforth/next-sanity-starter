@@ -20,14 +20,14 @@ type Props = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-/** `module.text` — optional title + localized rich text body (with embedded modules). */
+/** `module.text` — optional heading + localized rich text body (with embedded modules). */
 export function ModuleText({
 	module,
 	locale,
 	siteLocale,
 	priority = false,
 }: Props) {
-	const title = pickLocalizedString(module.title, locale, siteLocale);
+	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 	const blocks = pickLocalizedPortableTextBlocks(
 		module.body,
 		locale,
@@ -36,7 +36,7 @@ export function ModuleText({
 
 	return (
 		<section className={moduleSectionClassName}>
-			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
+			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<RichTextMedia
 				value={blocks}
 				locale={locale}

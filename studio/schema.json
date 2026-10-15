@@ -2338,7 +2338,7 @@
             "value": "module.text"
           }
         },
-        "title": {
+        "heading": {
           "type": "objectAttribute",
           "value": {
             "type": "inline",

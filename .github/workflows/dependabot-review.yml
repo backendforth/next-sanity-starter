@@ -1,8 +1,13 @@
 name: Dependabot review
 
-# Automatic Claude review of every Dependabot PR (the monthly grouped minor/patch
-# PR and individual major PRs). Uses `pull_request_target` so it has secret access
-# — the plain Dependabot `pull_request` event gets a read-only token and no secrets.
+# Automatic Claude review of Dependabot PRs against `main`: the monthly grouped
+# minor/patch PR and the grouped major PR (dependabot.yml). Uses
+# `pull_request_target` so it has secret access — the plain Dependabot
+# `pull_request` event gets a read-only token and no secrets.
+#
+# Main only, on purpose: `pull_request_target` runs this file from the PR's base
+# branch, and `variant/document-level` doesn't carry it. The variant's Dependabot
+# PRs bring the same bumps as main's, so main's review covers them.
 #
 # SECURITY: the review is DIFF-ONLY. We check out the BASE branch (never the PR
 # head), and Claude is instructed to read the diff + changelogs only — never to

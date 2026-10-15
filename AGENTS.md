@@ -339,7 +339,7 @@ Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.
 
 Fixes land on `main` first and reach the variant by `git cherry-pick -x`, as their own PR. Every PR names its counterpart in the description — the PR template asks for it:
 
-- On a `main` PR: `Variant-Port: #<PR>`, or `Variant-Port: n/a` with the reason (main-only i18n code, a default-branch workflow).
+- On a `main` PR: `Variant-Port: #<PR>`, or `Variant-Port: n/a` with the reason (main-only i18n code, a workflow that runs from `main` only).
 - On a variant PR: `Variant-Port: #<main PR>` for a port, `Variant-Port: variant-only` otherwise.
 
 Without that line, ten fixes from #182, #190 and #191 reached only `main` in 2026-10.

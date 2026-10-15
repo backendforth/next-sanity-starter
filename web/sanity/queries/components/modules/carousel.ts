@@ -7,7 +7,7 @@ import { moduleMediaResolvedMediaQuery } from "./media";
  * image or video). An unset `imagesOnly` counts as on, like in the Studio, which shows `slides`
  * until it is switched off. Only the resolved list is projected; the renderer reads nothing else.
  */
-export const moduleCarouselInnerFields = `
+export const moduleCarouselQuery = `_type == "module.carousel" => {
   heading,
   loop,
   showThumbnails,
@@ -27,8 +27,4 @@ export const moduleCarouselInnerFields = `
       "resolvedMedia": ${moduleMediaResolvedMediaQuery}
     }
   )
-`;
-
-export const moduleCarouselQuery = `_type == "module.carousel" => {
-  ${moduleCarouselInnerFields}
 }`;

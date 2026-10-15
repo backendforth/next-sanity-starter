@@ -28,3 +28,10 @@ export const richTextMediaQuery = `
     ${moduleMediaQuery},
     ${moduleCarouselQuery}
   `;
+
+/** A `body` field of schema `richTextMedia` (`module.text`, `project`). */
+export const richTextMediaBodyQuery = `
+  body[]{
+    ${richTextMediaQuery}
+  }
+`;

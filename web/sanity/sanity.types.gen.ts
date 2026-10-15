@@ -285,8 +285,6 @@ export type ErrorSettings = {
   _rev: string;
   notFoundTitle: InternationalizedArrayString;
   notFoundBody?: InternationalizedArrayRichText;
-  serverErrorTitle: InternationalizedArrayString;
-  serverErrorBody?: InternationalizedArrayRichText;
 };
 
 export type InternationalizedArrayRichText = Array<

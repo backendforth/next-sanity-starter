@@ -1469,22 +1469,6 @@
           "name": "internationalizedArrayRichText"
         },
         "optional": true
-      },
-      "serverErrorTitle": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "internationalizedArrayString"
-        },
-        "optional": false
-      },
-      "serverErrorBody": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "internationalizedArrayRichText"
-        },
-        "optional": true
       }
     }
   },

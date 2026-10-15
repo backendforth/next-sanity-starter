@@ -29,10 +29,7 @@ function staticLocationsForType(
   if (type === "errorSettings") {
     return {
       message: PRESENTATION_LOCATIONS_HEADER,
-      locations: [
-        { title: "404", href: "/404" },
-        { title: "500", href: "/500" },
-      ],
+      locations: [{ title: "404", href: "/404" }],
     };
   }
   if (type === "work") {

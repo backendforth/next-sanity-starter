@@ -29,20 +29,6 @@ export const errorSettings = defineType({
       description: "Basic rich text (no media modules).",
       group: "editorial",
     },
-    {
-      name: "serverErrorTitle",
-      title: "500 — Title",
-      type: "internationalizedArrayString",
-      group: "editorial",
-      validation: (rule) => rule.required(),
-    },
-    {
-      name: "serverErrorBody",
-      title: "500 — Body",
-      type: "internationalizedArrayRichText",
-      description: "Basic rich text (no media modules).",
-      group: "editorial",
-    },
   ],
   preview: {
     prepare() {

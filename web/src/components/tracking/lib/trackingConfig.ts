@@ -67,20 +67,22 @@ export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
  * the field (unmigrated or API-written) shows the banner and gates trackers instead of failing
  * open. No analytics document means no trackers, and no banner.
  */
-export function cookieBannerEnabled(
+export function isCookieBannerEnabled(
 	analytics: SiteAnalyticsSettings | null,
 ): boolean {
 	return analytics !== null && analytics.useCookieBanner !== false;
 }
 
 /**
- * Whether the banner gates loading: it is on and `loadMode` does not opt out. Compared with the
- * opt-out value for the same reason: a document missing `loadMode` still waits for consent.
+ * Whether the banner gates loading: it is on (`isCookieBannerEnabled`, resolved once by the
+ * layout) and `loadMode` does not opt out. Compared with the opt-out value for the same reason:
+ * a document missing `loadMode` still waits for consent.
  */
 export function bannerGatesLoading(
+	cookieBannerEnabled: boolean,
 	analytics: SiteAnalyticsSettings | null,
 ): boolean {
-	return cookieBannerEnabled(analytics) && analytics?.loadMode !== "onPageLoad";
+	return cookieBannerEnabled && analytics?.loadMode !== "onPageLoad";
 }
 
 /**
@@ -108,9 +110,10 @@ export function trackerLoadSignature(tracker: AnalyticsTracker): string {
 	}
 }
 
+/** `bannerGates` is `bannerGatesLoading(…)` for the current document. */
 export function trackerRequiresConsent(
 	tracker: AnalyticsTracker,
-	analytics: SiteAnalyticsSettings | null,
+	bannerGates: boolean,
 ): boolean {
-	return bannerGatesLoading(analytics) && !isCookieFreeTracker(tracker);
+	return bannerGates && !isCookieFreeTracker(tracker);
 }

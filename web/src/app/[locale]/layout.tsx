@@ -18,7 +18,7 @@ import { LazySiteTracking } from "@/src/components/tracking/LazySiteTracking";
 import { cookieConsentTranslation } from "@/src/components/tracking/lib/cookieConsentConfig";
 import {
 	getEnabledTrackers,
-	cookieBannerEnabled as isCookieBannerOn,
+	isCookieBannerEnabled,
 } from "@/src/components/tracking/lib/trackingConfig";
 import { CookieBannerProvider } from "@/src/contexts/CookieBannerContext";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
@@ -79,7 +79,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 	const analytics = stegaClean(chrome?.analytics ?? null);
 	const enabledTrackers = getEnabledTrackers(analytics);
 	/* The banner, the cookie-preferences links (nav, rich text) and tracking follow this switch. */
-	const cookieBannerEnabled = isCookieBannerOn(analytics);
+	const cookieBannerEnabled = isCookieBannerEnabled(analytics);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
 	if (!pathUtils.isAppLocale(raw)) {
@@ -131,7 +131,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 				/>
 			) : null}
 			{enabledTrackers.length > 0 ? (
-				<LazySiteTracking analytics={analytics} />
+				<LazySiteTracking
+					analytics={analytics}
+					cookieBannerEnabled={cookieBannerEnabled}
+				/>
 			) : null}
 		</LanguageProvider>
 	);

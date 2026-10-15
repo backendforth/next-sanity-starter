@@ -23,20 +23,21 @@ import {
 
 type Props = {
 	analytics: SiteAnalyticsSettings | null;
+	cookieBannerEnabled: boolean;
 };
 
 function trackersForConsent(
 	trackers: AnalyticsTracker[],
-	analytics: SiteAnalyticsSettings | null,
+	bannerGates: boolean,
 	analyticsAccepted: boolean,
 ): AnalyticsTracker[] {
 	return trackers.filter(
 		(tracker) =>
-			analyticsAccepted || !trackerRequiresConsent(tracker, analytics),
+			analyticsAccepted || !trackerRequiresConsent(tracker, bannerGates),
 	);
 }
 
-export function SiteTracking({ analytics }: Props) {
+export function SiteTracking({ analytics, cookieBannerEnabled }: Props) {
 	/* Seeded from the runtime registry: after a remount (a locale switch re-renders the
 	 * layout) trackers from the previous render are still running, and reconciling
 	 * against an empty map would leave them collecting when the new config needs
@@ -47,13 +48,13 @@ export function SiteTracking({ analytics }: Props) {
 
 	const trackers = useMemo(() => getEnabledTrackers(analytics), [analytics]);
 
-	const showBanner = bannerGatesLoading(analytics);
+	const showBanner = bannerGatesLoading(cookieBannerEnabled, analytics);
 
 	useEffect(() => {
 		const syncConsent = (analyticsAccepted: boolean) => {
 			const allowed = trackersForConsent(
 				trackers,
-				analytics,
+				showBanner,
 				analyticsAccepted,
 			);
 			const allowedByKey = new Map(
@@ -106,7 +107,7 @@ export function SiteTracking({ analytics }: Props) {
 
 		// No one-shot guard here: the effect owns the consent subscription, so an
 		// early return on re-run would drop it for good (Strict Mode remounts, or
-		// any `analytics` change) and consent would never reach the loaders again.
+		// any config change) and consent would never reach the loaders again.
 		// `loadedMap` is what keeps loads idempotent.
 		if (showBanner) {
 			syncConsent(hasConsent("analytics"));
@@ -114,7 +115,7 @@ export function SiteTracking({ analytics }: Props) {
 		}
 
 		syncConsent(true);
-	}, [analytics, showBanner, trackers, loadedMap]);
+	}, [showBanner, trackers, loadedMap]);
 
 	return (
 		<Suspense fallback={null}>

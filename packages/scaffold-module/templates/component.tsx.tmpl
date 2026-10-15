@@ -20,11 +20,11 @@ type Props = {
  * Document-level i18n: fields are plain values (document is in one locale).
  */
 export function __MODULE_COMPONENT__({ module }: Props) {
-	const title = module.title?.trim() ?? "";
+	const heading = module.heading?.trim() ?? "";
 
 	return (
 		<section className={moduleSectionClassName}>
-			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
+			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			{/* TODO: render the rest of the module data */}
 		</section>
 	);

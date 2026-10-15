@@ -48,7 +48,7 @@ export const fetchPageBySlug = cache(async (slug: string) => {
 	const { data } = await sanityFetch({
 		query: pageBySlugQuery,
 		params: { slug },
-		tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
+		tags: [...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -69,7 +69,7 @@ export const fetchProjectBySlug = cache(async (slug: string) => {
 	const { data } = await sanityFetch({
 		query: projectBySlugQuery,
 		params: { slug },
-		tags: [SANITY_CACHE_TAGS.projectSlug(slug), ...EMBEDDED_CONTENT_TAGS],
+		tags: [...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });

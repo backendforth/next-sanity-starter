@@ -6,11 +6,8 @@ import { tagsForWebhookDocument } from "@/sanity/cacheTags";
 
 const REVALIDATE_SECRET = process.env.SANITY_REVALIDATE_SECRET?.trim();
 
-/** The webhook projection, `{_type, slug}`. `parseBody` only hands it over signed. */
-type WebhookPayload = {
-	_type?: string;
-	slug?: { current?: string } | null;
-};
+/** The webhook projection, `{_type}`. `parseBody` only hands it over signed. */
+type WebhookPayload = { _type?: string };
 
 export async function POST(request: NextRequest) {
 	if (!REVALIDATE_SECRET) {
@@ -36,10 +33,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	/* The allow-list lives in `cacheTags.ts`: an unknown `_type` yields no tags. */
-	const tags = tagsForWebhookDocument(
-		parsed.body?._type,
-		parsed.body?.slug?.current,
-	);
+	const tags = tagsForWebhookDocument(parsed.body?._type);
 	if (tags.length === 0) {
 		return NextResponse.json({
 			revalidated: false,

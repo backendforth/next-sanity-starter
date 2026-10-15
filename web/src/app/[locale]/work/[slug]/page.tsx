@@ -23,8 +23,7 @@ export async function generateStaticParams() {
 		cachedProjectSlugs(),
 		fetchSiteLanguageSettings(),
 	]);
-	const list = rows ?? [];
-	const slugs = list
+	const slugs = rows
 		.map((row) => row.slug)
 		.filter(
 			(s: string | undefined): s is string =>

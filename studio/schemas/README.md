@@ -59,9 +59,8 @@ A singleton gets its Web Preview from its role in **`SINGLETON_PREVIEW_ROLE`** (
 
 This branch translates whole documents (`@sanity/document-internationalization`): one document per language, and content fields stay plain (`string`, `richText`, `richTextMedia`). To make a document type translatable:
 
-1. Add `languageField` (`schemas/fields/languageField.ts`: hidden, read-only, starts in the default language) to `fields`. The plugin sets it; never edit it by hand. A per-language singleton also takes `validation: onePerLanguage` (`utils/onePerLanguage.ts`).
-2. Add the type name to **`TRANSLATABLE_SCHEMA_TYPES`** in **`sanity.config.ts`**.
-3. Filter its web queries with `language == $locale` (see `web/sanity/queries/README.md`).
+1. Add `languageField` (`schemas/fields/languageField.ts`: hidden, read-only, starts in the default language) to `fields`. The plugin sets it; never edit it by hand. **`TRANSLATABLE_SCHEMA_TYPES`** in **`sanity.config.ts`** picks the type up from the field. A per-language singleton also takes `validation: onePerLanguage` (`utils/onePerLanguage.ts`).
+2. Filter its web queries with `language == $locale` (see `web/sanity/queries/README.md`).
 
 The language list comes from **`siteLanguageSettings`** at runtime (`config/sync/supportedLanguages.ts`); see **`utils/README.md`**.
 

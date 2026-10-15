@@ -355,18 +355,11 @@ export type InternationalizedArrayReference = Array<
   } & InternationalizedArrayReferenceValue
 >;
 
-export type ProjectCategoryReference = {
+export type SiteSettingsReference = {
   _ref: string;
   _type: "reference";
   _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "projectCategory";
-};
-
-export type ErrorSettingsReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "errorSettings";
+  [internalGroqTypeReferenceTo]?: "siteSettings";
 };
 
 export type SiteNavReference = {
@@ -376,11 +369,11 @@ export type SiteNavReference = {
   [internalGroqTypeReferenceTo]?: "siteNav";
 };
 
-export type SiteSettingsReference = {
+export type ErrorSettingsReference = {
   _ref: string;
   _type: "reference";
   _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "siteSettings";
+  [internalGroqTypeReferenceTo]?: "errorSettings";
 };
 
 export type SiteCookieBannerReference = {
@@ -390,116 +383,26 @@ export type SiteCookieBannerReference = {
   [internalGroqTypeReferenceTo]?: "siteCookieBanner";
 };
 
+export type ProjectCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "projectCategory";
+};
+
 export type InternationalizedArrayReferenceValue = {
   _type: "internationalizedArrayReferenceValue";
   value?:
-    | HomeReference
-    | PageReference
-    | WorkReference
-    | ProjectReference
-    | ProjectCategoryReference
-    | ErrorSettingsReference
-    | SiteNavReference
     | SiteSettingsReference
-    | SiteCookieBannerReference;
+    | SiteNavReference
+    | ErrorSettingsReference
+    | SiteCookieBannerReference
+    | HomeReference
+    | WorkReference
+    | PageReference
+    | ProjectReference
+    | ProjectCategoryReference;
   language: string;
-};
-
-export type SiteCookieBanner = {
-  _id: string;
-  _type: "siteCookieBanner";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  language?: string;
-  consentModal?: {
-    description?: string;
-    privacyPolicy?: Link;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
-    showPreferencesBtn?: string;
-  };
-  preferencesModal?: {
-    title?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
-    savePreferencesBtn?: string;
-    sections?: Array<
-      {
-        _key: string;
-      } & CookieSection
-    >;
-  };
-};
-
-export type SiteSettings = {
-  _id: string;
-  _type: "siteSettings";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  language?: string;
-  title: string;
-  favicon?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  seo?: SeoFallback;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-};
-
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x: number;
-  y: number;
-  height: number;
-  width: number;
-};
-
-export type SiteNav = {
-  _id: string;
-  _type: "siteNav";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  language?: string;
-  mainMenu?: Array<
-    | ({
-        _key: string;
-      } & Link)
-    | ({
-        _key: string;
-      } & NavLanguageSwitch)
-    | ({
-        _key: string;
-      } & NavThemeToggle)
-  >;
-  footerMenu?: Array<
-    {
-      _key: string;
-    } & Link
-  >;
-};
-
-export type ErrorSettings = {
-  _id: string;
-  _type: "errorSettings";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  language?: string;
-  notFoundTitle: string;
-  notFoundBody?: RichText;
 };
 
 export type ProjectCategory = {
@@ -537,14 +440,15 @@ export type Slug = {
   source?: string;
 };
 
-export type Work = {
+export type Page = {
   _id: string;
-  _type: "work";
+  _type: "page";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
   language?: string;
   title: string;
+  slug: Slug;
   modules?: Array<
     | ({
         _key: string;
@@ -562,15 +466,14 @@ export type Work = {
   seo?: SeoPage;
 };
 
-export type Page = {
+export type Work = {
   _id: string;
-  _type: "page";
+  _type: "work";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
   language?: string;
   title: string;
-  slug: Slug;
   modules?: Array<
     | ({
         _key: string;
@@ -613,6 +516,22 @@ export type Home = {
   seo?: SeoPage;
 };
 
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x: number;
+  y: number;
+  height: number;
+  width: number;
+};
+
 export type MuxVideoAssetReference = {
   _ref: string;
   _type: "reference";
@@ -623,6 +542,87 @@ export type MuxVideoAssetReference = {
 export type MuxVideo = {
   _type: "mux.video";
   asset?: MuxVideoAssetReference;
+};
+
+export type SiteCookieBanner = {
+  _id: string;
+  _type: "siteCookieBanner";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  consentModal?: {
+    description?: string;
+    privacyPolicy?: Link;
+    acceptAllBtn?: string;
+    acceptNecessaryBtn?: string;
+    showPreferencesBtn?: string;
+  };
+  preferencesModal?: {
+    title?: string;
+    acceptAllBtn?: string;
+    acceptNecessaryBtn?: string;
+    savePreferencesBtn?: string;
+    sections?: Array<
+      {
+        _key: string;
+      } & CookieSection
+    >;
+  };
+};
+
+export type ErrorSettings = {
+  _id: string;
+  _type: "errorSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  notFoundTitle: string;
+  notFoundBody?: RichText;
+};
+
+export type SiteNav = {
+  _id: string;
+  _type: "siteNav";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  mainMenu?: Array<
+    | ({
+        _key: string;
+      } & Link)
+    | ({
+        _key: string;
+      } & NavLanguageSwitch)
+    | ({
+        _key: string;
+      } & NavThemeToggle)
+  >;
+  footerMenu?: Array<
+    {
+      _key: string;
+    } & Link
+  >;
+};
+
+export type SiteSettings = {
+  _id: string;
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  language?: string;
+  title: string;
+  favicon?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  seo?: SeoFallback;
 };
 
 export type MuxVideoAsset = {
@@ -878,26 +878,26 @@ export type AllSanitySchemaTypes =
   | LinkFunctions
   | TranslationMetadata
   | InternationalizedArrayReference
-  | ProjectCategoryReference
-  | ErrorSettingsReference
-  | SiteNavReference
   | SiteSettingsReference
+  | SiteNavReference
+  | ErrorSettingsReference
   | SiteCookieBannerReference
+  | ProjectCategoryReference
   | InternationalizedArrayReferenceValue
-  | SiteCookieBanner
-  | SiteSettings
-  | SanityImageCrop
-  | SanityImageHotspot
-  | SiteNav
-  | ErrorSettings
   | ProjectCategory
   | Project
   | Slug
-  | Work
   | Page
+  | Work
   | Home
+  | SanityImageCrop
+  | SanityImageHotspot
   | MuxVideoAssetReference
   | MuxVideo
+  | SiteCookieBanner
+  | ErrorSettings
+  | SiteNav
+  | SiteSettings
   | MuxVideoAsset
   | MuxAssetData
   | MuxMasterFile

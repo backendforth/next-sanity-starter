@@ -7,6 +7,6 @@ globs:
 
 Canonical: `AGENTS.md` (Cookbook → "Add a document type"). Deep docs: `studio/schemas/README.md`, `studio/config/README.md`.
 
-- i18n: document-level — a translatable document type has the hidden, read-only `language` field (`languageField` from `studio/schemas/fields/languageField.ts`; never edit it) and is listed in `TRANSLATABLE_SCHEMA_TYPES`. Content fields are plain; languages load at runtime from `siteLanguageSettings` (`studio/config/sync/supportedLanguages.ts`).
+- i18n: document-level — a translatable document type has the hidden, read-only `language` field (`languageField` from `studio/schemas/fields/languageField.ts`; never edit it), which puts it in `TRANSLATABLE_SCHEMA_TYPES`. Content fields are plain; languages load at runtime from `siteLanguageSettings` (`studio/config/sync/supportedLanguages.ts`).
 - `schemaTypes` alone shows editors nothing: a document type also needs a structure item, a routable one Presentation wiring, a singleton its role in `studio/config/singletons.ts`.
 - Every `SANITY_STUDIO_*` variable ends up in the public Studio bundle — never a secret under that prefix.

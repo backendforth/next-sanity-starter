@@ -31,7 +31,6 @@ export const linkQuery = `
     type == "external" => {
       "linkType": "linkExternal",
       url,
-      "href": url,
       blank
     },
     type == "function" => {

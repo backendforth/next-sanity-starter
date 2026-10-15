@@ -1,6 +1,5 @@
-import { stegaClean } from "next-sanity";
-
 import type { MainMenuItem, NavMenuLink } from "@/sanity/types";
+import { resolveFunctionLink } from "@/sanity/utils/linkResolver";
 import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
 import { isStegaVariant } from "@/sanity/utils/stegaVariant";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
@@ -55,7 +54,7 @@ function labelFor(
 	if (isStegaVariant(link, "linkType", "linkExternal")) {
 		return resolveLinkLabel({
 			linkTitle: link.title,
-			externalUrl: link.href,
+			externalUrl: link.url,
 			locale,
 			siteLocale,
 		});
@@ -96,7 +95,7 @@ export function resolveNavMenuLink(
 	}
 
 	if (isStegaVariant(link, "linkType", "linkExternal")) {
-		const href = typeof link.href === "string" ? link.href.trim() : "";
+		const href = typeof link.url === "string" ? link.url.trim() : "";
 		if (!href) {
 			return null;
 		}
@@ -111,24 +110,8 @@ export function resolveNavMenuLink(
 	}
 
 	if (isStegaVariant(link, "linkType", "linkFunction")) {
-		const key = stegaClean(link.func?.key);
-
-		if (key === "scroll-to") {
-			/* Cleaned: in Presentation the markers would end up in the hash and match no id. */
-			const anchor = stegaClean(link.func?.params)?.trim();
-			if (!anchor) {
-				return null;
-			}
-			const hash = anchor.startsWith("#") ? anchor : `#${anchor}`;
-			return {
-				id: rowId(link, index, idPrefix),
-				label,
-				kind: "link",
-				href: hash,
-			};
-		}
-
-		if (key === "open-cookie-preferences") {
+		const target = resolveFunctionLink(link.func?.key, link.func?.params);
+		if (target?.kind === "cookie-preferences") {
 			return {
 				id: rowId(link, index, idPrefix),
 				label,
@@ -136,7 +119,14 @@ export function resolveNavMenuLink(
 				action: "open-cookie-preferences",
 			};
 		}
-
+		if (target?.kind === "anchor") {
+			return {
+				id: rowId(link, index, idPrefix),
+				label,
+				kind: "link",
+				href: target.href,
+			};
+		}
 		return null;
 	}
 
@@ -168,15 +158,6 @@ export function resolveMenuRows(
 		}
 	});
 	return out;
-}
-
-export function resolveMainMenuRows(
-	mainMenu: NavMenuLink[] | null | undefined,
-	locale: string,
-	pathUtils: Pick<LanguagePathUtils, "hrefFor">,
-	siteLocale?: SiteLocaleSlice | null,
-): ResolvedNavRow[] {
-	return resolveMenuRows(mainMenu, locale, pathUtils, "nav", siteLocale);
 }
 
 function mainMenuEntryId(item: MainMenuItem, index: number): string {

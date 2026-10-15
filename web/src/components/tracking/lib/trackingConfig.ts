@@ -47,22 +47,19 @@ export function getEnabledTrackers(
 }
 
 /**
- * Providers that never qualify as cookie-free, whatever the document says.
- *
- * Clarity has no cookie-free mode, and its Studio field is `readOnly` — but
- * that is a UI affordance, not a data invariant. An imported or API-written
- * document carrying `cookieFree: true` would otherwise load Clarity before
- * consent, which is exactly the case that must never happen.
+ * Cookie-free trackers may load without analytics consent when the banner is active. Plausible
+ * always is and Clarity never is, by type: only GA, Matomo and PostHog have the setting (and the
+ * query projects `cookieFree` for them alone), so a stray value on another type is never read.
  */
-const NEVER_COOKIE_FREE: ReadonlySet<AnalyticsTracker["_type"]> = new Set([
-	"trackerMicrosoftClarity",
-]);
-
-/** Cookie-free trackers may load without analytics consent when the banner is active. */
 export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
-	if (NEVER_COOKIE_FREE.has(tracker._type)) return false;
-	if (tracker._type === "trackerPlausible") return true;
-	return tracker.cookieFree === true;
+	switch (tracker._type) {
+		case "trackerPlausible":
+			return true;
+		case "trackerMicrosoftClarity":
+			return false;
+		default:
+			return tracker.cookieFree === true;
+	}
 }
 
 /**

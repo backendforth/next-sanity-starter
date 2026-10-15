@@ -32,15 +32,6 @@ export const trackerPlausible = defineType({
       validation: (rule) => rule.custom(requiredWhenEnabled("Script URL")),
     }),
     defineField({
-      name: "cookieFree",
-      title: "Cookie-free mode",
-      description:
-        "Always on — Plausible is cookie-free by design, so it loads without waiting for consent.",
-      type: "boolean",
-      initialValue: true,
-      readOnly: true,
-    }),
-    defineField({
       name: "cookieBannerLabel",
       title: "Cookie banner label",
       type: "string",

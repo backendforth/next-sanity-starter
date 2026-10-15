@@ -71,6 +71,7 @@ export function CarouselSlide({
 				caption={slide.caption}
 				posterPayload={slide.poster}
 				posterPriority={priority}
+				sizes={imageSizes}
 				fillParent
 				isActive={isActive}
 				allowUnmute={slide.allowUnmute === true}
@@ -86,6 +87,7 @@ export function CarouselSlide({
 				caption={slide.caption}
 				posterPayload={slide.poster}
 				posterPriority={priority}
+				sizes={imageSizes}
 				fillParent
 				isActive={isActive}
 				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}

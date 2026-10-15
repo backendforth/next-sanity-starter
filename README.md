@@ -263,37 +263,75 @@ Production deploys read the `production` dataset, deploy previews and branch dep
 
 ### Revalidate webhook
 
-Each production site gets one webhook for the dataset it reads. Secret and webhook only work together: with the secret set, the site turns `SanityLive` off and waits for the webhook, so a secret without a webhook means no content update reaches the site until the next deploy.
+The webhook tells the site that content changed. On every publish, Sanity sends the document's type to `/api/revalidate`, the site expires the matching caches, and the next visitor gets the new content. Every production site needs one.
 
-1. Generate a secret. It goes into Netlify and into the webhook, both exactly the same.
-   ```bash
-   openssl rand -hex 32
-   ```
-2. On Netlify, open the web site → **Site configuration → Environment variables → Add a variable**:
+Two parts belong together, and the order below matters:
+
+- **`SANITY_REVALIDATE_SECRET`** on the site. With it set, the site switches its live updates (`SanityLive`) off and relies on the webhook.
+- **The webhook in Sanity**, signed with the same secret.
+
+A secret without a webhook means no content change reaches the site until the next deploy. A webhook without the secret only produces errors.
+
+You need:
+
+- the site's address, e.g. `https://your-domain.tld` or `https://<site-name>.netlify.app`
+- access to the web site on Netlify and to the project on [sanity.io/manage](https://www.sanity.io/manage)
+- a terminal
+
+#### 1. Generate the secret
+
+The secret is a random string of 64 characters. Pick one of these commands:
+
+```bash
+# macOS: straight into the clipboard, nothing shows on screen
+openssl rand -hex 32 | tr -d '\n' | pbcopy
+```
+```bash
+# macOS and Linux: prints the secret
+openssl rand -hex 32
+```
+```bash
+# Any system with Node.js: prints the secret
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Every run makes a new secret. Generate it once, paste it into Netlify (step 2) and Sanity (step 3) before you copy anything else, and keep it in a password manager if you want to look it up later. It never goes into a commit, a `.env` file, a chat or a ticket.
+
+#### 2. Add the secret to the web site on Netlify
+
+1. Open the web site on Netlify → **Site configuration → Environment variables → Add a variable → Add a single variable**.
+2. Fill in:
 
    | Field | Value |
    |---|---|
    | Key | `SANITY_REVALIDATE_SECRET` |
-   | Value | the secret from step 1, marked as secret |
+   | Secret | tick **Contains secret values** if Netlify offers it |
    | Scopes | All scopes |
-   | Deploy contexts | **Production only** |
+   | Values | **Different value for each deploy context**: paste the secret under **Production** only, leave every other context empty |
 
-   Production only, because the webhook reaches only the production URL. Deploy previews without the secret keep `SanityLive` and stay current on their own. Locally, leave the variable empty for the same reason.
-3. In [sanity.io/manage](https://www.sanity.io/manage) → your project → **API → Webhooks → Create webhook**:
+3. Save.
+
+Why production only: the webhook calls only the production address. Deploy previews and branch deploys never hear from it, so they stay without the secret and keep their live updates. For the same reason the variable stays empty in `web/.env.local`.
+
+#### 3. Create the webhook in Sanity
+
+1. Open [sanity.io/manage](https://www.sanity.io/manage) → your project → **API → Webhooks**. If a webhook for this site exists already, edit it instead of creating a second one.
+2. **Create webhook** and fill in:
 
    | Field | Value |
    |---|---|
    | Name | e.g. `Revalidate production site` |
+   | Description | optional |
    | URL | `https://<your-site>/api/revalidate` |
    | Dataset | the dataset this site reads, usually `production` |
    | Trigger on | Create, Update, Delete |
-   | Filter | the condition below, without `*[ ]` around it |
-   | Projection | `{_type}` |
+   | Filter | the condition below, exactly as shown, without `*[ ]` around it |
+   | Projection | `{_type}`, with the curly braces |
    | Status | enabled |
    | HTTP method | `POST` |
    | HTTP headers | none |
-   | API version | the default |
-   | Drafts | off |
+   | API version | leave the default |
+   | Drafts | off: only publishing triggers it |
    | Versions | off |
    | Secret | the secret from step 1 |
 
@@ -301,17 +339,40 @@ Each production site gets one webhook for the dataset it reads. Secret and webho
    ```groq
    _type in ["home", "work", "page", "project", "projectCategory", "siteSettings", "siteNav", "siteCookieBanner", "siteAnalyticsSettings", "errorSettings", "siteLanguageSettings", "sanity.imageAsset", "mux.videoAsset"]
    ```
-4. Redeploy the site (**Deploys → Trigger deploy**). The site reads the secret at deploy, so a deploy started before step 2 doesn't count.
-5. Publish any document in the Studio and open the webhook's **attempts log**:
+3. Save.
 
-   | Response | Meaning |
-   |---|---|
-   | `200 {"revalidated":true,"tags":[…]}` | Works |
-   | `500 SANITY_REVALIDATE_SECRET is not configured` | The secret is missing on Netlify, sits in the wrong deploy context, or the site wasn't redeployed after step 2 |
-   | `401 Invalid signature` | The secrets on Netlify and in the webhook differ |
-   | `404` | Wrong URL |
+#### 4. Redeploy the site
 
-The filter lists every document type the site shows, plus image and Mux assets so new alt text and poster frames reach the site. The projection sends only the type; `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts) maps it to the cache tags to expire. A new document type goes into both. Details: [`web/README.md`](web/README.md) → "Freshness".
+Netlify → the web site → **Deploys → Trigger deploy → Deploy site**. The site reads the secret when it is deployed, so a deploy that started before step 2 doesn't count.
+
+When the deploy is live, check that the secret arrived. An unsigned request must be rejected:
+
+```bash
+curl -X POST -H 'content-type: application/json' -d '{}' https://<your-site>/api/revalidate
+```
+
+`{"message":"Invalid signature"}` means the secret is active. `SANITY_REVALIDATE_SECRET is not configured` means it isn't: go back to step 2.
+
+#### 5. Test with a real publish
+
+Change any document in the Studio and publish it. Then open the webhook in sanity.io/manage and look at its **attempts log**:
+
+| Response | Meaning | Fix |
+|---|---|---|
+| `200 {"revalidated":true,"tags":[…]}` | Works | |
+| `200 {"revalidated":false,…}` | The type is in the filter but not in `WEBHOOK_TAG_MAP` | Add it to `web/sanity/cacheTags.ts` |
+| `500 SANITY_REVALIDATE_SECRET is not configured` | The secret doesn't reach the site | Step 2: Production context filled? Then step 4 |
+| `401 Invalid signature` | The secrets on Netlify and in Sanity differ | Paste the same secret into both, then step 4 |
+| `404` | Wrong URL | Check the address and the `/api/revalidate` path |
+| no entry at all | The webhook didn't fire | Check dataset, status and that the document's type is in the filter |
+
+#### Later
+
+- **Change the secret:** generate a new one, put it into Netlify and the webhook, redeploy. Publishes in between fail with `401`; publish once more afterwards.
+- **Another site** on its own dataset (e.g. staging) gets its own webhook with its own secret. Deploy previews need none.
+- **A new document type** goes into the filter and into `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts).
+
+The filter lists every document type the site shows, plus image and Mux assets so new alt text and poster frames reach the site. The projection sends only the type; `WEBHOOK_TAG_MAP` maps it to the cache tags to expire. Details: [`web/README.md`](web/README.md) → "Freshness".
 
 ### Studio on Netlify
 

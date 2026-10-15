@@ -152,7 +152,7 @@ Every root, `web` and `studio` script is described once, in [`AGENTS.md`](AGENTS
 - **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them, and refuses a file that also has unstaged changes; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
 - **GitHub Actions** — `.github/workflows/ci.yml` gates every pull request: Biome, `typecheck`, `check:wiring`, `test:tooling`, `pnpm generate` with a diff guard on the committed typegen output, both app builds and the first-load JS budget in `.github/bundle-budget.json`.
 - **Dependabot** — grouped dependency updates for both branches; schedule, groups and ignored majors are explained in `.github/dependabot.yml`.
-- **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
+- **TypeScript** — strict, ES2022 target; `web` and `studio` add `noUncheckedIndexedAccess`, `noImplicitOverride` and `noFallthroughCasesInSwitch`. Root `pnpm typecheck` walks every workspace package's own `typecheck` script (the apps and the two tooling packages).
 - **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, and editor caches under `.cursor/` are ignored; the committed `.cursor/rules/` folder (Cursor IDE rules) is explicitly re-included. See root `.gitignore`.
 - **Agent guardrails** — AI coding assistants (Claude Code, Cursor, Windsurf, Copilot) read [`AGENTS.md`](AGENTS.md) at the repo root. Sub-paths get auto-loaded `CLAUDE.md` files and `.cursor/rules/*.mdc` rules with file-glob scoping. Update `AGENTS.md` first; the others defer to it.
 
@@ -164,7 +164,7 @@ Every root, `web` and `studio` script is described once, in [`AGENTS.md`](AGENTS
 
 `netlify.toml` sets the build command, the Next.js plugin and a path-based `build.ignore`: a push that changed nothing the web app builds from since the last built commit (`web/`, its shared package, the workspace manifests) skips the build.
 
-Security headers (CSP, HSTS, …) are not in `netlify.toml`: they come from `headers()` in `web/next.config.ts`, because Netlify's `[[headers]]` rules never reach the HTML the Next.js function renders.
+Security headers (CSP, HSTS, …) are not in `netlify.toml`: they come from `headers()` in `web/next.config.ts`, because Netlify's `[[headers]]` rules never reach the HTML the Next.js function renders. Caching of `/_next/static/*` comes from the Next.js adapter (`@netlify/plugin-nextjs`).
 
 Set on the host: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` (optional), `SANITY_REVALIDATE_SECRET` (required in prod), `NEXT_PUBLIC_SITE_URL`, `SANITY_STUDIO_DEPLOYMENT_TARGET` (only if you want to point at a non-production dataset).
 

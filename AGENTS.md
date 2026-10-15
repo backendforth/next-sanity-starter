@@ -114,7 +114,7 @@ After any schema or query edit:
 ```bash
 pnpm generate              # schema extract + both typegens + check:typegen
 pnpm check:wiring          # YOU MUST verify the module wiring is consistent
-pnpm typecheck             # web + studio
+pnpm typecheck             # web, studio, check-wiring, scaffold-module
 pnpm format                # biome check --write .
 ```
 
@@ -146,7 +146,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm generate` | Studio schema extract + typegen, web query typegen, then `check:typegen`. **Run after every schema or query edit.** |
 | `pnpm studio:generate` | Alias for `pnpm generate`. |
 | `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
-| `pnpm typecheck` | `tsc --noEmit` across web + studio. |
+| `pnpm typecheck` | `tsc --noEmit` in every workspace package with a `typecheck` script (web, studio, check-wiring, scaffold-module). |
 | `pnpm lint` | `biome check .` (no writes). |
 | `pnpm format` | `biome check --write .` (auto-fix). |
 | `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component and query files and wires all 6 points, the `ModulesRenderer` `case` included (`--inline` also registers it in the three inline places). Writes nothing if any anchor is missing. PascalCase name. Add `--dry-run` to preview. |
@@ -164,7 +164,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm start` | `next start` (after `build`). |
 | `pnpm typecheck` | `tsc --noEmit` (web only). |
 | `pnpm lint` | Biome on `web/`. |
-| `pnpm format` | Biome write on `web/`. |
+| `pnpm format` | `biome check --write` on `web/`. |
 | `pnpm generate` | `sanity typegen generate` — query types into `sanity/sanity.types.gen.ts`. Run via the root `pnpm generate`. |
 
 ### studio (run from `studio/` or via `pnpm --filter studio run …`)
@@ -182,7 +182,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm mux:migrate-assets` | One-off: lists Mux assets with static MP4 or 2160p / premium encoding; `-- --apply` turns static MP4 off. Needs `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`. |
 | `pnpm typecheck` | `tsc --noEmit` (studio only). |
 | `pnpm lint` | Biome on `studio/`. |
-| `pnpm format` | Biome write on `studio/`. |
+| `pnpm format` | `biome check --write` on `studio/`. |
 
 ## i18n — the multilingual structure
 
@@ -360,7 +360,7 @@ Without that line, ten fixes from #182, #190 and #191 reached only `main` in 202
 
 Before declaring a task complete, all of the following must hold:
 
-- [ ] `pnpm typecheck` passes (web + studio).
+- [ ] `pnpm typecheck` passes (web, studio, tooling packages).
 - [ ] `pnpm format` produces no diff.
 - [ ] `pnpm generate` (after schema or query edits) produces no uncommitted diff.
 - [ ] `pnpm check:wiring` passes; for a new/renamed module all 6 wiring points land in the same commit as the schema.

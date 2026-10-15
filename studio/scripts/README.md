@@ -137,5 +137,5 @@ pnpm exec sanity migration run type-cookie-banner-sections --project <id> --data
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary
-- [`../utils/README.md`](../utils/README.md) — How dataset resolution works in the Studio app
+- [`../../README.md`](../../README.md#how-reposanity-dataset-resolve-picks-a-dataset) — How the dataset is picked
 - [`../.env.example`](../.env.example) — Env vars for project ID and dataset names

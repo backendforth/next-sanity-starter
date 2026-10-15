@@ -120,7 +120,7 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 2. Otherwise, `SANITY_STUDIO_DEPLOYMENT_TARGET` decides preference order:
    - `production` → prefer `production`, fall back to `development`.
    - `development` / `preview` → prefer `development`, fall back to `production`.
-   - unset → `production` first on a Netlify / Vercel production build (`CONTEXT` / `VERCEL_ENV`), `development` first everywhere else.
+   - unset → `production` first on a Netlify / Vercel production build (`CONTEXT` / `VERCEL_ENV`) and in a production Studio build, `development` first everywhere else.
    - any other value (e.g. `staging`) → that dataset first, then the two above.
 3. Canonical names are configurable (`SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION`).
 4. Each candidate is probed on the public Data API (no token; 404 = missing), and the first that exists wins. Offline, or with no project id, the first preferred name is used — never a silent switch to production.
@@ -189,7 +189,7 @@ Everything is standard Next.js + Sanity — mirror the env vars and you're done.
 ## Going deeper
 
 - [`web/README.md`](web/README.md) — languages, content freshness, local dev.
-- [`web/sanity/README.md`](web/sanity/README.md) — GROQ layer, client config, dataset resolution.
+- [`web/sanity/README.md`](web/sanity/README.md) — GROQ layer, fetchers, Presentation setup.
 - [`web/src/i18n/README.md`](web/src/i18n/README.md) — localisation flow end-to-end.
 - [`studio/README.md`](studio/README.md) — Studio customisation, plugins, schema patterns.
 - [`packages/sanity-dataset-resolve/src/index.ts`](packages/sanity-dataset-resolve/src/index.ts) — shared dev/prod resolver, API documented inline.

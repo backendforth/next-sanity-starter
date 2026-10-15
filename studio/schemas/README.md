@@ -59,7 +59,7 @@ A singleton gets its Web Preview from its role in **`SINGLETON_PREVIEW_ROLE`** (
 
 This branch translates whole documents (`@sanity/document-internationalization`): one document per language, and content fields stay plain (`string`, `richText`, `richTextMedia`). To make a document type translatable:
 
-1. Add `languageField` (`schemas/fields/languageField.ts`: hidden, read-only, `initialValue: "en"`) to `fields`. The plugin sets it; never edit it by hand.
+1. Add `languageField` (`schemas/fields/languageField.ts`: hidden, read-only, starts in the default language) to `fields`. The plugin sets it; never edit it by hand. A per-language singleton also takes `validation: onePerLanguage` (`utils/onePerLanguage.ts`).
 2. Add the type name to **`TRANSLATABLE_SCHEMA_TYPES`** in **`sanity.config.ts`**.
 3. Filter its web queries with `language == $locale` (see `web/sanity/queries/README.md`).
 
@@ -87,7 +87,7 @@ Fields that take an image upload (the `media.image` image, both video posters, `
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
-1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons). Every module.
+1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on `page`, `home` and `work`). Every module.
 2. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`richTextMedia` fields). **Opt-in**: only modules that belong inside text (today `module.media` and `module.carousel`).
 
 ### Adding a new module
@@ -126,16 +126,6 @@ The encoding ceiling is set per field: `options: { max_resolution_tier }` on a `
 
 If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of every create menu — the global “Create” menu and the “Create new” button of reference inputs — by `document.newDocumentOptions` (`isSingletonTemplate` in `config/singletons.ts`); only structure items, which open them by fixed id, keep their templates. The filter knows the default template ids (= schema type) only, so don't add templates for a singleton type.
 
-## Checklist summary
+## Checklist
 
-| Step | File / area |
-|------|----------------|
-| Define type | New file under `schemas/...` |
-| Register schema | `schemas/index.ts` → `schemaTypes` |
-| Sidebar | `config/structure/items/...` + `config/structure/index.ts` |
-| Internal links | `schemas/constants/references.ts` |
-| Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
-| Languages | `config/sync/supportedLanguages.ts`; translatable types: `language` field + `TRANSLATABLE_SCHEMA_TYPES` in `sanity.config.ts` |
-| Slug rules | `validation: validateSlug` on slug fields |
-| New **module** | `pnpm gen:module <Name>`; by hand, the wiring checklist in `AGENTS.md` |
-| New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |
+A new document type: [`AGENTS.md`](../../AGENTS.md) → Cookbook → "Add a document type (page-like)". A new module: `pnpm gen:module <Name>` (section 8).

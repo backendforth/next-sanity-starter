@@ -5,6 +5,7 @@ import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
 import { isStegaVariant } from "@/sanity/utils/stegaVariant";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
@@ -67,7 +68,7 @@ function labelFor(
 			siteLocale,
 		});
 	}
-	return "Link";
+	return uiLabel("link", locale);
 }
 
 export function resolveNavMenuLink(

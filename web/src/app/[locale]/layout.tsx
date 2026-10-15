@@ -19,7 +19,7 @@ import { cookieConsentTranslation } from "@/src/components/tracking/lib/cookieCo
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
-import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
 	children: React.ReactNode;
@@ -85,7 +85,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				href="#main-content"
 				className="sr-only focus:not-sr-only focus:fixed focus:top-xs focus:left-xs focus:z-50 focus:rounded focus:bg-color-bg focus:px-sm focus:py-xs focus:text-color-text focus:shadow-md focus:outline-2 focus:outline-offset-2 focus:outline-color-accent"
 			>
-				{skipLinkLabel(locale)}
+				{uiLabel("skipToMain", locale)}
 			</a>
 			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteBrand} />
 			<main

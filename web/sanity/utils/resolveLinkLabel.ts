@@ -4,13 +4,17 @@
  * `link.title` is now an `internationalizedArrayString` (per-locale entries). For internal
  * links we fall back to the referenced document title (also localized). External links fall
  * back to the URL, function links to the function key — both as a last resort before the
- * literal "Link" placeholder.
+ * localized "Link" label.
  *
  * Plain `string` is accepted on both fields for forward-compat with the document-level i18n
  * variant (one document per language → `reference->title` is a plain string).
  */
 
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import {
+	FALLBACK_SITE_LOCALE_CONFIG,
+	type SiteLocaleConfig,
+} from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
 import {
 	type LocalizedEntry,
 	pickLocalizedString,
@@ -51,7 +55,7 @@ export type ResolveLinkLabelInput = {
 	functionKey?: string | null;
 	locale?: string;
 	siteLocale?: SiteLocaleSlice | null;
-	/** Last-resort literal when no other source produced a usable label. */
+	/** Last resort when no other source produced a usable label; default: the UI "Link" label. */
 	literalFallback?: string;
 };
 
@@ -65,13 +69,14 @@ export function resolveLinkLabel({
 	functionKey,
 	locale,
 	siteLocale,
-	literalFallback = "Link",
+	literalFallback,
 }: ResolveLinkLabelInput): string {
 	return (
 		pickLabel(linkTitle, locale, siteLocale) ??
 		pickLabel(referenceTitle, locale, siteLocale) ??
 		trimToUndefined(externalUrl ?? undefined) ??
 		trimToUndefined(functionKey ?? undefined) ??
-		literalFallback
+		literalFallback ??
+		uiLabel("link", locale ?? FALLBACK_SITE_LOCALE_CONFIG.defaultLocale)
 	);
 }

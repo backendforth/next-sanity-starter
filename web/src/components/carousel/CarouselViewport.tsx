@@ -9,6 +9,7 @@ import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import { uiLabel } from "@/src/i18n/uiLabels";
 import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
+import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 import { CarouselSlide, type NormalizedSlide } from "./CarouselSlide";
 import { multiSlideLayout } from "./carouselMultiSlideLayout";
@@ -49,16 +50,7 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 	const locale =
 		useOptionalLanguage()?.currentLocale ??
 		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
-	const [reducedMotion, setReducedMotion] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined" || !window.matchMedia) return;
-		const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const sync = () => setReducedMotion(mq.matches);
-		sync();
-		mq.addEventListener("change", sync);
-		return () => mq.removeEventListener("change", sync);
-	}, []);
+	const reducedMotion = usePrefersReducedMotion();
 
 	/* Lazy init: `useRef(Autoplay(...))` evaluates its argument on every render, which built
 	 * and discarded a fresh plugin each time. */

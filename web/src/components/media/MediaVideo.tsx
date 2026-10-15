@@ -17,7 +17,6 @@ import {
 	useState,
 } from "react";
 
-import { resolveSanityImageFieldForUrl } from "@/sanity/utils/sanityImageBuilder";
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
@@ -31,7 +30,7 @@ import {
 	resolveMuxPlayerResolution,
 } from "@/src/utils/muxPlayback";
 import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
-import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
+import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 type MediaVideoProps = {
 	media: unknown;
@@ -45,8 +44,8 @@ type MediaVideoProps = {
 	/** Fill the parent (no fixed aspect ratio) — e.g. fullscreen background video. */
 	fillParent?: boolean;
 	/**
-	 * Above-the-fold hint: starts loading the player bundle + HLS manifest immediately
-	 * (no `IntersectionObserver` wait, `preload="auto"`). Use for hero / LCP videos only.
+	 * Above-the-fold hint: loads the player bundle immediately (no `IntersectionObserver` wait)
+	 * and, for autoplay clips, the stream (`preload="auto"`). Use for hero / LCP videos only.
 	 */
 	priority?: boolean;
 };
@@ -144,9 +143,11 @@ function MuxVideoPlayer({
 	fillParent = false,
 	priority = false,
 }: MediaVideoProps & { playbackId: string }) {
-	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
+	const containerRef = useRef<HTMLDivElement>(null);
 	const dims = getMuxDisplayDimensions(media);
-	const autoplay = !!videoSettings?.autoplay;
+	/* Reduced motion: autoplay clips wait for the visitor, like loops and carousels. */
+	const reducedMotion = usePrefersReducedMotion();
+	const autoplay = !!videoSettings?.autoplay && !reducedMotion;
 	const chromeless = videoSettings?.controls === false;
 
 	/* Client-only and latched: screen and network are read after mount (SSR renders the
@@ -319,7 +320,7 @@ function MuxVideoPlayer({
 			io.disconnect();
 			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
 		};
-	}, [playerReady, containerRef, resumeAutoplay]);
+	}, [playerReady, resumeAutoplay]);
 
 	/* Returning to a long-backgrounded tab: browsers suspend background media and may evict
 	 * the MSE buffer, leaving an autoplay clip paused with nothing watching it. Nudge it back
@@ -333,40 +334,19 @@ function MuxVideoPlayer({
 		return () => document.removeEventListener("visibilitychange", onVisible);
 	}, [playerReady, autoplay, resumeAutoplay]);
 
-	/* Poster URL latched once the slot is measured: the measurement lands in a layout effect,
-	 * before the lazy player mounts (its placeholder renders no poster), so the player sees one
-	 * URL sized to the slot. Re-latched when anything else in the URL changes — the uploaded
-	 * poster, its crop or hotspot, or the Mux thumbnail time — so Presentation shows the
-	 * editor's pick; only the slot width is deliberately left out. */
+	/* One URL for the server HTML, the lazy placeholder and the player, so the poster is in the
+	 * first paint and downloads once. Not sized to the slot: measuring after mount changed the
+	 * URL and fetched it twice; retina-wide (capped by the asset) covers full-width players. */
 	const thumbnailTime = muxThumbnailTimeSec(media);
-	const posterField = resolveSanityImageFieldForUrl(posterPayload);
-	const posterKey = JSON.stringify([
-		posterField?.asset?._id ?? posterField?.asset?._ref ?? null,
-		posterField?.crop ?? null,
-		posterField?.hotspot ?? null,
-		thumbnailTime ?? null,
-	]);
-	const posterLatchRef = useRef<{ key: string; url: string | null } | null>(
-		null,
-	);
-
-	let posterUrl: string | null;
-	if (posterLatchRef.current?.key === posterKey) {
-		posterUrl = posterLatchRef.current.url;
-	} else {
-		posterUrl = resolveMediaPosterUrl({
-			posterPayload,
-			muxMedia: media,
-			thumbWidthPx: muxThumbnailRequestWidthPx({
-				containerWidthPx: slotWidthPx,
-				assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
-			}),
-			muxTimeSec: thumbnailTime,
-		});
-		if (slotWidthPx !== undefined) {
-			posterLatchRef.current = { key: posterKey, url: posterUrl };
-		}
-	}
+	const posterUrl = resolveMediaPosterUrl({
+		posterPayload,
+		muxMedia: media,
+		thumbWidthPx: muxThumbnailRequestWidthPx({
+			containerWidthPx: undefined,
+			assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
+		}),
+		muxTimeSec: thumbnailTime,
+	});
 
 	/* `getMuxDisplayDimensions` already falls back to 16×9. */
 	const aspectCss = `${dims.width} / ${dims.height}`;
@@ -400,10 +380,14 @@ function MuxVideoPlayer({
 			<MuxPlayer
 				ref={bindPlayer}
 				loading={priority ? "page" : "viewport"}
-				preload={priority ? "auto" : "metadata"}
+				/* `auto` restores hls.js' full forward buffer; only worth it for a clip that plays
+				 * by itself. */
+				preload={priority && autoplay ? "auto" : "metadata"}
 				streamType="on-demand"
 				playbackId={playbackId}
 				poster={posterUrl ?? undefined}
+				/* The lazy wrapper paints only `placeholder` until the player chunk loads. */
+				placeholder={posterUrl ?? undefined}
 				thumbnailTime={thumbnailTime}
 				startTime={resumeAtSec}
 				/* `"muted"` rather than `true`: playback-core forces the element muted before

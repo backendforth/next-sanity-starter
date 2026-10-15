@@ -1,5 +1,6 @@
+import { SITE_LANGUAGE_SETTINGS_QUERY } from "@repo/site-languages";
+
 import { normalizeSiteLocaleConfig } from "@/sanity/normalizeSiteLocaleConfig";
-import { siteLanguageSettingsQuery } from "@/sanity/queries";
 import { readToken } from "@/sanity/readToken";
 import type { SiteLanguageSettingsQueryResult } from "@/sanity/sanity.types.gen";
 import { apiVersion, dataset, projectId, useCdn } from "@/sanity/sanityEnv";
@@ -27,7 +28,7 @@ async function querySiteLanguageSettings(
 	const url = new URL(
 		`https://${projectId}.${host}.sanity.io/v${apiVersion}/data/query/${dataset}`,
 	);
-	url.searchParams.set("query", siteLanguageSettingsQuery);
+	url.searchParams.set("query", SITE_LANGUAGE_SETTINGS_QUERY);
 	if (drafts) {
 		url.searchParams.set("perspective", "drafts");
 	}
@@ -86,7 +87,8 @@ function refreshPublishedConfig(): Promise<SiteLocaleConfig> {
  * Render paths use `fetchSiteLanguageSettings` in `web/sanity/fetchSanityData.ts`,
  * which applies the same published-unless-draft rule via `unstable_cache` (tag
  * `site-language-settings`). Keep those two paths; only the GROQ string is
- * shared via `siteLanguageSettingsQuery` from `web/sanity/queries`.
+ * shared, `SITE_LANGUAGE_SETTINGS_QUERY` from `@repo/site-languages`, imported
+ * directly so the proxy bundle doesn't pull in the `web/sanity/queries` barrel.
  */
 export async function fetchSiteLocaleConfigForProxy(options?: {
 	preferDrafts?: boolean;

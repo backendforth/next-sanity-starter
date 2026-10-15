@@ -21,6 +21,9 @@ export const SITE_LANGUAGES_PROJECTION = `{
   defaultLanguageId
 }`;
 
+/** The published singleton (the Studio reads its draft first, with the same projection). */
+export const SITE_LANGUAGE_SETTINGS_QUERY = `*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]${SITE_LANGUAGES_PROJECTION}`;
+
 type LanguageRow = { id?: string | null; title?: string | null } | null;
 
 /** The projected document, as a GROQ result or an unvalidated draft delivers it. */

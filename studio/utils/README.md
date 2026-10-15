@@ -22,5 +22,4 @@ To refresh `development` from `production`: `pnpm studio:sync-prod-to-dev` ([`sc
 - **`validateSlug.ts`** — slug format rules (`validatePageSlug` also reserves `work`) and `isUniquePerLanguage`, which lets each language version reuse a slug.
 - **`onePerLanguage.ts`** — document validation that keeps the per-language singletons at one published document per language.
 - **`plainLabel.ts`** — a string field's trimmed value or a fallback, for `preview.prepare` labels.
-- **`validateModuleMedia.ts`** — `validateModuleMediaRequired` for an embedded `module.media` (the project's `titleMedia`) and `hasMuxAsset` (a Mux field has an uploaded asset).
 - **`helpers.ts`** — small helpers used by schemas or structure.

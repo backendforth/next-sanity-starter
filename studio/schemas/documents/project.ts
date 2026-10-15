@@ -3,7 +3,6 @@ import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
 import { plainLabel } from "../../utils/plainLabel";
-import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
 import { isUniquePerLanguage, validateSlug } from "../../utils/validateSlug";
 import {
   NEWEST_FIRST_SUGGESTIONS,
@@ -43,7 +42,8 @@ export const project = defineType({
       title: "Title media",
       type: "module.media",
       group: "editorial",
-      validation: (rule) => rule.required().custom(validateModuleMediaRequired),
+      /* `module.media` checks its own type and asset fields. */
+      validation: (rule) => rule.required(),
     },
     {
       name: "categories",

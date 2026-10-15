@@ -78,6 +78,18 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 ---
 
+## `mux-migrate-assets.mjs`
+
+**What it does**
+
+Lists every Mux asset (paged through the Mux API) and reports two things: assets with static MP4 renditions, and assets encoded at the `premium` quality level. A dry run by default; `--apply` sets `mp4_support: "none"` on the MP4 ones. Premium assets are only listed — Mux does not re-encode in place, so re-upload them in the Studio or replace them in the Mux dashboard. Resolution is not checked: `media.video` encodes up to 2160p on purpose (AGENTS.md → "Mux video resolution").
+
+**When** — once per Mux environment, after the switch to HLS-only playback (`mp4_support: "none"`, `video_quality: "plus"` in `sanity.config.ts`), or when assets uploaded elsewhere show up with MP4 enabled.
+
+**Run** `pnpm run mux:migrate-assets` in `studio/` (`-- --apply` writes). Needs `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` in `studio/.env`.
+
+---
+
 ## `register-hosting.mjs`
 
 **What it does**

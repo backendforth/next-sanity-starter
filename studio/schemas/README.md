@@ -114,7 +114,7 @@ Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SU
 
 Video fields use types provided by **`sanity-plugin-mux-input`** (e.g. `mux.video`). The plugin is already registered in **`sanity.config.ts`**; your object schema only references the field `type`. **`module.media`** and **`media.video`** use **`mux.video`** for all video.
 
-The encoding ceiling is set per field: `options: { max_resolution_tier }` on a `mux.video` field overrides the plugin default and is both the preset and the maximum in the upload dialog. **`media.video`** encodes up to **2160p**, **`media.videoLoop`** up to **1440p**. To raise loops to 4K, change only the `videoLoop.ts` value to `"2160p"`; existing assets keep their ladder until re-encoded. No progressive MP4 (`mp4_support: "none"`).
+The encoding ceiling per field, the plugin default and the playback ceiling: [`AGENTS.md`](../../AGENTS.md) → "Mux video resolution".
 
 ## 10. Initial value templates (optional)
 

@@ -147,7 +147,8 @@ function MuxVideoPlayer({
 	const dims = getMuxDisplayDimensions(media);
 	/* Reduced motion: autoplay clips wait for the visitor, like loops and carousels. */
 	const reducedMotion = usePrefersReducedMotion();
-	const autoplay = !!videoSettings?.autoplay && !reducedMotion;
+	const autoplayClip = !!videoSettings?.autoplay;
+	const autoplay = autoplayClip && !reducedMotion;
 	const chromeless = videoSettings?.controls === false;
 
 	/* Client-only and latched: screen and network are read after mount (SSR renders the
@@ -322,6 +323,16 @@ function MuxVideoPlayer({
 		};
 	}, [playerReady, resumeAutoplay]);
 
+	/* Reduced motion switched on mid-play: dropping `autoPlay` doesn't stop the clip, so pause
+	 * it here. Expected, so it doesn't count as the visitor's pause. */
+	useEffect(() => {
+		const player = playerRef.current;
+		if (!playerReady || !reducedMotion || !autoplayClip) return;
+		if (!player || player.paused) return;
+		expectingPauseRef.current = true;
+		player.pause();
+	}, [playerReady, reducedMotion, autoplayClip]);
+
 	/* Returning to a long-backgrounded tab: browsers suspend background media and may evict
 	 * the MSE buffer, leaving an autoplay clip paused with nothing watching it. Nudge it back
 	 * into motion when the tab is visible again — only if it is on screen. */
@@ -395,9 +406,10 @@ function MuxVideoPlayer({
 				 * silently on autoplay policy. */
 				autoPlay={autoplay ? "muted" : false}
 				/* Constant per instance, so React never re-applies it and fights the mute
-				 * button. Autoplay clips start muted (the only way autoplay may begin); clips
-				 * the visitor starts play with sound. */
-				muted={autoplay}
+				 * button (the reduced-motion preference is live). Autoplay clips start muted,
+				 * the only way autoplay may begin, also when reduced motion holds them back;
+				 * other clips play with sound. */
+				muted={autoplayClip}
 				playsInline
 				renditionOrder="desc"
 				/* Quality-first (see `resolveMuxPlayerResolution`): min = max pins the best

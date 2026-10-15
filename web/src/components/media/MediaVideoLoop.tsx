@@ -56,7 +56,7 @@ type MediaVideoLoopProps = {
 	 */
 	isActive?: boolean;
 	/** For above-the-fold loops — sets `priority` / `fetchpriority=high` on the poster. */
-	posterPriority?: boolean;
+	priority?: boolean;
 	/** `sizes` for the poster `srcset`: the width the loop occupies. Defaults to `"100vw"`. */
 	sizes?: string;
 	/**
@@ -108,7 +108,7 @@ function MuxVideoLoop({
 	posterPayload,
 	fillParent = false,
 	isActive = true,
-	posterPriority = false,
+	priority = false,
 	sizes = "100vw",
 	allowUnmute = false,
 }: MediaVideoLoopProps & { playbackId: string }) {
@@ -468,9 +468,9 @@ function MuxVideoLoop({
 				alt={caption || ""}
 				width={knownDims?.width}
 				height={knownDims?.height}
-				loading={posterPriority ? "eager" : "lazy"}
-				fetchPriority={posterPriority ? "high" : "auto"}
-				decoding={posterPriority ? "sync" : "async"}
+				loading={priority ? "eager" : "lazy"}
+				fetchPriority={priority ? "high" : "auto"}
+				decoding={priority ? "sync" : "async"}
 				className={clsx(
 					"pointer-events-none absolute inset-0 z-10 h-full w-full object-cover",
 					/* Hiding fades over 700 ms; showing is instant, so a cold fallback

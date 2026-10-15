@@ -138,8 +138,6 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 		[isMulti, slides],
 	);
 
-	if (slides.length === 0) return null;
-
 	const showNavigation = slides.length > 1;
 
 	return (
@@ -250,7 +248,7 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 				</div>
 			) : null}
 
-			{options.showThumbnails && thumbnails ? (
+			{thumbnails ? (
 				<div ref={thumbsRef} className="overflow-hidden">
 					<div className="flex gap-xs">
 						{slides.map((slide, index) => {

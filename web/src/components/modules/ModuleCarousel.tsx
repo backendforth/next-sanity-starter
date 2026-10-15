@@ -1,7 +1,8 @@
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
+import type { NormalizedSlide } from "@/src/components/carousel/CarouselSlide";
 import { LazyCarouselViewport } from "@/src/components/carousel/LazyCarouselViewport";
-import { normalizeCarouselSlides } from "@/src/components/carousel/normalizeCarouselSlides";
+import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
@@ -9,7 +10,7 @@ import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** A `modules[]` entry or the same module inline in rich text. */
-export type CarouselModule =
+type CarouselModule =
 	| ModuleOf<"module.carousel">
 	| RichTextEmbedOf<"module.carousel">;
 
@@ -38,7 +39,15 @@ export function ModuleCarousel({
 	siteLocale,
 	priority = false,
 }: Props) {
-	const slides = normalizeCarouselSlides(module, locale, siteLocale);
+	/* Captions resolve to `locale` here, so the client slides get plain strings. */
+	const slides = (module.slides ?? []).flatMap((slide): NormalizedSlide[] => {
+		const media = normalizeResolvedMedia(
+			slide.resolvedMedia,
+			locale,
+			siteLocale,
+		);
+		return media ? [{ key: slide._key, ...media }] : [];
+	});
 	if (slides.length === 0) return null;
 
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);

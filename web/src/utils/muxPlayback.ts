@@ -371,16 +371,6 @@ export function resolveMuxPlayerResolution(args: {
 	return { minResolution: pinned, maxResolution: pinned };
 }
 
-/** `autoplay && !controls` on a full video means a silent loop (no MuxPlayer chrome). */
-export function isLoopIntent(
-	settings:
-		| { autoplay?: boolean | null; controls?: boolean | null }
-		| null
-		| undefined,
-): boolean {
-	return Boolean(settings?.autoplay) && settings?.controls === false;
-}
-
 /** Codec family parsed from an HLS `#EXT-X-STREAM-INF` CODECS attribute. */
 export type MuxLevelCodecFamily = "av1" | "hevc" | "avc";
 

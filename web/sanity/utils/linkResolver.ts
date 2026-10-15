@@ -44,24 +44,15 @@ type ResolvedLink =
 	| null;
 
 /**
- * A `function` link's target, shared by rich text and nav: `scroll-to` is an anchor to its id,
- * `open-cookie-preferences` a button. `null` for a scroll-to without id or an unknown key.
- * Cleaned: in Presentation stega markers would end up in the hash and match no id.
+ * A `function` link's target, shared by rich text and nav: `open-cookie-preferences` is a
+ * button, an unknown key `null`. Cleaned, because Presentation stega-encodes the key.
  */
 export function resolveFunctionLink(
 	key: string | null | undefined,
-	params: string | null | undefined,
 ): ResolvedLink {
-	const action = stegaClean(key);
-	if (action === "open-cookie-preferences")
-		return { kind: "cookie-preferences" };
-	if (action !== "scroll-to") return null;
-	const anchor = stegaClean(params)?.trim();
-	if (!anchor) return null;
-	return {
-		kind: "anchor",
-		href: anchor.startsWith("#") ? anchor : `#${anchor}`,
-	};
+	return stegaClean(key) === "open-cookie-preferences"
+		? { kind: "cookie-preferences" }
+		: null;
 }
 
 /**
@@ -95,7 +86,7 @@ export function resolveLinkMark(
 	}
 
 	if (isStegaVariant(mark, "linkType", "linkFunction")) {
-		return resolveFunctionLink(mark.func?.key, mark.func?.params);
+		return resolveFunctionLink(mark.func?.key);
 	}
 
 	return null;

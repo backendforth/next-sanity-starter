@@ -110,24 +110,15 @@ function resolveNavMenuLink(
 	}
 
 	if (isStegaVariant(link, "linkType", "linkFunction")) {
-		const target = resolveFunctionLink(link.func?.key, link.func?.params);
-		if (target?.kind === "cookie-preferences") {
-			return {
-				id: rowId(link, index, idPrefix),
-				label,
-				kind: "button",
-				action: "open-cookie-preferences",
-			};
+		if (resolveFunctionLink(link.func?.key)?.kind !== "cookie-preferences") {
+			return null;
 		}
-		if (target?.kind === "anchor") {
-			return {
-				id: rowId(link, index, idPrefix),
-				label,
-				kind: "link",
-				href: target.href,
-			};
-		}
-		return null;
+		return {
+			id: rowId(link, index, idPrefix),
+			label,
+			kind: "button",
+			action: "open-cookie-preferences",
+		};
 	}
 
 	return null;

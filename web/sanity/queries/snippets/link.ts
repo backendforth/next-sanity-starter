@@ -11,7 +11,7 @@ import { routePathProjection } from "./routePath";
  * An internal link carries its target's `path` (`routePathProjection`); a reference to a deleted
  * or unpublished document resolves to `null` and renders as plain text.
  *
- * `func` matches `linkFunctions` (`key`, `params`).
+ * `func` matches `linkFunctions` (`key`).
  */
 export const linkQuery = `
   _key,
@@ -35,10 +35,7 @@ export const linkQuery = `
     },
     type == "function" => {
       "linkType": "linkFunction",
-      "func": func {
-        key,
-        params
-      }
+      "func": func { key }
     }
   )
 `;

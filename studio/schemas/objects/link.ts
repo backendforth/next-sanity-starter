@@ -117,19 +117,10 @@ export const link = defineType({
       slug: "reference.slug.current",
       url: "url",
       funcKey: "func.key",
-      funcParams: "func.params",
     },
     prepare(selection) {
-      const {
-        type,
-        title,
-        refTitle,
-        referenceType,
-        slug,
-        url,
-        funcKey,
-        funcParams,
-      } = selection;
+      const { type, title, refTitle, referenceType, slug, url, funcKey } =
+        selection;
 
       let subtitle = "";
       if (type === "internal") {
@@ -149,9 +140,7 @@ export const link = defineType({
       } else if (type === "external" && url) {
         subtitle = `→ ${url}`;
       } else if (type === "function") {
-        subtitle = funcKey
-          ? `→ ${funcKey}${funcParams ? ` (${funcParams})` : ""}`
-          : "→ (function)";
+        subtitle = funcKey ? `→ ${funcKey}` : "→ (function)";
       }
 
       const linkLabel = typeof title === "string" ? title.trim() : "";

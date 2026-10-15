@@ -1,9 +1,10 @@
 /**
  * Breaking-change council — N independent "council members" (Gemini 3.1 Flash
  * Lite via OpenRouter) deliberate, in two rounds, over Claude's evaluation of a
- * Dependabot MAJOR dependency PR. Claude (the analyst + chair) runs this script
- * and reads its JSON verdict; the council members do NOT see the codebase, only
- * Claude's analysis + proposed fixes.
+ * Dependabot MAJOR dependency PR. `dependabot-council.yml` runs it after Claude
+ * has written that evaluation and exited, and turns the JSON verdict into the PR
+ * comment; the council members do NOT see the codebase, only Claude's analysis +
+ * proposed fixes.
  *
  * Usage:  node council.mjs <path-to-claude-eval>
  *   The eval file is whatever Claude wrote (JSON or markdown) — its
@@ -14,8 +15,8 @@
  *      COUNCIL_MODEL (default google/gemini-3.1-flash-lite),
  *      COUNCIL_SIZE (default 4).
  *
- * Output: a JSON verdict to stdout (Claude reads + summarises it). Progress goes
- * to stderr so it doesn't pollute stdout.
+ * Output: a JSON verdict to stdout (the workflow formats it). Progress goes to
+ * stderr so it doesn't pollute stdout.
  */
 
 import { readFileSync } from "node:fs";

@@ -20,7 +20,7 @@ Other plugins in this Studio include **structure** (custom sidebar, the start sc
 - **`config/README.md`** — Structure vs schemas, Presentation wiring, dataset module, checklist for new types.
 - **`config/structure/README.md`** — How Desk sidebar items are built.
 - **`schemas/README.md`** — How to add document/object types and where to register them (including structure).
-- **`utils/README.md`** — Constants, page references, datasets, multi-language notes.
+- **`utils/README.md`** — Multi-language setup, development vs production datasets, the helper files in `utils/`.
 
 ## Quick start
 
@@ -43,7 +43,7 @@ Two targets. **Netlify is the default**: the Studio runs on its own domain (e.g.
 One-time setup:
 
 1. **Netlify site** — import this repository as a new project. Base directory: empty (repo root). **Package directory: `studio`**. Leave build command and publish directory empty; they come from `studio/netlify.toml`.
-2. **Environment variables** on that site (see the *Deployment* block in `.env.example`): `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET` (per deploy context: Production `production`, Deploy Previews + Branch deploys `development`), `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL`, and as needed `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`, `SANITY_AUTH_TOKEN` and the Mux tokens.
+2. **Environment variables** on that site (each one is described in `.env.example`): `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET` (per deploy context: Production `production`, Deploy Previews + Branch deploys `development`), `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL`, and as needed `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`, `SANITY_AUTH_TOKEN` and the Mux tokens.
 3. **Domain** — add the Studio domain under Domain management.
 4. **CORS** — add the same origin in sanity.io/manage → API → CORS origins with **Allow credentials**; without it, login on the custom domain fails. From the CLI: `pnpm --filter studio exec sanity cors add https://studio.your-domain.tld --credentials`.
 5. **Web site** — set `NEXT_PUBLIC_SANITY_STUDIO_URL` to the Studio URL and redeploy the web app, so its CSP lets Presentation embed it (`frame-ancestors`) and click-to-edit links open this Studio.

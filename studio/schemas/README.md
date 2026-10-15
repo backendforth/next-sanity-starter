@@ -77,6 +77,7 @@ Reusable **`type: "object"`** types for image and Mux video live under **`object
 
 - **`media.image`** — image (hotspot) and optional caption.
 - **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption.
+- **`media.videoLoop`** — silent background loop: **`mux.video`**, optional poster image, **`allowUnmute`**, optional caption.
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
 
@@ -105,11 +106,9 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 | Module | Role |
 |--------|------|
 | `module.media` | Image, Mux video, or silent loop via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) / **`videoLoopContent`** (`media.videoLoop`) depending on `type` (`image` / `video` / `loop`). |
-| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`autoplay`** + **`autoplayDelayMs`**. |
+| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`multipleSlides`**, **`autoplay`** + **`autoplayDelayMs`**. |
 | `module.contentRefs` | Optional heading; **`sourceScope`** (`all` / `pages` / `projects`); **`showProjectFilters`** (projects only); **`selection`** (`all` / `selected`). Projects support **`projectCategory`** filters + sort (A–Z / newest) on the web. |
 | `module.text` | Title + rich text body. |
-
-**Breaking change (JSON / GROQ):** Legacy `module.media` stored `image`, `video`, `videoSettings`, and `caption` at the root. Current data nests these under **`imageContent`** and **`videoContent`** (caption lives on the nested `media.image` / `media.video` objects). Update queries and front-end mapping accordingly, or migrate old documents.
 
 ### Internal page references
 

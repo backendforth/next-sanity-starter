@@ -2,6 +2,7 @@ import { LockIcon } from "@sanity/icons/Lock";
 import { StackIcon } from "@sanity/icons/Stack";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
+import { onePerLanguage } from "../../utils/onePerLanguage";
 import { languageField } from "../fields/languageField";
 
 /** An empty text is not hidden: the web shows its default text in the visitor's language. */
@@ -11,6 +12,7 @@ const EMPTY_TEXT_HINT = "Empty texts show the default text.";
 export const siteCookieBanner = defineType({
   name: "siteCookieBanner",
   type: "document",
+  validation: onePerLanguage,
   title: "Cookie Banner",
   icon: LockIcon,
   fields: [

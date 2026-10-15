@@ -2,6 +2,7 @@ import { CogIcon } from "@sanity/icons/Cog";
 import { DesktopIcon } from "@sanity/icons/Desktop";
 import { SearchIcon } from "@sanity/icons/Search";
 import { defineType } from "sanity";
+import { onePerLanguage } from "../../utils/onePerLanguage";
 import { IMAGE_COLOR_PROFILE_HINT } from "../constants/media";
 import { languageField } from "../fields/languageField";
 
@@ -10,6 +11,7 @@ export const siteSettings = defineType({
   name: "siteSettings",
   title: "Settings",
   type: "document",
+  validation: onePerLanguage,
   icon: CogIcon,
   groups: [
     {

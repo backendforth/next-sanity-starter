@@ -56,6 +56,14 @@ function normalizeFromDoc(doc: SiteLanguageSettingsDoc): Array<{
   return normalized.length > 0 ? normalized : [...FALLBACK_LANGUAGES];
 }
 
+function fetchSettings(client: SanityClient): Promise<SiteLanguageSettingsDoc> {
+  return client.fetch<SiteLanguageSettingsDoc>(
+    siteLanguageSettingsLanguagesQuery,
+    {},
+    { perspective: "raw" },
+  );
+}
+
 /**
  * Languages for `@sanity/document-internationalization`, loaded on each Studio session
  * from the `siteLanguageSettings` singleton (draft preferred over published, see the
@@ -66,14 +74,31 @@ export async function supportedLanguagesFromClient(
   client: SanityClient,
 ): Promise<Array<{ id: string; title: string }>> {
   try {
-    const doc = await client.fetch<SiteLanguageSettingsDoc>(
-      siteLanguageSettingsLanguagesQuery,
-      {},
-      { perspective: "raw" },
-    );
-    return normalizeFromDoc(doc);
+    return normalizeFromDoc(await fetchSettings(client));
   } catch (err) {
     console.error("[supportedLanguages] fetch failed:", err);
     return [...FALLBACK_LANGUAGES];
+  }
+}
+
+/**
+ * The language a document starts in when it is created outside the translation menu:
+ * `defaultLanguageId` when it is one of the languages, else the first language.
+ */
+export async function defaultLanguageFromClient(
+  client: SanityClient,
+): Promise<string> {
+  try {
+    const doc = await fetchSettings(client);
+    const languages = normalizeFromDoc(doc);
+    const id = doc?.defaultLanguageId?.trim();
+    return (
+      languages.find((language) => language.id === id)?.id ??
+      languages[0]?.id ??
+      FALLBACK_LANGUAGES[0].id
+    );
+  } catch (err) {
+    console.error("[supportedLanguages] fetch failed:", err);
+    return FALLBACK_LANGUAGES[0].id;
   }
 }

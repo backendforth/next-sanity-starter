@@ -2,6 +2,7 @@ import { HomeIcon } from "@sanity/icons/Home";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
+import { onePerLanguage } from "../../utils/onePerLanguage";
 import { plainLabel } from "../../utils/plainLabel";
 import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
@@ -10,6 +11,7 @@ export const home = defineType({
   name: "home",
   title: "Home",
   type: "document",
+  validation: onePerLanguage,
   icon: HomeIcon,
   groups: [
     {

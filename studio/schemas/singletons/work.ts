@@ -2,6 +2,7 @@ import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
+import { onePerLanguage } from "../../utils/onePerLanguage";
 import { plainLabel } from "../../utils/plainLabel";
 import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
@@ -10,6 +11,7 @@ export const work = defineType({
   name: "work",
   title: "Work",
   type: "document",
+  validation: onePerLanguage,
   icon: ThLargeIcon,
   groups: [
     {

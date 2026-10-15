@@ -45,7 +45,6 @@ const siteNavQuery = `*[_type == "siteNav" && _id == "siteNav"][0]{
 
 /** Document id `siteCookieBanner` — banner copy for the app shell. */
 const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && _id == "siteCookieBanner"][0]{
-  useCookieBanner,
   consentModal {
     description,
     privacyPolicy{
@@ -94,8 +93,9 @@ const siteSettingsQuery = `*[_type == "siteSettings" && _id == "siteSettings"][0
   ${pageSeoQuery}
 }`;
 
-/** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */
+/** Document id: `siteAnalyticsSettings` — the cookie banner switch, load mode and tracking providers. */
 const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
+  useCookieBanner,
   loadMode,
   trackers[]{
     _key,

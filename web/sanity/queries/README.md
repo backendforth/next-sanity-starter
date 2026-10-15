@@ -40,7 +40,7 @@ Each singleton's id is its type name; `studio/config/singletons.ts` lists them a
 | `siteNav` | Main + footer menus |
 | `errorSettings` | 404 copy |
 | `siteCookieBanner` | Cookie banner copy |
-| `siteAnalyticsSettings` | Tracking providers + load mode |
+| `siteAnalyticsSettings` | Cookie banner switch, load mode, tracking providers |
 | `siteLanguageSettings` | Site languages: routing and the Studio's language tabs |
 
 ## Sanity Vision

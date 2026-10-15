@@ -146,6 +146,19 @@ pnpm exec sanity migration run localize-seo --project <id> --dataset development
 pnpm exec sanity migration run localize-seo --project <id> --dataset development --no-dry-run
 ```
 
+### `move-cookie-banner-switch`
+
+**What it does** (`main` only) — moves the cookie banner switch, `useCookieBanner`, from the `siteCookieBanner` singleton to `siteAnalyticsSettings`, next to the trackers it gates. The published banner's value goes onto the analytics document and its draft, unless they have one already; the analytics document is created when the banner was on and there is none. The field is then unset on the banner and its draft. A draft whose switch differs from the published one is reported. Only the fixed-id singletons are touched, so a re-run finds nothing to move.
+
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows and cookie-based trackers wait for consent, also on a site that had the banner off.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run move-cookie-banner-switch --project <id> --dataset development
+pnpm exec sanity migration run move-cookie-banner-switch --project <id> --dataset development --no-dry-run
+```
+
 ### `rename-text-module-title`
 
 **What it does** (both branches) — moves a text module's `title` to `heading`, the name `module.carousel` and `module.contentRefs` use. The value keeps its shape (i18n array on `main`, string on the variant). Modules that already have a `heading` are skipped, so a re-run is safe.

@@ -16,7 +16,10 @@ import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { LazySiteTracking } from "@/src/components/tracking/LazySiteTracking";
 import { cookieConsentTranslation } from "@/src/components/tracking/lib/cookieConsentConfig";
-import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
+import {
+	getEnabledTrackers,
+	cookieBannerEnabled as isCookieBannerOn,
+} from "@/src/components/tracking/lib/trackingConfig";
 import { CookieBannerProvider } from "@/src/contexts/CookieBannerContext";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
@@ -72,11 +75,11 @@ export default async function LocaleLayout({ children, params }: Props) {
 	]);
 	const siteNav = chrome?.nav ?? null;
 	const cookieBanner = chrome?.cookieBanner ?? null;
-	/* The banner, the cookie-preferences links (nav, rich text) and tracking follow this switch. */
-	const cookieBannerEnabled = cookieBanner?.useCookieBanner === true;
 	/* Clean: tracker ids and the load mode go to third-party scripts, not into the page. */
 	const analytics = stegaClean(chrome?.analytics ?? null);
 	const enabledTrackers = getEnabledTrackers(analytics);
+	/* The banner, the cookie-preferences links (nav, rich text) and tracking follow this switch. */
+	const cookieBannerEnabled = isCookieBannerOn(analytics);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
 	if (!pathUtils.isAppLocale(raw)) {
@@ -116,8 +119,8 @@ export default async function LocaleLayout({ children, params }: Props) {
 			/>
 			{/* Only when the Studio toggle is on: the lazy chunk (JS + CSS) is
 			 * otherwise never requested. A toggle flip reaches the page through
-			 * the `siteCookieBanner` cache tag, without a deploy. */}
-			{cookieBanner && cookieBannerEnabled ? (
+			 * the `siteAnalyticsSettings` cache tag, without a deploy. */}
+			{cookieBannerEnabled ? (
 				<LazyCookieConsentBanner
 					locale={locale}
 					translation={cookieConsentTranslation(
@@ -128,12 +131,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				/>
 			) : null}
 			{enabledTrackers.length > 0 ? (
-				<LazySiteTracking
-					config={{
-						analytics,
-						cookieBanner: { useCookieBanner: cookieBannerEnabled },
-					}}
-				/>
+				<LazySiteTracking analytics={analytics} />
 			) : null}
 		</LanguageProvider>
 	);

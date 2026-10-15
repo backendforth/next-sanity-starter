@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
 	type InferComponents,
 	type InferStrictComponents,
@@ -10,6 +11,7 @@ import {
 	type LinkLocaleOptions,
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
+import { CookiePreferencesButton } from "@/src/components/cookies/CookiePreferencesButton";
 import { ModuleCarousel } from "@/src/components/modules/ModuleCarousel";
 import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
 
@@ -26,8 +28,11 @@ function LinkMarkRenderer({
 	if (!resolved) {
 		return <>{children}</>;
 	}
-	if (resolved.kind === "function") {
-		return <span className="cursor-default text-color-link">{children}</span>;
+	if (resolved.kind === "cookie-preferences") {
+		return <CookiePreferencesButton>{children}</CookiePreferencesButton>;
+	}
+	if (resolved.internal) {
+		return <Link href={resolved.href}>{children}</Link>;
 	}
 	return (
 		<a href={resolved.href} target={resolved.target} rel={resolved.rel}>

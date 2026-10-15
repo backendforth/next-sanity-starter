@@ -2,7 +2,7 @@ import {
 	fetchSiteChrome,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
-import { documentFontClassName } from "@/src/components/layout/DocumentShell";
+import { documentFontClassName } from "@/src/components/layout/documentFonts";
 
 import { NotFoundContent } from "./[locale]/NotFoundContent";
 import "../assets/styles/tokens.css";

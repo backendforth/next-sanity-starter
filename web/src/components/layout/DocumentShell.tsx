@@ -1,40 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo/siteFaviconIcons";
 import type { SiteFavicon } from "@/sanity/types";
+import { documentFontClassName } from "@/src/components/layout/documentFonts";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeSync } from "@/src/components/theme/ThemeSync";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../../assets/styles/tokens.css";
 import "../../assets/styles/globals.css";
-
-/**
- * Body text, big text, RT h1/h2 — the `font-text` stack (`tailwind/theme.css`).
- *
- * `display: "swap"` paints text immediately in the metrics-adjusted fallback that
- * `next/font` generates (`adjustFontFallback`), so first paint isn't held for up
- * to 3s of invisible text (`block`) and the swap itself causes no layout shift.
- */
-const geistSans = Geist({
-	subsets: ["latin"],
-	variable: "--font-family-sans",
-	display: "swap",
-});
-
-/** RT h3/h4, tags, buttons, inline code, bold/italic in body text — the `font-mono` stack. */
-const geistMono = Geist_Mono({
-	subsets: ["latin"],
-	variable: "--font-family-mono",
-	display: "swap",
-});
-
-/** `next/font` class names for `<html>` — also used by `app/not-found.tsx`, which has no shell. */
-export const documentFontClassName = `${geistSans.variable} ${geistMono.variable}`;
 
 /**
  * Document-level metadata, merged into `app/[locale]/layout.tsx`'s `generateMetadata`

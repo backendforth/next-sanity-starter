@@ -50,7 +50,7 @@
 
 /*
  * Font stacks. `--font-family-sans` / `--font-family-mono` come from the `next/font` class
- * (`components/layout/DocumentShell.tsx`), which `app/not-found.tsx` puts on a `<div>`, not on
+ * (`components/layout/documentFonts.ts`), which `app/not-found.tsx` puts on a `<div>`, not on
  * `<html>`. `inline` writes the stack into each utility, so the variables resolve on the element
  * that uses `font-text` / `font-mono` instead of once on `:root`.
  */

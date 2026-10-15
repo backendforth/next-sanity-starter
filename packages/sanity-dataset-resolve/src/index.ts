@@ -38,6 +38,27 @@ export type SanityDatasetResolveInput =
 	| SanityDatasetResolveEnv
 	| NodeJS.ProcessEnv;
 
+/** The host's own production context (Vercel, Netlify), never set in the Studio's browser bundle. */
+function isProductionHost(env: SanityDatasetResolveInput): boolean {
+	return (
+		(env.VERCEL === "1" && env.VERCEL_ENV === "production") ||
+		(env.NETLIFY === "true" && env.CONTEXT === "production")
+	);
+}
+
+/**
+ * Whether this deploy is the production site: an explicit `SANITY_STUDIO_DEPLOYMENT_TARGET`
+ * decides (`production` or not, any case), otherwise the host's production context. A staging
+ * site on a production host context sets the target to stay non-production. The web's crawl
+ * switch (`robots.ts`) and canonical origin (`siteUrl.ts`) follow it.
+ */
+export function isProductionDeployment(
+	env: SanityDatasetResolveInput,
+): boolean {
+	const target = env.SANITY_STUDIO_DEPLOYMENT_TARGET?.trim().toLowerCase();
+	return target ? target === "production" : isProductionHost(env);
+}
+
 /**
  * Dataset names to try, in order: development and production (renamable via env; an empty
  * override counts as unset), production first on a production deploy. A custom
@@ -50,13 +71,10 @@ function preference(env: SanityDatasetResolveInput): string[] {
 		env.SANITY_STUDIO_DATASET_PRODUCTION?.trim() || "production";
 	const target = env.SANITY_STUDIO_DEPLOYMENT_TARGET?.trim() || undefined;
 	const named = target?.toLowerCase();
-	const isProductionHost =
-		(env.VERCEL === "1" && env.VERCEL_ENV === "production") ||
-		(env.NETLIFY === "true" && env.CONTEXT === "production");
 
 	const productionFirst =
 		named === "production" ||
-		(named !== "development" && named !== "preview" && isProductionHost);
+		(named !== "development" && named !== "preview" && isProductionHost(env));
 	const pair = productionFirst
 		? [production, development]
 		: [development, production];

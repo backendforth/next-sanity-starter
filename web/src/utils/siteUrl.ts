@@ -1,3 +1,5 @@
+import { isProductionDeployment } from "@repo/sanity-dataset-resolve";
+
 /**
  * The site's canonical origin, resolved once at module load.
  *
@@ -21,15 +23,19 @@ function normalizeOrigin(value: string | undefined): string | null {
 	return withScheme.replace(/\/+$/, "");
 }
 
+/** Whether this deploy is the production site, the same rule `robots.ts` crawls by. */
+const isProduction = isProductionDeployment(process.env);
+
 /**
- * Netlify's own view of where this build is served from. Previews and branch
- * deploys resolve to their own origin (`DEPLOY_PRIME_URL`) rather than the
- * production domain, so a preview never claims to be canonical for the live
- * site. The `NETLIFY` guard keeps a stray local `URL` variable out.
+ * Netlify's own view of where this build is served from. Previews, branch
+ * deploys and non-production targets resolve to their own origin
+ * (`DEPLOY_PRIME_URL`) rather than the production domain, so they never claim
+ * to be canonical for the live site. The `NETLIFY` guard keeps a stray local
+ * `URL` variable out.
  */
 function netlifyOrigin(): string | null {
 	if (process.env.NETLIFY !== "true") return null;
-	if (process.env.CONTEXT === "production") {
+	if (isProduction) {
 		return normalizeOrigin(process.env.URL);
 	}
 	return (
@@ -41,7 +47,7 @@ function netlifyOrigin(): string | null {
 /** Same idea on Vercel; both variables are bare hosts, no scheme. */
 function vercelOrigin(): string | null {
 	if (process.env.VERCEL !== "1") return null;
-	if (process.env.VERCEL_ENV === "production") {
+	if (isProduction) {
 		return normalizeOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL);
 	}
 	return normalizeOrigin(process.env.VERCEL_URL);

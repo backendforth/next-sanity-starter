@@ -767,14 +767,6 @@ export type MediaTag = {
   name?: Slug;
 };
 
-export type Code = {
-  _type: "code";
-  language?: string;
-  filename?: string;
-  code?: string;
-  highlightedLines?: Array<number>;
-};
-
 export type SanityImagePaletteSwatch = {
   _type: "sanity.imagePaletteSwatch";
   background?: string;
@@ -934,7 +926,6 @@ export type AllSanitySchemaTypes =
   | MediaFolderReference
   | MediaFolder
   | MediaTag
-  | Code
   | SanityImagePaletteSwatch
   | SanityImagePalette
   | SanityImageDimensions

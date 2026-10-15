@@ -9,10 +9,8 @@ import { muxInput } from "sanity-plugin-mux-input";
 import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
 
-import {
-  presentationLocationsResolver,
-  presentationMainDocuments,
-} from "./config/presentation/resolve";
+import { presentationLocationsResolver } from "./config/presentation/locationsResolver";
+import { presentationMainDocuments } from "./config/presentation/resolve";
 import {
   filterSingletonDocumentActions,
   isSingletonTemplate,

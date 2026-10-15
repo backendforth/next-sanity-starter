@@ -6,9 +6,6 @@ import {
   PROJECT_URL_PREFIX,
   SLUG_BASED_DOCUMENT_TYPES,
 } from "./conventions";
-import { presentationLocationsResolver } from "./locationsResolver";
-
-export { presentationLocationsResolver };
 
 const typeList = (types: readonly string[]) =>
   types.map((t) => `"${t}"`).join(",");
@@ -67,17 +64,10 @@ export const presentationMainDocuments = defineDocuments([
   },
   {
     route: "/:segment",
-    filter:
-      SLUG_BASED_DOCUMENT_TYPES.length > 0
-        ? `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE} && !($segment in ${LANGUAGE_IDS}))`
-        : `_type == "home" && language == $segment`,
+    filter: `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE} && !($segment in ${LANGUAGE_IDS}))`,
   },
-  ...(SLUG_BASED_DOCUMENT_TYPES.length > 0
-    ? [
-        {
-          route: "/:locale/:slug",
-          filter: `_type in [${slugTypeList}] && slug.current == $slug && language == $locale`,
-        },
-      ]
-    : []),
+  {
+    route: "/:locale/:slug",
+    filter: `_type in [${slugTypeList}] && slug.current == $slug && language == $locale`,
+  },
 ]);

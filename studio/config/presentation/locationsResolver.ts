@@ -47,8 +47,9 @@ function staticLocationsForType(
 
 /**
  * Central Presentation `resolve.locations`: overrides → site-root singletons → work landing →
- * slug-based (from `SLUG_BASED_DOCUMENT_TYPES` / `PREFIXED_SLUG_DOCUMENT_TYPES` or any doc
- * with `slug.current`). One document per language: every location carries its prefix.
+ * slug-based types (`SLUG_BASED_DOCUMENT_TYPES`, `PREFIXED_SLUG_DOCUMENT_TYPES`). Any other type
+ * has no route of its own (`projectCategory`), so it gets no locations. One document per
+ * language: every location carries its prefix.
  */
 export const presentationLocationsResolver: DocumentLocationResolver = (
   params,
@@ -65,6 +66,16 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
     return null;
   }
 
+  const prefixed = PREFIXED_SLUG_TYPE_SET.has(type);
+  if (
+    !SITE_ROOT_DOCUMENT_TYPES.has(type) &&
+    type !== "work" &&
+    !prefixed &&
+    !SLUG_TYPE_SET.has(type)
+  ) {
+    return null;
+  }
+
   const ids = Array.from(
     new Set([getPublishedId(id), getDraftId(id)].map(String)),
   );
@@ -78,12 +89,7 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
         if (SITE_ROOT_DOCUMENT_TYPES.has(type)) {
           return {
             message: PRESENTATION_LOCATIONS_HEADER,
-            locations: [
-              {
-                title: type === "home" ? "Home" : "Site preview (home)",
-                href: home.href,
-              },
-            ],
+            locations: [home],
           };
         }
 
@@ -97,9 +103,7 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
 
         const slug = doc?.slug?.trim();
         if (slug) {
-          const prefix = PREFIXED_SLUG_TYPE_SET.has(type)
-            ? PROJECT_URL_PREFIX
-            : "";
+          const prefix = prefixed ? PROJECT_URL_PREFIX : "";
           const path = localizedPath(`${prefix}/${slug}`, doc?.language);
           return {
             message: PRESENTATION_LOCATIONS_HEADER,
@@ -107,34 +111,13 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
           };
         }
 
-        if (PREFIXED_SLUG_TYPE_SET.has(type)) {
-          return {
-            message: PRESENTATION_LOCATIONS_HEADER,
-            locations: [
-              {
-                title: "Project (set path first)",
-                href: PROJECT_URL_PREFIX,
-              },
-            ],
-          };
-        }
-
-        if (SLUG_TYPE_SET.has(type)) {
-          return {
-            message: PRESENTATION_LOCATIONS_HEADER,
-            locations: [
-              {
-                title: "Page (set path first)",
-                href: "/",
-              },
-            ],
-          };
-        }
-
         return {
           message: PRESENTATION_LOCATIONS_HEADER,
-          tone: "caution" as const,
-          locations: [{ title: "Site (root)", href: "/" }],
+          locations: [
+            prefixed
+              ? { title: "Project (set path first)", href: PROJECT_URL_PREFIX }
+              : { title: "Page (set path first)", href: "/" },
+          ],
         };
       }),
     );

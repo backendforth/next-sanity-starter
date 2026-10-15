@@ -11,9 +11,6 @@
 # Set in Site configuration → Environment variables. `SANITY_STUDIO_*` values are inlined
 # into the Studio bundle at BUILD time, so a change needs a redeploy.
 #   SANITY_STUDIO_PROJECT_ID      — required
-#   SANITY_STUDIO_DATASET         — set per deploy context (Production: `production`,
-#                                   Deploy Previews + Branch deploys: `development`).
-#                                   Unset, the Studio probes for its dataset on every load.
 #   SANITY_STUDIO_PREVIEW_ORIGIN  — the web app's origin, opened by Presentation
 #   SANITY_STUDIO_HOSTING_URL     — this Studio's own URL (custom domain)
 #   SANITY_AUTH_TOKEN             — optional: registers the URL and uploads the schema
@@ -34,19 +31,19 @@
   # site's rule, `[ … ]` guard included.
   ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./packages/site-languages ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
 
-# Dataset order per deploy context (`@repo/sanity-dataset-resolve`), matching the web
-# site: production deploys prefer `production`, previews prefer `development`. The
-# hosted bundle can't see Netlify's `CONTEXT`, so the target has to be inlined here.
-# `SANITY_STUDIO_DATASET`, set per context in the Netlify UI, overrides the target and
-# spares the Studio its dataset probe at load.
+# Dataset per deploy context, as the web site picks it: production deploys edit
+# `production`, previews and branch deploys `development`. The hosted bundle can't see
+# Netlify's `CONTEXT`, so the name is inlined at build, and the Studio skips its dataset
+# probe at load. Values here override the Netlify UI: another dataset name means editing
+# these lines.
 [context.production.environment]
-  SANITY_STUDIO_DEPLOYMENT_TARGET = "production"
+  SANITY_STUDIO_DATASET = "production"
 
 [context.deploy-preview.environment]
-  SANITY_STUDIO_DEPLOYMENT_TARGET = "preview"
+  SANITY_STUDIO_DATASET = "development"
 
 [context.branch-deploy.environment]
-  SANITY_STUDIO_DEPLOYMENT_TARGET = "preview"
+  SANITY_STUDIO_DATASET = "development"
 
 # The Studio is a single-page app: every route (`/structure/…`, `/presentation/…`)
 # is served by `index.html`. Not forced, so files in `dist/` still win.

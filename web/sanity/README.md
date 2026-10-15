@@ -17,7 +17,7 @@ This folder holds the **Sanity client**, the **fetchers**, **GROQ queries**, the
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`; `queries/index.ts` exports the full queries |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
 | `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
-| `utils/` | `sanityImageBuilder`, `dataAttr`, `isStegaVariant` (`stegaVariant.ts`), link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) |
+| `utils/` | `sanityImageBuilder`, `dataAttr`, `isStegaVariant` (`stegaVariant.ts`), link helpers (`linkResolver`, `resolveLinkLabel`), `plainText` and the array resolver `sanityLocalizedText` (see below) |
 
 Import full queries from **`@/sanity/queries`**; fragments and utilities from their file (`@/sanity/queries/snippets/media`, `@/sanity/utils/sanityImageBuilder`, …). There is no `utils` barrel.
 
@@ -37,7 +37,9 @@ This branch stores one document per language (`@sanity/document-internationaliza
 - **Components render fields directly.** `doc.title` is a `string`, `module.body` is Portable Text — no locale picking. Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`).
 - **No cross-language fallback.** If a document doesn't exist in the requested language, the query returns `null`: slug routes (`page`, `project`) 404, while `home` and `work` render a "no document for this locale" notice. The cookie banner and the favicon are the exceptions: they fall back to the default language's document (`siteChromeQuery`).
 
-`utils/sanityLocalizedText.ts` resolves `internationalizedArray*` values (`[{ _key, language, value }]`), `main`'s storage format. Only **`resolveLinkLabel`** calls it: a dataset shared with `main` holds main-shaped documents, and a link can point at one (the `development` dataset's nav links the main-shaped `home`). New code should not need it.
+Plain string fields go through **`plainText(value)`** (`utils/sanityLocalizedText.ts`): trimmed, `undefined` when blank, stega markers kept.
+
+`utils/sanityLocalizedText.ts` also resolves `internationalizedArray*` values (`[{ _key, language, value }]`), `main`'s storage format. Only **`resolveLinkLabel`** needs that: a dataset shared with `main` holds main-shaped documents, and a link can point at one (the `development` dataset's nav links the main-shaped `home`). New code should not need it.
 
 ---
 

@@ -1,4 +1,5 @@
 import type { ModuleOf } from "@/sanity/types";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
@@ -26,7 +27,7 @@ export function ModuleText({
 	siteLocale,
 	priority = false,
 }: Props) {
-	const heading = module.heading?.trim();
+	const heading = plainText(module.heading);
 	const blocks = module.body ?? [];
 
 	return (

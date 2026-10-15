@@ -7,6 +7,7 @@ import {
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
@@ -66,7 +67,7 @@ export default async function Project({ params }: PageProps) {
 		notFound();
 	}
 
-	const projectTitle = typeof data.title === "string" ? data.title.trim() : "";
+	const projectTitle = plainText(data.title);
 	const body = data.body ?? [];
 
 	return (

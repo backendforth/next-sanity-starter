@@ -1,4 +1,5 @@
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import type { NormalizedSlide } from "@/src/components/carousel/CarouselSlide";
 import { LazyCarouselViewport } from "@/src/components/carousel/LazyCarouselViewport";
 import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
@@ -41,8 +42,7 @@ export function ModuleCarousel({ module, locale, priority = false }: Props) {
 	});
 	if (slides.length === 0) return null;
 
-	const heading =
-		typeof module.heading === "string" ? module.heading.trim() : "";
+	const heading = plainText(module.heading);
 
 	return (
 		<section className={moduleSectionClassName}>

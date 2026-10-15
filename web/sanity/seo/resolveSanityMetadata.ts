@@ -14,6 +14,7 @@ import {
 	buildFetchedImageUrl,
 	resolveSanityImageFieldForUrl,
 } from "../utils/sanityImageBuilder";
+import { plainText } from "../utils/sanityLocalizedText";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
@@ -31,16 +32,6 @@ function shareImageUrl(image: unknown): string | null {
 				quality: 85,
 			})
 		: null;
-}
-
-function firstNonEmpty(
-	...values: (string | null | undefined)[]
-): string | undefined {
-	for (const v of values) {
-		const t = v?.trim();
-		if (t) return t;
-	}
-	return undefined;
 }
 
 /**
@@ -69,11 +60,16 @@ export function hreflangLanguages(
 }
 
 /**
- * The brand, `siteSettings.title`, clean of stega markers — tab-title suffix and Open Graph
- * `siteName`. `"Site"` when unset.
+ * The brand, `siteSettings.title`, as the header renders it (stega markers kept); `"Site"` when
+ * unset.
  */
+export function siteBrand(site: SiteSettings | null | undefined): string {
+	return plainText(site?.title) ?? "Site";
+}
+
+/** {@link siteBrand} clean of stega markers — tab-title suffix and Open Graph `siteName`. */
 export function siteBrandTitle(site: SiteSettings | null | undefined): string {
-	return stegaClean(site?.title)?.trim() || "Site";
+	return stegaClean(siteBrand(site));
 }
 
 type MetadataFromSanityPageDataInput = {
@@ -111,19 +107,16 @@ export function metadataFromSanityPageData({
 	const settingsSeo = site?.seo;
 	const brand = siteBrandTitle(site);
 	const title = stegaClean(
-		firstNonEmpty(
-			seo?.title,
-			siteSeoTitleFirst ? settingsSeo?.title : undefined,
-			stegaClean(data.title),
-		) ?? segmentFallback,
+		plainText(seo?.title) ??
+			(siteSeoTitleFirst ? plainText(settingsSeo?.title) : undefined) ??
+			plainText(data.title) ??
+			segmentFallback,
 	);
 	const description = stegaClean(
-		firstNonEmpty(seo?.description, settingsSeo?.description),
+		plainText(seo?.description) ?? plainText(settingsSeo?.description),
 	);
-	const ogImage = firstNonEmpty(
-		shareImageUrl(seo?.image),
-		shareImageUrl(settingsSeo?.image),
-	);
+	const ogImage =
+		shareImageUrl(seo?.image) ?? shareImageUrl(settingsSeo?.image);
 	/* `routePathProjection`; a path starts with `/`, so stega never encodes it. */
 	const alternates = data.path
 		? {

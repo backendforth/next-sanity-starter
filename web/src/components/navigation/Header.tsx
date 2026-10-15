@@ -23,7 +23,7 @@ import { navLinkButtonClass } from "./navControlStyles";
 
 type Props = {
 	mainMenu?: MainMenuItem[] | null;
-	/** `siteSettings.title`, never empty (the layout falls back to "Site"). */
+	/** The brand (`siteBrand`): stega markers kept, never empty. */
 	siteTitle: string;
 };
 

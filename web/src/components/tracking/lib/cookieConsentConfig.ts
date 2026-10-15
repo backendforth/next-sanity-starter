@@ -7,6 +7,7 @@ import {
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
 import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import { isCookieFreeTracker } from "@/src/components/tracking/lib/trackingConfig";
 import {
 	type CookieBannerLabelKey,
@@ -203,10 +204,8 @@ export function cookieConsentTranslation(
 	options: LinkLocaleOptions,
 ): Translation {
 	const { locale } = options;
-	/* How the branch stores a banner text: plain here. Blank values still carry stega markers in
-	 * Presentation, hence the clean before the emptiness check. */
-	const read = (value: string | null | undefined) =>
-		value && stegaClean(value).trim() ? value : undefined;
+	/* How the branch stores a banner text: plain here. */
+	const read = plainText;
 	const text = (
 		value: string | null | undefined,
 		fallback?: CookieBannerLabelKey,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { NotFoundCopy } from "@/sanity/types";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
@@ -19,7 +20,7 @@ export function notFoundTitle(
 	copy: NotFoundCopy | null | undefined,
 	locale: string,
 ): string {
-	return copy?.notFoundTitle?.trim() || uiLabel("notFoundTitle", locale);
+	return plainText(copy?.notFoundTitle) ?? uiLabel("notFoundTitle", locale);
 }
 
 /** The 404 body in `locale`, rendered on the server: Studio copy, else the UI-label fallback. */

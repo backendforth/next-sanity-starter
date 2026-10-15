@@ -1,6 +1,7 @@
 import { stegaClean } from "next-sanity";
 
 import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";
@@ -44,8 +45,7 @@ export function ModuleContentRefs({
 	siteLocale,
 	priority = false,
 }: Props) {
-	const heading =
-		typeof module.heading === "string" ? module.heading.trim() : "";
+	const heading = plainText(module.heading);
 	const { hrefFor } = createLanguagePathUtils(siteLocale);
 	const items: ContentRefListItem[] = (module.references ?? [])
 		.filter((item) => item != null)
@@ -54,14 +54,13 @@ export function ModuleContentRefs({
 			href: hrefFor(item.path, locale),
 			/* `typeof`: a main-shaped target in a shared dataset carries a localized array. */
 			label:
-				(typeof item.title === "string" && item.title.trim()) ||
-				item.slug?.trim() ||
+				(typeof item.title === "string" ? plainText(item.title) : undefined) ??
+				plainText(item.slug) ??
 				uiLabel("untitled", locale),
 			createdAt: item._createdAt,
 			/* A deleted category dereferences to `null`. */
 			categories: (item.categories ?? []).flatMap((category) => {
-				const label =
-					typeof category?.title === "string" ? category.title.trim() : "";
+				const label = plainText(category?.title);
 				return category && label ? [{ id: category._id, label }] : [];
 			}),
 			previewImage: item.previewImage,

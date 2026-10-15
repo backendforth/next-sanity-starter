@@ -1,12 +1,12 @@
 # Query components (`queries/components/`)
 
-GROQ building blocks for **page modules** and **Portable Text** (rich text with embedded modules). Everything is re-exported from **`@/sanity/queries`**.
+GROQ building blocks for **page modules** and **Portable Text** (rich text with embedded modules). They are fragments: import them from their file; the full queries embed them.
 
 ## `text/`
 
 | File | Export | Purpose |
 |------|--------|---------|
-| `text/richTextMedia.ts` | `richTextMediaQuery` | Projection for `internationalizedArrayRichTextMedia` / schema `richTextMedia`: blocks, links, embedded `module.media` and `module.carousel` (the editor's whole `of` set). Flat, no recursion. |
+| `text/richTextMedia.ts` | `richTextMediaQuery`, `internationalizedRichTextMediaBodyQuery`, `blockFields` | `richTextMediaQuery` projects a `richTextMedia` value: blocks with resolved links, plus the inline modules `module.media` and `module.carousel` (the editor's whole `of` set). Flat, no recursion. `internationalizedRichTextMediaBodyQuery` wraps it for an i18n `body` field; `blockFields` is the blocks-only part. |
 
 ## `modules/`
 
@@ -22,7 +22,7 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 
 ## Usage
 
-- **Ready-made page queries:** `queries/pages/` — `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery` embed `modulesQuery`.
+- **Ready-made page queries:** `queries/pages/` — `homeQuery`, `workQuery` and `pageBySlugQuery` embed `modulesQuery`; `projectBySlugQuery` embeds `internationalizedRichTextMediaBodyQuery`.
 - **Snippets:** `queries/snippets/` — `linkQuery`, `pageSeoQuery`, settings, …
 
 ## Adding a module

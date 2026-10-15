@@ -1,4 +1,4 @@
-import { mediaQuery } from "../../snippets/media";
+import { imageQuery } from "../../snippets/media";
 import { moduleMediaResolvedMediaQuery } from "./media";
 
 /**
@@ -19,7 +19,7 @@ export const moduleCarouselInnerFields = `
     imagesOnly != false => slides[]{
       _key,
       _type,
-      "media": ${mediaQuery}
+      "media": @${imageQuery}
     },
     slidesMedia[]{
       _key,

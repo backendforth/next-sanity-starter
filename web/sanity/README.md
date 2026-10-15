@@ -81,7 +81,7 @@ Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (b
 ## Queries
 
 - **Overview** — GROQ basics, folder layout, Sanity Vision examples (home, pages, nav, settings). See `queries/README.md`.
-- **Snippets** — reusable GROQ string pieces (`linkQuery`, `pageSeoQuery`, `mediaQuery`, …). See `queries/snippets/README.md`.
+- **Snippets** — reusable GROQ string pieces (`linkQuery`, `pageSeoQuery`, `imageQuery`, `videoQuery`, …). See `queries/snippets/README.md`.
 - **Components** — `modulesQuery`, `richTextMediaQuery`, per-module projections. See `queries/components/README.md`.
 - **Pages** — `homeQuery`, `pageBySlugQuery`. See `queries/pages/README.md`.
 - **Sitemap / slugs** — `pageSlugsQuery`, `sitemapPagesQuery` in `queries/snippets/sitemap.ts`.

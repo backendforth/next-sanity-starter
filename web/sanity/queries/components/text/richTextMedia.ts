@@ -2,9 +2,10 @@ import { linkQuery } from "../../snippets/link";
 import { moduleCarouselQuery } from "../modules/carousel";
 import { moduleMediaQuery } from "../modules/media";
 
-/** Portable Text blocks with resolved `link` marks. */
+/** Portable Text blocks with resolved `link` marks. Inline modules add their own fields below. */
 export const blockFields = `
-    ...,
+    _key,
+    _type,
     _type == "block" => {
       ...,
       markDefs[]{

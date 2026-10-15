@@ -10,8 +10,28 @@ import {
 import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
 import type { RouteDocument, SiteSettings } from "../types";
+import {
+	buildFetchedImageUrl,
+	resolveSanityImageFieldForUrl,
+} from "../utils/sanityImageBuilder";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+
+/** Open Graph's recommended 1.91:1 share image. */
+const SHARE_IMAGE = { width: 1200, height: 630 };
+
+/** The share image, cut with the editor's crop and hotspot. */
+function shareImageUrl(image: unknown): string | null {
+	const field = resolveSanityImageFieldForUrl(image);
+	return field
+		? buildFetchedImageUrl(field, {
+				...SHARE_IMAGE,
+				fit: "crop",
+				format: "jpg",
+				quality: 85,
+			})
+		: null;
+}
 
 function firstNonEmpty(
 	...values: (string | null | undefined)[]
@@ -100,7 +120,10 @@ export function metadataFromSanityPageData({
 	const description = stegaClean(
 		firstNonEmpty(seo?.description, settingsSeo?.description),
 	);
-	const ogImage = firstNonEmpty(seo?.imageUrl, settingsSeo?.imageUrl);
+	const ogImage = firstNonEmpty(
+		shareImageUrl(seo?.image),
+		shareImageUrl(settingsSeo?.image),
+	);
 	/* `routePathProjection`; a path starts with `/`, so stega never encodes it. */
 	const alternates = data.path
 		? {
@@ -127,7 +150,7 @@ export function metadataFromSanityPageData({
 			description,
 			...(alternates ? { url: alternates.canonical } : {}),
 			locale,
-			...(ogImage ? { images: [{ url: ogImage }] } : {}),
+			...(ogImage ? { images: [{ url: ogImage, ...SHARE_IMAGE }] } : {}),
 		},
 		twitter: {
 			card: ogImage ? "summary_large_image" : "summary",

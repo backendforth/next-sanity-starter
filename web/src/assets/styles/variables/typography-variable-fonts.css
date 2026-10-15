@@ -1,6 +1,6 @@
 /*
  * Variable-font axis tokens (`font-variation-settings` / `font-feature-settings`).
- * Optional — not imported by default. Import in `globals.css` after `typography/fonts.css`
+ * Optional — not imported by default. Import in `globals.css` next to the other `variables/*` files
  * when using a variable font; map `--font-variation-settings-*` on selectors or utilities.
  *
  * Axis tags follow OpenType four-character tags (CSS uses quoted lowercase forms).

@@ -20,12 +20,6 @@
 	--border-width-DEFAULT: 0.0625rem;
 	--border-width-0: 0;
 
-	/* Semantic font stacks (see `typography/fonts.css`; Geist via `components/layout/DocumentShell.tsx`) */
-	--font-sans: var(--font-family-sans), ui-sans-serif, system-ui, sans-serif;
-	--font-text: var(--font-family-text), ui-sans-serif, system-ui, sans-serif;
-	--font-headline: var(--font-family-headline), ui-monospace, monospace;
-	--font-mono: var(--font-family-mono), ui-monospace, monospace;
-
 	/* Primitives — same keys as former `theme.extend.colors`. `white`/`black`/`grey` sit in the
 	 * `@theme reference` block below because their token names collide with Tailwind's. */
 	--color-current: currentColor;
@@ -75,6 +69,17 @@
 	/* See `variables/sizes.css` `--container-gutter` — enable together for `p-container-gutter` / `gap-container-gutter` utilities.
 	--spacing-container-gutter: var(--container-gutter);
 	*/
+}
+
+/*
+ * Font stacks. `--font-family-sans` / `--font-family-mono` come from the `next/font` class
+ * (`components/layout/DocumentShell.tsx`), which `app/not-found.tsx` puts on a `<div>`, not on
+ * `<html>`. `inline` writes the stack into each utility, so the variables resolve on the element
+ * that uses `font-text` / `font-mono` instead of once on `:root`.
+ */
+@theme inline {
+	--font-text: var(--font-family-sans), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-family-mono), ui-monospace, monospace;
 }
 
 /*

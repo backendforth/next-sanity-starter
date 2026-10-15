@@ -1,12 +1,9 @@
 /*
- * Import order: design tokens and fonts first, then `tailwindcss`, then
+ * Import order: design tokens first, then `tailwindcss`, then
  * `tailwind/theme.css` (`@theme` extensions), then the files whose `@layer base` rules must
  * follow preflight. All `@import` rules stay before any other rules (e.g. `body { }`).
- *
- * Font files: `@font-face` `url(...)` paths resolve relative to the file that defines them.
  */
 
-@import "./typography/fonts.css";
 @import "./variables/colors.css";
 @import "./variables/breakpoints.css";
 @import "./tailwind/safelist.css";

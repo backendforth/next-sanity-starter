@@ -270,7 +270,7 @@ export function CarouselViewport({
 									aria-label={labels.showSlide[index]}
 									aria-current={isActive ? "true" : undefined}
 									className={clsx(
-										"relative aspect-video w-24 shrink-0 overflow-hidden rounded border transition",
+										"relative aspect-video w-24 shrink-0 overflow-hidden rounded-4xl border transition",
 										isActive
 											? "border-color-text"
 											: "border-color-border-subtle opacity-60 hover:opacity-100",

@@ -20,6 +20,10 @@ import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";
+import {
+	resolveFooterMenuRows,
+	resolveMainMenuEntries,
+} from "@/src/utils/navHref";
 
 type Props = {
 	children: React.ReactNode;
@@ -63,6 +67,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 		notFound();
 	}
 	const locale = raw;
+	const linkOptions = { locale, siteLocale };
 
 	// `siteLocale` is shared by all locales (single doc). The chrome bundle (nav, cookie banner,
 	// settings and analytics in one query) is per language, so it waits for the validated locale.
@@ -82,7 +87,9 @@ export default async function LocaleLayout({ children, params }: Props) {
 				{uiLabel("skipToMain", locale)}
 			</a>
 			<Header
-				mainMenu={siteNav?.mainMenu}
+				locale={locale}
+				entries={resolveMainMenuEntries(siteNav?.mainMenu, linkOptions)}
+				homeHref={pathUtils.localePath("/", locale)}
 				siteTitle={siteBrand(chrome?.settings)}
 			/>
 			<main
@@ -94,9 +101,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 			</main>
 			<Footer
 				locale={locale}
-				footerMenu={siteNav?.footerMenu}
-				pathUtils={pathUtils}
-				siteLocale={siteLocale}
+				rows={resolveFooterMenuRows(siteNav?.footerMenu, linkOptions)}
 			/>
 			{/* Only when the Studio toggle is on: the lazy chunk (JS + CSS) is
 			 * otherwise never requested. A toggle flip reaches the page through
@@ -104,10 +109,11 @@ export default async function LocaleLayout({ children, params }: Props) {
 			{cookieBanner?.useCookieBanner ? (
 				<LazyCookieConsentBanner
 					locale={locale}
-					translation={cookieConsentTranslation(cookieBanner, enabledTrackers, {
-						locale,
-						siteLocale,
-					})}
+					translation={cookieConsentTranslation(
+						cookieBanner,
+						enabledTrackers,
+						linkOptions,
+					)}
 				/>
 			) : null}
 			{enabledTrackers.length > 0 ? (

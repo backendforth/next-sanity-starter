@@ -4,17 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
 
-import type { MainMenuItem } from "@/sanity/types";
 import { CloseIcon } from "@/src/components/icons/CloseIcon";
 import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
-import { useLanguage } from "@/src/contexts/LanguageContext";
 import { isCurrentNavHref } from "@/src/i18n/paths";
 import { uiLabel } from "@/src/i18n/uiLabels";
-import {
-	type MainMenuEntry,
-	resolveMainMenuEntries,
-} from "../../utils/navHref";
+import type { MainMenuEntry } from "../../utils/navHref";
 import { LanguageSwitch } from "./LanguageSwitch";
 import { NavItem } from "./NavItem";
 import { navLinkButtonClass } from "./navControlStyles";
@@ -22,7 +17,11 @@ import { navLinkButtonClass } from "./navControlStyles";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	mainMenu?: MainMenuItem[] | null;
+	locale: string;
+	/** `siteNav.mainMenu`, resolved by the layout (`resolveMainMenuEntries`). */
+	entries: MainMenuEntry[];
+	/** The home page in `locale`. */
+	homeHref: string;
 	/** The brand (`siteBrand`): stega markers kept, never empty. */
 	siteTitle: string;
 };
@@ -54,7 +53,7 @@ function SiteTitle({
 	const isHome = isCurrentNavHref(pathname, href, "");
 
 	return (
-		<h1 className="m-0 shrink-0 font-[inherit] text-[length:inherit] leading-[inherit]">
+		<h1 className="shrink-0">
 			<Link
 				href={href}
 				className={navLinkButtonClass(isHome)}
@@ -67,24 +66,20 @@ function SiteTitle({
 	);
 }
 
+/** `onNavigate` closes the mobile menu after a link or a language switch. */
 function MainMenuItems({
 	entries,
 	onNavigate,
-	onAfterLocaleChange,
 }: {
 	entries: MainMenuEntry[];
 	onNavigate: () => void;
-	onAfterLocaleChange: () => void;
 }) {
 	return (
 		<>
 			{entries.map((entry) => {
 				if (entry.kind === "languageSwitch") {
 					return (
-						<LanguageSwitch
-							key={entry.id}
-							onAfterLocaleChange={onAfterLocaleChange}
-						/>
+						<LanguageSwitch key={entry.id} onAfterLocaleChange={onNavigate} />
 					);
 				}
 				if (entry.kind === "themeToggle") {
@@ -125,22 +120,11 @@ function MobileMenuButton({
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Header({ mainMenu, siteTitle }: Props) {
-	const { currentLocale, localePath, hrefFor, siteLocale } = useLanguage();
-
-	const entries = resolveMainMenuEntries(
-		mainMenu,
-		currentLocale,
-		{ hrefFor },
-		siteLocale,
-	);
-	const homeHref = localePath("/", currentLocale);
-
+export function Header({ locale, entries, homeHref, siteTitle }: Props) {
 	const [open, setOpen] = useState(false);
 	const menuId = useId();
 
 	const close = useCallback(() => setOpen(false), []);
-	const closeMenuAfterLocaleChange = useCallback(() => setOpen(false), []);
 	const toggle = useCallback(() => setOpen((v) => !v), []);
 
 	useEscapeKey(open, close);
@@ -163,20 +147,16 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-xs sm:gap-sm">
 					<nav
 						className="hidden flex-wrap items-center justify-end gap-md md:flex"
-						aria-label={uiLabel("mainNav", currentLocale)}
+						aria-label={uiLabel("mainNav", locale)}
 					>
-						<MainMenuItems
-							entries={entries}
-							onNavigate={close}
-							onAfterLocaleChange={closeMenuAfterLocaleChange}
-						/>
+						<MainMenuItems entries={entries} onNavigate={close} />
 					</nav>
 
 					<div className="flex md:hidden">
 						<MobileMenuButton
 							open={open}
 							menuId={menuId}
-							locale={currentLocale}
+							locale={locale}
 							onToggle={toggle}
 						/>
 					</div>
@@ -190,13 +170,9 @@ export function Header({ mainMenu, siteTitle }: Props) {
 				>
 					<nav
 						className="mx-auto flex max-w-container flex-col gap-md px-md py-sm sm:px-container"
-						aria-label={uiLabel("mainNav", currentLocale)}
+						aria-label={uiLabel("mainNav", locale)}
 					>
-						<MainMenuItems
-							entries={entries}
-							onNavigate={close}
-							onAfterLocaleChange={closeMenuAfterLocaleChange}
-						/>
+						<MainMenuItems entries={entries} onNavigate={close} />
 					</nav>
 				</div>
 			) : null}

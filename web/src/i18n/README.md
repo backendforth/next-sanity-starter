@@ -26,7 +26,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 ## Flow
 
 1. **Sanity** — editors maintain **`siteLanguageSettings`** (ids, labels, default). First create uses schema **`initialValue`**.
-2. **Next** — `fetchSiteLanguageSettings()` (cached) supplies **`[locale]/layout.tsx`** → **`LanguageProvider`**, **`Footer`** path utils, **`generateStaticParams`**, and **`ModulesRenderer`** (href building in `module.contentRefs`).
+2. **Next** — `fetchSiteLanguageSettings()` (cached) supplies **`[locale]/layout.tsx`** → **`LanguageProvider`** and the nav menus (`src/utils/navHref.ts`, resolved there for the route's locale), **`generateStaticParams`**, and **`ModulesRenderer`** (href building in `module.contentRefs`).
 3. User opens `/` or `/about` → **`proxy`** rewrites internally to `/{defaultLocale}/…` using the CDN-backed locale list.
 4. User opens `/de/about` → no rewrite; header marks locale `de`.
 5. `app/[locale]/layout.tsx` is the root layout: `DocumentShell` server-renders `<html lang={locale}>` for the route's language.

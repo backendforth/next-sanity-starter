@@ -13,8 +13,6 @@ export const SANITY_CACHE_TAGS = {
 	work: "work",
 	pages: "pages",
 	projects: "projects",
-	pageSlug: (slug: string) => `page-${slug}`,
-	projectSlug: (slug: string) => `project-${slug}`,
 	sitemap: "site-pages",
 	siteLanguageSettings: "site-language-settings",
 	siteSettings: "site-settings",
@@ -31,8 +29,8 @@ export const SANITY_CACHE_TAGS = {
  * to purge every entry that may show it, not just its own detail route.
  *
  * The cost is deliberate: any page or project publish invalidates the module-hosting entries
- * (home, work, pages, projects), which re-render on the next request. Per-slug tags stay for
- * the targeted purge of a detail route.
+ * (home, work, pages, projects), which re-render on the next request. A per-slug tag would add
+ * nothing — every detail read carries its collection tag, which the same publish purges.
  */
 export const EMBEDDED_CONTENT_TAGS: readonly string[] = [
 	SANITY_CACHE_TAGS.pages,
@@ -43,43 +41,39 @@ export const EMBEDDED_CONTENT_TAGS: readonly string[] = [
  * Webhook document type → tags to invalidate. Also the allow-list: a `_type` missing here is
  * ignored by `/api/revalidate`, so forged payloads cannot force cache churn.
  */
-const WEBHOOK_TAG_MAP: Record<string, (slug?: string) => string[]> = {
+const WEBHOOK_TAG_MAP: Record<string, readonly string[]> = {
 	/* `home` is a page reference too (`PAGE_REFERENCES`): content-refs lists and internal links
 	 * embed its title, so it purges the embedding entries like a page does. */
-	home: () => [
+	home: [
 		SANITY_CACHE_TAGS.home,
 		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.sitemap,
 	],
-	work: () => [SANITY_CACHE_TAGS.work, SANITY_CACHE_TAGS.sitemap],
-	page: (slug) => [
-		SANITY_CACHE_TAGS.pages,
-		SANITY_CACHE_TAGS.sitemap,
-		...(slug ? [SANITY_CACHE_TAGS.pageSlug(slug)] : []),
-	],
-	project: (slug) => [
-		SANITY_CACHE_TAGS.projects,
-		SANITY_CACHE_TAGS.sitemap,
-		...(slug ? [SANITY_CACHE_TAGS.projectSlug(slug)] : []),
-	],
+	work: [SANITY_CACHE_TAGS.work, SANITY_CACHE_TAGS.sitemap],
+	page: [SANITY_CACHE_TAGS.pages, SANITY_CACHE_TAGS.sitemap],
+	project: [SANITY_CACHE_TAGS.projects, SANITY_CACHE_TAGS.sitemap],
 	/* Category titles render inside project pages and content-refs lists, not on a route of
 	 * their own — purge the collection that displays them. */
-	projectCategory: () => [SANITY_CACHE_TAGS.projects],
-	siteSettings: () => [SANITY_CACHE_TAGS.siteSettings],
-	siteNav: () => [SANITY_CACHE_TAGS.siteNav],
-	siteCookieBanner: () => [SANITY_CACHE_TAGS.siteCookieBanner],
-	siteAnalyticsSettings: () => [SANITY_CACHE_TAGS.siteAnalyticsSettings],
-	errorSettings: () => [SANITY_CACHE_TAGS.errorSettings],
-	siteLanguageSettings: () => [SANITY_CACHE_TAGS.siteLanguageSettings],
+	projectCategory: [SANITY_CACHE_TAGS.projects],
+	siteSettings: [SANITY_CACHE_TAGS.siteSettings],
+	siteNav: [SANITY_CACHE_TAGS.siteNav],
+	siteCookieBanner: [SANITY_CACHE_TAGS.siteCookieBanner],
+	siteAnalyticsSettings: [SANITY_CACHE_TAGS.siteAnalyticsSettings],
+	errorSettings: [SANITY_CACHE_TAGS.errorSettings],
+	siteLanguageSettings: [SANITY_CACHE_TAGS.siteLanguageSettings],
 	/* Linking or unlinking a translation changes every route's sibling list (`translationsQuery`:
 	 * hreflang, the language switch) and the sitemap's alternates. */
-	"translation.metadata": () => [
+	"translation.metadata": [
 		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.projects,
 		SANITY_CACHE_TAGS.home,
 		SANITY_CACHE_TAGS.work,
 		SANITY_CACHE_TAGS.sitemap,
 	],
+	/* Asset documents hold fields the queries read (image alt text; Mux poster frame, playback
+	 * ID, track size). Every content read carries `pages` or `projects`, the shell included. */
+	"sanity.imageAsset": EMBEDDED_CONTENT_TAGS,
+	"mux.videoAsset": EMBEDDED_CONTENT_TAGS,
 };
 
 /** Document types the webhook acts on — use them in the Sanity webhook's filter. */
@@ -87,15 +81,10 @@ export const WEBHOOK_DOCUMENT_TYPES = Object.keys(WEBHOOK_TAG_MAP);
 
 /**
  * Tags to invalidate for one webhook payload; empty when the type is not allow-listed (the
- * caller answers `200 { revalidated: false }`). Per-slug tags are skipped when the payload has
- * no slug; the collection tag still covers the change.
+ * caller answers `200 { revalidated: false }`).
  */
-export function tagsForWebhookDocument(
-	type: string | undefined,
-	slug: string | undefined,
-): string[] {
+export function tagsForWebhookDocument(type: string | undefined): string[] {
 	/* Own keys only: a forged `_type` like "constructor" must not reach `Object.prototype`. */
 	if (!type || !Object.hasOwn(WEBHOOK_TAG_MAP, type)) return [];
-	const resolve = WEBHOOK_TAG_MAP[type];
-	return resolve ? [...new Set(resolve(slug))] : [];
+	return [...(WEBHOOK_TAG_MAP[type] ?? [])];
 }

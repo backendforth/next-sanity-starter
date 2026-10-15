@@ -49,7 +49,7 @@ export const fetchPageBySlug = cache(async (slug: string, locale: string) => {
 	const { data } = await sanityFetch({
 		query: pageBySlugQuery,
 		params: { slug, locale },
-		tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
+		tags: [...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -72,7 +72,7 @@ export const fetchProjectBySlug = cache(
 		const { data } = await sanityFetch({
 			query: projectBySlugQuery,
 			params: { slug, locale },
-			tags: [SANITY_CACHE_TAGS.projectSlug(slug), ...EMBEDDED_CONTENT_TAGS],
+			tags: [...EMBEDDED_CONTENT_TAGS],
 		});
 		return data;
 	},

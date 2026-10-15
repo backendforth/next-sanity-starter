@@ -45,8 +45,9 @@ function staticLocationsForType(
 }
 
 /**
- * Central Presentation `resolve.locations`: overrides → site-root singletons →
- * slug-based (from `SLUG_BASED_DOCUMENT_TYPES` or any doc with `slug.current`).
+ * Central Presentation `resolve.locations`: overrides → site-root singletons → slug-based types
+ * (`SLUG_BASED_DOCUMENT_TYPES`, `PREFIXED_SLUG_DOCUMENT_TYPES`). Any other type has no route of
+ * its own (`projectCategory`), so it gets no locations.
  */
 export const presentationLocationsResolver: DocumentLocationResolver = (
   params,
@@ -66,13 +67,13 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
   if (SITE_ROOT_DOCUMENT_TYPES.has(type)) {
     return {
       message: PRESENTATION_LOCATIONS_HEADER,
-      locations: [
-        {
-          title: type === "home" ? "Home" : "Site preview (home)",
-          href: "/",
-        },
-      ],
+      locations: [{ title: "Home", href: "/" }],
     };
+  }
+
+  const prefixed = PREFIXED_SLUG_TYPE_SET.has(type);
+  if (!prefixed && !SLUG_TYPE_SET.has(type)) {
+    return null;
   }
 
   const ids = Array.from(
@@ -87,9 +88,7 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
         const slug = typeof raw === "string" ? raw.trim() : "";
 
         if (slug) {
-          const path = PREFIXED_SLUG_TYPE_SET.has(type)
-            ? `${PROJECT_URL_PREFIX}/${slug}`
-            : `/${slug}`;
+          const path = prefixed ? `${PROJECT_URL_PREFIX}/${slug}` : `/${slug}`;
           return {
             message: PRESENTATION_LOCATIONS_HEADER,
             locations: [
@@ -99,34 +98,13 @@ export const presentationLocationsResolver: DocumentLocationResolver = (
           };
         }
 
-        if (PREFIXED_SLUG_TYPE_SET.has(type)) {
-          return {
-            message: PRESENTATION_LOCATIONS_HEADER,
-            locations: [
-              {
-                title: "Project (set path first)",
-                href: PROJECT_URL_PREFIX,
-              },
-            ],
-          };
-        }
-
-        if (SLUG_TYPE_SET.has(type)) {
-          return {
-            message: PRESENTATION_LOCATIONS_HEADER,
-            locations: [
-              {
-                title: "Page (set path first)",
-                href: "/",
-              },
-            ],
-          };
-        }
-
         return {
           message: PRESENTATION_LOCATIONS_HEADER,
-          tone: "caution" as const,
-          locations: [{ title: "Site (root)", href: "/" }],
+          locations: [
+            prefixed
+              ? { title: "Project (set path first)", href: PROJECT_URL_PREFIX }
+              : { title: "Page (set path first)", href: "/" },
+          ],
         };
       }),
     );

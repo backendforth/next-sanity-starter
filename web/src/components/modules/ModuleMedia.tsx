@@ -2,15 +2,19 @@
 
 import type { ReactNode } from "react";
 
-import type { ModuleMediaData } from "@/sanity/types/modules";
+import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
+import { isStegaVariant } from "@/sanity/utils/stegaVariant";
 import { MediaImage, MediaVideo, MediaVideoLoop } from "@/src/components/media";
 
 import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/** A `modules[]` entry or the same module inline in rich text — both carry `resolvedMedia`. */
+type MediaModule = ModuleOf<"module.media"> | RichTextEmbedOf<"module.media">;
+
 type Props = {
-	module: ModuleMediaData;
+	module: MediaModule;
 	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
 	variant?: "module" | "embed";
 	/**
@@ -50,22 +54,11 @@ function MediaFigure({
 	);
 }
 
-function renderModuleMediaFigure(module: ModuleMediaData, priority: boolean) {
+function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 	const rm = module.resolvedMedia;
+	if (!rm.media) return null;
 
-	if (rm?.kind === "image" && rm.media) {
-		return (
-			<MediaFigure caption={rm.caption}>
-				<MediaImage
-					imagePayload={rm.media}
-					caption={rm.caption}
-					priority={priority}
-				/>
-			</MediaFigure>
-		);
-	}
-
-	if (rm?.kind === "loop" && rm.media) {
+	if (isStegaVariant(rm, "kind", "loop")) {
 		return (
 			<MediaFigure caption={rm.caption}>
 				<MediaVideoLoop
@@ -79,7 +72,7 @@ function renderModuleMediaFigure(module: ModuleMediaData, priority: boolean) {
 		);
 	}
 
-	if (rm?.kind === "video" && rm.media) {
+	if (isStegaVariant(rm, "kind", "video")) {
 		return (
 			<MediaFigure caption={rm.caption}>
 				{isLoopIntent(rm.videoSettings) ? (
@@ -102,68 +95,23 @@ function renderModuleMediaFigure(module: ModuleMediaData, priority: boolean) {
 		);
 	}
 
-	const imagePayload = module.imageContent?.image ?? module.imageContent?.media;
-
-	if (module.type === "image" && imagePayload) {
-		return (
-			<MediaFigure caption={module.imageContent?.caption}>
-				<MediaImage
-					imagePayload={imagePayload}
-					caption={module.imageContent?.caption}
-					priority={priority}
-				/>
-			</MediaFigure>
-		);
-	}
-
-	if (module.type === "loop" && module.videoLoopContent) {
-		const muxField =
-			module.videoLoopContent.video ?? module.videoLoopContent.media;
-		return (
-			<MediaFigure caption={module.videoLoopContent.caption}>
-				<MediaVideoLoop
-					media={muxField}
-					caption={module.videoLoopContent.caption}
-					posterPayload={module.videoLoopContent.poster}
-					allowUnmute={module.videoLoopContent.allowUnmute === true}
-					posterPriority={priority}
-				/>
-			</MediaFigure>
-		);
-	}
-
-	if (module.type === "video" && module.videoContent) {
-		const muxField = module.videoContent.video ?? module.videoContent.media;
-		return (
-			<MediaFigure caption={module.videoContent.caption}>
-				{isLoopIntent(module.videoContent.videoSettings) ? (
-					<MediaVideoLoop
-						media={muxField}
-						caption={module.videoContent.caption}
-						posterPayload={module.videoContent.poster}
-						posterPriority={priority}
-					/>
-				) : (
-					<MediaVideo
-						media={muxField}
-						caption={module.videoContent.caption}
-						posterPayload={module.videoContent.poster}
-						videoSettings={module.videoContent.videoSettings}
-						priority={priority}
-					/>
-				)}
-			</MediaFigure>
-		);
-	}
-
-	return null;
+	return (
+		<MediaFigure caption={rm.caption}>
+			<MediaImage
+				imagePayload={rm.media}
+				caption={rm.caption}
+				priority={priority}
+			/>
+		</MediaFigure>
+	);
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
- * `module.media` — image, video (MuxPlayer), or silent loop. GROQ resolves per-kind
- * payloads into `resolvedMedia`; raw `*Content` fields remain as fallbacks.
+ * `module.media` — image, video (MuxPlayer), or silent loop, from the `resolvedMedia` GROQ
+ * builds per kind. Its `select` always yields an object (image is the default branch), so there
+ * is no fallback to the raw `*Content` fields.
  */
 export function ModuleMedia({
 	module,

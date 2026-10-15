@@ -7,10 +7,30 @@ import {
 	syncSanityDataset,
 	syncSanityProjectId,
 } from "@/sanity/sanitySyncConfig";
-import type {
-	SanityImageAssetRef,
-	SanityImageField,
-} from "@/sanity/types/modules";
+
+/**
+ * What the image helpers read from an `image` field projected with `imageQuery` (or a raw
+ * Studio image field). Their input contract, checked at runtime by
+ * `resolveSanityImageFieldForUrl`; the query result types themselves come from TypeGen.
+ */
+export type SanityImageAssetRef = {
+	_id?: string;
+	_ref?: string;
+	url?: string | null;
+	metadata?: {
+		dimensions?: {
+			width?: number;
+			height?: number;
+			aspectRatio?: number;
+		} | null;
+	} | null;
+};
+
+export type SanityImageField = {
+	crop?: unknown;
+	hotspot?: unknown;
+	asset?: SanityImageAssetRef | null;
+} | null;
 
 type ImageFit = "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
 type ImageAuto = "format";

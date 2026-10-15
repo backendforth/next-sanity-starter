@@ -41,6 +41,9 @@ jobs:
       # hand-edits routinely miss a file. This gate catches partial wirings
       # before they reach main.
       - run: pnpm run check:wiring
+      # Unit tests for the wiring manifest plus an end-to-end `gen:module` run
+      # (two modules, one inline) through typegen, check:wiring and tsc.
+      - run: pnpm run test:tooling
 
   schema-typegen:
     name: schema typegen
@@ -57,16 +60,11 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      # `sanity schema extract` loads sanity.config.ts, which throws without a
-      # project id. The extracted schema is static (no API call), so a placeholder
-      # is enough to let the config module load — same pattern as the build jobs.
-      - run: pnpm --filter studio run generate
-        env:
-          SANITY_STUDIO_PROJECT_ID: ci-placeholder
-      # Web typegen reads the (just-regenerated) `studio/schema.json` and the
-      # `defineQuery` usages in `web/sanity/queries/**`. A placeholder project id
-      # is enough — typegen never calls the Sanity API.
-      - run: pnpm --filter web run generate
+      # Studio schema extract + typegen, web query typegen, then `check:typegen`
+      # (every `defineQuery` got a type). `sanity schema extract` loads
+      # sanity.config.ts, which throws without a project id; nothing here calls
+      # the Sanity API, so a placeholder is enough — same as the build jobs.
+      - run: pnpm run generate
         env:
           SANITY_STUDIO_PROJECT_ID: ci-placeholder
       - name: Ensure schema typegen produced no changes

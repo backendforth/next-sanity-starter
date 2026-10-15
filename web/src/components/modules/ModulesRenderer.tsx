@@ -1,11 +1,5 @@
 import dynamic from "next/dynamic";
-import type {
-	ContentModule,
-	ModuleCarouselData,
-	ModuleContentRefsData,
-	ModuleMediaData,
-	ModuleTextData,
-} from "@/sanity/types/modules";
+import type { ContentModule } from "@/sanity/types";
 import { dataAttr } from "@/sanity/utils/dataAttr";
 import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
@@ -43,6 +37,10 @@ const IS_DEV = process.env.NODE_ENV === "development";
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
+/**
+ * Data from before a deploy can hold a module type this build doesn't know yet; the generated
+ * types can't. Dev shows a placeholder, production renders nothing.
+ */
 function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 	if (!IS_DEV) {
 		console.warn(
@@ -69,38 +67,34 @@ function renderModuleChild(
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
 	priority: boolean,
 ) {
-	if (mod._type === "module.text") {
-		return (
-			<ModuleText
-				module={mod as ModuleTextData}
-				locale={locale}
-				siteLocale={siteLocale}
-			/>
-		);
+	switch (mod._type) {
+		case "module.text":
+			return (
+				<ModuleText module={mod} locale={locale} siteLocale={siteLocale} />
+			);
+		case "module.media":
+			return <ModuleMedia module={mod} priority={priority} />;
+		case "module.carousel":
+			return (
+				<ModuleCarousel module={mod} locale={locale} siteLocale={siteLocale} />
+			);
+		case "module.contentRefs":
+			return (
+				<ModuleContentRefs
+					module={mod}
+					locale={locale}
+					siteLocale={siteLocale}
+					priority={priority}
+				/>
+			);
+		default: {
+			/* A module type the query returns but no `case` handles fails `tsc` here. */
+			const unhandled: never = mod;
+			return (
+				<UnknownModule moduleType={(unhandled as { _type?: string })._type} />
+			);
+		}
 	}
-	if (mod._type === "module.media") {
-		return <ModuleMedia module={mod as ModuleMediaData} priority={priority} />;
-	}
-	if (mod._type === "module.carousel") {
-		return (
-			<ModuleCarousel
-				module={mod as ModuleCarouselData}
-				locale={locale}
-				siteLocale={siteLocale}
-			/>
-		);
-	}
-	if (mod._type === "module.contentRefs") {
-		return (
-			<ModuleContentRefs
-				module={mod as ModuleContentRefsData}
-				locale={locale}
-				siteLocale={siteLocale}
-				priority={priority}
-			/>
-		);
-	}
-	return <UnknownModule moduleType={mod._type} />;
 }
 
 /**

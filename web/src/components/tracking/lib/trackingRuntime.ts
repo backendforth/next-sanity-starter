@@ -1,4 +1,4 @@
-import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
+import type { AnalyticsTracker } from "@/sanity/types";
 
 type LoadedTracker = {
 	tracker: AnalyticsTracker;

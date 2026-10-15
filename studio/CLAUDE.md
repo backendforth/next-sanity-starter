@@ -7,12 +7,12 @@ Canonical guardrails: @../AGENTS.md. This file only adds Studio-specific gotchas
 - Sanity Studio v6. Biome enforces **2 spaces + double quotes** in `studio/` (overriding the root tabs default).
 - `schemas/index.ts` is the gate — any new type is **invisible** to Studio and APIs until exported and added to `schemaTypes`. **YOU MUST** register every new schema there.
 - The sidebar does **NOT** auto-populate from `schemaTypes`. New document types need a structure item under `config/structure/items/` and registration in `config/structure/index.ts`.
-- `pnpm studio:generate` runs `sanity schema extract` AND `sanity typegen generate`. CI fails if either produces a diff. **Commit** `studio/schema.json` + `studio/sanity.types.gen.ts` in the same commit as the schema change.
+- `pnpm generate` runs `sanity schema extract`, both typegens and `check:typegen`. CI fails if it produces a diff. **Commit** `studio/schema.json` and both `sanity.types.gen.ts` in the same commit as the schema change.
 - Languages come from the `siteLanguageSettings` singleton at **runtime** (`config/sync/internationalizedArrayLanguages.ts`). Don't hard-code language lists in source.
 
 ## Module pattern — Studio half
 
-The 8-step wiring is in @../AGENTS.md. The Studio half (steps 1–4) touches `schemas/objects/modules/`, `schemas/index.ts`, `objects/editors/richTextMedia.ts`, and `fields/modulesArrayField.ts`. **YOU MUST** keep `richTextMedia.ts` and `modulesArrayField.ts` in lockstep — they expose the same module set unless you have a documented reason to differ.
+The 7-point wiring is in @../AGENTS.md. The Studio half (points 1–3) touches `schemas/objects/modules/`, `schemas/index.ts` and `fields/modulesArrayField.ts`. `objects/editors/richTextMedia.ts` lists only the opt-in inline modules — together with `richTextMediaQuery` and the web `types` map, all three or none.
 
 Quickest path: `pnpm gen:module <Name>` from the repo root. See @../packages/scaffold-module/README.md for details.
 

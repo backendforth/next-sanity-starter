@@ -1,7 +1,7 @@
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 
-import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
+import type { SiteLanguageSettings } from "./types";
 
 /**
  * Turns the `siteLanguageSettings` singleton into routing config. Only an empty
@@ -11,7 +11,7 @@ import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings"
  * loader in `studio/config/sync/` — keep in sync.
  */
 export function normalizeSiteLocaleConfig(
-	raw: SiteLanguageSettingsDocument | null | undefined,
+	raw: SiteLanguageSettings | null | undefined,
 ): SiteLocaleConfig {
 	const rows = Array.isArray(raw?.availableLanguages)
 		? raw.availableLanguages

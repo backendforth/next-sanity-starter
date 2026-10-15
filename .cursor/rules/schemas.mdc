@@ -21,7 +21,7 @@ Hard rules:
 After every schema edit:
 
 ```
-pnpm studio:generate
+pnpm generate
 git add studio/schema.json studio/sanity.types.gen.ts
 pnpm typecheck
 ```

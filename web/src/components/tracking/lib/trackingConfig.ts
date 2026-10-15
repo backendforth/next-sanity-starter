@@ -1,16 +1,17 @@
 import type {
-	AnalyticsLoadMode,
 	AnalyticsTracker,
-	SiteAnalyticsSettingsDocument,
-} from "@/sanity/types/siteAnalyticsSettings";
-import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
+	SiteAnalyticsSettings,
+	SiteCookieBanner,
+} from "@/sanity/types";
+
+export type AnalyticsLoadMode = NonNullable<SiteAnalyticsSettings["loadMode"]>;
 
 export type TrackingConfig = {
-	analytics: SiteAnalyticsSettingsDocument | null;
-	cookieBanner: SiteCookieBannerDocument | null;
+	analytics: SiteAnalyticsSettings | null;
+	cookieBanner: SiteCookieBanner | null;
 };
 
-export type { AnalyticsLoadMode, AnalyticsTracker };
+export type { AnalyticsTracker };
 
 /**
  * Loaders turn these CMS values into script URLs, so a relative one would load
@@ -51,20 +52,20 @@ export function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
 }
 
 export function getEnabledTrackers(
-	analytics: SiteAnalyticsSettingsDocument | null,
+	analytics: SiteAnalyticsSettings | null,
 ): AnalyticsTracker[] {
 	return (analytics?.trackers ?? []).filter(isTrackerEnabled);
 }
 
 export function isCookieBannerActive(
-	cookieBanner: SiteCookieBannerDocument | null,
+	cookieBanner: SiteCookieBanner | null,
 ): boolean {
 	return cookieBanner?.useCookieBanner === true;
 }
 
 export function shouldRespectCookieBanner(
 	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: SiteCookieBannerDocument | null,
+	cookieBanner: SiteCookieBanner | null,
 ): boolean {
 	if (loadMode === "onPageLoad") return false;
 	return isCookieBannerActive(cookieBanner);
@@ -97,8 +98,8 @@ export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
  * waits for consent instead of failing open.
  */
 export function bannerGatesLoading(config: {
-	analytics: SiteAnalyticsSettingsDocument | null;
-	cookieBanner: SiteCookieBannerDocument | null;
+	analytics: SiteAnalyticsSettings | null;
+	cookieBanner: SiteCookieBanner | null;
 }): boolean {
 	return shouldRespectCookieBanner(
 		config.analytics?.loadMode,
@@ -134,7 +135,7 @@ export function trackerLoadSignature(tracker: AnalyticsTracker): string {
 export function trackerRequiresConsent(
 	tracker: AnalyticsTracker,
 	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: SiteCookieBannerDocument | null,
+	cookieBanner: SiteCookieBanner | null,
 ): boolean {
 	if (!shouldRespectCookieBanner(loadMode, cookieBanner)) return false;
 	return !isCookieFreeTracker(tracker);

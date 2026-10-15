@@ -9,8 +9,7 @@ import * as CookieConsent from "vanilla-cookieconsent";
 import "vanilla-cookieconsent/dist/cookieconsent.css";
 import "@/src/assets/styles/components/cookieConsent.css";
 
-import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
-import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
+import type { AnalyticsTracker, SiteCookieBanner } from "@/sanity/types";
 import {
 	buildCookieSections,
 	consentDescriptionHtml,
@@ -24,13 +23,13 @@ import {
 import { defaultSectionsFor } from "./defaultSections";
 
 type Props = {
-	doc: SiteCookieBannerDocument | null;
+	doc: SiteCookieBanner | null;
 	locale: string;
 	trackers?: AnalyticsTracker[];
 };
 
 function parseSections(
-	doc: SiteCookieBannerDocument,
+	doc: SiteCookieBanner,
 	locale: string,
 	trackers: AnalyticsTracker[],
 ): CookieConsent.Section[] {
@@ -42,7 +41,7 @@ function parseSections(
 			// Valid JSON that isn't a list of sections (e.g. `{}`) falls through to
 			// the locale's defaults below, not to the English-only builder defaults.
 			if (Array.isArray(JSON.parse(raw))) {
-				return buildCookieSections(doc, trackers);
+				return buildCookieSections(raw, trackers);
 			}
 			console.warn("[CookieConsent] `sections` JSON is not an array.");
 		} catch (err) {
@@ -50,19 +49,13 @@ function parseSections(
 		}
 	}
 	return buildCookieSections(
-		{
-			...doc,
-			preferencesModal: {
-				...doc.preferencesModal,
-				sections: JSON.stringify(defaultSectionsFor(locale)),
-			},
-		},
+		JSON.stringify(defaultSectionsFor(locale)),
 		trackers,
 	);
 }
 
 function buildConfig(
-	doc: SiteCookieBannerDocument,
+	doc: SiteCookieBanner,
 	locale: string,
 	trackers: AnalyticsTracker[],
 ): CookieConsent.CookieConsentConfig {

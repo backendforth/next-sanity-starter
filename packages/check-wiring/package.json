@@ -4,9 +4,14 @@
 	"private": true,
 	"type": "module",
 	"bin": {
-		"check-wiring": "./bin/check-wiring.mjs"
+		"check-wiring": "./bin/check-wiring.mjs",
+		"check-typegen": "./bin/check-typegen.mjs"
 	},
 	"scripts": {
-		"check": "node ./bin/check-wiring.mjs"
+		"check": "node ./bin/check-wiring.mjs",
+		"check:typegen": "node ./bin/check-typegen.mjs"
+	},
+	"exports": {
+		"./manifest": "./src/manifest.mjs"
 	}
 }

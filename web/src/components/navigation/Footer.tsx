@@ -1,4 +1,4 @@
-import type { NavMenuLink } from "@/sanity/types/nav";
+import type { NavMenuLink } from "@/sanity/types";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import type { LanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";

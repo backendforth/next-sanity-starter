@@ -1,25 +1,20 @@
-import { PortableText } from "@portabletext/react";
-import type { PortableTextBlock } from "@portabletext/types";
 import clsx from "clsx";
-import type { LinkMark } from "@/sanity/utils/linkResolver";
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { PortableText } from "next-sanity";
+
+import type { RichTextMediaValue } from "@/sanity/types";
+import type { LinkLocaleOptions } from "@/sanity/utils/linkResolver";
 
 import { portableTextMediaComponents } from "./portableTextComponents";
 
-/** @deprecated Import `LinkMark` from `@/sanity/utils/linkResolver` instead. */
-export type RichTextMediaLinkMark = LinkMark;
-
-type RichTextMediaProps = {
-	value: PortableTextBlock[];
+type RichTextMediaProps = LinkLocaleOptions & {
+	value: RichTextMediaValue;
 	className?: string;
-	/** Locale of internal links; also required to render an embedded `module.carousel`. */
-	locale?: string;
-	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
 /**
  * Renders Portable Text from **`richTextMedia`** (blocks, links, embedded `module.*`).
- * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields.
+ * Feed values from `pickLocalizedPortableTextBlocks` for i18n `body` fields. `locale` points
+ * internal links at that locale and is required to render an embedded `module.carousel`.
  */
 export function RichTextMedia({
 	value,

@@ -9,10 +9,10 @@ Next.js 16 App Router. RSC by default; `"use client"` only when needed (state, e
 Hard rules:
 
 - Thread `{ locale, siteLocale }` through every render path that touches Sanity content.
-- Resolve translatable fields via `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`. Never index i18n arrays.
+- Resolve translatable fields via `pickLocalizedString` / `pickLocalizedPortableTextBlocks` from `web/sanity/utils/sanityLocalizedText.ts`. Never index i18n arrays.
 - No locale filtering inside GROQ — projections return full `{ _key, _type, language, value }` arrays.
 - Content blocks are **modules** (see `.cursor/rules/modules.mdc`). No ad-hoc `<section>` in route files.
-- `web/sanity/types/*` are hand-maintained. Update them in the same commit as the GROQ projection.
+- Types for Sanity data are generated: wrap full queries in `defineQuery`, run `pnpm generate`, use the names in `web/sanity/types.ts`. No `as` on fetched data.
 - Don't set `data-sanity` in module components — `ModulesRenderer` wraps every module with its field-level path, and Visual Editing depends on rendering modules through it.
 - Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
 - No hardcoded locale codes outside `web/src/i18n/`.

@@ -1,12 +1,6 @@
-import {
-	type ContentRefSourceScope,
-	contentRefTypesGroqLiteral,
-} from "@/sanity/constants/contentRefs";
 import { imageQuery } from "../../snippets/media";
 
-/**
- * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`).
- */
+/** One list entry: a page, the home singleton or a project, with its card preview. */
 const contentRefTargetProjection = `
   _id,
   _type,
@@ -30,28 +24,31 @@ const contentRefTargetProjection = `
   }
 `;
 
-function allReferencesProjection(sourceScope: ContentRefSourceScope) {
-	const types = contentRefTypesGroqLiteral(sourceScope);
-	return `*[_type in ${types} && (
-    _type == "home" ||
-    (_type == "page" && defined(slug.current)) ||
-    (_type == "project" && defined(slug.current) && defined(titleMedia.type))
-  )] | order(_updatedAt desc) {
-    ${contentRefTargetProjection}
-  }`;
-}
-
+/**
+ * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`). `selection == "all"` lists every
+ * routable target of `sourceScope` (`^` is the module inside the subquery): `pages` = home and
+ * pages, `projects` = projects with a title medium, `all` = both — the same sets as
+ * `contentRefTypesForScope` in `studio/schemas/constants/references.ts`. Otherwise the editor's
+ * picks, in their order.
+ */
 export const moduleContentRefsInnerFields = `
   heading,
   sourceScope,
   showProjectFilters,
   selection,
   "references": select(
-    selection == "all" => select(
-      sourceScope == "pages" => ${allReferencesProjection("pages")},
-      sourceScope == "projects" => ${allReferencesProjection("projects")},
-      ${allReferencesProjection("all")}
-    ),
+    selection == "all" => *[
+      (
+        ^.sourceScope != "projects" &&
+        (_type == "home" || (_type == "page" && defined(slug.current)))
+      ) ||
+      (
+        ^.sourceScope != "pages" &&
+        _type == "project" && defined(slug.current) && defined(titleMedia.type)
+      )
+    ] | order(_updatedAt desc) {
+      ${contentRefTargetProjection}
+    },
     references[]->{
       ${contentRefTargetProjection}
     }

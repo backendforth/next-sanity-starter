@@ -1,14 +1,4 @@
-export {
-	moduleCarouselQuery,
-	moduleContentRefsQuery,
-	moduleMediaQuery,
-	modulesQuery,
-	moduleTextQuery,
-} from "./components/modules";
-export {
-	internationalizedRichTextBodyQuery,
-	richTextQuery,
-} from "./components/text/richText";
+export { modulesQuery } from "./components/modules";
 export {
 	internationalizedRichTextMediaBodyQuery,
 	richTextMediaQuery,
@@ -27,12 +17,9 @@ export {
 export { pageSeoQuery } from "./snippets/seo";
 export {
 	errorSettingsQuery,
-	navMenusQuery,
 	siteAnalyticsSettingsQuery,
 	siteChromeQuery,
-	siteCookieBannerLayoutQuery,
 	siteLanguageSettingsQuery,
-	siteNavMenusQuery,
 	siteSettingsFaviconQuery,
 	siteSettingsSeoFallbackQuery,
 	siteSettingsTitleQuery,

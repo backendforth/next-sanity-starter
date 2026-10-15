@@ -1,6 +1,6 @@
+import { stegaClean } from "next-sanity";
 import type { Section } from "vanilla-cookieconsent";
-import type { AnalyticsTracker } from "@/sanity/types/siteAnalyticsSettings";
-import type { SiteCookieBannerDocument } from "@/sanity/types/siteCookieBanner";
+import type { AnalyticsTracker, SiteCookieBanner } from "@/sanity/types";
 import { defaultCookieSections } from "@/src/components/tracking/lib/defaultCookieSections";
 import { isCookieFreeTracker } from "@/src/components/tracking/lib/trackingConfig";
 
@@ -9,10 +9,14 @@ type CookieTableRow = Record<string, string>;
 const DEFAULT_CONSENT_DESCRIPTION =
 	"Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.";
 
+/**
+ * The editor's `sections` JSON, clean: in Presentation the string carries stega markers, which
+ * `JSON.parse` rejects — the banner then fell back to the default sections while editing.
+ */
 export function sectionsJsonFromSanity(
 	sections: string | { code?: string | null } | null | undefined,
 ): string | null {
-	if (typeof sections === "string") return sections;
+	if (typeof sections === "string") return stegaClean(sections);
 	if (sections && typeof sections === "object" && "code" in sections) {
 		const code = (sections as { code?: unknown }).code;
 		return typeof code === "string" ? code : null;
@@ -115,14 +119,12 @@ function withTrackerRows(
 	};
 }
 
+/** `sectionsJson`: the editor's JSON (`sectionsJsonFromSanity`) or a locale's defaults. */
 export function buildCookieSections(
-	cookieBanner: SiteCookieBannerDocument | null,
+	sectionsJson: string | null | undefined,
 	trackers: AnalyticsTracker[],
 ): Section[] {
-	const sectionsRaw = sectionsJsonFromSanity(
-		cookieBanner?.preferencesModal?.sections ?? null,
-	);
-	const base = parseSectionsJson(sectionsRaw);
+	const base = parseSectionsJson(sectionsJson);
 	const fallback = parseSectionsJson(defaultCookieSections);
 	const sections = base.length > 0 ? base : fallback;
 
@@ -169,7 +171,7 @@ function escapeHtml(value: string): string {
  * so `javascript:` cannot slip through.
  */
 export function consentDescriptionHtml(
-	consent: SiteCookieBannerDocument["consentModal"] | null | undefined,
+	consent: SiteCookieBanner["consentModal"] | null | undefined,
 ): string {
 	const text = escapeHtml(
 		consent?.description?.trim() || DEFAULT_CONSENT_DESCRIPTION,
@@ -184,7 +186,7 @@ export function consentDescriptionHtml(
 }
 
 export function buildCookieConsentTranslations(
-	cookieBanner: SiteCookieBannerDocument | null,
+	cookieBanner: SiteCookieBanner | null,
 	trackers: AnalyticsTracker[],
 ) {
 	const consent = cookieBanner?.consentModal;
@@ -204,7 +206,10 @@ export function buildCookieConsentTranslations(
 				acceptNecessaryBtn: preferences?.acceptNecessaryBtn ?? "Reject all",
 				savePreferencesBtn:
 					preferences?.savePreferencesBtn ?? "Save preferences",
-				sections: buildCookieSections(cookieBanner, trackers),
+				sections: buildCookieSections(
+					sectionsJsonFromSanity(cookieBanner?.preferencesModal?.sections),
+					trackers,
+				),
 			},
 		},
 	};

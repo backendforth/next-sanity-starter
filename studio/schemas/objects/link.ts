@@ -35,9 +35,13 @@ export const link = defineType({
       name: "title",
       type: "string",
       description:
-        "If empty for internal links, the referenced document title is used where available. Required for external and function links.",
+        "If empty for internal links, the referenced document title is used where available. Required for external and function links, except in rich text, where the marked text is the label.",
       validation: (rule) =>
         rule.custom((value, context) => {
+          /* A rich-text link annotation (stored under `markDefs`) is labelled by its text. */
+          if (context.path?.includes("markDefs")) {
+            return true;
+          }
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
           if (t === "external" || t === "function") {

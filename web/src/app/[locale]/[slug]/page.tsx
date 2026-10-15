@@ -9,20 +9,26 @@ import {
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
+import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
 
 export async function generateStaticParams() {
-	const rows = await cachedPageSlugs();
+	const [rows, siteLocale] = await Promise.all([
+		cachedPageSlugs(),
+		fetchSiteLanguageSettings(),
+	]);
+	const { isAppLocale } = createLanguagePathUtils(siteLocale);
+	/* A document in a language the site doesn't serve has no route. */
 	return (rows ?? [])
 		.filter(
 			(row): row is { slug: string; language: string } =>
 				typeof row.slug === "string" &&
 				row.slug.length > 0 &&
 				typeof row.language === "string" &&
-				row.language.length > 0,
+				isAppLocale(row.language),
 		)
 		.map((row) => ({ locale: row.language, slug: row.slug }));
 }
@@ -63,7 +69,7 @@ export default async function Page({ params }: PageProps) {
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<LocaleAlternates
 				locale={locale}
-				path={`/${slug}`}
+				path={data.path}
 				translations={data.translations}
 			/>
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">

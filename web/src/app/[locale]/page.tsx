@@ -62,7 +62,7 @@ export default async function Home({ params }: PageProps) {
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<LocaleAlternates
 				locale={locale}
-				path="/"
+				path={data.path}
 				translations={data.translations}
 			/>
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">

@@ -21,10 +21,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const entries: MetadataRoute.Sitemap = [];
 
 	for (const page of pages) {
-		const language =
-			typeof page.language === "string" && page.language.trim()
-				? page.language.trim()
-				: siteLocale.defaultLocale;
+		const language = page.language?.trim();
+		/* A document in a language the site doesn't serve has no route. */
+		if (!language || !pathUtils.isAppLocale(language)) continue;
 		entries.push({
 			url: absoluteSiteUrl(pathUtils.localePath(page.path, language)),
 			lastModified: page._updatedAt,

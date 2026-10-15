@@ -22,7 +22,7 @@ const listeners = new Set<ConsentListener>();
  */
 let library: ConsentLibrary | null = null;
 
-/** Set once `CookieConsent.run()` has resolved — `showPreferences` needs a started banner. */
+/** Set once the current `CookieConsent.run()` has resolved — `showPreferences` needs a started banner. */
 let started = false;
 
 /**
@@ -32,9 +32,15 @@ let started = false;
  */
 let preferencesRequested = false;
 
-/** Called by `CookieConsentBanner` before it runs the banner. */
+/**
+ * Called by `CookieConsentBanner` before every `run()`, a restart after a language switch
+ * included: until that run resolves, `showCookiePreferences` queues instead of opening.
+ * Consent reads stay valid throughout — `run()` restores the categories from the cookie
+ * synchronously.
+ */
 export function registerConsentLibrary(lib: ConsentLibrary): void {
 	library = lib;
+	started = false;
 }
 
 /** Called by `CookieConsentBanner` once `run()` has resolved. */

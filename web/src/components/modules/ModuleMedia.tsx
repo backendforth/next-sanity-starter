@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
+import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import { isStegaVariant } from "@/sanity/utils/stegaVariant";
 import {
 	LazyMediaVideo,
 	LazyMediaVideoLoop,
 } from "@/src/components/media/LazyVideo";
 import { MediaImage } from "@/src/components/media/MediaImage";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
 
@@ -17,6 +19,8 @@ type MediaModule = ModuleOf<"module.media"> | RichTextEmbedOf<"module.media">;
 
 type Props = {
 	module: MediaModule;
+	locale: string;
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
 	variant?: "module" | "embed";
 	/**
@@ -43,7 +47,7 @@ function MediaFigure({
 	caption,
 	children,
 }: {
-	caption?: string | null;
+	caption: string | undefined;
 	children: ReactNode;
 }) {
 	return (
@@ -56,16 +60,20 @@ function MediaFigure({
 	);
 }
 
-function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
+function renderModuleMediaFigure(
+	module: MediaModule,
+	caption: string | undefined,
+	priority: boolean,
+) {
 	const rm = module.resolvedMedia;
 	if (!rm.media) return null;
 
 	if (isStegaVariant(rm, "kind", "loop")) {
 		return (
-			<MediaFigure caption={rm.caption}>
+			<MediaFigure caption={caption}>
 				<LazyMediaVideoLoop
 					media={rm.media}
-					caption={rm.caption}
+					caption={caption}
 					posterPayload={rm.poster}
 					allowUnmute={rm.allowUnmute === true}
 					posterPriority={priority}
@@ -76,18 +84,18 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 
 	if (isStegaVariant(rm, "kind", "video")) {
 		return (
-			<MediaFigure caption={rm.caption}>
+			<MediaFigure caption={caption}>
 				{isLoopIntent(rm.videoSettings) ? (
 					<LazyMediaVideoLoop
 						media={rm.media}
-						caption={rm.caption}
+						caption={caption}
 						posterPayload={rm.poster}
 						posterPriority={priority}
 					/>
 				) : (
 					<LazyMediaVideo
 						media={rm.media}
-						caption={rm.caption}
+						caption={caption}
 						posterPayload={rm.poster}
 						videoSettings={rm.videoSettings}
 						priority={priority}
@@ -98,10 +106,10 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 	}
 
 	return (
-		<MediaFigure caption={rm.caption}>
+		<MediaFigure caption={caption}>
 			<MediaImage
 				imagePayload={rm.media}
-				caption={rm.caption}
+				caption={caption}
 				priority={priority}
 			/>
 		</MediaFigure>
@@ -117,10 +125,18 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
  */
 export function ModuleMedia({
 	module,
+	locale,
+	siteLocale,
 	variant = "module",
 	priority = false,
 }: Props) {
-	const figure = renderModuleMediaFigure(module, priority);
+	/* One string for the figcaption and the client media's alt / aria-label fallbacks. */
+	const caption = pickLocalizedString(
+		module.resolvedMedia.caption,
+		locale,
+		siteLocale,
+	);
+	const figure = renderModuleMediaFigure(module, caption, priority);
 	if (!figure) return null;
 
 	if (variant === "embed") return figure;

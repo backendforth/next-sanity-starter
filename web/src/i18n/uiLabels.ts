@@ -1,6 +1,6 @@
 /**
  * Fixed UI copy that is not authored in Sanity: landmark and control `aria-label`s, the error
- * boundary, the 404 fallback (when `errorSettings` has no text) and the content-refs controls.
+ * boundary, the 404 fallback (when `errorSettings` has no text), and the content-refs controls.
  * Same shape as `skipLinkLabel.ts`; add a locale here when you add one in `siteLanguageSettings`.
  * Unknown locales fall back to English.
  */

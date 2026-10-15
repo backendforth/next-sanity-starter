@@ -1,6 +1,7 @@
 import { PlayIcon } from "@sanity/icons/Play";
 import { defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
 import { getDurationString } from "../../../utils/helpers";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
@@ -51,7 +52,7 @@ export const mediaVideoLoop = defineType({
     {
       name: "caption",
       title: "Caption",
-      type: "string",
+      type: "internationalizedArrayString",
     },
   ],
   preview: {
@@ -79,10 +80,7 @@ export const mediaVideoLoop = defineType({
         ? `Loop · ${durationString} (${videoWidth}px × ${videoHeight}px)`
         : `Loop${durationString ? ` · ${durationString}` : ""}`;
       return {
-        title:
-          typeof caption === "string" && caption.trim()
-            ? caption
-            : "Video loop",
+        title: firstLocalizedLabel(caption, "Video loop"),
         subtitle,
         media: poster ?? PlayIcon,
       };

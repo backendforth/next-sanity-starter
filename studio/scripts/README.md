@@ -113,6 +113,32 @@ Runs `sanity deploy --external --url <SANITY_STUDIO_HOSTING_URL> --yes`: registe
 
 ---
 
+## Content migrations (`../migrations/`)
+
+Run by `sanity migration`, which reads an export of the dataset (drafts included) and writes patches. A run is a **dry run** unless you pass `--no-dry-run`: it prints every patch and writes nothing. Run each migration once per dataset, logged in with `sanity login`. Pass `--project` and `--dataset` together, or neither (then `sanity.cli.ts` decides).
+
+### `localize-captions-and-cookie-banner`
+
+**What it does** (`main` only)
+
+- Wraps string `caption`s of `media.image` / `media.video` / `media.videoLoop`, also inside modules and rich text, into one entry for the default language (`siteLanguageSettings.defaultLanguageId`; it stops if there is none).
+- Does the same for the cookie banner's texts. A text still equal to the old English `initialValue` is unset instead, so every language gets the web's default from `cookieBannerLabels.ts`.
+- Turns the `sections` JSON into `cookieSection` objects (`cookieTable.body` rows become `cookies[]`). The untouched default JSON is unset; JSON that does not parse to an array is left alone and reported.
+- Turns an absolute `privacyPolicyUrl` into an external `privacyPolicy` link. Its title is a custom `privacyPolicyLabel`, else the web's default label in every language (the `link` type requires a title). A relative path cannot become a page reference, so it is dropped and reported: pick the page in the Studio.
+
+Values already in the new shape are skipped, so a re-run is safe.
+
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web shows no caption and the default banner texts for the old values; nothing breaks.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id> --dataset development
+pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id> --dataset development --no-dry-run
+```
+
+---
+
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary

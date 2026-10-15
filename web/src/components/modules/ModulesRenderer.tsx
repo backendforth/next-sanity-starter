@@ -66,7 +66,14 @@ function renderModuleChild(
 				<ModuleText module={mod} locale={locale} siteLocale={siteLocale} />
 			);
 		case "module.media":
-			return <ModuleMedia module={mod} priority={priority} />;
+			return (
+				<ModuleMedia
+					module={mod}
+					locale={locale}
+					siteLocale={siteLocale}
+					priority={priority}
+				/>
+			);
 		case "module.carousel":
 			return (
 				<ModuleCarousel module={mod} locale={locale} siteLocale={siteLocale} />

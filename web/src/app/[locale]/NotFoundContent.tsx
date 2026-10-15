@@ -17,11 +17,21 @@ type Props = {
 	siteLocale: SiteLocaleConfig;
 };
 
+/** The 404 heading in `locale`: Studio copy, else the UI label. Also the tab title. */
+export function notFoundTitle(
+	copy: NotFoundCopy | null | undefined,
+	locale: string,
+	siteLocale: SiteLocaleConfig,
+): string {
+	return (
+		pickLocalizedString(copy?.notFoundTitle, locale, siteLocale) ??
+		uiLabel("notFoundTitle", locale)
+	);
+}
+
 /** The 404 body in `locale`, rendered on the server: Studio copy, else the UI-label fallback. */
 export function NotFoundContent({ copy, locale, siteLocale }: Props) {
-	const title =
-		pickLocalizedString(copy?.notFoundTitle, locale, siteLocale) ??
-		uiLabel("notFoundTitle", locale);
+	const title = notFoundTitle(copy, locale, siteLocale);
 	const body = pickLocalizedPortableTextBlocks(
 		copy?.notFoundBody,
 		locale,

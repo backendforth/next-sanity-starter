@@ -1,32 +1,44 @@
 import { stegaClean } from "next-sanity";
-import type { Section } from "vanilla-cookieconsent";
+import type { Section, Translation } from "vanilla-cookieconsent";
+
 import type { AnalyticsTracker, SiteCookieBanner } from "@/sanity/types";
-import { defaultCookieSections } from "@/src/components/tracking/lib/defaultCookieSections";
+import {
+	type LinkLocaleOptions,
+	resolveLinkMark,
+} from "@/sanity/utils/linkResolver";
+import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
+import {
+	type LocalizedEntry,
+	pickLocalizedString,
+} from "@/sanity/utils/sanityLocalizedText";
 import { isCookieFreeTracker } from "@/src/components/tracking/lib/trackingConfig";
+import {
+	type CookieBannerLabelKey,
+	cookieBannerLabel,
+} from "@/src/i18n/cookieBannerLabels";
 
 type CookieTableRow = Record<string, string>;
+type ConsentModal = NonNullable<SiteCookieBanner["consentModal"]>;
+type LocalizedStrings =
+	| ReadonlyArray<LocalizedEntry<string>>
+	| null
+	| undefined;
 
-const DEFAULT_CONSENT_DESCRIPTION =
-	"Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.";
+const HTML_ESCAPES: Record<string, string> = {
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#39;",
+};
 
 /**
- * The editor's `sections` JSON, clean: in Presentation the string carries stega markers, which
- * `JSON.parse` rejects — the banner then fell back to the default sections while editing.
+ * vanilla-cookieconsent assigns every text with `innerHTML`, so editor text is escaped rather
+ * than trusted — otherwise anyone with Studio write access has a stored-XSS path, and the CSP
+ * still allows inline script.
  */
-export function sectionsJsonFromSanity(
-	sections: string | null | undefined,
-): string | null {
-	return sections ? stegaClean(sections) : null;
-}
-
-function parseSectionsJson(raw: string | null | undefined): Section[] {
-	if (!raw?.trim()) return [];
-	try {
-		const parsed = JSON.parse(raw) as unknown;
-		return Array.isArray(parsed) ? (parsed as Section[]) : [];
-	} catch {
-		return [];
-	}
+function escapeHtml(value: string): string {
+	return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
 }
 
 /**
@@ -46,13 +58,44 @@ function hostnameOf(
 	}
 }
 
-function trackerCookieRow(tracker: AnalyticsTracker): CookieTableRow {
+function tableHeaders(locale: string): CookieTableRow {
+	return {
+		name: cookieBannerLabel("tableName", locale),
+		domain: cookieBannerLabel("tableDomain", locale),
+		desc: cookieBannerLabel("tableDescription", locale),
+	};
+}
+
+function analyticsSection(locale: string): Section {
+	return {
+		title: cookieBannerLabel("analyticsTitle", locale),
+		description: cookieBannerLabel("analyticsDescription", locale),
+		linkedCategory: "analytics",
+	};
+}
+
+/** What an empty `sections` field shows. */
+function defaultSections(locale: string): Section[] {
+	return [
+		{
+			title: cookieBannerLabel("necessaryTitle", locale),
+			description: cookieBannerLabel("necessaryDescription", locale),
+			linkedCategory: "necessary",
+		},
+		analyticsSection(locale),
+	];
+}
+
+function trackerCookieRow(
+	tracker: AnalyticsTracker,
+	locale: string,
+): CookieTableRow {
 	const label = tracker.cookieBannerLabel?.trim() || tracker._type;
 	const baseDescription =
 		tracker.cookieBannerDescription?.trim() ||
-		"Analytics provider configured in Sanity.";
+		cookieBannerLabel("trackerDescription", locale);
 	const description = isCookieFreeTracker(tracker)
-		? `${baseDescription} (cookie-free — loads without analytics consent)`
+		? `${baseDescription} (${cookieBannerLabel("cookieFreeNote", locale)})`
 		: baseDescription;
 
 	let domain = "—";
@@ -75,137 +118,151 @@ function trackerCookieRow(tracker: AnalyticsTracker): CookieTableRow {
 	}
 
 	return {
-		name: label,
-		domain,
-		desc: description,
+		name: escapeHtml(label),
+		domain: escapeHtml(domain),
+		desc: escapeHtml(description),
 	};
 }
 
 function isAnalyticsSection(section: Section): boolean {
-	const sectionId = (section as Section & { id?: string }).id;
-	return section.linkedCategory === "analytics" || sectionId === "analytics";
+	return section.linkedCategory === "analytics";
 }
 
 /** Append one disclosure row per tracker to an analytics section. */
 function withTrackerRows(
 	section: Section,
 	trackers: AnalyticsTracker[],
+	locale: string,
 ): Section {
-	const cookieTable = section.cookieTable ?? {
-		headers: { name: "Name", domain: "Domain", desc: "Description" },
-		body: [] as CookieTableRow[],
+	const table = section.cookieTable ?? {
+		headers: tableHeaders(locale),
+		body: [],
 	};
-
 	return {
 		...section,
-		// A section identified only by `id` still needs the link: consent
-		// categories are derived from `linkedCategory`, so without it there is no
-		// `analytics` category to grant and gated trackers can never load.
-		linkedCategory: "analytics",
 		cookieTable: {
-			...cookieTable,
-			// `sections` is free-form CMS JSON: a `body` that isn't an array would
-			// throw here, before the banner ever starts.
+			...table,
 			body: [
-				...(Array.isArray(cookieTable.body) ? cookieTable.body : []),
-				...trackers.map(trackerCookieRow),
+				...table.body,
+				...trackers.map((tracker) => trackerCookieRow(tracker, locale)),
 			],
 		},
 	};
 }
 
-/** `sectionsJson`: the editor's JSON (`sectionsJsonFromSanity`) or a locale's defaults. */
-export function buildCookieSections(
-	sectionsJson: string | null | undefined,
+function withTrackerSection(
+	sections: Section[],
 	trackers: AnalyticsTracker[],
+	locale: string,
 ): Section[] {
-	const base = parseSectionsJson(sectionsJson);
-	const fallback = parseSectionsJson(defaultCookieSections);
-	const sections = base.length > 0 ? base : fallback;
-
 	const withRows = sections.map((section) =>
-		isAnalyticsSection(section) ? withTrackerRows(section, trackers) : section,
+		isAnalyticsSection(section)
+			? withTrackerRows(section, trackers, locale)
+			: section,
 	);
 
 	if (trackers.length === 0 || withRows.some(isAnalyticsSection)) {
 		return withRows;
 	}
 
-	// The editor-authored JSON is free-form, so the analytics section can be
-	// renamed or deleted. Without one there is no `analytics` category to grant,
-	// which both hides the disclosure and leaves consent-gated trackers unable to
-	// ever load — so synthesise it rather than silently dropping both.
+	// An editor can delete the analytics section or clear its category. Without one there is no
+	// `analytics` category to grant, which both hides the disclosure and leaves consent-gated
+	// trackers unable to ever load — so synthesise it rather than silently dropping both.
 	return [
 		...withRows,
-		withTrackerRows(
-			{ title: "Analytics", linkedCategory: "analytics" },
-			trackers,
-		),
+		withTrackerRows(analyticsSection(locale), trackers, locale),
 	];
 }
 
-const HTML_ESCAPES: Record<string, string> = {
-	"&": "&amp;",
-	"<": "&lt;",
-	">": "&gt;",
-	'"': "&quot;",
-	"'": "&#39;",
-};
+/**
+ * The policy link, appended to the description. An internal page gets the route's locale
+ * prefix from `resolveLinkMark`; the href also passes a protocol allowlist, so `javascript:`
+ * cannot slip into the markup.
+ */
+function privacyPolicyHtml(
+	link: ConsentModal["privacyPolicy"] | null | undefined,
+	options: LinkLocaleOptions,
+): string | null {
+	const resolved = resolveLinkMark(link, options);
+	if (resolved?.kind !== "anchor") return null;
+	const href = stegaClean(resolved.href).trim();
+	if (!/^(https?:\/\/|\/)/i.test(href)) return null;
 
-function escapeHtml(value: string): string {
-	return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
+	const label = resolveLinkLabel({
+		linkTitle: link?.title,
+		locale: options.locale,
+		siteLocale: options.siteLocale,
+		literalFallback: cookieBannerLabel("privacyPolicy", options.locale),
+	});
+	const target = resolved.target
+		? ` target="${resolved.target}" rel="${resolved.rel}"`
+		: "";
+	return `<a href="${escapeHtml(href)}"${target}>${escapeHtml(label)}</a>`;
 }
 
 /**
- * Banner description as HTML.
- *
- * vanilla-cookieconsent assigns this with `innerHTML`, so editor text is
- * escaped rather than trusted — otherwise anyone with Studio write access has a
- * stored-XSS path, and the CSP still allows inline script. The policy link is
- * the one bit of markup, built here from a URL field with a protocol allowlist
- * so `javascript:` cannot slip through.
+ * The banner for one route, built on the server: every text resolved for `options.locale`,
+ * escaped, with the defaults filled in and the tracker rows appended. The client banner gets
+ * only this.
  */
-export function consentDescriptionHtml(
-	consent: SiteCookieBanner["consentModal"] | null | undefined,
-): string {
-	const text = escapeHtml(
-		consent?.description?.trim() || DEFAULT_CONSENT_DESCRIPTION,
-	);
-	const url = consent?.privacyPolicyUrl?.trim();
-	if (!url || !/^(https?:\/\/|\/)/i.test(url)) return text;
-
-	const label = escapeHtml(
-		consent?.privacyPolicyLabel?.trim() || "Privacy policy",
-	);
-	return `${text} <a href="${escapeHtml(url)}">${label}</a>`;
-}
-
-export function buildCookieConsentTranslations(
-	cookieBanner: SiteCookieBanner | null,
+export function cookieConsentTranslation(
+	doc: SiteCookieBanner,
 	trackers: AnalyticsTracker[],
-) {
-	const consent = cookieBanner?.consentModal;
-	const preferences = cookieBanner?.preferencesModal;
+	options: LinkLocaleOptions,
+): Translation {
+	const { locale, siteLocale } = options;
+	/* How the branch stores a banner text: `main` keeps every language in the field. */
+	const read = (entries: LocalizedStrings) =>
+		pickLocalizedString(entries, locale, siteLocale);
+	const text = (entries: LocalizedStrings, fallback?: CookieBannerLabelKey) =>
+		escapeHtml(
+			read(entries) ?? (fallback ? cookieBannerLabel(fallback, locale) : ""),
+		);
+
+	const consent = doc.consentModal;
+	const preferences = doc.preferencesModal;
+
+	const sections: Section[] = (preferences?.sections ?? []).map((section) => ({
+		title: text(section.title),
+		description: text(section.description),
+		linkedCategory: stegaClean(section.linkedCategory) ?? undefined,
+		cookieTable: {
+			headers: tableHeaders(locale),
+			body: (section.cookies ?? []).map((cookie) => ({
+				name: escapeHtml(cookie.name ?? ""),
+				domain: escapeHtml(cookie.domain ?? ""),
+				desc: text(cookie.description),
+			})),
+		},
+	}));
+
+	const description = text(consent?.description, "consentDescription");
+	const policyLink = privacyPolicyHtml(consent?.privacyPolicy, options);
 
 	return {
-		en: {
-			consentModal: {
-				description: consentDescriptionHtml(consent),
-				acceptAllBtn: consent?.acceptAllBtn ?? "Accept",
-				acceptNecessaryBtn: consent?.acceptNecessaryBtn ?? "Reject",
-				showPreferencesBtn: consent?.showPreferencesBtn ?? "Manage preferences",
-			},
-			preferencesModal: {
-				title: preferences?.title ?? "Cookie preferences",
-				acceptAllBtn: preferences?.acceptAllBtn ?? "Accept all",
-				acceptNecessaryBtn: preferences?.acceptNecessaryBtn ?? "Reject all",
-				savePreferencesBtn:
-					preferences?.savePreferencesBtn ?? "Save preferences",
-				sections: buildCookieSections(
-					sectionsJsonFromSanity(cookieBanner?.preferencesModal?.sections),
-					trackers,
-				),
-			},
+		consentModal: {
+			title: "",
+			description: policyLink ? `${description} ${policyLink}` : description,
+			acceptAllBtn: text(consent?.acceptAllBtn, "accept"),
+			acceptNecessaryBtn: text(consent?.acceptNecessaryBtn, "reject"),
+			showPreferencesBtn: text(
+				consent?.showPreferencesBtn,
+				"managePreferences",
+			),
+		},
+		preferencesModal: {
+			title: text(preferences?.title, "preferencesTitle"),
+			acceptAllBtn: text(preferences?.acceptAllBtn, "acceptAll"),
+			acceptNecessaryBtn: text(preferences?.acceptNecessaryBtn, "rejectAll"),
+			savePreferencesBtn: text(
+				preferences?.savePreferencesBtn,
+				"savePreferences",
+			),
+			sections: withTrackerSection(
+				sections.length > 0 ? sections : defaultSections(locale),
+				trackers,
+				locale,
+			),
 		},
 	};
 }

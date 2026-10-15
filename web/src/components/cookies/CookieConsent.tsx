@@ -9,66 +9,29 @@ import * as CookieConsent from "vanilla-cookieconsent";
 import "vanilla-cookieconsent/dist/cookieconsent.css";
 import "@/src/assets/styles/components/cookieConsent.css";
 
-import type { AnalyticsTracker, SiteCookieBanner } from "@/sanity/types";
-import {
-	buildCookieSections,
-	consentDescriptionHtml,
-	sectionsJsonFromSanity,
-} from "@/src/components/tracking/lib/cookieConsentConfig";
 import {
 	markConsentLibraryStarted,
 	notifyAnalyticsConsentChange,
 	registerConsentLibrary,
 } from "./cookieConsentApi";
-import { defaultSectionsFor } from "./defaultSections";
 
 type Props = {
-	doc: SiteCookieBanner | null;
 	locale: string;
-	trackers?: AnalyticsTracker[];
+	/** Built on the server (`cookieConsentTranslation`): escaped texts for `locale`, tracker rows included. */
+	translation: CookieConsent.Translation;
 };
 
-function parseSections(
-	doc: SiteCookieBanner,
-	locale: string,
-	trackers: AnalyticsTracker[],
-): CookieConsent.Section[] {
-	const raw = sectionsJsonFromSanity(doc.preferencesModal?.sections);
-	if (raw && raw.trim().length > 0) {
-		try {
-			// Valid JSON that isn't a list of sections (e.g. `{}`) falls through to
-			// the locale's defaults below, not to the English-only builder defaults.
-			if (Array.isArray(JSON.parse(raw))) {
-				return buildCookieSections(raw, trackers);
-			}
-			console.warn("[CookieConsent] `sections` JSON is not an array.");
-		} catch (err) {
-			console.warn("[CookieConsent] Failed to parse `sections` JSON:", err);
-		}
-	}
-	return buildCookieSections(
-		JSON.stringify(defaultSectionsFor(locale)),
-		trackers,
-	);
-}
-
 function buildConfig(
-	doc: SiteCookieBanner,
 	locale: string,
-	trackers: AnalyticsTracker[],
+	translation: CookieConsent.Translation,
 ): CookieConsent.CookieConsentConfig {
-	const sections = parseSections(doc, locale, trackers);
-
-	const categoryKeys = new Set<string>(["necessary"]);
-	for (const section of sections) {
-		if (section.linkedCategory) {
-			categoryKeys.add(section.linkedCategory);
+	const categories: CookieConsent.CookieConsentConfig["categories"] = {
+		necessary: { enabled: true, readOnly: true },
+	};
+	for (const { linkedCategory } of translation.preferencesModal.sections) {
+		if (linkedCategory && !categories[linkedCategory]) {
+			categories[linkedCategory] = {};
 		}
-	}
-	const categories: CookieConsent.CookieConsentConfig["categories"] = {};
-	for (const key of categoryKeys) {
-		categories[key] =
-			key === "necessary" ? { enabled: true, readOnly: true } : {};
 	}
 
 	return {
@@ -79,28 +42,7 @@ function buildConfig(
 		categories,
 		language: {
 			default: locale,
-			translations: {
-				[locale]: {
-					consentModal: {
-						title: "",
-						description: consentDescriptionHtml(doc.consentModal),
-						acceptAllBtn: doc.consentModal?.acceptAllBtn ?? "Accept",
-						acceptNecessaryBtn:
-							doc.consentModal?.acceptNecessaryBtn ?? "Reject",
-						showPreferencesBtn:
-							doc.consentModal?.showPreferencesBtn ?? "Manage preferences",
-					},
-					preferencesModal: {
-						title: doc.preferencesModal?.title ?? "Cookie preferences",
-						acceptAllBtn: doc.preferencesModal?.acceptAllBtn ?? "Accept all",
-						acceptNecessaryBtn:
-							doc.preferencesModal?.acceptNecessaryBtn ?? "Reject all",
-						savePreferencesBtn:
-							doc.preferencesModal?.savePreferencesBtn ?? "Save preferences",
-						sections,
-					},
-				},
-			},
+			translations: { [locale]: translation },
 		},
 		onConsent: () => {
 			notifyAnalyticsConsentChange();
@@ -111,16 +53,28 @@ function buildConfig(
 	};
 }
 
-export function CookieConsentBanner({ doc, locale, trackers = [] }: Props) {
+/**
+ * What the library was started with. `run()` initialises it once per page load and ignores
+ * later calls, so a client-side language switch (or a content edit) would keep the old texts.
+ */
+let runningConfig: string | null = null;
+
+export function CookieConsentBanner({ locale, translation }: Props) {
 	useEffect(() => {
-		if (!doc?.useCookieBanner) return;
+		const key = JSON.stringify([locale, translation]);
+		if (key === runningConfig) return;
+		// `false` keeps the consent cookie: a restart changes the texts, not the visitor's choice.
+		if (runningConfig !== null) CookieConsent.reset(false);
+		runningConfig = key;
 		registerConsentLibrary(CookieConsent);
-		CookieConsent.run(buildConfig(doc, locale, trackers))
-			.then(markConsentLibraryStarted)
+		CookieConsent.run(buildConfig(locale, translation))
+			.then(() => {
+				if (runningConfig === key) markConsentLibraryStarted();
+			})
 			.catch((err) => {
 				console.warn("[CookieConsent] run() failed:", err);
 			});
-	}, [doc, locale, trackers]);
+	}, [locale, translation]);
 
 	return null;
 }

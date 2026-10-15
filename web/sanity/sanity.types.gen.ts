@@ -139,28 +139,67 @@ export type SiteCookieBanner = {
   title?: string;
   useCookieBanner?: boolean;
   consentModal?: {
-    description?: string;
-    privacyPolicyUrl: string;
-    privacyPolicyLabel?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn: string;
-    showPreferencesBtn?: string;
+    description?: InternationalizedArrayText;
+    privacyPolicy?: Link;
+    acceptAllBtn?: InternationalizedArrayString;
+    acceptNecessaryBtn?: InternationalizedArrayString;
+    showPreferencesBtn?: InternationalizedArrayString;
   };
   preferencesModal?: {
-    title?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn: string;
-    savePreferencesBtn?: string;
-    sections?: Code;
+    title?: InternationalizedArrayString;
+    acceptAllBtn?: InternationalizedArrayString;
+    acceptNecessaryBtn?: InternationalizedArrayString;
+    savePreferencesBtn?: InternationalizedArrayString;
+    sections?: Array<
+      {
+        _key: string;
+      } & CookieSection
+    >;
   };
 };
 
-export type Code = {
-  _type: "code";
-  language?: string;
-  filename?: string;
-  code?: string;
-  highlightedLines?: Array<number>;
+export type HomeReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "home";
+};
+
+export type PageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "page";
+};
+
+export type Link = {
+  _type: "link";
+  type: "internal" | "external" | "function";
+  title?: InternationalizedArrayString;
+  reference?: HomeReference | PageReference;
+  url?: string;
+  blank?: boolean;
+  func?: LinkFunctions;
+};
+
+export type InternationalizedArrayText = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayTextValue
+>;
+
+export type CookieSection = {
+  _type: "cookieSection";
+  title: InternationalizedArrayString;
+  description?: InternationalizedArrayText;
+  linkedCategory?: "necessary" | "analytics";
+  cookies?: Array<{
+    name: string;
+    domain?: string;
+    description?: InternationalizedArrayString;
+    _type: "cookie";
+    _key: string;
+  }>;
 };
 
 export type TrackerPlausible = {
@@ -395,20 +434,6 @@ export type ModuleText = {
   body?: InternationalizedArrayRichTextMedia;
 };
 
-export type HomeReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "home";
-};
-
-export type PageReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "page";
-};
-
 export type ProjectReference = {
   _ref: string;
   _type: "reference";
@@ -461,7 +486,7 @@ export type MediaVideoLoop = {
     _type: "image";
   };
   allowUnmute?: boolean;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaVideo = {
@@ -475,7 +500,7 @@ export type MediaVideo = {
     _type: "image";
   };
   videoSettings?: VideoSettings;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaImage = {
@@ -487,7 +512,7 @@ export type MediaImage = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type NavThemeToggle = {
@@ -498,16 +523,6 @@ export type NavThemeToggle = {
 export type NavLanguageSwitch = {
   _type: "nav.languageSwitch";
   blockKind?: string;
-};
-
-export type Link = {
-  _type: "link";
-  type: "internal" | "external" | "function";
-  title?: InternationalizedArrayString;
-  reference?: HomeReference | PageReference;
-  url?: string;
-  blank?: boolean;
-  func?: LinkFunctions;
 };
 
 export type Page = {
@@ -558,12 +573,6 @@ export type Home = {
   >;
   seo?: SeoPage;
 };
-
-export type InternationalizedArrayText = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayTextValue
->;
 
 export type LinkFunctions = {
   _type: "linkFunctions";
@@ -841,7 +850,11 @@ export type AllSanitySchemaTypes =
   | ModuleMedia
   | Work
   | SiteCookieBanner
-  | Code
+  | HomeReference
+  | PageReference
+  | Link
+  | InternationalizedArrayText
+  | CookieSection
   | TrackerPlausible
   | TrackerPostHog
   | TrackerMicrosoftClarity
@@ -859,8 +872,6 @@ export type AllSanitySchemaTypes =
   | RichTextMedia
   | RichText
   | ModuleText
-  | HomeReference
-  | PageReference
   | ProjectReference
   | ModuleContentRefs
   | ModuleCarousel
@@ -869,10 +880,8 @@ export type AllSanitySchemaTypes =
   | MediaImage
   | NavThemeToggle
   | NavLanguageSwitch
-  | Link
   | Page
   | Home
-  | InternationalizedArrayText
   | LinkFunctions
   | InternationalizedArrayRichTextMediaValue
   | InternationalizedArrayRichTextValue
@@ -945,7 +954,7 @@ export type HomeQueryResult = {
               resolvedMedia:
                 | {
                     kind: "loop";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     allowUnmute: boolean | null;
                     media:
                       | {
@@ -999,7 +1008,7 @@ export type HomeQueryResult = {
                   }
                 | {
                     kind: "image";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     media: {
                       kind: "image";
                       crop: SanityImageCrop | null;
@@ -1020,7 +1029,7 @@ export type HomeQueryResult = {
                   }
                 | {
                     kind: "video";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     videoSettings: VideoSettings | null;
                     media:
                       | {
@@ -1139,7 +1148,7 @@ export type HomeQueryResult = {
         resolvedMedia:
           | {
               kind: "loop";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               allowUnmute: boolean | null;
               media:
                 | {
@@ -1193,7 +1202,7 @@ export type HomeQueryResult = {
             }
           | {
               kind: "image";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               media: {
                 kind: "image";
                 crop: SanityImageCrop | null;
@@ -1214,7 +1223,7 @@ export type HomeQueryResult = {
             }
           | {
               kind: "video";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               videoSettings: VideoSettings | null;
               media:
                 | {
@@ -1394,7 +1403,7 @@ export type HomeQueryResult = {
                       resolvedMedia:
                         | {
                             kind: "loop";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             allowUnmute: boolean | null;
                             media:
                               | {
@@ -1448,7 +1457,7 @@ export type HomeQueryResult = {
                           }
                         | {
                             kind: "image";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             media: {
                               kind: "image";
                               crop: SanityImageCrop | null;
@@ -1469,7 +1478,7 @@ export type HomeQueryResult = {
                           }
                         | {
                             kind: "video";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             videoSettings: VideoSettings | null;
                             media:
                               | {
@@ -1534,7 +1543,7 @@ export type HomeQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -1588,7 +1597,7 @@ export type HomeQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -1609,7 +1618,7 @@ export type HomeQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -1719,7 +1728,7 @@ export type PageBySlugQueryResult = {
               resolvedMedia:
                 | {
                     kind: "loop";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     allowUnmute: boolean | null;
                     media:
                       | {
@@ -1773,7 +1782,7 @@ export type PageBySlugQueryResult = {
                   }
                 | {
                     kind: "image";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     media: {
                       kind: "image";
                       crop: SanityImageCrop | null;
@@ -1794,7 +1803,7 @@ export type PageBySlugQueryResult = {
                   }
                 | {
                     kind: "video";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     videoSettings: VideoSettings | null;
                     media:
                       | {
@@ -1913,7 +1922,7 @@ export type PageBySlugQueryResult = {
         resolvedMedia:
           | {
               kind: "loop";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               allowUnmute: boolean | null;
               media:
                 | {
@@ -1967,7 +1976,7 @@ export type PageBySlugQueryResult = {
             }
           | {
               kind: "image";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               media: {
                 kind: "image";
                 crop: SanityImageCrop | null;
@@ -1988,7 +1997,7 @@ export type PageBySlugQueryResult = {
             }
           | {
               kind: "video";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               videoSettings: VideoSettings | null;
               media:
                 | {
@@ -2168,7 +2177,7 @@ export type PageBySlugQueryResult = {
                       resolvedMedia:
                         | {
                             kind: "loop";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             allowUnmute: boolean | null;
                             media:
                               | {
@@ -2222,7 +2231,7 @@ export type PageBySlugQueryResult = {
                           }
                         | {
                             kind: "image";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             media: {
                               kind: "image";
                               crop: SanityImageCrop | null;
@@ -2243,7 +2252,7 @@ export type PageBySlugQueryResult = {
                           }
                         | {
                             kind: "video";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             videoSettings: VideoSettings | null;
                             media:
                               | {
@@ -2308,7 +2317,7 @@ export type PageBySlugQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -2362,7 +2371,7 @@ export type PageBySlugQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -2383,7 +2392,7 @@ export type PageBySlugQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -2577,7 +2586,7 @@ export type ProjectBySlugQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -2631,7 +2640,7 @@ export type ProjectBySlugQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -2652,7 +2661,7 @@ export type ProjectBySlugQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -2717,7 +2726,7 @@ export type ProjectBySlugQueryResult = {
           resolvedMedia:
             | {
                 kind: "loop";
-                caption: string | null;
+                caption: InternationalizedArrayString | null;
                 allowUnmute: boolean | null;
                 media:
                   | {
@@ -2771,7 +2780,7 @@ export type ProjectBySlugQueryResult = {
               }
             | {
                 kind: "image";
-                caption: string | null;
+                caption: InternationalizedArrayString | null;
                 media: {
                   kind: "image";
                   crop: SanityImageCrop | null;
@@ -2792,7 +2801,7 @@ export type ProjectBySlugQueryResult = {
               }
             | {
                 kind: "video";
-                caption: string | null;
+                caption: InternationalizedArrayString | null;
                 videoSettings: VideoSettings | null;
                 media:
                   | {
@@ -2900,7 +2909,7 @@ export type WorkQueryResult = {
               resolvedMedia:
                 | {
                     kind: "loop";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     allowUnmute: boolean | null;
                     media:
                       | {
@@ -2954,7 +2963,7 @@ export type WorkQueryResult = {
                   }
                 | {
                     kind: "image";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     media: {
                       kind: "image";
                       crop: SanityImageCrop | null;
@@ -2975,7 +2984,7 @@ export type WorkQueryResult = {
                   }
                 | {
                     kind: "video";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     videoSettings: VideoSettings | null;
                     media:
                       | {
@@ -3094,7 +3103,7 @@ export type WorkQueryResult = {
         resolvedMedia:
           | {
               kind: "loop";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               allowUnmute: boolean | null;
               media:
                 | {
@@ -3148,7 +3157,7 @@ export type WorkQueryResult = {
             }
           | {
               kind: "image";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               media: {
                 kind: "image";
                 crop: SanityImageCrop | null;
@@ -3169,7 +3178,7 @@ export type WorkQueryResult = {
             }
           | {
               kind: "video";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               videoSettings: VideoSettings | null;
               media:
                 | {
@@ -3349,7 +3358,7 @@ export type WorkQueryResult = {
                       resolvedMedia:
                         | {
                             kind: "loop";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             allowUnmute: boolean | null;
                             media:
                               | {
@@ -3403,7 +3412,7 @@ export type WorkQueryResult = {
                           }
                         | {
                             kind: "image";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             media: {
                               kind: "image";
                               crop: SanityImageCrop | null;
@@ -3424,7 +3433,7 @@ export type WorkQueryResult = {
                           }
                         | {
                             kind: "video";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             videoSettings: VideoSettings | null;
                             media:
                               | {
@@ -3489,7 +3498,7 @@ export type WorkQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -3543,7 +3552,7 @@ export type WorkQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -3564,7 +3573,7 @@ export type WorkQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -3642,7 +3651,7 @@ export type SiteLanguageSettingsQueryResult = {
 
 // Source: sanity/queries/snippets/settings.ts
 // Variable: siteChromeQuery
-// Query: {  "nav": *[_type == "siteNav" && _id == "siteNav"][0]{  _id,  title,  "mainMenu": mainMenu[]{  _key,  _type,  _type == "link" => {      _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )  },  _type == "nav.languageSwitch" => {    _key,    _type  },  _type == "nav.themeToggle" => {    _key,    _type  }},  "footerMenu": footerMenu[]{    _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )}},  "cookieBanner": *[_type == "siteCookieBanner" && _id == "siteCookieBanner"][0]{  _id,  useCookieBanner,  consentModal,  preferencesModal {    title,    acceptAllBtn,    acceptNecessaryBtn,    savePreferencesBtn,    "sections": sections.code  }},  "settings": *[_type == "siteSettings" && _id == "siteSettings"][0]{  title,  "favicon": favicon{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio }    }  }},  "seo": seo{    title,    description,    "imageUrl": image.asset->url  }},  "analytics": *[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{  loadMode,  trackers[]{    _key,    _type,    enabled,    cookieFree,    cookieBannerLabel,    cookieBannerDescription,    _type == "trackerGoogleAnalytics" => {      measurementId    },    _type == "trackerMatomo" => {      url,      siteId    },    _type == "trackerMicrosoftClarity" => {      projectId    },    _type == "trackerPostHog" => {      apiKey,      apiHost    },    _type == "trackerPlausible" => {      domain,      scriptUrl    }  }},  "notFound": *[_type == "errorSettings" && _id == "errorSettings"][0]{  notFoundTitle,  notFoundBody[]{  _key,  _type,  language,  value[]{        ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )        }      }    }    }}}}
+// Query: {  "nav": *[_type == "siteNav" && _id == "siteNav"][0]{  _id,  title,  "mainMenu": mainMenu[]{  _key,  _type,  _type == "link" => {      _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )  },  _type == "nav.languageSwitch" => {    _key,    _type  },  _type == "nav.themeToggle" => {    _key,    _type  }},  "footerMenu": footerMenu[]{    _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )}},  "cookieBanner": *[_type == "siteCookieBanner" && _id == "siteCookieBanner"][0]{  _id,  useCookieBanner,  consentModal {    description,    privacyPolicy{        _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )    },    acceptAllBtn,    acceptNecessaryBtn,    showPreferencesBtn  },  preferencesModal {    title,    acceptAllBtn,    acceptNecessaryBtn,    savePreferencesBtn,    sections[]{      _key,      title,      description,      linkedCategory,      cookies[]{        _key,        name,        domain,        description      }    }  }},  "settings": *[_type == "siteSettings" && _id == "siteSettings"][0]{  title,  "favicon": favicon{  crop,  hotspot,  "alt": asset->altText,  "asset": asset->{    _id,    url,    metadata{      dimensions{ width, height, aspectRatio }    }  }},  "seo": seo{    title,    description,    "imageUrl": image.asset->url  }},  "analytics": *[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{  loadMode,  trackers[]{    _key,    _type,    enabled,    cookieFree,    cookieBannerLabel,    cookieBannerDescription,    _type == "trackerGoogleAnalytics" => {      measurementId    },    _type == "trackerMatomo" => {      url,      siteId    },    _type == "trackerMicrosoftClarity" => {      projectId    },    _type == "trackerPostHog" => {      apiKey,      apiHost    },    _type == "trackerPlausible" => {      domain,      scriptUrl    }  }},  "notFound": *[_type == "errorSettings" && _id == "errorSettings"][0]{  notFoundTitle,  notFoundBody[]{  _key,  _type,  language,  value[]{        ...,    _type == "block" => {      ...,      markDefs[]{        ...,        _type == "link" => {            _key,  _type,  type,  title,  ...select(    type == "internal" => {      "linkType": "linkInternal",      "resolvedReference": reference->{        _id,        _type,        title,        "path": select(  _type == "home" => "/",  _type == "work" => "/work",  _type == "project" && defined(slug.current) => "/work/" + slug.current,  _type == "page" && defined(slug.current) => "/" + slug.current)      }    },    type == "external" => {      "linkType": "linkExternal",      url,      "href": url,      blank    },    type == "function" => {      "linkType": "linkFunction",      "func": func {        key,        params      }    }  )        }      }    }    }}}}
 export type SiteChromeQueryResult = {
   nav: {
     _id: "siteNav";
@@ -3748,19 +3757,72 @@ export type SiteChromeQueryResult = {
     _id: "siteCookieBanner";
     useCookieBanner: boolean | null;
     consentModal: {
-      description?: string;
-      privacyPolicyUrl: string;
-      privacyPolicyLabel?: string;
-      acceptAllBtn?: string;
-      acceptNecessaryBtn: string;
-      showPreferencesBtn?: string;
+      description: InternationalizedArrayText | null;
+      privacyPolicy:
+        | {
+            _key: null;
+            _type: "link";
+            type: "external" | "function" | "internal";
+            title: InternationalizedArrayString | null;
+            linkType: "linkExternal";
+            url: string | null;
+            href: string | null;
+            blank: boolean | null;
+          }
+        | {
+            _key: null;
+            _type: "link";
+            type: "external" | "function" | "internal";
+            title: InternationalizedArrayString | null;
+            linkType: "linkFunction";
+            func: {
+              key: "open-cookie-preferences" | "scroll-to";
+              params: string | null;
+            } | null;
+          }
+        | {
+            _key: null;
+            _type: "link";
+            type: "external" | "function" | "internal";
+            title: InternationalizedArrayString | null;
+            linkType: "linkInternal";
+            resolvedReference:
+              | {
+                  _id: string;
+                  _type: "home";
+                  title: InternationalizedArrayString;
+                  path: "/";
+                }
+              | {
+                  _id: string;
+                  _type: "page";
+                  title: InternationalizedArrayString;
+                  path: string;
+                }
+              | null;
+          }
+        | null;
+      acceptAllBtn: InternationalizedArrayString | null;
+      acceptNecessaryBtn: InternationalizedArrayString | null;
+      showPreferencesBtn: InternationalizedArrayString | null;
     } | null;
     preferencesModal: {
-      title: string | null;
-      acceptAllBtn: string | null;
-      acceptNecessaryBtn: string;
-      savePreferencesBtn: string | null;
-      sections: string | null;
+      title: InternationalizedArrayString | null;
+      acceptAllBtn: InternationalizedArrayString | null;
+      acceptNecessaryBtn: InternationalizedArrayString | null;
+      savePreferencesBtn: InternationalizedArrayString | null;
+      sections: Array<{
+        _key: string;
+        title: InternationalizedArrayString;
+        description: InternationalizedArrayText | null;
+        linkedCategory: "analytics" | "necessary" | null;
+        cookies: Array<{
+          _key: string;
+          name: string;
+          domain: string | null;
+          description: InternationalizedArrayString | null;
+        }> | null;
+      }> | null;
     } | null;
   } | null;
   settings: {
@@ -3968,7 +4030,7 @@ declare global {
     '*[_type == "project" && slug.current == $slug][0]{\n  _id,\n  title,\n  "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n),\n  \n  body[]{\n    _key,\n    _type,\n    language,\n    value[]{\n      \n    \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n        }\n      }\n    }\n  ,\n    _type == "module.media" => {\n  "resolvedMedia": \n  select(\n    type == "loop" => {\n      "kind": "loop",\n      "caption": videoLoopContent.caption,\n      "allowUnmute": videoLoopContent.allowUnmute,\n      "media": videoLoopContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n},\n    _type == "module.carousel" => {\n  \n  heading,\n  loop,\n  showThumbnails,\n  showNavDots,\n  multipleSlides,\n  autoplay,\n  autoplayDelayMs,\n  "resolvedSlides": select(\n    imagesOnly != false => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "loop" => {\n      "kind": "loop",\n      "caption": videoLoopContent.caption,\n      "allowUnmute": videoLoopContent.allowUnmute,\n      "media": videoLoopContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n}\n  \n    }\n  }\n,\n  seo {\n  title,\n  description,\n  "imageUrl": image.asset->url\n}\n}': ProjectBySlugQueryResult;
     '*[_type == "work" && _id == "work"][0]{\n  _id,\n  title,\n  "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n),\n  modules[]{\n  _key,\n  _type,\n  _type == "module.text" => {\n  title,\n  body[]{\n    _key,\n    _type,\n    language,\n    value[]{\n      \n    \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n        }\n      }\n    }\n  ,\n    _type == "module.media" => {\n  "resolvedMedia": \n  select(\n    type == "loop" => {\n      "kind": "loop",\n      "caption": videoLoopContent.caption,\n      "allowUnmute": videoLoopContent.allowUnmute,\n      "media": videoLoopContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n},\n    _type == "module.carousel" => {\n  \n  heading,\n  loop,\n  showThumbnails,\n  showNavDots,\n  multipleSlides,\n  autoplay,\n  autoplayDelayMs,\n  "resolvedSlides": select(\n    imagesOnly != false => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "loop" => {\n      "kind": "loop",\n      "caption": videoLoopContent.caption,\n      "allowUnmute": videoLoopContent.allowUnmute,\n      "media": videoLoopContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n}\n  \n    }\n  }\n},\n  _type == "module.media" => {\n  "resolvedMedia": \n  select(\n    type == "loop" => {\n      "kind": "loop",\n      "caption": videoLoopContent.caption,\n      "allowUnmute": videoLoopContent.allowUnmute,\n      "media": videoLoopContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n},\n  _type == "module.carousel" => {\n  \n  heading,\n  loop,\n  showThumbnails,\n  showNavDots,\n  multipleSlides,\n  autoplay,\n  autoplayDelayMs,\n  "resolvedSlides": select(\n    imagesOnly != false => slides[]{\n      _key,\n      _type,\n      "media": select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n)\n    },\n    slidesMedia[]{\n      _key,\n      _type,\n      "resolvedMedia": \n  select(\n    type == "loop" => {\n      "kind": "loop",\n      "caption": videoLoopContent.caption,\n      "allowUnmute": videoLoopContent.allowUnmute,\n      "media": videoLoopContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    type == "video" => {\n      "kind": "video",\n      "caption": videoContent.caption,\n      "videoSettings": videoContent.videoSettings,\n      "media": videoContent.video{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) },\n      "poster": videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n    },\n    {\n      "kind": "image",\n      "caption": imageContent.caption,\n      "media": imageContent.image{ ...select(\n  defined(asset->playbackId) || defined(asset->data.playbackId) => {\n    "kind": "video",\n    ...{\n  "playbackId": coalesce(\n    asset->playbackId,\n    asset->data.playbackId,\n    asset->data.playback_ids[0].id\n  ),\n  "duration": asset->data.duration,\n  "asset": asset->{\n    playbackId,\n    thumbTime,\n    "data": data{\n      playbackId,\n      "playback_ids": playback_ids[]{ id },\n      "tracks": tracks[]{ type, max_width, max_height }\n    }\n  }\n}\n  },\n  {\n    "kind": "image",\n    ...{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  }\n) }\n    }\n  )\n\n    }\n  )\n\n},\n  _type == "module.contentRefs" => {\n  \n  heading,\n  sourceScope,\n  showProjectFilters,\n  selection,\n  "references": select(\n    selection == "all" => *[\n      (\n        ^.sourceScope != "projects" &&\n        (_type == "home" || (_type == "page" && defined(slug.current)))\n      ) ||\n      (\n        ^.sourceScope != "pages" &&\n        _type == "project" && defined(slug.current)\n      )\n    ] | order(_updatedAt desc) {\n      \n  _id,\n  _type,\n  _createdAt,\n  title,\n  "slug": slug.current,\n  "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n),\n  "previewImage": select(\n    _type != "project" => null,\n    titleMedia.type == "image" => titleMedia.imageContent.image{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n},\n    titleMedia.type == "video" => titleMedia.videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n},\n    titleMedia.type == "loop" => titleMedia.videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  ),\n  categories[]->{\n    _id,\n    title\n  }\n\n    },\n    references[]->{\n      \n  _id,\n  _type,\n  _createdAt,\n  title,\n  "slug": slug.current,\n  "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n),\n  "previewImage": select(\n    _type != "project" => null,\n    titleMedia.type == "image" => titleMedia.imageContent.image{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n},\n    titleMedia.type == "video" => titleMedia.videoContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n},\n    titleMedia.type == "loop" => titleMedia.videoLoopContent.poster{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n}\n  ),\n  categories[]->{\n    _id,\n    title\n  }\n\n    }\n  )\n\n}\n},\n  seo {\n  title,\n  description,\n  "imageUrl": image.asset->url\n}\n}': WorkQueryResult;
     '*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]{\n  _id,\n  availableLanguages[]{id, title},\n  defaultLanguageId\n}': SiteLanguageSettingsQueryResult;
-    '{\n  "nav": *[_type == "siteNav" && _id == "siteNav"][0]{\n  _id,\n  title,\n  "mainMenu": mainMenu[]{\n  _key,\n  _type,\n  _type == "link" => {\n    \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n  },\n  _type == "nav.languageSwitch" => {\n    _key,\n    _type\n  },\n  _type == "nav.themeToggle" => {\n    _key,\n    _type\n  }\n},\n  "footerMenu": footerMenu[]{\n  \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n}\n},\n  "cookieBanner": *[_type == "siteCookieBanner" && _id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal,\n  preferencesModal {\n    title,\n    acceptAllBtn,\n    acceptNecessaryBtn,\n    savePreferencesBtn,\n    "sections": sections.code\n  }\n},\n  "settings": *[_type == "siteSettings" && _id == "siteSettings"][0]{\n  title,\n  "favicon": favicon{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n},\n  "seo": seo{\n    title,\n    description,\n    "imageUrl": image.asset->url\n  }\n},\n  "analytics": *[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{\n  loadMode,\n  trackers[]{\n    _key,\n    _type,\n    enabled,\n    cookieFree,\n    cookieBannerLabel,\n    cookieBannerDescription,\n    _type == "trackerGoogleAnalytics" => {\n      measurementId\n    },\n    _type == "trackerMatomo" => {\n      url,\n      siteId\n    },\n    _type == "trackerMicrosoftClarity" => {\n      projectId\n    },\n    _type == "trackerPostHog" => {\n      apiKey,\n      apiHost\n    },\n    _type == "trackerPlausible" => {\n      domain,\n      scriptUrl\n    }\n  }\n},\n  "notFound": *[_type == "errorSettings" && _id == "errorSettings"][0]{\n  notFoundTitle,\n  notFoundBody[]{\n  _key,\n  _type,\n  language,\n  value[]{\n    \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n        }\n      }\n    }\n  \n  }\n}\n}\n}': SiteChromeQueryResult;
+    '{\n  "nav": *[_type == "siteNav" && _id == "siteNav"][0]{\n  _id,\n  title,\n  "mainMenu": mainMenu[]{\n  _key,\n  _type,\n  _type == "link" => {\n    \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n  },\n  _type == "nav.languageSwitch" => {\n    _key,\n    _type\n  },\n  _type == "nav.themeToggle" => {\n    _key,\n    _type\n  }\n},\n  "footerMenu": footerMenu[]{\n  \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n}\n},\n  "cookieBanner": *[_type == "siteCookieBanner" && _id == "siteCookieBanner"][0]{\n  _id,\n  useCookieBanner,\n  consentModal {\n    description,\n    privacyPolicy{\n      \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n    },\n    acceptAllBtn,\n    acceptNecessaryBtn,\n    showPreferencesBtn\n  },\n  preferencesModal {\n    title,\n    acceptAllBtn,\n    acceptNecessaryBtn,\n    savePreferencesBtn,\n    sections[]{\n      _key,\n      title,\n      description,\n      linkedCategory,\n      cookies[]{\n        _key,\n        name,\n        domain,\n        description\n      }\n    }\n  }\n},\n  "settings": *[_type == "siteSettings" && _id == "siteSettings"][0]{\n  title,\n  "favicon": favicon{\n  crop,\n  hotspot,\n  "alt": asset->altText,\n  "asset": asset->{\n    _id,\n    url,\n    metadata{\n      dimensions{ width, height, aspectRatio }\n    }\n  }\n},\n  "seo": seo{\n    title,\n    description,\n    "imageUrl": image.asset->url\n  }\n},\n  "analytics": *[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{\n  loadMode,\n  trackers[]{\n    _key,\n    _type,\n    enabled,\n    cookieFree,\n    cookieBannerLabel,\n    cookieBannerDescription,\n    _type == "trackerGoogleAnalytics" => {\n      measurementId\n    },\n    _type == "trackerMatomo" => {\n      url,\n      siteId\n    },\n    _type == "trackerMicrosoftClarity" => {\n      projectId\n    },\n    _type == "trackerPostHog" => {\n      apiKey,\n      apiHost\n    },\n    _type == "trackerPlausible" => {\n      domain,\n      scriptUrl\n    }\n  }\n},\n  "notFound": *[_type == "errorSettings" && _id == "errorSettings"][0]{\n  notFoundTitle,\n  notFoundBody[]{\n  _key,\n  _type,\n  language,\n  value[]{\n    \n    ...,\n    _type == "block" => {\n      ...,\n      markDefs[]{\n        ...,\n        _type == "link" => {\n          \n  _key,\n  _type,\n  type,\n  title,\n  ...select(\n    type == "internal" => {\n      "linkType": "linkInternal",\n      "resolvedReference": reference->{\n        _id,\n        _type,\n        title,\n        "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n      }\n    },\n    type == "external" => {\n      "linkType": "linkExternal",\n      url,\n      "href": url,\n      blank\n    },\n    type == "function" => {\n      "linkType": "linkFunction",\n      "func": func {\n        key,\n        params\n      }\n    }\n  )\n\n        }\n      }\n    }\n  \n  }\n}\n}\n}': SiteChromeQueryResult;
     '*[_type == "page" && defined(slug.current)]{\n  "slug": slug.current\n}': PageSlugsQueryResult;
     '*[_type == "project" && defined(slug.current)]{\n  "slug": slug.current\n}': ProjectSlugsQueryResult;
     '*[\n  _type == "home" ||\n  _type == "work" ||\n  (_type == "page" && defined(slug.current)) ||\n  (_type == "project" && defined(slug.current))\n]{\n  _id,\n  _type,\n  _updatedAt,\n  "path": select(\n  _type == "home" => "/",\n  _type == "work" => "/work",\n  _type == "project" && defined(slug.current) => "/work/" + slug.current,\n  _type == "page" && defined(slug.current) => "/" + slug.current\n)\n}': SitemapPagesQueryResult;

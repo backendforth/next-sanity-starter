@@ -38,7 +38,7 @@ export function ModuleCarousel({
 	siteLocale,
 	variant = "module",
 }: Props) {
-	const slides = normalizeCarouselSlides(module);
+	const slides = normalizeCarouselSlides(module, locale, siteLocale);
 	if (slides.length === 0) return null;
 
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);

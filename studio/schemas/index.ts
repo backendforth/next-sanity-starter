@@ -7,6 +7,7 @@ import { trackerMatomo } from "./objects/analytics/trackerMatomo";
 import { trackerMicrosoftClarity } from "./objects/analytics/trackerMicrosoftClarity";
 import { trackerPlausible } from "./objects/analytics/trackerPlausible";
 import { trackerPostHog } from "./objects/analytics/trackerPostHog";
+import { cookieSection } from "./objects/cookieSection";
 import { richText } from "./objects/editors/richText";
 import { richTextMedia } from "./objects/editors/richTextMedia";
 import { link } from "./objects/link";
@@ -55,6 +56,7 @@ export const schemaTypes = [
   trackerMicrosoftClarity,
   trackerPostHog,
   trackerPlausible,
+  cookieSection,
   siteCookieBanner,
   home,
   work,

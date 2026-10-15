@@ -1,4 +1,3 @@
-import { codeInput } from "@sanity/code-input";
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
 import { presentationTool } from "sanity/presentation";
@@ -69,7 +68,6 @@ export default defineConfig({
         mainDocuments: presentationMainDocuments,
       },
     }),
-    codeInput(),
     ...(isDev ? [visionTool()] : []),
     media(),
     muxInput({

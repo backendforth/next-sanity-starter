@@ -78,7 +78,12 @@ export function portableTextMediaComponents({
 		types: {
 			"module.media": ({ value }) => (
 				<div className="rich-text-embed rich-text-embed-media min-w-0">
-					<ModuleMedia module={stegaBrand(value)} variant="embed" />
+					<ModuleMedia
+						module={stegaBrand(value)}
+						locale={locale}
+						siteLocale={siteLocale}
+						variant="embed"
+					/>
 				</div>
 			),
 			"module.carousel": ({ value }) => (

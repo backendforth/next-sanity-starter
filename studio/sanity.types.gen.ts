@@ -139,28 +139,67 @@ export type SiteCookieBanner = {
   title?: string;
   useCookieBanner?: boolean;
   consentModal?: {
-    description?: string;
-    privacyPolicyUrl: string;
-    privacyPolicyLabel?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn: string;
-    showPreferencesBtn?: string;
+    description?: InternationalizedArrayText;
+    privacyPolicy?: Link;
+    acceptAllBtn?: InternationalizedArrayString;
+    acceptNecessaryBtn?: InternationalizedArrayString;
+    showPreferencesBtn?: InternationalizedArrayString;
   };
   preferencesModal?: {
-    title?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn: string;
-    savePreferencesBtn?: string;
-    sections?: Code;
+    title?: InternationalizedArrayString;
+    acceptAllBtn?: InternationalizedArrayString;
+    acceptNecessaryBtn?: InternationalizedArrayString;
+    savePreferencesBtn?: InternationalizedArrayString;
+    sections?: Array<
+      {
+        _key: string;
+      } & CookieSection
+    >;
   };
 };
 
-export type Code = {
-  _type: "code";
-  language?: string;
-  filename?: string;
-  code?: string;
-  highlightedLines?: Array<number>;
+export type HomeReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "home";
+};
+
+export type PageReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "page";
+};
+
+export type Link = {
+  _type: "link";
+  type: "internal" | "external" | "function";
+  title?: InternationalizedArrayString;
+  reference?: HomeReference | PageReference;
+  url?: string;
+  blank?: boolean;
+  func?: LinkFunctions;
+};
+
+export type InternationalizedArrayText = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayTextValue
+>;
+
+export type CookieSection = {
+  _type: "cookieSection";
+  title: InternationalizedArrayString;
+  description?: InternationalizedArrayText;
+  linkedCategory?: "necessary" | "analytics";
+  cookies?: Array<{
+    name: string;
+    domain?: string;
+    description?: InternationalizedArrayString;
+    _type: "cookie";
+    _key: string;
+  }>;
 };
 
 export type TrackerPlausible = {
@@ -395,20 +434,6 @@ export type ModuleText = {
   body?: InternationalizedArrayRichTextMedia;
 };
 
-export type HomeReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "home";
-};
-
-export type PageReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "page";
-};
-
 export type ProjectReference = {
   _ref: string;
   _type: "reference";
@@ -461,7 +486,7 @@ export type MediaVideoLoop = {
     _type: "image";
   };
   allowUnmute?: boolean;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaVideo = {
@@ -475,7 +500,7 @@ export type MediaVideo = {
     _type: "image";
   };
   videoSettings?: VideoSettings;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaImage = {
@@ -487,7 +512,7 @@ export type MediaImage = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type NavThemeToggle = {
@@ -498,16 +523,6 @@ export type NavThemeToggle = {
 export type NavLanguageSwitch = {
   _type: "nav.languageSwitch";
   blockKind?: string;
-};
-
-export type Link = {
-  _type: "link";
-  type: "internal" | "external" | "function";
-  title?: InternationalizedArrayString;
-  reference?: HomeReference | PageReference;
-  url?: string;
-  blank?: boolean;
-  func?: LinkFunctions;
 };
 
 export type Page = {
@@ -558,12 +573,6 @@ export type Home = {
   >;
   seo?: SeoPage;
 };
-
-export type InternationalizedArrayText = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayTextValue
->;
 
 export type LinkFunctions = {
   _type: "linkFunctions";
@@ -841,7 +850,11 @@ export type AllSanitySchemaTypes =
   | ModuleMedia
   | Work
   | SiteCookieBanner
-  | Code
+  | HomeReference
+  | PageReference
+  | Link
+  | InternationalizedArrayText
+  | CookieSection
   | TrackerPlausible
   | TrackerPostHog
   | TrackerMicrosoftClarity
@@ -859,8 +872,6 @@ export type AllSanitySchemaTypes =
   | RichTextMedia
   | RichText
   | ModuleText
-  | HomeReference
-  | PageReference
   | ProjectReference
   | ModuleContentRefs
   | ModuleCarousel
@@ -869,10 +880,8 @@ export type AllSanitySchemaTypes =
   | MediaImage
   | NavThemeToggle
   | NavLanguageSwitch
-  | Link
   | Page
   | Home
-  | InternationalizedArrayText
   | LinkFunctions
   | InternationalizedArrayRichTextMediaValue
   | InternationalizedArrayRichTextValue

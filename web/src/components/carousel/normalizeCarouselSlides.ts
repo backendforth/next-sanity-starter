@@ -1,6 +1,8 @@
 import { stegaClean } from "next-sanity";
 
+import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import type { CarouselModule } from "@/src/components/modules/ModuleCarousel";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import type { NormalizedSlide } from "./CarouselSlide";
 
@@ -18,10 +20,13 @@ function slideKind(kind: string | null | undefined): SlideKind | null {
  * Normalize GROQ `resolvedSlides` into the shape {@link CarouselSlide} expects. With
  * `imagesOnly` the slides are plain images (`media` from `mediaQuery`); otherwise each slide is
  * a `module.media` with its `resolvedMedia`. The outer `resolvedMedia.kind` wins: a loop carries
- * a Mux asset that would look like a regular video at the asset level.
+ * a Mux asset that would look like a regular video at the asset level. Captions resolve to
+ * `locale` here, so the client slides get plain strings.
  */
 export function normalizeCarouselSlides(
 	module: CarouselModule,
+	locale: string,
+	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
 ): NormalizedSlide[] {
 	const slides: NormalizedSlide[] = [];
 	(module.resolvedSlides ?? []).forEach((slide, index) => {
@@ -43,7 +48,7 @@ export function normalizeCarouselSlides(
 			kind,
 			media: resolved.media,
 			poster: "poster" in resolved ? (resolved.poster ?? undefined) : undefined,
-			caption: resolved.caption ?? null,
+			caption: pickLocalizedString(resolved.caption, locale, siteLocale),
 			videoSettings:
 				"videoSettings" in resolved ? (resolved.videoSettings ?? null) : null,
 			allowUnmute:

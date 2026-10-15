@@ -1,3 +1,4 @@
+import { SITE_LANGUAGES_PROJECTION } from "@repo/site-languages";
 import { defineQuery } from "next-sanity";
 
 import { blockFields } from "../components/text/richTextMedia";
@@ -74,12 +75,14 @@ const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && _id == "siteCook
   }
 }`;
 
-/** Document id: `siteLanguageSettings` — the site's locales; the Studio reads it for its language tabs. */
-export const siteLanguageSettingsQuery =
-	defineQuery(`*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]{
-  availableLanguages[]{id, title},
-  defaultLanguageId
-}`);
+/**
+ * Document id: `siteLanguageSettings` — the site's locales; the Studio reads the same projection
+ * for its language tabs. TypeGen resolves the package import through pnpm's hoisted
+ * `node_modules/.pnpm/node_modules`, so a fresh `pnpm install` is all it needs.
+ */
+export const siteLanguageSettingsQuery = defineQuery(
+	`*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]${SITE_LANGUAGES_PROJECTION}`,
+);
 
 /**
  * `siteSettings` for the shell and route metadata: the brand title, the favicon and the

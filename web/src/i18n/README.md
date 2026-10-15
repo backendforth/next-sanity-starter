@@ -10,7 +10,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 | **Schema `initialValue`** ([`studio/schemas/settings/siteLanguageSettings.ts`](../../../studio/schemas/settings/siteLanguageSettings.ts)) | When an editor **creates** the singleton the first time — pre-fills e.g. `en` + `de` with default `en`. They can change or remove languages before publish (validation still requires ≥1 language and a valid default). |
 | **Code fallbacks** | Only when the document is **missing**, **unpublished** in a way that yields empty/invalid data, or **broken** (e.g. default id not in list). |
 
-**Web** uses [`fallbackSiteLocales.ts`](./fallbackSiteLocales.ts) `FALLBACK_SITE_LOCALE_CONFIG` — **minimal `en` only** — via [`sanity/normalizeSiteLocaleConfig.ts`](../../sanity/normalizeSiteLocaleConfig.ts). **Studio** uses the same minimal list in [`studio/config/sync/internationalizedArrayLanguages.ts`](../../../studio/config/sync/internationalizedArrayLanguages.ts) (`FALLBACK_LANGUAGES`). Those two constants **must stay in sync** (comments in both files cross-reference).
+The projection, the row rules (only the id is required; a repeated id keeps its first row) and the fallback — **minimal `en` only** — live once in [`@repo/site-languages`](../../../packages/site-languages/src/index.ts), which the web ([`sanity/normalizeSiteLocaleConfig.ts`](../../sanity/normalizeSiteLocaleConfig.ts), [`fallbackSiteLocales.ts`](./fallbackSiteLocales.ts) `FALLBACK_SITE_LOCALE_CONFIG`) and the Studio ([`studio/config/sync/internationalizedArrayLanguages.ts`](../../../studio/config/sync/internationalizedArrayLanguages.ts)) share. The web adds the default language on top.
 
 ## Contents
 

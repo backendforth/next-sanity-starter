@@ -30,9 +30,9 @@
   command = "pnpm --filter studio run build && pnpm --filter studio run register"
   publish = "studio/dist"
   # Skip the build when nothing since the last built commit touched the Studio (this file
-  # included), its shared package or the workspace manifests — the mirror of the web
+  # included), its shared packages or the workspace manifests — the mirror of the web
   # site's rule, `[ … ]` guard included.
-  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
+  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./packages/site-languages ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
 
 # Dataset order per deploy context (`@repo/sanity-dataset-resolve`), matching the web
 # site: production deploys prefer `production`, previews prefer `development`. The

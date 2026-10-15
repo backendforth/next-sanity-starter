@@ -3,7 +3,8 @@ import { defineType } from "sanity";
 
 /**
  * Defines which language ids exist on the site (URLs, Studio `internationalizedArray*`, web fallbacks).
- * Next.js and Studio `internationalized-array` read this at runtime (see `config/sync/internationalizedArrayLanguages.ts`).
+ * Next.js and Studio `internationalized-array` read this at runtime with the same row rules
+ * (`@repo/site-languages`; Studio side: `config/sync/internationalizedArrayLanguages.ts`).
  */
 export const siteLanguageSettings = defineType({
   name: "siteLanguageSettings",
@@ -25,7 +26,17 @@ export const siteLanguageSettings = defineType({
       type: "array",
       description:
         "Order defines fallback order on the website when a translation is missing.",
-      validation: (rule) => rule.required().min(1),
+      validation: (rule) => [
+        rule.required().min(1),
+        /* One URL prefix and one translation per id. */
+        rule.custom((rows: { id?: string }[] | undefined) => {
+          const ids = (rows ?? []).flatMap((row) => (row?.id ? [row.id] : []));
+          const repeated = ids.find((id, index) => ids.indexOf(id) !== index);
+          return repeated
+            ? `"${repeated}" is listed twice; each language id once.`
+            : true;
+        }),
+      ],
       of: [
         {
           type: "object",

@@ -23,11 +23,11 @@
   command = "pnpm --filter web run build"
   publish = "web/.next"
   # Skip the build when nothing since the last commit Netlify built for this context
-  # (`CACHED_COMMIT_REF`) touched the web app, its shared package, the workspace manifests
+  # (`CACHED_COMMIT_REF`) touched the web app, its shared packages, the workspace manifests
   # or this file — not just the last commit, so a multi-commit push can't hide a change.
   # A build without cache has both refs equal; the `[ … ]` guard then builds instead of
   # skipping. Saves Netlify minutes on Studio-only pushes.
-  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./web ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json ./netlify.toml'
+  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./web ./packages/sanity-dataset-resolve ./packages/site-languages ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json ./netlify.toml'
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

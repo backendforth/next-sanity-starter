@@ -1,11 +1,5 @@
-/**
- * Used when `siteLanguageSettings` is missing or invalid (and for minimal static fallbacks).
- *
- * **Keep in sync** with `FALLBACK_LANGUAGES` in
- * `studio/config/sync/internationalizedArrayLanguages.ts` — same minimal list so Studio tabs
- * and Next routing behave identically before the singleton exists or when it is invalid.
- * Canonical languages live in Sanity (`siteLanguageSettings` + schema `initialValue`).
- */
+import { FALLBACK_SITE_LANGUAGES } from "@repo/site-languages";
+
 export type SiteLocaleConfig = {
 	/** URL segment ids, in fallback order for translated Sanity fields. */
 	localeIds: readonly string[];
@@ -13,9 +7,13 @@ export type SiteLocaleConfig = {
 	languages: readonly { id: string; title: string }[];
 };
 
-/** Minimal single-locale fallback — not a product default; prefer editing Site languages in Studio. */
-export const FALLBACK_SITE_LOCALE_CONFIG = {
-	localeIds: ["en"],
-	defaultLocale: "en",
-	languages: [{ id: "en", title: "English" }],
-} as const satisfies SiteLocaleConfig;
+/**
+ * Used when `siteLanguageSettings` is missing or lists no language — the same minimal list the
+ * Studio falls back to (`@repo/site-languages`). Not a product default: languages are edited in
+ * the Studio (Settings → Site languages).
+ */
+export const FALLBACK_SITE_LOCALE_CONFIG: SiteLocaleConfig = {
+	localeIds: FALLBACK_SITE_LANGUAGES.map((l) => l.id),
+	defaultLocale: FALLBACK_SITE_LANGUAGES[0].id,
+	languages: FALLBACK_SITE_LANGUAGES,
+};

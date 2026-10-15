@@ -42,6 +42,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/site-languages: {}
+
   studio:
     dependencies:
       '@fontsource-variable/geist':
@@ -53,6 +55,9 @@ importers:
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
+      '@repo/site-languages':
+        specifier: workspace:*
+        version: link:../packages/site-languages
       '@sanity/icons':
         specifier: ^5.2.2
         version: 5.2.3(react@19.3.0)
@@ -108,6 +113,9 @@ importers:
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
+      '@repo/site-languages':
+        specifier: workspace:*
+        version: link:../packages/site-languages
       '@sanity/client':
         specifier: ^8.7.0
         version: 8.7.0

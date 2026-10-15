@@ -15,6 +15,7 @@
 		"@mux/mux-player-react": "^3.13.4",
 		"@portabletext/types": "^4.0.2",
 		"@repo/sanity-dataset-resolve": "workspace:*",
+		"@repo/site-languages": "workspace:*",
 		"@sanity/client": "^8.7.0",
 		"@sanity/image-url": "^2.1.1",
 		"clsx": "^2.1.1",

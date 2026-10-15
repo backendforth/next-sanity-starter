@@ -174,11 +174,12 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm dev` | Studio dev server via `scripts/dev-with-hint.mjs`. |
 | `pnpm start` | `sanity start`. |
 | `pnpm build` | `sanity build`. |
-| `pnpm deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). |
+| `pnpm run deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). Needs `run`: `pnpm deploy` is a pnpm built-in. |
 | `pnpm register` | `node scripts/register-hosting.mjs` → `sanity deploy --external`. Pass `--dry-run` to preview. |
 | `pnpm generate` | `sanity schema extract --enforce-required-fields --force && sanity typegen generate`. Run via the root `pnpm generate`. |
 | `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
 | `pnpm migrate:seo-i18n` | `main` only: one-off migration of plain-string SEO fields to i18n arrays (see `studio/scripts/README.md`). Only run when explicitly needed. |
+| `pnpm mux:migrate-assets` | One-off: lists Mux assets with static MP4 or 2160p / premium encoding; `-- --apply` turns static MP4 off. Needs `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`. |
 | `pnpm typecheck` | `tsc --noEmit` (studio only). |
 | `pnpm lint` | Biome on `studio/`. |
 | `pnpm format` | Biome write on `studio/`. |
@@ -265,7 +266,7 @@ URL /[locale]/[slug]
 
 1. Define in `studio/schemas/documents/` and register in `studio/schemas/index.ts`.
 2. Add a structure item under `studio/config/structure/items/` and wire into `studio/config/structure/index.ts`.
-3. Decide Presentation behaviour — touch `studio/config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`) and `resolve.ts` / `locationsResolver.ts` as needed.
+3. Decide Presentation behaviour. A slug type goes into `SLUG_BASED_DOCUMENT_TYPES` (`/:slug`) or `PREFIXED_SLUG_DOCUMENT_TYPES` (`/work/:slug`) in `studio/config/presentation/conventions.ts`. A singleton goes into `SINGLETON_PREVIEW_ROLE` in `studio/config/singletons.ts`: its role (`root`, `none`, `custom`) fills `SITE_ROOT_DOCUMENT_TYPES` / `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` and locks delete, unpublish and duplicate. Other routes: `resolve.ts` / `locationsResolver.ts`.
 4. If internally linkable, add to `studio/schemas/constants/references.ts` (`PAGE_REFERENCES`).
 5. `pnpm generate` → typecheck → format.
 
@@ -327,7 +328,7 @@ Both `main` and `variant/document-level` ship this file. The two branches have c
 | Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
 | Layout chrome | `app/[locale]/layout.tsx` fetches the chrome bundle (`fetchSiteChrome`: nav, cookie banner, site settings, analytics, 404 copy) in parallel with the locale check. | Fetches it (`fetchSiteChrome(locale)`) after `isAppLocale(locale)`: the bundle is per language, so its cache key needs a validated locale. |
 
-Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/`, flat `queries/components/modules/<name>.ts` with the barrel, the route paths from `queries/snippets/routePath.ts` (a deleted or unpublished link target renders without a link), the derived `web/sanity/types.ts`, the wiring tooling in `packages/`, and the inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
+Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/`, flat `queries/components/modules/<name>.ts` with the barrel, the route paths from `queries/snippets/routePath.ts` (a deleted or unpublished link target renders without a link), the derived `web/sanity/types.ts`, the wiring tooling in `packages/` (only the `scaffold-module` templates follow the branch's field types), and the inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
 ### Variant-branch rules
 

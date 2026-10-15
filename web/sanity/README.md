@@ -134,14 +134,14 @@ For production, use `fetchPageBySlug(slug, locale)` (Draft Mode + Stega) and ren
 
 ## Environment
 
-See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. Further options (`SANITY_USE_CDN`, site URL, revalidate) are covered in this README.
+See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars, site URL, revalidate secret. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. `client.ts` reads from the API CDN in production builds only; `SANITY_USE_CDN=true|false` overrides that.
 
 ### Presentation & Visual Editing (checklist)
 
 Official overview: [Introduction to Visual Editing](https://www.sanity.io/docs/visual-editing/introduction-to-visual-editing) and [Visual editing with Next.js App Router](https://www.sanity.io/docs/visual-editing/visual-editing-with-next-js-app-router) (draft mode, Presentation tool, Stega).
 
 1. **`SANITY_API_READ_TOKEN`** (viewer, read) in **`web/.env.local`** — draft-mode enable and `sanityFetch` need it.
-2. **`SANITY_STUDIO_PREVIEW_ORIGIN`** — exact Next.js origin loaded in the Presentation iframe (e.g. `http://localhost:3000` or your deploy URL).
+2. **`SANITY_STUDIO_PREVIEW_ORIGIN`** in **`studio/.env`** — exact Next.js origin loaded in the Presentation iframe (e.g. `http://localhost:3000` or your deploy URL).
 3. **`NEXT_PUBLIC_SANITY_STUDIO_URL`** — Studio URL for Stega / click-to-edit overlays (default `http://localhost:3333`).
 4. **Studio** — `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` (comma-separated) in `studio/.env` if Presentation runs against a **non-localhost** Next URL; `sanity.config.ts` merges these into `allowOrigins` beside `http://localhost:*`.
 

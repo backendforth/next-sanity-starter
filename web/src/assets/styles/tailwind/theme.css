@@ -13,18 +13,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-	/* Default `rounded` — former `borderRadius.DEFAULT` */
-	--radius: 2rem;
-
-	/* `border` / `border-DEFAULT` and `border-0` */
-	--border-width-DEFAULT: 0.0625rem;
-	--border-width-0: 0;
-
-	/* Primitives — same keys as former `theme.extend.colors`. `white`/`black`/`grey` sit in the
+	/* Colours — same keys as former `theme.extend.colors`. `white`/`black`/`grey` sit in the
 	 * `@theme reference` block below because their token names collide with Tailwind's. */
-	--color-current: currentColor;
-	--color-transparent: transparent;
-
 	--color-color-brand: var(--color-brand);
 	--color-color-accent: var(--color-accent);
 
@@ -47,13 +37,6 @@
 	--color-color-success: var(--color-success);
 	--color-color-danger: var(--color-danger);
 
-	/* Aspect ratios — class names `aspect-4/3`, `aspect-3/4`, `aspect-2/1` */
-	--aspect-4\/3: 4 / 3;
-	--aspect-3\/4: 3 / 4;
-	--aspect-2\/1: 2 / 1;
-
-	--brightness-70: 0.7;
-
 	--max-width-container: var(--content-max-width);
 
 	/* Spacing scale + layout tokens (former `theme.extend.spacing`) */
@@ -64,11 +47,7 @@
 	--spacing-lg: var(--space-lg);
 	--spacing-xl: var(--space-xl);
 	--spacing-max: var(--space-max);
-	--spacing-extra: var(--space-extra);
 	--spacing-container: var(--container-spacing);
-	/* See `variables/sizes.css` `--container-gutter` — enable together for `p-container-gutter` / `gap-container-gutter` utilities.
-	--spacing-container-gutter: var(--container-gutter);
-	*/
 }
 
 /*

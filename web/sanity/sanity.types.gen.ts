@@ -41,95 +41,6 @@ export type InternationalizedArrayString = Array<
   } & InternationalizedArrayStringValue
 >;
 
-export type ProjectCategoryReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "projectCategory";
-};
-
-export type Project = {
-  _id: string;
-  _type: "project";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title: InternationalizedArrayString;
-  titleMedia: ModuleMedia;
-  categories?: Array<
-    {
-      _key: string;
-    } & ProjectCategoryReference
-  >;
-  slug: Slug;
-  body?: InternationalizedArrayRichTextMedia;
-  seo?: SeoPage;
-};
-
-export type SanityImageAssetReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-};
-
-export type SeoPage = {
-  _type: "seo.page";
-  title?: InternationalizedArrayString;
-  description?: InternationalizedArrayText;
-  image?: {
-    asset?: SanityImageAssetReference;
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-};
-
-export type InternationalizedArrayRichTextMedia = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayRichTextMediaValue
->;
-
-export type Slug = {
-  _type: "slug";
-  current: string;
-  source?: string;
-};
-
-export type ModuleMedia = {
-  _type: "module.media";
-  type: "image" | "video" | "loop";
-  imageContent?: MediaImage;
-  videoContent?: MediaVideo;
-  videoLoopContent?: MediaVideoLoop;
-};
-
-export type Work = {
-  _id: string;
-  _type: "work";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  title: InternationalizedArrayString;
-  modules?: Array<
-    | ({
-        _key: string;
-      } & ModuleMedia)
-    | ({
-        _key: string;
-      } & ModuleCarousel)
-    | ({
-        _key: string;
-      } & ModuleContentRefs)
-    | ({
-        _key: string;
-      } & ModuleText)
-  >;
-  seo?: SeoPage;
-};
-
 export type SiteCookieBanner = {
   _id: string;
   _type: "siteCookieBanner";
@@ -170,11 +81,25 @@ export type PageReference = {
   [internalGroqTypeReferenceTo]?: "page";
 };
 
+export type WorkReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "work";
+};
+
+export type ProjectReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "project";
+};
+
 export type Link = {
   _type: "link";
   type: "internal" | "external" | "function";
   title?: InternationalizedArrayString;
-  reference?: HomeReference | PageReference;
+  reference?: HomeReference | PageReference | WorkReference | ProjectReference;
   url?: string;
   blank?: boolean;
   func?: LinkFunctions;
@@ -328,6 +253,13 @@ export type SiteLanguageSettings = {
   defaultLanguageId: string;
 };
 
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
+
 export type SiteSettings = {
   _id: string;
   _type: "siteSettings";
@@ -426,13 +358,6 @@ export type ModuleText = {
   body?: InternationalizedArrayRichTextMedia;
 };
 
-export type ProjectReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "project";
-};
-
 export type ModuleContentRefs = {
   _type: "module.contentRefs";
   heading?: InternationalizedArrayString;
@@ -440,6 +365,14 @@ export type ModuleContentRefs = {
   showProjectFilters?: boolean;
   selection: "all" | "selected";
   references?: ArrayOf<HomeReference | PageReference | ProjectReference>;
+};
+
+export type ModuleMedia = {
+  _type: "module.media";
+  type: "image" | "video" | "loop";
+  imageContent?: MediaImage;
+  videoContent?: MediaVideo;
+  videoLoopContent?: MediaVideoLoop;
 };
 
 export type ModuleCarousel = {
@@ -506,6 +439,80 @@ export type NavThemeToggle = {
 export type NavLanguageSwitch = {
   _type: "nav.languageSwitch";
   blockKind?: string;
+};
+
+export type ProjectCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "projectCategory";
+};
+
+export type Project = {
+  _id: string;
+  _type: "project";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: InternationalizedArrayString;
+  titleMedia: ModuleMedia;
+  categories?: Array<
+    {
+      _key: string;
+    } & ProjectCategoryReference
+  >;
+  slug: Slug;
+  body?: InternationalizedArrayRichTextMedia;
+  seo?: SeoPage;
+};
+
+export type SeoPage = {
+  _type: "seo.page";
+  title?: InternationalizedArrayString;
+  description?: InternationalizedArrayText;
+  image?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
+export type InternationalizedArrayRichTextMedia = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayRichTextMediaValue
+>;
+
+export type Slug = {
+  _type: "slug";
+  current: string;
+  source?: string;
+};
+
+export type Work = {
+  _id: string;
+  _type: "work";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title: InternationalizedArrayString;
+  modules?: Array<
+    | ({
+        _key: string;
+      } & ModuleMedia)
+    | ({
+        _key: string;
+      } & ModuleCarousel)
+    | ({
+        _key: string;
+      } & ModuleContentRefs)
+    | ({
+        _key: string;
+      } & ModuleText)
+  >;
+  seo?: SeoPage;
 };
 
 export type Page = {
@@ -823,17 +830,11 @@ export type AllSanitySchemaTypes =
   | VideoSettings
   | ProjectCategory
   | InternationalizedArrayString
-  | ProjectCategoryReference
-  | Project
-  | SanityImageAssetReference
-  | SeoPage
-  | InternationalizedArrayRichTextMedia
-  | Slug
-  | ModuleMedia
-  | Work
   | SiteCookieBanner
   | HomeReference
   | PageReference
+  | WorkReference
+  | ProjectReference
   | Link
   | InternationalizedArrayText
   | CookieSection
@@ -847,6 +848,7 @@ export type AllSanitySchemaTypes =
   | InternationalizedArrayRichText
   | SiteNav
   | SiteLanguageSettings
+  | SanityImageAssetReference
   | SiteSettings
   | SeoFallback
   | SanityImageCrop
@@ -854,14 +856,20 @@ export type AllSanitySchemaTypes =
   | RichTextMedia
   | RichText
   | ModuleText
-  | ProjectReference
   | ModuleContentRefs
+  | ModuleMedia
   | ModuleCarousel
   | MediaVideoLoop
   | MediaVideo
   | MediaImage
   | NavThemeToggle
   | NavLanguageSwitch
+  | ProjectCategoryReference
+  | Project
+  | SeoPage
+  | InternationalizedArrayRichTextMedia
+  | Slug
+  | Work
   | Page
   | Home
   | LinkFunctions
@@ -1160,7 +1168,11 @@ export type HomeQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url?: string;
                       blank?: boolean;
                       func?: LinkFunctions;
@@ -1174,6 +1186,18 @@ export type HomeQueryResult = {
                             title: InternationalizedArrayString;
                             path: string;
                           }
+                        | {
+                            _id: string;
+                            _type: "project";
+                            title: InternationalizedArrayString;
+                            path: string;
+                          }
+                        | {
+                            _id: string;
+                            _type: "work";
+                            title: InternationalizedArrayString;
+                            path: "/work";
+                          }
                         | null;
                     }
                   | {
@@ -1181,7 +1205,11 @@ export type HomeQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url?: string;
                       blank?: boolean;
                       func: {
@@ -1194,7 +1222,11 @@ export type HomeQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url: string | null;
                       blank: boolean | null;
                       func?: LinkFunctions;
@@ -1681,7 +1713,11 @@ export type PageBySlugQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url?: string;
                       blank?: boolean;
                       func?: LinkFunctions;
@@ -1695,6 +1731,18 @@ export type PageBySlugQueryResult = {
                             title: InternationalizedArrayString;
                             path: string;
                           }
+                        | {
+                            _id: string;
+                            _type: "project";
+                            title: InternationalizedArrayString;
+                            path: string;
+                          }
+                        | {
+                            _id: string;
+                            _type: "work";
+                            title: InternationalizedArrayString;
+                            path: "/work";
+                          }
                         | null;
                     }
                   | {
@@ -1702,7 +1750,11 @@ export type PageBySlugQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url?: string;
                       blank?: boolean;
                       func: {
@@ -1715,7 +1767,11 @@ export type PageBySlugQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url: string | null;
                       blank: boolean | null;
                       func?: LinkFunctions;
@@ -1961,7 +2017,11 @@ export type ProjectBySlugQueryResult = {
                 _type: "link";
                 type: "external" | "function" | "internal";
                 title: InternationalizedArrayString | null;
-                reference?: HomeReference | PageReference;
+                reference?:
+                  | HomeReference
+                  | PageReference
+                  | ProjectReference
+                  | WorkReference;
                 url?: string;
                 blank?: boolean;
                 func?: LinkFunctions;
@@ -1975,6 +2035,18 @@ export type ProjectBySlugQueryResult = {
                       title: InternationalizedArrayString;
                       path: string;
                     }
+                  | {
+                      _id: string;
+                      _type: "project";
+                      title: InternationalizedArrayString;
+                      path: string;
+                    }
+                  | {
+                      _id: string;
+                      _type: "work";
+                      title: InternationalizedArrayString;
+                      path: "/work";
+                    }
                   | null;
               }
             | {
@@ -1982,7 +2054,11 @@ export type ProjectBySlugQueryResult = {
                 _type: "link";
                 type: "external" | "function" | "internal";
                 title: InternationalizedArrayString | null;
-                reference?: HomeReference | PageReference;
+                reference?:
+                  | HomeReference
+                  | PageReference
+                  | ProjectReference
+                  | WorkReference;
                 url?: string;
                 blank?: boolean;
                 func: {
@@ -1995,7 +2071,11 @@ export type ProjectBySlugQueryResult = {
                 _type: "link";
                 type: "external" | "function" | "internal";
                 title: InternationalizedArrayString | null;
-                reference?: HomeReference | PageReference;
+                reference?:
+                  | HomeReference
+                  | PageReference
+                  | ProjectReference
+                  | WorkReference;
                 url: string | null;
                 blank: boolean | null;
                 func?: LinkFunctions;
@@ -2480,7 +2560,11 @@ export type WorkQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url?: string;
                       blank?: boolean;
                       func?: LinkFunctions;
@@ -2494,6 +2578,18 @@ export type WorkQueryResult = {
                             title: InternationalizedArrayString;
                             path: string;
                           }
+                        | {
+                            _id: string;
+                            _type: "project";
+                            title: InternationalizedArrayString;
+                            path: string;
+                          }
+                        | {
+                            _id: string;
+                            _type: "work";
+                            title: InternationalizedArrayString;
+                            path: "/work";
+                          }
                         | null;
                     }
                   | {
@@ -2501,7 +2597,11 @@ export type WorkQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url?: string;
                       blank?: boolean;
                       func: {
@@ -2514,7 +2614,11 @@ export type WorkQueryResult = {
                       _type: "link";
                       type: "external" | "function" | "internal";
                       title: InternationalizedArrayString | null;
-                      reference?: HomeReference | PageReference;
+                      reference?:
+                        | HomeReference
+                        | PageReference
+                        | ProjectReference
+                        | WorkReference;
                       url: string | null;
                       blank: boolean | null;
                       func?: LinkFunctions;
@@ -2779,6 +2883,18 @@ export type SiteChromeQueryResult = {
                 title: InternationalizedArrayString;
                 path: string;
               }
+            | {
+                _id: string;
+                _type: "project";
+                title: InternationalizedArrayString;
+                path: string;
+              }
+            | {
+                _id: string;
+                _type: "work";
+                title: InternationalizedArrayString;
+                path: "/work";
+              }
             | null;
         }
       | {
@@ -2822,6 +2938,18 @@ export type SiteChromeQueryResult = {
                 title: InternationalizedArrayString;
                 path: string;
               }
+            | {
+                _id: string;
+                _type: "project";
+                title: InternationalizedArrayString;
+                path: string;
+              }
+            | {
+                _id: string;
+                _type: "work";
+                title: InternationalizedArrayString;
+                path: "/work";
+              }
             | null;
         }
     > | null;
@@ -2860,6 +2988,18 @@ export type SiteChromeQueryResult = {
               | {
                   title: InternationalizedArrayString;
                   path: string;
+                }
+              | {
+                  _id: string;
+                  _type: "project";
+                  title: InternationalizedArrayString;
+                  path: string;
+                }
+              | {
+                  _id: string;
+                  _type: "work";
+                  title: InternationalizedArrayString;
+                  path: "/work";
                 }
               | null;
           }
@@ -2997,7 +3137,11 @@ export type SiteChromeQueryResult = {
               _type: "link";
               type: "external" | "function" | "internal";
               title: InternationalizedArrayString | null;
-              reference?: HomeReference | PageReference;
+              reference?:
+                | HomeReference
+                | PageReference
+                | ProjectReference
+                | WorkReference;
               url?: string;
               blank?: boolean;
               func?: LinkFunctions;
@@ -3011,6 +3155,18 @@ export type SiteChromeQueryResult = {
                     title: InternationalizedArrayString;
                     path: string;
                   }
+                | {
+                    _id: string;
+                    _type: "project";
+                    title: InternationalizedArrayString;
+                    path: string;
+                  }
+                | {
+                    _id: string;
+                    _type: "work";
+                    title: InternationalizedArrayString;
+                    path: "/work";
+                  }
                 | null;
             }
           | {
@@ -3018,7 +3174,11 @@ export type SiteChromeQueryResult = {
               _type: "link";
               type: "external" | "function" | "internal";
               title: InternationalizedArrayString | null;
-              reference?: HomeReference | PageReference;
+              reference?:
+                | HomeReference
+                | PageReference
+                | ProjectReference
+                | WorkReference;
               url?: string;
               blank?: boolean;
               func: {
@@ -3031,7 +3191,11 @@ export type SiteChromeQueryResult = {
               _type: "link";
               type: "external" | "function" | "internal";
               title: InternationalizedArrayString | null;
-              reference?: HomeReference | PageReference;
+              reference?:
+                | HomeReference
+                | PageReference
+                | ProjectReference
+                | WorkReference;
               url: string | null;
               blank: boolean | null;
               func?: LinkFunctions;

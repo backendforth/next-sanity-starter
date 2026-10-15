@@ -5,10 +5,7 @@ import {
 	createDataAttribute,
 } from "next-sanity";
 
-import { dataset, projectId } from "../sanityEnv";
-
-const studioUrl =
-	process.env.NEXT_PUBLIC_SANITY_STUDIO_URL ?? "http://localhost:3333";
+import { dataset, projectId, studioUrl } from "../sanityEnv";
 
 type DataAttrConfig = CreateDataAttributeProps &
 	Required<Pick<CreateDataAttributeProps, "id" | "type" | "path">>;

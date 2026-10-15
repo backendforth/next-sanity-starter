@@ -1,7 +1,7 @@
 /**
  * Canonical Sanity dataset resolution for Studio and Web (`resolveStudioDatasetAsync`):
  *
- * 1. `SANITY_STUDIO_DATASET`, or (web) `NEXT_PUBLIC_SANITY_DATASET`, always wins.
+ * 1. `SANITY_STUDIO_DATASET` always wins.
  * 2. Otherwise the first name from {@link preference} that exists in the project, probed on the
  *    public Data API (no token needed).
  * 3. If none exists, or existence can't be checked (no project id, offline), the first
@@ -19,8 +19,6 @@ const DATA_API_VERSION = "v2024-01-01";
 /** Minimal env shape for resolution (Studio and Next pass compatible objects). */
 export type SanityDatasetResolveEnv = {
 	SANITY_STUDIO_DATASET?: string | undefined;
-	/** Web: inlined at build when prefixed with `NEXT_PUBLIC_`. */
-	NEXT_PUBLIC_SANITY_DATASET?: string | undefined;
 	SANITY_STUDIO_PROJECT_ID?: string | undefined;
 	SANITY_STUDIO_DATASET_DEVELOPMENT?: string | undefined;
 	SANITY_STUDIO_DATASET_PRODUCTION?: string | undefined;
@@ -97,8 +95,7 @@ async function datasetExists(
 export async function resolveStudioDatasetAsync(
 	env: SanityDatasetResolveInput,
 ): Promise<string> {
-	const explicit =
-		env.SANITY_STUDIO_DATASET?.trim() || env.NEXT_PUBLIC_SANITY_DATASET?.trim();
+	const explicit = env.SANITY_STUDIO_DATASET?.trim();
 	if (explicit) return explicit;
 
 	const preferred = preference(env);

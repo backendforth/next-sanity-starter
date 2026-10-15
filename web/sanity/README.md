@@ -6,12 +6,13 @@ This folder holds the **Sanity client**, the **fetchers**, **GROQ queries**, the
 
 | Path | Role |
 |------|------|
-| `client.ts` | `createClient` — the base client. Reads the API CDN in production builds only; `SANITY_USE_CDN=true\|false` overrides that |
+| `client.ts` | `createClient` — the base client |
 | `live.ts` | `defineLive` → **`sanityFetch`**, **`SanityLive`** — required for Presentation, Draft Mode, and Visual Editing (Stega) |
-| `sanityEnv.ts` | **`projectId`** and **`dataset`** for every reader (client, proxy, image URLs) — resolved once in `next.config.ts` and inlined into every bundle |
+| `sanityEnv.ts` | **`projectId`** and **`dataset`** for every reader (client, proxy, image URLs) — resolved once in `next.config.ts` and inlined into every bundle — plus `apiVersion`, `useCdn` (the API CDN in production builds only; `SANITY_USE_CDN=true\|false` overrides that) and `studioUrl` |
+| `readToken.ts` | `SANITY_API_READ_TOKEN`, trimmed, server-only: `live.ts`, the language-settings fetchers, the proxy and `/api/draft-mode/enable` |
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers with primitive arguments only, so `generateMetadata` and the page share one React `cache` entry: `fetchHomeDocument`, `fetchPageBySlug(slug)`, `fetchWorkDocument`, `fetchProjectBySlug(slug)` and `fetchSiteChrome` (nav, cookie banner, site settings, analytics, 404 copy — one query for the whole shell). A render makes two `sanityFetch` calls. Also `fetchSiteLanguageSettings` (routing config) |
 | `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
-| `cacheTags.ts` | The cache tags every read attaches, and the webhook's document type → tags map `/api/revalidate` expires |
+| `cacheTags.ts` | The cache tags every read attaches, the webhook's document type → tags map `/api/revalidate` expires, and `hasRevalidateWebhook` (`SANITY_REVALIDATE_SECRET` set) |
 | `normalizeSiteLocaleConfig.ts` | `siteLanguageSettings` → `SiteLocaleConfig` (`localeIds`, `defaultLocale`, `languages`); an empty list falls back to `FALLBACK_SITE_LOCALE_CONFIG` |
 | `seo/` | `metadataFromSanityPageData` — route metadata from merged SEO + localized title; `siteFaviconIcons` |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`; `queries/index.ts` exports the full queries |

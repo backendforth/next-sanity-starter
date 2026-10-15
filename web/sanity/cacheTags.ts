@@ -8,6 +8,17 @@
  * These tags are how published content reaches them.
  */
 
+/** The revalidate webhook's signing secret (`/api/revalidate`); `""` when unset. */
+export const revalidateSecret =
+	process.env.SANITY_REVALIDATE_SECRET?.trim() ?? "";
+
+/**
+ * Whether published content refreshes through the webhook. Without it the published reads
+ * expire after 60 s (`cachedSanityQuery.ts`) and every visitor gets `<SanityLive />`
+ * (`DocumentShell.tsx`).
+ */
+export const hasRevalidateWebhook = revalidateSecret !== "";
+
 export const SANITY_CACHE_TAGS = {
 	home: "home",
 	work: "work",

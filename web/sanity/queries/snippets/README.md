@@ -9,7 +9,7 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | File | Export(s) | Role |
 |------|-----------|------|
 | `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata takes the site-wide fallback from `siteChromeQuery` (`settings.seo`) instead of an embedded join. |
-| `media.ts` | `imageQuery`, `imageShapeQuery`, `videoQuery` | Image / Mux shapes, one per field type (`field${imageQuery}`, `field${videoQuery}`) |
+| `media.ts` | `imageQuery`, `videoQuery` | Image / Mux shapes, one per field type (`field${imageQuery}`, `field${videoQuery}`) |
 | `link.ts` | `linkQuery` | `link` marks and nav rows, one `select` branch per type (`linkType` tells them apart): `internal` (`resolvedReference { _id, _type, title, path }`), `external` (url/href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
 | `routePath.ts` | `routePathProjection` | The site path of a routable document (`/`, `/work`, `/{slug}`, `/work/{slug}`), `null` when it has no route. Used by `linkQuery`, `contentRefs`, the sitemap and the four page queries; the web turns it into an href with `hrefFor(path, locale)` (`siteLocalePathUtils.ts`) |
 | `settings.ts` | `siteChromeQuery`, `siteLanguageSettingsQuery` | `siteChromeQuery` is the whole app shell in one fetch (`fetchSiteChrome`): nav menus, cookie banner, site settings (title, favicon, SEO fallback), analytics and the 404 copy. `siteLanguageSettingsQuery` drives routing (`fetchSiteLanguageSettings`) |

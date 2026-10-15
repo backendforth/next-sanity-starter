@@ -4,10 +4,10 @@ import type {
 	SiteCookieBanner,
 } from "@/sanity/types";
 
-export type AnalyticsLoadMode = NonNullable<SiteAnalyticsSettings["loadMode"]>;
+type AnalyticsLoadMode = NonNullable<SiteAnalyticsSettings["loadMode"]>;
 
 /** All the tracking gate reads of the banner document — the client gets nothing else of it. */
-export type CookieBannerToggle = Pick<SiteCookieBanner, "useCookieBanner">;
+type CookieBannerToggle = Pick<SiteCookieBanner, "useCookieBanner">;
 
 export type TrackingConfig = {
 	analytics: SiteAnalyticsSettings | null;
@@ -31,7 +31,7 @@ function isAbsoluteHttpUrl(value: string | null | undefined): boolean {
 	}
 }
 
-export function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
+function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
 	if (tracker.enabled === false) return false;
 
 	switch (tracker._type) {
@@ -60,13 +60,13 @@ export function getEnabledTrackers(
 	return (analytics?.trackers ?? []).filter(isTrackerEnabled);
 }
 
-export function isCookieBannerActive(
+function isCookieBannerActive(
 	cookieBanner: CookieBannerToggle | null,
 ): boolean {
 	return cookieBanner?.useCookieBanner === true;
 }
 
-export function shouldRespectCookieBanner(
+function shouldRespectCookieBanner(
 	loadMode: AnalyticsLoadMode | null | undefined,
 	cookieBanner: CookieBannerToggle | null,
 ): boolean {

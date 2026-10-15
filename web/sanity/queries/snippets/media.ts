@@ -1,7 +1,7 @@
 /**
  * Image field (`image` type): use as `fieldName${imageQuery}` → `fieldName{ crop, hotspot, … }`.
  */
-export const imageShapeQuery = `
+export const imageQuery = `{
   crop,
   hotspot,
   "alt": asset->altText,
@@ -12,9 +12,7 @@ export const imageShapeQuery = `
       dimensions{ width, height, aspectRatio }
     }
   }
-`;
-
-export const imageQuery = `{${imageShapeQuery}}`;
+}`;
 
 /**
  * Mux / `mux.video` field: use as `fieldName${videoQuery}`.

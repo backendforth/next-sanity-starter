@@ -70,7 +70,7 @@ function labelFor(
 	return uiLabel("link", locale);
 }
 
-export function resolveNavMenuLink(
+function resolveNavMenuLink(
 	link: NavMenuLink,
 	locale: string,
 	index: number,
@@ -133,7 +133,7 @@ export function resolveNavMenuLink(
 	return null;
 }
 
-export function resolveMenuRows(
+function resolveMenuRows(
 	menu: NavMenuLink[] | null | undefined,
 	locale: string,
 	pathUtils: Pick<LanguagePathUtils, "hrefFor">,

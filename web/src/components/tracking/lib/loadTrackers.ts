@@ -11,7 +11,7 @@ import {
 const POSTHOG_INIT_MAX_ATTEMPTS = 40;
 
 /** How a load was allowed: `analyticsConsent` is true only when the visitor granted it in the banner. */
-export type TrackerLoadContext = {
+type TrackerLoadContext = {
 	analyticsConsent: boolean;
 };
 
@@ -251,7 +251,7 @@ const loaders: Record<
 	trackerPlausible: loadPlausible,
 };
 
-export function loadTracker(
+function loadTracker(
 	tracker: AnalyticsTracker,
 	context: TrackerLoadContext,
 ): void {

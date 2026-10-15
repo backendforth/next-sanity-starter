@@ -69,8 +69,8 @@ Give the slug a **Generate** button with `options.source: titleSlugSource` (`uti
 
 Reusable **`type: "object"`** types for image and Mux video live under **`objects/media/`**:
 
-- **`media.image`** — image (hotspot) and optional caption.
-- **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption.
+- **`media.image`** — image (hotspot) and optional caption (`internationalizedArrayString`).
+- **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption (`internationalizedArrayString`).
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
 

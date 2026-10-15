@@ -461,7 +461,7 @@ export type MediaVideoLoop = {
     _type: "image";
   };
   allowUnmute?: boolean;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaVideo = {
@@ -475,7 +475,7 @@ export type MediaVideo = {
     _type: "image";
   };
   videoSettings?: VideoSettings;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaImage = {
@@ -487,7 +487,7 @@ export type MediaImage = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type NavThemeToggle = {

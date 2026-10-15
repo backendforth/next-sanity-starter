@@ -1,6 +1,7 @@
 import { ImageIcon } from "@sanity/icons/Image";
 import { defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../../utils/firstLocalizedLabel";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const mediaImage = defineType({
@@ -20,7 +21,7 @@ export const mediaImage = defineType({
     {
       name: "caption",
       title: "Caption",
-      type: "string",
+      type: "internationalizedArrayString",
     },
   ],
   preview: {
@@ -38,8 +39,7 @@ export const mediaImage = defineType({
           ? `${filename} (${dimensions.width}px × ${dimensions.height}px)`
           : undefined;
       return {
-        title:
-          typeof caption === "string" && caption.trim() ? caption : "Image",
+        title: firstLocalizedLabel(caption, "Image"),
         subtitle,
         media: selection.image,
       };

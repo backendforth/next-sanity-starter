@@ -461,7 +461,7 @@ export type MediaVideoLoop = {
     _type: "image";
   };
   allowUnmute?: boolean;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaVideo = {
@@ -475,7 +475,7 @@ export type MediaVideo = {
     _type: "image";
   };
   videoSettings?: VideoSettings;
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type MediaImage = {
@@ -487,7 +487,7 @@ export type MediaImage = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  caption?: string;
+  caption?: InternationalizedArrayString;
 };
 
 export type NavThemeToggle = {
@@ -945,7 +945,7 @@ export type HomeQueryResult = {
               resolvedMedia:
                 | {
                     kind: "loop";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     allowUnmute: boolean | null;
                     media:
                       | {
@@ -999,7 +999,7 @@ export type HomeQueryResult = {
                   }
                 | {
                     kind: "image";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     media: {
                       kind: "image";
                       crop: SanityImageCrop | null;
@@ -1020,7 +1020,7 @@ export type HomeQueryResult = {
                   }
                 | {
                     kind: "video";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     videoSettings: VideoSettings | null;
                     media:
                       | {
@@ -1139,7 +1139,7 @@ export type HomeQueryResult = {
         resolvedMedia:
           | {
               kind: "loop";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               allowUnmute: boolean | null;
               media:
                 | {
@@ -1193,7 +1193,7 @@ export type HomeQueryResult = {
             }
           | {
               kind: "image";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               media: {
                 kind: "image";
                 crop: SanityImageCrop | null;
@@ -1214,7 +1214,7 @@ export type HomeQueryResult = {
             }
           | {
               kind: "video";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               videoSettings: VideoSettings | null;
               media:
                 | {
@@ -1394,7 +1394,7 @@ export type HomeQueryResult = {
                       resolvedMedia:
                         | {
                             kind: "loop";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             allowUnmute: boolean | null;
                             media:
                               | {
@@ -1448,7 +1448,7 @@ export type HomeQueryResult = {
                           }
                         | {
                             kind: "image";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             media: {
                               kind: "image";
                               crop: SanityImageCrop | null;
@@ -1469,7 +1469,7 @@ export type HomeQueryResult = {
                           }
                         | {
                             kind: "video";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             videoSettings: VideoSettings | null;
                             media:
                               | {
@@ -1534,7 +1534,7 @@ export type HomeQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -1588,7 +1588,7 @@ export type HomeQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -1609,7 +1609,7 @@ export type HomeQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -1719,7 +1719,7 @@ export type PageBySlugQueryResult = {
               resolvedMedia:
                 | {
                     kind: "loop";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     allowUnmute: boolean | null;
                     media:
                       | {
@@ -1773,7 +1773,7 @@ export type PageBySlugQueryResult = {
                   }
                 | {
                     kind: "image";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     media: {
                       kind: "image";
                       crop: SanityImageCrop | null;
@@ -1794,7 +1794,7 @@ export type PageBySlugQueryResult = {
                   }
                 | {
                     kind: "video";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     videoSettings: VideoSettings | null;
                     media:
                       | {
@@ -1913,7 +1913,7 @@ export type PageBySlugQueryResult = {
         resolvedMedia:
           | {
               kind: "loop";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               allowUnmute: boolean | null;
               media:
                 | {
@@ -1967,7 +1967,7 @@ export type PageBySlugQueryResult = {
             }
           | {
               kind: "image";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               media: {
                 kind: "image";
                 crop: SanityImageCrop | null;
@@ -1988,7 +1988,7 @@ export type PageBySlugQueryResult = {
             }
           | {
               kind: "video";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               videoSettings: VideoSettings | null;
               media:
                 | {
@@ -2168,7 +2168,7 @@ export type PageBySlugQueryResult = {
                       resolvedMedia:
                         | {
                             kind: "loop";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             allowUnmute: boolean | null;
                             media:
                               | {
@@ -2222,7 +2222,7 @@ export type PageBySlugQueryResult = {
                           }
                         | {
                             kind: "image";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             media: {
                               kind: "image";
                               crop: SanityImageCrop | null;
@@ -2243,7 +2243,7 @@ export type PageBySlugQueryResult = {
                           }
                         | {
                             kind: "video";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             videoSettings: VideoSettings | null;
                             media:
                               | {
@@ -2308,7 +2308,7 @@ export type PageBySlugQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -2362,7 +2362,7 @@ export type PageBySlugQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -2383,7 +2383,7 @@ export type PageBySlugQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -2577,7 +2577,7 @@ export type ProjectBySlugQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -2631,7 +2631,7 @@ export type ProjectBySlugQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -2652,7 +2652,7 @@ export type ProjectBySlugQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {
@@ -2717,7 +2717,7 @@ export type ProjectBySlugQueryResult = {
           resolvedMedia:
             | {
                 kind: "loop";
-                caption: string | null;
+                caption: InternationalizedArrayString | null;
                 allowUnmute: boolean | null;
                 media:
                   | {
@@ -2771,7 +2771,7 @@ export type ProjectBySlugQueryResult = {
               }
             | {
                 kind: "image";
-                caption: string | null;
+                caption: InternationalizedArrayString | null;
                 media: {
                   kind: "image";
                   crop: SanityImageCrop | null;
@@ -2792,7 +2792,7 @@ export type ProjectBySlugQueryResult = {
               }
             | {
                 kind: "video";
-                caption: string | null;
+                caption: InternationalizedArrayString | null;
                 videoSettings: VideoSettings | null;
                 media:
                   | {
@@ -2900,7 +2900,7 @@ export type WorkQueryResult = {
               resolvedMedia:
                 | {
                     kind: "loop";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     allowUnmute: boolean | null;
                     media:
                       | {
@@ -2954,7 +2954,7 @@ export type WorkQueryResult = {
                   }
                 | {
                     kind: "image";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     media: {
                       kind: "image";
                       crop: SanityImageCrop | null;
@@ -2975,7 +2975,7 @@ export type WorkQueryResult = {
                   }
                 | {
                     kind: "video";
-                    caption: string | null;
+                    caption: InternationalizedArrayString | null;
                     videoSettings: VideoSettings | null;
                     media:
                       | {
@@ -3094,7 +3094,7 @@ export type WorkQueryResult = {
         resolvedMedia:
           | {
               kind: "loop";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               allowUnmute: boolean | null;
               media:
                 | {
@@ -3148,7 +3148,7 @@ export type WorkQueryResult = {
             }
           | {
               kind: "image";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               media: {
                 kind: "image";
                 crop: SanityImageCrop | null;
@@ -3169,7 +3169,7 @@ export type WorkQueryResult = {
             }
           | {
               kind: "video";
-              caption: string | null;
+              caption: InternationalizedArrayString | null;
               videoSettings: VideoSettings | null;
               media:
                 | {
@@ -3349,7 +3349,7 @@ export type WorkQueryResult = {
                       resolvedMedia:
                         | {
                             kind: "loop";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             allowUnmute: boolean | null;
                             media:
                               | {
@@ -3403,7 +3403,7 @@ export type WorkQueryResult = {
                           }
                         | {
                             kind: "image";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             media: {
                               kind: "image";
                               crop: SanityImageCrop | null;
@@ -3424,7 +3424,7 @@ export type WorkQueryResult = {
                           }
                         | {
                             kind: "video";
-                            caption: string | null;
+                            caption: InternationalizedArrayString | null;
                             videoSettings: VideoSettings | null;
                             media:
                               | {
@@ -3489,7 +3489,7 @@ export type WorkQueryResult = {
                 resolvedMedia:
                   | {
                       kind: "loop";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       allowUnmute: boolean | null;
                       media:
                         | {
@@ -3543,7 +3543,7 @@ export type WorkQueryResult = {
                     }
                   | {
                       kind: "image";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       media: {
                         kind: "image";
                         crop: SanityImageCrop | null;
@@ -3564,7 +3564,7 @@ export type WorkQueryResult = {
                     }
                   | {
                       kind: "video";
-                      caption: string | null;
+                      caption: InternationalizedArrayString | null;
                       videoSettings: VideoSettings | null;
                       media:
                         | {

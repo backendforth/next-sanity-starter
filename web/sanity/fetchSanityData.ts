@@ -16,6 +16,7 @@ import {
 	siteLanguageSettingsQuery,
 	workQuery,
 } from "./queries";
+import { readToken } from "./readToken";
 
 /*
  * Every `sanityFetch` below passes the matching `SANITY_CACHE_TAGS` entry.
@@ -140,7 +141,7 @@ async function isDraftModeEnabled(): Promise<boolean> {
 export const fetchSiteLanguageSettings = cache(
 	async (): Promise<SiteLocaleConfig> => {
 		if (!isSanityConfigured) return cachedSiteLanguageSettingsPublished();
-		const token = process.env.SANITY_API_READ_TOKEN?.trim();
+		const token = readToken;
 		if (!token) {
 			return cachedSiteLanguageSettingsPublished();
 		}

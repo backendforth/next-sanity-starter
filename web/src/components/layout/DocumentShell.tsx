@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { draftMode } from "next/headers";
 import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
+import { hasRevalidateWebhook } from "@/sanity/cacheTags";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo/siteFaviconIcons";
 import type { SiteFavicon } from "@/sanity/types";
@@ -68,17 +69,13 @@ type Props = {
 export async function DocumentShell({ lang, children }: Props) {
 	const draft = await draftMode();
 	const isDraft = draft.isEnabled;
-	const hasRevalidateWebhook = Boolean(
-		process.env.SANITY_REVALIDATE_SECRET?.trim(),
-	);
 	/**
 	 * <SanityLive /> opens an SSE connection per open tab and refreshes the `sanityFetch` cache
 	 * through a server action on every publish event — needed for Presentation / Draft Mode.
 	 * With the revalidate webhook configured, anonymous visitors don't need it: `/api/revalidate`
 	 * expires the cache tags the `sanityFetch` wrappers attach. Without the webhook it runs for
 	 * everyone (no token needed for published content), so a deploy with neither webhook nor
-	 * read token still picks up publishes. (Env is read at render time — the prerender needs the
-	 * secret at build.)
+	 * read token still picks up publishes. (The prerender needs the secret at build.)
 	 */
 	const shouldMountSanityLive = isDraft || !hasRevalidateWebhook;
 

@@ -1,7 +1,8 @@
 import { normalizeSiteLocaleConfig } from "@/sanity/normalizeSiteLocaleConfig";
 import { siteLanguageSettingsQuery } from "@/sanity/queries";
+import { readToken } from "@/sanity/readToken";
 import type { SiteLanguageSettingsQueryResult } from "@/sanity/sanity.types.gen";
-import { dataset, projectId } from "@/sanity/sanityEnv";
+import { apiVersion, dataset, projectId, useCdn } from "@/sanity/sanityEnv";
 
 import type { SiteLocaleConfig } from "./fallbackSiteLocales";
 
@@ -14,25 +15,27 @@ let refreshInFlight: Promise<SiteLocaleConfig> | null = null;
 
 /**
  * One GROQ round trip for `siteLanguageSettings`. Published reads go through the
- * CDN host (edge-cached, no auth); draft reads hit the live API with the read
- * token and `perspective=drafts`. Returns `null` on a non-OK response so callers
- * can keep serving a previous config instead of silently downgrading to the
- * offline fallback.
+ * CDN host (edge-cached, no auth) when the client does (`useCdn`); draft reads hit
+ * the live API with the read token and `perspective=drafts`. Returns `null` on a
+ * non-OK response so callers can keep serving a previous config instead of
+ * silently downgrading to the offline fallback.
  */
 async function querySiteLanguageSettings(
 	drafts: boolean,
 ): Promise<SiteLocaleConfig | null> {
-	const token = process.env.SANITY_API_READ_TOKEN?.trim();
-	const host = drafts ? "api" : "apicdn";
+	const host = drafts || !useCdn ? "api" : "apicdn";
 	const url = new URL(
-		`https://${projectId}.${host}.sanity.io/v2024-01-01/data/query/${dataset}`,
+		`https://${projectId}.${host}.sanity.io/v${apiVersion}/data/query/${dataset}`,
 	);
 	url.searchParams.set("query", siteLanguageSettingsQuery);
 	if (drafts) {
 		url.searchParams.set("perspective", "drafts");
 	}
 	const res = await fetch(url.toString(), {
-		headers: drafts && token ? { Authorization: `Bearer ${token}` } : undefined,
+		headers:
+			drafts && readToken
+				? { Authorization: `Bearer ${readToken}` }
+				: undefined,
 	});
 	if (!res.ok) return null;
 	/* A raw HTTP query — the proxy runs without the Sanity client — so the result is typed by
@@ -71,7 +74,8 @@ function refreshPublishedConfig(): Promise<SiteLocaleConfig> {
  * request, so it must never add a blocking Sanity round trip to routine
  * traffic:
  *
- * - **Published (default).** CDN host, anonymous, cached in memory. An expired
+ * - **Published (default).** Anonymous, from the API CDN whenever the client
+ *   reads it (`useCdn`), cached in memory. An expired
  *   entry is served stale while a single background refresh runs — only the
  *   very first request of a process/isolate ever waits for Sanity.
  * - **Drafts (`preferDrafts: true`).** For requests that are actually in Draft
@@ -91,7 +95,7 @@ export async function fetchSiteLocaleConfigForProxy(options?: {
 		return normalizeSiteLocaleConfig(null);
 	}
 
-	if (options?.preferDrafts && process.env.SANITY_API_READ_TOKEN?.trim()) {
+	if (options?.preferDrafts && readToken) {
 		try {
 			const config = await querySiteLanguageSettings(true);
 			if (config) return config;

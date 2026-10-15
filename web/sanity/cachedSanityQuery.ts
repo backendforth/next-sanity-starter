@@ -10,7 +10,7 @@ import {
 	FALLBACK_SITE_LOCALE_CONFIG,
 	type SiteLocaleConfig,
 } from "@/src/i18n/fallbackSiteLocales";
-import { SANITY_CACHE_TAGS } from "./cacheTags";
+import { hasRevalidateWebhook, SANITY_CACHE_TAGS } from "./cacheTags";
 import { client, isSanityConfigured } from "./client";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
@@ -32,7 +32,7 @@ import type {
  * and refreshes through its tags alone (see `web/README.md`, Freshness).
  */
 const SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS: number | false =
-	process.env.SANITY_REVALIDATE_SECRET?.trim() ? false : 60;
+	hasRevalidateWebhook ? false : 60;
 
 // ── Sitemap snapshot ────────────────────────────────────────────────────────
 

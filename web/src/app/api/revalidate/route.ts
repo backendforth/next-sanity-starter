@@ -2,15 +2,13 @@ import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { parseBody } from "next-sanity/webhook";
 
-import { tagsForWebhookDocument } from "@/sanity/cacheTags";
-
-const REVALIDATE_SECRET = process.env.SANITY_REVALIDATE_SECRET?.trim();
+import { revalidateSecret, tagsForWebhookDocument } from "@/sanity/cacheTags";
 
 /** The webhook projection, `{_type}`. `parseBody` only hands it over signed. */
 type WebhookPayload = { _type?: string };
 
 export async function POST(request: NextRequest) {
-	if (!REVALIDATE_SECRET) {
+	if (!revalidateSecret) {
 		return NextResponse.json(
 			{ message: "SANITY_REVALIDATE_SECRET is not configured" },
 			{ status: 500 },
@@ -21,7 +19,7 @@ export async function POST(request: NextRequest) {
 	try {
 		/* Verifies Sanity's `sanity-webhook-signature` (base64url HMAC over `t.<body>`) and waits
 		 * out Content Lake's eventual consistency, so the re-render reads the new data. */
-		parsed = await parseBody<WebhookPayload>(request, REVALIDATE_SECRET);
+		parsed = await parseBody<WebhookPayload>(request, revalidateSecret);
 	} catch {
 		return NextResponse.json(
 			{ message: "Error parsing request body" },

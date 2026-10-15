@@ -5,6 +5,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas â€
 ## Stack quirks (non-obvious)
 
 - Next.js 16 App Router only. RSC by default; `"use client"` only when you need state, effects, or browser APIs.
+- Next preloads every client component a route's server tree imports, rendered or not. Heavy client code that only some pages render (video players, the carousel, the Visual Editing reorder) goes behind a lazy client boundary (`next/dynamic` in a `"use client"` file). `pnpm --filter web run build && node .github/scripts/bundle-report.mjs` shows first-load JS per route; CI fails a route over its ceiling in `.github/bundle-budget.json`.
 - Path alias `@/*` resolves to `web/` (configured in `web/tsconfig.json`). **NEVER** use `@/*` outside `web/`.
 - Biome enforces **tabs** in `web/`. Studio uses 2 spaces â€” don't copy formatting across boundaries.
 - Tailwind v4 (CSS-first config). Tokens live in `web/src/assets/styles/`. No per-component CSS files.
@@ -13,7 +14,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas â€
 
 - **YOU MUST** thread `{ locale, siteLocale }` through every render path that touches Sanity content. The render tree starts at `app/[locale]/page.tsx` and ends in modules.
 - **NEVER** read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module â€” breaks SSR and Presentation iframes.
-- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `site-locales.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
+- URL/locale helpers live in `web/src/i18n/` (`paths.ts`, `siteLocalePathUtils.ts`, `proxyLocaleFetch.ts`). Use them; don't concatenate locale prefixes by hand.
 
 ## Sanity-side gotchas
 

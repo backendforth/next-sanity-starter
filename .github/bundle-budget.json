@@ -1,0 +1,11 @@
+{
+	"$comment": "First-load JS per route, KB gzip, as `.github/scripts/bundle-report.mjs` measures it. Both branches share this file: each budget is the larger of the two measurements plus ~3 KB. Raise one only on purpose, and say why in the PR.",
+	"routes": {
+		"/[locale]": 170,
+		"/[locale]/[slug]": 170,
+		"/[locale]/work": 170,
+		"/[locale]/work/[slug]": 170,
+		"/[locale]/[...rest]": 164,
+		"/_not-found": 146
+	}
+}

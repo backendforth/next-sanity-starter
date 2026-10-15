@@ -31,7 +31,7 @@ export function Footer({ locale, footerMenu, pathUtils, siteLocale }: Props) {
 					aria-label={uiLabel("footer", locale)}
 				>
 					{rows.map((row) => (
-						<NavItem key={row.id} row={row} className="text-color-text-muted" />
+						<NavItem key={row.id} row={row} tone="muted" />
 					))}
 				</nav>
 			</div>

@@ -8,7 +8,7 @@ import {
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
-} from "@/src/utils/muxPlayback";
+} from "@/src/utils/muxImage";
 
 import type { NormalizedSlide } from "./CarouselSlide";
 

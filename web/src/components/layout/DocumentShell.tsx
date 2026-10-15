@@ -8,7 +8,7 @@ import { siteFaviconIcons } from "@/sanity/seo";
 import type { SiteFavicon } from "@/sanity/types";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
-import { ThemeProvider } from "@/src/contexts/ThemeContext";
+import { ThemeSync } from "@/src/components/theme/ThemeSync";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../../assets/styles/tokens.css";
 import "../../assets/styles/globals.css";
@@ -139,16 +139,13 @@ export async function DocumentShell({ lang, children }: Props) {
 				<link rel="preconnect" href="https://cdn.sanity.io" />
 				<link rel="dns-prefetch" href="https://cdn.sanity.io" />
 
-				{/* Mux video player & thumbnails */}
-				<link rel="preconnect" href="https://stream.mux.com" />
-				<link rel="dns-prefetch" href="https://stream.mux.com" />
-				<link rel="preconnect" href="https://image.mux.com" />
-				<link rel="dns-prefetch" href="https://image.mux.com" />
+				{/* Mux hints come from the video components (`preconnectMux`), only where a video renders */}
 
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
 			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
-				<ThemeProvider>{children}</ThemeProvider>
+				<ThemeSync />
+				{children}
 				{shouldMountSanityLive ? (
 					<SanityLive onError={handleSanityLiveError} />
 				) : null}

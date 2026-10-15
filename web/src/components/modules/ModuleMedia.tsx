@@ -1,10 +1,12 @@
-"use client";
-
 import type { ReactNode } from "react";
 
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
 import { isStegaVariant } from "@/sanity/utils/stegaVariant";
-import { MediaImage, MediaVideo, MediaVideoLoop } from "@/src/components/media";
+import {
+	LazyMediaVideo,
+	LazyMediaVideoLoop,
+} from "@/src/components/media/LazyVideo";
+import { MediaImage } from "@/src/components/media/MediaImage";
 
 import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
 
@@ -61,7 +63,7 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 	if (isStegaVariant(rm, "kind", "loop")) {
 		return (
 			<MediaFigure caption={rm.caption}>
-				<MediaVideoLoop
+				<LazyMediaVideoLoop
 					media={rm.media}
 					caption={rm.caption}
 					posterPayload={rm.poster}
@@ -76,14 +78,14 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 		return (
 			<MediaFigure caption={rm.caption}>
 				{isLoopIntent(rm.videoSettings) ? (
-					<MediaVideoLoop
+					<LazyMediaVideoLoop
 						media={rm.media}
 						caption={rm.caption}
 						posterPayload={rm.poster}
 						posterPriority={priority}
 					/>
 				) : (
-					<MediaVideo
+					<LazyMediaVideo
 						media={rm.media}
 						caption={rm.caption}
 						posterPayload={rm.poster}

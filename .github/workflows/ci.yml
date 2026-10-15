@@ -90,6 +90,10 @@ jobs:
           # Builds without a project must still succeed (starter). Real
           # deploys provide SANITY_STUDIO_PROJECT_ID via the host's env.
           NEXT_TELEMETRY_DISABLED: "1"
+      # First-load JS per route (gzip) into the job summary; fails when a route
+      # exceeds its ceiling in .github/bundle-budget.json.
+      - name: Bundle report
+        run: node .github/scripts/bundle-report.mjs
 
   build-studio:
     name: build (studio)

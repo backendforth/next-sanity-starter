@@ -155,8 +155,9 @@ export function wiringSlots(root) {
 	const INLINE_QUERY = /export const richTextMediaQuery = `/;
 	const QUERY_IMPORT = /^import \{ (module\w+Query) \} from "\.\.?\/[\w/]+";$/;
 	const INLINE_TYPES = /\btypes: \{/;
-	const COMPONENTS_IMPORT =
-		/import \{([^}]*)\} from "@\/src\/components\/modules";/;
+	/* Direct imports, not the barrel: the barrel also re-exports `ModulesRenderer`. */
+	const COMPONENT_IMPORT =
+		/^import \{ (Module\w+) \} from "@\/src\/components\/modules\/Module\w+";$/;
 	/** Barrel exports that aren't modules. */
 	const NOT_MODULES = new Set(["ModulesRenderer"]);
 
@@ -358,22 +359,11 @@ export function wiringSlots(root) {
 			return collect(source.slice(block.start, block.end), /"(module\.\w+)":/g);
 		},
 		insert(source, mod) {
-			const imports = COMPONENTS_IMPORT.exec(source);
-			if (!imports) {
-				throw new Error(
-					`${this.file}: no import from "@/src/components/modules"`,
-				);
-			}
-			const names = new Set(
-				(imports[1] ?? "")
-					.split(",")
-					.map((n) => n.trim())
-					.filter(Boolean),
-			);
-			names.add(mod.component);
-			const withImport = source.replace(
-				COMPONENTS_IMPORT,
-				`import { ${[...names].sort().join(", ")} } from "@/src/components/modules";`,
+			const withImport = insertAfterLastLine(
+				source,
+				COMPONENT_IMPORT,
+				`import { ${mod.component} } from "@/src/components/modules/${mod.component}";`,
+				this.file,
 			);
 			const block = findBlock(withImport, INLINE_TYPES, this.file);
 			const handler = `\n\t\t\t"${mod.id}": ({ value }) =>\n\t\t\t\tlocale && siteLocale ? (\n\t\t\t\t\t<div className="rich-text-embed w-full min-w-0">\n\t\t\t\t\t\t<${mod.component} module={value} locale={locale} siteLocale={siteLocale} />\n\t\t\t\t\t</div>\n\t\t\t\t) : null,`;

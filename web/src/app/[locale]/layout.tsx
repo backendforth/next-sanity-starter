@@ -14,8 +14,8 @@ import {
 } from "@/src/components/layout/DocumentShell";
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
+import { LazySiteTracking } from "@/src/components/tracking/LazySiteTracking";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
-import { SiteTracking } from "@/src/components/tracking/SiteTracking";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
@@ -111,7 +111,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				/>
 			) : null}
 			{enabledTrackers.length > 0 ? (
-				<SiteTracking config={{ analytics, cookieBanner }} />
+				<LazySiteTracking config={{ analytics, cookieBanner }} />
 			) : null}
 		</LanguageProvider>
 	);

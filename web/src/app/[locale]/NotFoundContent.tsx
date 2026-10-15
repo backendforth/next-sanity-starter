@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import type { NotFoundCopy } from "@/sanity/types";
 import {
@@ -9,19 +6,19 @@ import {
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
-import { useLanguage } from "@/src/contexts/LanguageContext";
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
 	/** `errorSettings`' 404 title and body (`fetchSiteChrome().notFound`). */
 	copy: NotFoundCopy | null;
+	locale: string;
+	siteLocale: SiteLocaleConfig;
 };
 
-export function LocaleNotFoundContent({ copy }: Props) {
-	const pathname = usePathname() ?? "/";
-	const { localeFromPathname, siteLocale, localePath } = useLanguage();
-	const locale = localeFromPathname(pathname);
-
+/** The 404 body in `locale`, rendered on the server: Studio copy, else the UI-label fallback. */
+export function NotFoundContent({ copy, locale, siteLocale }: Props) {
 	const title =
 		pickLocalizedString(copy?.notFoundTitle, locale, siteLocale) ??
 		uiLabel("notFoundTitle", locale);
@@ -30,6 +27,7 @@ export function LocaleNotFoundContent({ copy }: Props) {
 		locale,
 		siteLocale,
 	);
+	const homeHref = createLanguagePathUtils(siteLocale).localePath("/", locale);
 
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
@@ -43,7 +41,7 @@ export function LocaleNotFoundContent({ copy }: Props) {
 					</p>
 				)}
 				<Link
-					href={localePath("/", locale)}
+					href={homeHref}
 					className="inline-flex items-center gap-xs text-color-link hover:text-color-hover"
 				>
 					{uiLabel("backHome", locale)}

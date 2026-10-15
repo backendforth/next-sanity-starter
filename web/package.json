@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "next dev --webpack",
+		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
 		"lint": "pnpm --workspace-root exec biome check web",
@@ -26,7 +26,6 @@
 		"next-sanity": "^13.3.4",
 		"react": "19.3.0",
 		"react-dom": "19.3.0",
-		"tailwind-merge": "^3.7.0",
 		"vanilla-cookieconsent": "^3.1.0"
 	},
 	"devDependencies": {
@@ -37,7 +36,6 @@
 		"postcss-calc": "^11.2.1",
 		"postcss-functions": "^4.0.2",
 		"postcss-import": "^17.0.0",
-		"postcss-nested-ancestors": "^3.0.0",
 		"sanity": "^6.16.0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3"

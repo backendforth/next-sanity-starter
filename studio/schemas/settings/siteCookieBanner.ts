@@ -67,16 +67,27 @@ export const siteCookieBanner = defineType({
           type: "link",
           /* Required only while the banner is on: a starter that keeps it off must still publish. */
           validation: (rule) =>
-            rule.custom((value: { type?: string } | undefined, context) => {
-              if (!value) {
-                return context.document?.useCookieBanner === true
-                  ? "Without this the banner has no policy link."
-                  : true;
-              }
-              return value.type === "function"
-                ? "Link to a page or a URL."
-                : true;
-            }),
+            rule.custom(
+              (value: { type?: string; url?: string } | undefined, context) => {
+                if (!value) {
+                  return context.document?.useCookieBanner === true
+                    ? "Without this the banner has no policy link."
+                    : true;
+                }
+                if (value.type === "function") {
+                  return "Link to a page or a URL.";
+                }
+                /* The banner renders page links and http(s) URLs only (`privacyPolicyHtml`). */
+                if (
+                  value.type === "external" &&
+                  value.url &&
+                  !/^https?:\/\//i.test(value.url)
+                ) {
+                  return "Use an http(s) URL: the banner shows no mailto: or tel: link.";
+                }
+                return true;
+              },
+            ),
         },
         {
           title: "Accept All Button",

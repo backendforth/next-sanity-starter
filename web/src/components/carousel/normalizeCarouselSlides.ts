@@ -17,10 +17,9 @@ function slideKind(kind: string | null | undefined): SlideKind | null {
 }
 
 /**
- * Normalize GROQ `resolvedSlides` into the shape {@link CarouselSlide} expects. With
- * `imagesOnly` the slides are plain images (`media` from `imageQuery`); otherwise each slide is
- * a `module.media` with its `resolvedMedia`. Captions resolve to `locale` here, so the client
- * slides get plain strings.
+ * Normalize the GROQ `slides` (each a `module.media` with its `resolvedMedia`) into the shape
+ * {@link CarouselSlide} expects. Captions resolve to `locale` here, so the client slides get
+ * plain strings.
  */
 export function normalizeCarouselSlides(
 	module: CarouselModule,
@@ -28,16 +27,9 @@ export function normalizeCarouselSlides(
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
 ): NormalizedSlide[] {
 	const slides: NormalizedSlide[] = [];
-	(module.resolvedSlides ?? []).forEach((slide, index) => {
-		const key = slide._key ?? `slide-${index}`;
-		if ("media" in slide) {
-			if (!slide.media) return;
-			slides.push({ key, kind: "image", media: slide.media });
-			return;
-		}
-		const resolved = slide.resolvedMedia;
+	for (const { _key: key, resolvedMedia: resolved } of module.slides ?? []) {
 		const kind = slideKind(resolved.kind);
-		if (!kind || !resolved.media) return;
+		if (!kind || !resolved.media) continue;
 		slides.push({
 			key,
 			kind,
@@ -49,6 +41,6 @@ export function normalizeCarouselSlides(
 			allowUnmute:
 				"allowUnmute" in resolved ? (resolved.allowUnmute ?? null) : null,
 		});
-	});
+	}
 	return slides;
 }

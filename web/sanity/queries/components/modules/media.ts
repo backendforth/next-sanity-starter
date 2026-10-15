@@ -1,7 +1,7 @@
 import { imageQuery, videoQuery } from "../../snippets/media";
 
 /**
- * `resolvedMedia` for `module.media`, and per slide in the carousel's `resolvedSlides`.
+ * `resolvedMedia` for `module.media`, also per carousel slide.
  *
  * Three kinds: `image`, `video` (full MuxPlayer with controls), `loop` (silent native
  * `<video>` background loop with optional unmute toggle).

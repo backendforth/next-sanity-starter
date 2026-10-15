@@ -2501,75 +2501,7 @@
           },
           "optional": true
         },
-        "imagesOnly": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
-          },
-          "optional": true
-        },
         "slides": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "array",
-            "of": {
-              "type": "object",
-              "attributes": {
-                "asset": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "inline",
-                    "name": "sanity.imageAsset.reference"
-                  },
-                  "optional": true
-                },
-                "media": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "unknown"
-                  },
-                  "optional": true
-                },
-                "hotspot": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "inline",
-                    "name": "sanity.imageHotspot"
-                  },
-                  "optional": true
-                },
-                "crop": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "inline",
-                    "name": "sanity.imageCrop"
-                  },
-                  "optional": true
-                },
-                "_type": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "string",
-                    "value": "image"
-                  }
-                }
-              },
-              "rest": {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "optional": true
-        },
-        "slidesMedia": {
           "type": "objectAttribute",
           "value": {
             "type": "array",
@@ -2589,7 +2521,7 @@
               }
             }
           },
-          "optional": true
+          "optional": false
         },
         "loop": {
           "type": "objectAttribute",

@@ -87,7 +87,8 @@ function muxThumbnailSource(
  * The one URL pipeline for stills: images, video posters, loop posters and slide thumbnails.
  * The uploaded Sanity image wins, otherwise the Mux thumbnail (WebP), so a video shows the same
  * still wherever it appears. Same inputs, same URLs: a carousel's inactive video poster and the
- * activated player's poster share their `src`.
+ * activated player's poster share their `src`; the inactive one may still load a smaller
+ * `srcset` candidate, which the player (one poster URL) doesn't reuse.
  */
 export function resolveMediaImageSource(
 	opts: MediaImageSourceOptions,

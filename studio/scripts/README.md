@@ -136,7 +136,7 @@ pnpm exec sanity migration run localize-seo --project <id> --dataset development
 
 **What it does** (`main` only) — moves the cookie banner switch, `useCookieBanner`, from the `siteCookieBanner` singleton to `siteAnalyticsSettings`, next to the trackers it gates. The published banner's value goes onto the analytics document and its draft, unless they have one already; the analytics document is created when the banner was on and there is none. The field is then unset on the banner and its draft. A draft whose switch differs from the published one is reported. Only the fixed-id singletons are touched, so a re-run finds nothing to move.
 
-**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows and cookie-based trackers wait for consent, also on a site that had the banner off.
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows and cookie-based trackers wait for consent, also on a site that had the banner off. A site with the banner on but no analytics document shows no banner and no cookie-preference links until the migration creates the document; it has no trackers, so nothing loads without consent.
 
 **Run** in `studio/`:
 

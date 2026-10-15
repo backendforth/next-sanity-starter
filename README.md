@@ -237,8 +237,8 @@ Standard Next.js + Sanity: mirror the env vars. Headers come from `web/next.conf
 Schema changes that move existing content ship as [`sanity migration`](https://www.sanity.io/docs/schema-and-content-migrations) scripts in [`studio/migrations/`](studio/migrations). After pulling an update, run each new one once per dataset, from `studio/`:
 
 ```bash
-pnpm exec sanity migration run <name>                                # dry run
-pnpm exec sanity migration run <name> --no-dry-run --dataset <name>  # apply
+pnpm exec sanity migration run <name>                                                # dry run, dataset from sanity.cli.ts
+pnpm exec sanity migration run <name> --project <id> --dataset <name> --no-dry-run  # apply
 ```
 
 Every migration is idempotent; what it changes and when it is needed is listed in [`studio/scripts/README.md`](studio/scripts/README.md) → "Content migrations".

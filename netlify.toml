@@ -10,7 +10,6 @@
 #   SANITY_STUDIO_PROJECT_ID       — required for Next ↔ Sanity
 #   SANITY_STUDIO_DATASET          — optional if you pin a dataset
 #   NEXT_PUBLIC_SANITY_STUDIO_URL  — the Studio's hosting URL (CSP `frame-ancestors`, edit links)
-#   NEXT_PUBLIC_SANITY_*           — optional client fallbacks
 # Full list: `web/.env.example`
 #
 # Publish directory (why not `dist/`?):

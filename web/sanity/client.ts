@@ -19,7 +19,7 @@ if (!hasSanityConfig) {
 	console.error(
 		`[sanity] Missing ${missing.join(" and ")} — using a placeholder Sanity client so the ${
 			isBuild ? "build" : "process"
-		} can proceed. Actual queries will fail until env is configured. See studio/.env.example.`,
+		} can proceed. Actual queries will fail until env is configured. See web/.env.example.`,
 	);
 }
 

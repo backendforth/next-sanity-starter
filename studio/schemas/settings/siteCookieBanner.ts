@@ -1,4 +1,4 @@
-import { CodeBlockIcon } from "@sanity/icons/CodeBlock";
+import { LockIcon } from "@sanity/icons/Lock";
 import { StackIcon } from "@sanity/icons/Stack";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
@@ -11,7 +11,7 @@ export const siteCookieBanner = defineType({
   name: "siteCookieBanner",
   type: "document",
   title: "Cookie Banner",
-  icon: CodeBlockIcon,
+  icon: LockIcon,
   fields: [
     {
       title: "Title",

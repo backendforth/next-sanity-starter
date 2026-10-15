@@ -13,7 +13,6 @@
 	},
 	"dependencies": {
 		"@mux/mux-player-react": "^3.13.4",
-		"@portabletext/react": "^8.0.1",
 		"@portabletext/types": "^4.0.2",
 		"@repo/sanity-dataset-resolve": "workspace:*",
 		"@sanity/client": "^8.7.0",

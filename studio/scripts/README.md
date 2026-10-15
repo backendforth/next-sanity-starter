@@ -122,7 +122,7 @@ pnpm exec sanity migration run type-cookie-banner-sections --project <id> --data
 
 **What it does** (`variant/document-level`; `main` has its own version for its singleton) — moves the cookie banner switch, `useCookieBanner`, from the per-language `siteCookieBanner` documents to `siteAnalyticsSettings`, next to the trackers it gates; the one switch then covers every language. The default language's published banner decides (`siteLanguageSettings.defaultLanguageId`; it stops if there is none): its value goes onto the analytics document and its draft, unless they have one already, and the analytics document is created when that banner was on and there is none. The field is then unset on every language's banner and its draft. A banner whose switch differs from the moved one (a draft, or another language) is reported. Banners without a `language` (`main`'s singleton in a shared dataset) are left alone. A re-run finds nothing to move.
 
-**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows and cookie-based trackers wait for consent, also on a site that had the banner off.
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows in every language and cookie-based trackers wait for consent, also where a language had its banner off. A site whose default-language banner is on but that has no analytics document shows no banner and no cookie-preference links until the migration creates the document; it has no trackers, so nothing loads without consent.
 
 **Run** in `studio/`:
 

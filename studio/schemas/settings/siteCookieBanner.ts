@@ -40,7 +40,7 @@ export const siteCookieBanner = defineType({
           title: "Privacy Policy",
           name: "privacyPolicy",
           description:
-            "Linked after the description: visitors must be able to read what they are agreeing to before they agree. A page link gets the visitor's language prefix. The link title is the label.",
+            "Linked after the description: visitors must be able to read what they are agreeing to before they agree, so set it whenever the banner is on (Analytics & Tracking). A page link gets the visitor's language prefix. The link title is the label.",
           type: "link",
           validation: (rule) => [
             rule.custom(
@@ -59,7 +59,8 @@ export const siteCookieBanner = defineType({
                 return true;
               },
             ),
-            /* A warning: a site that keeps the banner off must still publish its copy. */
+            /* A warning, not an error: the banner switch lives in Analytics & Tracking, which this
+             * rule doesn't read, and a site with the banner off must still publish its copy. */
             rule
               .warning()
               .custom((value) =>

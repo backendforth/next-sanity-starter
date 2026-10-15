@@ -13,7 +13,10 @@ export function normalizeSiteLocaleConfig(
 	raw: SiteLanguageSettings | null | undefined,
 ): SiteLocaleConfig {
 	const languages = normalizeSiteLanguages(raw);
-	const defaultId = raw?.defaultLanguageId?.trim() ?? "";
+	const defaultId =
+		typeof raw?.defaultLanguageId === "string"
+			? raw.defaultLanguageId.trim()
+			: "";
 	return {
 		localeIds: languages.map((l) => l.id),
 		defaultLocale: languages.some((l) => l.id === defaultId)

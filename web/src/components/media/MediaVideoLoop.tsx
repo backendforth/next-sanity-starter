@@ -269,10 +269,7 @@ function MuxVideoLoop({
 		return () => window.clearTimeout(t);
 	}, [measurementsReady, attachFallback, shouldAttachHls]);
 	const attachHls = shouldAttachHls && (measurementsReady || attachFallback);
-	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc, {
-		audioEnabled: !muted,
-		objectCoverVideoPx: knownDims,
-	});
+	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc);
 
 	const tryPlay = useCallback(() => {
 		const el = videoRef.current;

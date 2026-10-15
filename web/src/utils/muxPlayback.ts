@@ -80,8 +80,8 @@ function minResolutionTier(
 	return TIER_RANK[a] <= TIER_RANK[b] ? a : b;
 }
 
-/** Target pixels + Mux tier for loop playback (DPR-capped, {@link MUX_PLAYBACK_MAX_TIER} ceiling). */
-export function computeLoopVideoTarget(args: {
+/** Mux tier that covers the container at a capped DPR ({@link MUX_PLAYBACK_MAX_TIER} ceiling). */
+function loopContainerTier(args: {
 	containerWidthPx: number;
 	containerHeightPx: number;
 	devicePixelRatio?: number;
@@ -89,23 +89,22 @@ export function computeLoopVideoTarget(args: {
 	videoHeightPx: number;
 	/** Pick the covering tier (round up) instead of the floor — see {@link isFinePointerDisplay}. */
 	roundTierUp?: boolean;
-}): { targetW: number; targetH: number; maxResolutionTier: MuxResolutionTier } {
+}): MuxResolutionTier {
 	const rawDpr =
 		typeof args.devicePixelRatio === "number" && args.devicePixelRatio > 0
 			? args.devicePixelRatio
 			: 1;
 	const dpr = Math.min(rawDpr, LOOP_VIDEO_DPR_CAP);
-	const { targetW, targetH } = computeObjectCoverTargetPx({
+	const { targetH } = computeObjectCoverTargetPx({
 		...args,
 		devicePixelRatio: dpr,
 	});
-	const tier = minResolutionTier(
+	return minResolutionTier(
 		args.roundTierUp
 			? muxCoveringResolutionTierFromHeight(targetH)
 			: muxResolutionTierFromHeight(targetH),
 		MUX_PLAYBACK_MAX_TIER,
 	);
-	return { targetW, targetH, maxResolutionTier: tier };
 }
 
 /**
@@ -232,7 +231,7 @@ function getNetworkAwareTierCeiling(): MuxResolutionTier {
  *
  * Tier selection takes the minimum of:
  *  - **Container tier** — derived from container width × height × capped DPR
- *    (see {@link computeLoopVideoTarget}). Desktop-class displays round up to
+ *    (see {@link loopContainerTier}). Desktop-class displays round up to
  *    the covering rung, touch displays round down ({@link isFinePointerDisplay}).
  *    A fullscreen retina hero targets up to the ceiling; small inline loops
  *    target 720p or below.
@@ -263,14 +262,14 @@ export function resolveMuxLoopTier(args: MuxLoopTierArgs): MuxResolutionTier {
 
 	let containerTier: MuxResolutionTier = MUX_PLAYBACK_MAX_TIER;
 	if (cw > 0 && ch > 0) {
-		containerTier = computeLoopVideoTarget({
+		containerTier = loopContainerTier({
 			containerWidthPx: cw,
 			containerHeightPx: ch,
 			devicePixelRatio: args.devicePixelRatio,
 			videoWidthPx: vw,
 			videoHeightPx: vh,
 			roundTierUp: isFinePointerDisplay(),
-		}).maxResolutionTier;
+		});
 	}
 
 	const tier = minResolutionTier(containerTier, getNetworkAwareTierCeiling());
@@ -508,31 +507,23 @@ export function getPreferredVideoCodec(): Promise<MuxLevelCodecFamily> {
 	return cachedPreferredCodec;
 }
 
-function pickSmallestSufficientLevelIndex(
+function highestLevelIndex(
 	candidates: { i: number; h: number; w: number }[],
-	targetW: number,
-	targetH: number,
 ): number | undefined {
-	if (!candidates.length) return undefined;
-	const ascending = [...candidates].sort((a, b) => a.h - b.h || a.w - b.w);
-	if (targetW > 0 && targetH > 0) {
-		return (
-			ascending.find((l) => l.h >= targetH && l.w >= targetW) ??
-			ascending[ascending.length - 1]
-		)?.i;
-	}
-	return ascending[ascending.length - 1]?.i;
+	return candidates.reduce<(typeof candidates)[number] | undefined>(
+		(best, l) =>
+			!best || l.h > best.h || (l.h === best.h && l.w > best.w) ? l : best,
+		undefined,
+	)?.i;
 }
 
 /**
- * Pick the hls.js level index: smallest rendition that saturates the player (DPR-aware).
- * Tries AV1 → HEVC → H.264 before falling back to any level.
+ * Pick the hls.js level: the first supported codec family (probe winner, then AV1 → HEVC →
+ * H.264), highest rendition within it. Loop manifests hold one tier, so this is a codec pick.
  */
 export function pickMuxHlsLevelIndex(
 	levels: MuxHlsLevelLike[],
 	opts: {
-		targetW: number;
-		targetH: number;
 		/** Codec families to skip (e.g. after a MEDIA_ERROR on AV1). */
 		excludedFamilies: ReadonlySet<MuxLevelCodecFamily>;
 		/**
@@ -544,42 +535,32 @@ export function pickMuxHlsLevelIndex(
 		preferredCodec: MuxLevelCodecFamily;
 	},
 ): number | undefined {
-	if (!levels.length) return undefined;
-
 	const indexed = levels.map((lvl, i) => ({
 		i,
 		h: lvl.height ?? 0,
 		w: lvl.width ?? 0,
 		family: detectMuxLevelCodecFamily(lvl.codecs),
 	}));
-
-	const excluded = opts.excludedFamilies;
 	const codecOrder = [
 		opts.preferredCodec,
 		...MODERN_CODEC_ORDER.filter((c) => c !== opts.preferredCodec),
 	];
-
 	for (const family of codecOrder) {
-		if (excluded.has(family) || !isMuxCodecFamilySupported(family)) continue;
-		const candidates = indexed.filter((l) => l.family === family);
-		if (!candidates.length) continue;
-		const pick = pickSmallestSufficientLevelIndex(
-			candidates,
-			opts.targetW,
-			opts.targetH,
-		);
-		if (typeof pick === "number") return pick;
+		if (opts.excludedFamilies.has(family) || !isMuxCodecFamilySupported(family))
+			continue;
+		const pick = highestLevelIndex(indexed.filter((l) => l.family === family));
+		if (pick !== undefined) return pick;
 	}
-
-	return pickSmallestSufficientLevelIndex(indexed, opts.targetW, opts.targetH);
+	return highestLevelIndex(indexed);
 }
 
 /**
- * Opens the connections to Mux early (`stream.mux.com` for the playlist and segments,
- * `image.mux.com` for posters). Called while a video component renders, so only pages with a
- * video pay for them; React hoists the hints into `<head>`, during SSR included.
+ * Opens the connections to Mux early: `stream.mux.com` for the master playlist (hls.js fetches
+ * it with CORS, so the hint must be `anonymous` to be reused), `image.mux.com` for posters.
+ * Called while a video component renders, so only pages with a video pay for them; React hoists
+ * the hints into `<head>`, during SSR included.
  */
 export function preconnectMux(): void {
-	preconnect("https://stream.mux.com");
+	preconnect("https://stream.mux.com", { crossOrigin: "anonymous" });
 	preconnect("https://image.mux.com");
 }

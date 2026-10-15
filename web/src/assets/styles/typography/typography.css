@@ -24,13 +24,6 @@ html {
 	line-height: var(--line-height-md);
 }
 
-/* xs — language switch, theme toggle (Geist Sans regular) */
-@utility nav-label {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-xs);
-	line-height: var(--line-height-xs);
-}
-
 /* xs — tags (mono semibold) */
 @utility tag {
 	@apply font-semibold font-mono not-italic;
@@ -86,7 +79,7 @@ html {
 }
 
 /* ─── Headings (RT + module titles) ─────────────────────────────────────────
- * 3lg heading-1 — RT “Heading 1” (same scale as content-title / page-title)
+ * 3lg heading-1 — RT “Heading 1” (same scale as content-title)
  * 2lg heading-2 — RT “Heading 2”
  * lg  heading-3 — RT “Heading 3” (Geist Mono semibold)
  * md  heading-4 — RT “Heading 4” (Geist Mono semibold)
@@ -133,27 +126,6 @@ html {
 	line-height: var(--line-height-3lg);
 	margin-bottom: var(--space-md);
 	max-width: var(--measure-heading-1-2);
-}
-
-@utility page-title {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-3lg);
-	line-height: var(--line-height-3lg);
-	margin-bottom: var(--space-md);
-	max-width: var(--measure-heading-1-2);
-}
-
-/* Legacy aliases (prefer semantic names above) */
-@utility paragraph {
-	@apply text;
-}
-
-@utility paragraph-small {
-	@apply text-small;
-}
-
-@utility extra-large {
-	@apply page-title;
 }
 
 /* ─── Element defaults ────────────────────────────────────────────────────── */
@@ -247,12 +219,12 @@ header h1 a[aria-current] {
 	text-underline-offset: 0.25rem;
 }
 
-header nav [role="group"] button {
+header nav fieldset button {
 	@apply tag no-underline;
 }
 
 /* Content refs — category / sort filters (pill buttons, same as header utilities). */
-.content-refs-controls [role="group"] button {
+.content-refs-controls fieldset button {
 	@apply tag no-underline;
 }
 

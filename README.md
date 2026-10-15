@@ -233,7 +233,7 @@ Local values go into `web/.env.local` and `studio/.env`, deployed ones into each
 | both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | no | Dataset order when no dataset is set. On the site it also decides whether the deploy counts as production for `robots.txt` and canonical URLs. Build |
 | both | `SANITY_STUDIO_DATASET_DEVELOPMENT`, `SANITY_STUDIO_DATASET_PRODUCTION` | no | Only if your datasets have other names |
 | site | `SANITY_API_READ_TOKEN` | for preview | Viewer token for Draft Mode and Presentation. Secret |
-| site | `SANITY_REVALIDATE_SECRET` | production | Verifies the revalidate webhook. Secret |
+| site | `SANITY_REVALIDATE_SECRET` | production | Verifies the [revalidate webhook](#revalidate-webhook). Production context only, empty locally. Secret |
 | site | `NEXT_PUBLIC_SANITY_STUDIO_URL` | production | The Studio's URL, default `http://localhost:3333`. Build |
 | site | `NEXT_PUBLIC_SITE_URL` | no | Canonical origin. Unset, the host's own URL on Netlify and Vercel. Build |
 | site | `CSP_ANALYTICS_ORIGINS` | no | Origins of self-hosted trackers, comma-separated. Build |
@@ -254,7 +254,7 @@ Site and Studio are two Netlify sites built from the same repository. Each one b
 ### Web on Netlify
 
 1. In Netlify, import the repository as a new project. Leave base directory and package directory empty: the root [`netlify.toml`](netlify.toml) sets build command, publish directory and the Next.js plugin.
-2. Under **Site configuration → Environment variables**, set `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` and `SANITY_REVALIDATE_SECRET` (generate it with `openssl rand -base64 32`). Optional: `NEXT_PUBLIC_SITE_URL`, `CSP_ANALYTICS_ORIGINS`.
+2. Under **Site configuration → Environment variables**, set `SANITY_STUDIO_PROJECT_ID` and `SANITY_API_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL`, `CSP_ANALYTICS_ORIGINS`. `SANITY_REVALIDATE_SECRET` comes with the webhook in step 5.
 3. Deploy, then add your domain under **Domain management**.
 4. Add the site's origin to Sanity's CORS origins, with credentials (see [Local setup](#local-setup), step 5).
 5. Set up the [revalidate webhook](#revalidate-webhook).
@@ -263,22 +263,55 @@ Production deploys read the `production` dataset, deploy previews and branch dep
 
 ### Revalidate webhook
 
-Each site gets one webhook for the dataset it reads.
+Each production site gets one webhook for the dataset it reads. Secret and webhook only work together: with the secret set, the site turns `SanityLive` off and waits for the webhook, so a secret without a webhook means no content update reaches the site until the next deploy.
 
-1. In [sanity.io/manage](https://www.sanity.io/manage) → your project → **API → Webhooks → Create webhook**, set:
-   - **URL:** `https://<your-site>/api/revalidate`
-   - **Dataset:** the dataset this site reads, usually `production`
-   - **Trigger on:** Create, Update, Delete
-   - **Filter:**
-     ```groq
-     _type in ["home", "work", "page", "project", "projectCategory", "siteSettings", "siteNav", "siteCookieBanner", "siteAnalyticsSettings", "errorSettings", "siteLanguageSettings", "sanity.imageAsset", "mux.videoAsset"]
-     ```
-   - **Projection:** `{_type}`
-   - **HTTP method:** POST, with drafts and versions off
-   - **Secret:** the site's `SANITY_REVALIDATE_SECRET`
-2. Publish any document and open the webhook's **attempts log**. The response reads `{"revalidated":true,"tags":[…]}`.
+1. Generate a secret. It goes into Netlify and into the webhook, both exactly the same.
+   ```bash
+   openssl rand -hex 32
+   ```
+2. On Netlify, open the web site → **Site configuration → Environment variables → Add a variable**:
 
-The filter matches `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts), which decides which tags each type expires. The asset types are in it so new alt text and poster frames reach the site. A new document type goes into both. Details: [`web/README.md`](web/README.md) → "Freshness".
+   | Field | Value |
+   |---|---|
+   | Key | `SANITY_REVALIDATE_SECRET` |
+   | Value | the secret from step 1, marked as secret |
+   | Scopes | All scopes |
+   | Deploy contexts | **Production only** |
+
+   Production only, because the webhook reaches only the production URL. Deploy previews without the secret keep `SanityLive` and stay current on their own. Locally, leave the variable empty for the same reason.
+3. In [sanity.io/manage](https://www.sanity.io/manage) → your project → **API → Webhooks → Create webhook**:
+
+   | Field | Value |
+   |---|---|
+   | Name | e.g. `Revalidate production site` |
+   | URL | `https://<your-site>/api/revalidate` |
+   | Dataset | the dataset this site reads, usually `production` |
+   | Trigger on | Create, Update, Delete |
+   | Filter | the condition below, without `*[ ]` around it |
+   | Projection | `{_type}` |
+   | Status | enabled |
+   | HTTP method | `POST` |
+   | HTTP headers | none |
+   | API version | the default |
+   | Drafts | off |
+   | Versions | off |
+   | Secret | the secret from step 1 |
+
+   Filter:
+   ```groq
+   _type in ["home", "work", "page", "project", "projectCategory", "siteSettings", "siteNav", "siteCookieBanner", "siteAnalyticsSettings", "errorSettings", "siteLanguageSettings", "sanity.imageAsset", "mux.videoAsset"]
+   ```
+4. Redeploy the site (**Deploys → Trigger deploy**). The site reads the secret at deploy, so a deploy started before step 2 doesn't count.
+5. Publish any document in the Studio and open the webhook's **attempts log**:
+
+   | Response | Meaning |
+   |---|---|
+   | `200 {"revalidated":true,"tags":[…]}` | Works |
+   | `500 SANITY_REVALIDATE_SECRET is not configured` | The secret is missing on Netlify, sits in the wrong deploy context, or the site wasn't redeployed after step 2 |
+   | `401 Invalid signature` | The secrets on Netlify and in the webhook differ |
+   | `404` | Wrong URL |
+
+The filter lists every document type the site shows, plus image and Mux assets so new alt text and poster frames reach the site. The projection sends only the type; `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts) maps it to the cache tags to expire. A new document type goes into both. Details: [`web/README.md`](web/README.md) → "Freshness".
 
 ### Studio on Netlify
 

@@ -5,7 +5,8 @@
 export const navControlGroupClass =
 	"m-0 inline-flex min-w-0 shrink-0 flex-wrap items-center gap-min border-0 p-0";
 
-const FOCUS_RING =
+/** Keyboard focus for every control: an offset outline, so there is no ring-offset colour to set per theme. */
+export const FOCUS_RING =
 	"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent";
 const PILL =
 	"tag shrink-0 cursor-pointer rounded-sm px-xs py-min no-underline transition-colors";

@@ -23,6 +23,12 @@ It is **imported twice**: in **`tokens.css`** (before sizes / font sizes) and in
 | `variables/sizes.css` | layout + `--space-*`, `--content-max-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
 | `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`) and the `html` size (`--font-size-root`); tiers via `theme(--breakpoint-*)` |
 | `variables/typography-variable-fonts.css` | optional variable-font axes (`--font-variation-settings-*`, `--font-feature-settings-*`) — import manually if needed |
+| `typography/typography.css` | type utilities (`text`, `heading-*`, `big-text`, …) and element defaults (`@layer base`) |
+| `typography/rich-text.css` | Portable Text spacing, list markers and links (`@layer components`) |
 | `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); font stacks in `@theme inline` (Geist / Geist Mono from `next/font/google` in `components/layout/documentFonts.ts`); **screens** from `breakpoints.css` `@theme` |
 
 Rename or add a token → update the **variable** and the matching **tailwind** key when you expose it as a utility.
+
+## Layers
+
+Rules go in a Tailwind layer: element defaults in `@layer base`, shared contextual rules (rich text) in `@layer components`, type styles as `@utility`. A class on the element then wins without an override. An unlayered rule beats every utility, so only rules no utility competes with stay outside: custom properties (`variables/*`, `components/cookieConsent.css`), `animations.css` (state classes) and `components/mux-player.css` (Mux’s shadow parts).

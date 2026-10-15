@@ -188,12 +188,11 @@ function privacyPolicyHtml(
 	const href = stegaClean(resolved.href).trim();
 	if (!/^(https?:\/\/|\/)/i.test(href)) return null;
 
-	const label = resolveLinkLabel({
-		linkTitle: link?.title,
-		locale: options.locale,
-		siteLocale: options.siteLocale,
-		literalFallback: cookieBannerLabel("privacyPolicy", options.locale),
-	});
+	const label = resolveLinkLabel(
+		link,
+		options,
+		cookieBannerLabel("privacyPolicy", options.locale),
+	);
 	const target = resolved.target
 		? ` target="${resolved.target}" rel="${resolved.rel}"`
 		: "";

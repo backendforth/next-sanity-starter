@@ -20,12 +20,10 @@ import {
 type StudioLanguageOption = SiteLocaleConfig["languages"][number];
 
 type LanguageContextValue = LanguagePathUtils & {
-	/** Locale implied by the URL (when valid), otherwise the server-provided fallback. */
+	/** The route's locale (`[locale]` segment), validated by the layout. */
 	currentLocale: string;
-	/** Options for the language `<select>` (ids + labels). */
+	/** Options for the language switch (ids + labels). */
 	languages: readonly StudioLanguageOption[];
-	/** Ids + default for `pickLocalizedString` / Portable Text resolution on the client. */
-	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/** Navigate to the same logical path in another locale. */
 	setLocale: (next: string) => void;
 };
@@ -34,7 +32,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 type LanguageProviderProps = {
 	children: ReactNode;
-	/** Server / proxy locale — used when the pathname does not imply a known locale. */
+	/** The route's locale, validated by the layout. */
 	locale: string;
 	siteLocaleConfig: SiteLocaleConfig;
 };
@@ -56,11 +54,6 @@ export function LanguageProvider({
 		[siteLocaleConfig.defaultLocale, siteLocaleConfig.localeIds],
 	);
 
-	const currentLocale = useMemo(() => {
-		const fromPath = pathUtils.localeFromPathname(pathname);
-		return pathUtils.isAppLocale(fromPath) ? fromPath : locale;
-	}, [pathname, locale, pathUtils]);
-
 	const pathWithoutLocale = useMemo(
 		() => pathUtils.pathWithoutLocalePrefix(pathname),
 		[pathname, pathUtils],
@@ -79,15 +72,11 @@ export function LanguageProvider({
 	const value = useMemo<LanguageContextValue>(
 		() => ({
 			...pathUtils,
-			currentLocale,
+			currentLocale: locale,
 			languages: siteLocaleConfig.languages,
-			siteLocale: {
-				localeIds: siteLocaleConfig.localeIds,
-				defaultLocale: siteLocaleConfig.defaultLocale,
-			},
 			setLocale,
 		}),
-		[currentLocale, pathUtils, setLocale, siteLocaleConfig],
+		[locale, pathUtils, setLocale, siteLocaleConfig.languages],
 	);
 
 	return (

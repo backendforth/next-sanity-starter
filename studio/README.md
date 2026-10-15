@@ -35,26 +35,4 @@ Other plugins in this Studio include **structure** (custom sidebar, the start sc
 
 ## Deploying the Studio
 
-Two targets. **Netlify is the default**: the Studio runs on its own domain (e.g. `studio.your-domain.tld`) as a second Netlify site from this repository. Sanity Hosting (`*.sanity.studio`) stays available as the native alternative.
-
-### Netlify (default)
-
-`netlify.toml` in this folder is the whole pipeline: on every push Netlify installs the workspace, runs `sanity build`, publishes `studio/dist`, and serves every route from `index.html`. Pushes that change nothing in `studio/`, its shared packages or the workspace manifests since the last build skip it. The same file sets the dataset per deploy context: `production` for production deploys, `development` for deploy previews and branch deploys. Another dataset name means editing it there.
-
-One-time setup:
-
-1. **Netlify site** — import this repository as a new project. Base directory: empty (repo root). **Package directory: `studio`**. Leave build command and publish directory empty; they come from `studio/netlify.toml`.
-2. **Environment variables** on that site (each one is described in `.env.example`): `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL`, and as needed `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` and `SANITY_AUTH_TOKEN`. The Mux tokens serve only a local one-off script; leave them off the site.
-3. **Domain** — add the Studio domain under Domain management.
-4. **CORS** — add the same origin in sanity.io/manage → API → CORS origins with **Allow credentials**; without it, login on the custom domain fails. From the CLI: `pnpm --filter studio exec sanity cors add https://studio.your-domain.tld --credentials`.
-5. **Web site** — set `NEXT_PUBLIC_SANITY_STUDIO_URL` to the Studio URL and redeploy the web app, so its CSP lets Presentation embed it (`frame-ancestors`) and click-to-edit links open this Studio.
-6. **Register** — `pnpm studio:register` lists the URL as the project's Studio in sanity.io/manage and uploads the schema to the schema store, which `sanity deploy` does on its own for Sanity Hosting. Run it once locally (uses your `sanity login`; `--dry-run` to preview), or set `SANITY_AUTH_TOKEN` (a deploy token) on the Netlify site and every production deploy runs it after the build.
-
-### Sanity Hosting (alternative)
-
-To publish the Studio to **Sanity Hosting** (`*.sanity.studio`), run the Sanity CLI **`sanity deploy`**:
-
-- **From this package:** `pnpm run deploy` (with `run`: `pnpm deploy` is pnpm's own command). It sets `SANITY_STUDIO_DEPLOYMENT_TARGET=production` before `sanity deploy`.
-- **From the monorepo root:** `pnpm studio:deploy` (runs the same deploy in the `studio` workspace).
-
-The CLI will prompt for a hostname on the first deploy and upload the production build. Set **`SANITY_STUDIO_APP_ID`** in `studio/.env` to the app id it prints, and later deploys update that Studio without asking (`sanity.cli.ts` → `deployment.appId`). Ensure production env (dataset, `SANITY_STUDIO_PREVIEW_ORIGIN`, etc.) matches your deployment targets — see `.env.example`. Both targets can run side by side; `*.sanity.studio` is always allowed by the web CSP.
+Netlify on its own domain is the default; Sanity Hosting (`*.sanity.studio`) is the alternative. Both are described step by step in the root README → [Studio on Netlify](../README.md#studio-on-netlify) and [Studio on Sanity Hosting](../README.md#studio-on-sanity-hosting-alternative). The Netlify pipeline itself is [`netlify.toml`](netlify.toml) in this folder.

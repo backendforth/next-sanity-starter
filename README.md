@@ -1,6 +1,6 @@
 # next-sanity-starter
 
-> A production-shaped starting point for a multi-language, CMS-driven site — **Next.js 16** App Router, **React 19**, **Sanity Studio v6**, with optional **Mux** video and **Netlify** hosting.
+> A production-shaped starting point for a multi-language, CMS-driven site — **Next.js 16** App Router, **React 19**, **Sanity Studio v6**, with optional **Mux** video and **Netlify** hosting for both the site and the Studio.
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-000?logo=next.js&logoColor=white)](https://nextjs.org)
 [![React 19](https://img.shields.io/badge/React-19-149eca?logo=react&logoColor=white)](https://react.dev)
@@ -10,56 +10,50 @@
 [![Biome](https://img.shields.io/badge/Biome-2-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
 [![License: ISC](https://img.shields.io/badge/license-ISC-green)](LICENSE)
 
-It stays slim on purpose: no unused features, production-grade defaults, and a clear path from `git clone` to first published page. Documentation lives next to the code that needs it.
+Slim on purpose: no unused features, production-grade defaults, and a short path from `git clone` to the first published page. Documentation lives next to the code it describes; this file is the map.
 
 ---
 
 ## Two flavours
 
-This starter ships in **two parallel variants** so you can pick the internationalisation model that matches your editorial workflow:
+The starter ships as **two parallel branches**. They share every document type, module, query and component; they differ only in where a translation lives.
 
-| Branch | i18n strategy | Pick when |
+| Branch | i18n model | Pick when |
 |---|---|---|
-| **[`main`](../../tree/main)** | Field-level via `sanity-plugin-internationalized-array` | All translations of one piece of content live in one document with language tabs per field; short, UI-shaped translations. |
-| **[`variant/document-level`](../../tree/variant/document-level)** | Document-level via `@sanity/document-internationalization` | Each language is its own document — different slugs, modules, SEO per locale. GROQ does the locale matching; no runtime resolver. |
+| **[`main`](../../tree/main)** | **Field-level** — `sanity-plugin-internationalized-array`. One document per page; every translatable field holds all languages. Resolved at render time. | Translations share one structure: same slug, same modules, language tabs per field. |
+| **[`variant/document-level`](../../tree/variant/document-level)** | **Document-level** — `@sanity/document-internationalization`. One document per language, linked as translations; GROQ selects the route's language. | Languages diverge: own slugs, own modules, own SEO per locale. |
 
-[**PR #62**](../../pull/62) keeps a permanent side-by-side comparison + decision guide for adopters. Neither branch is a downgrade of the other; both are production-shaped.
+The exact differences are listed in [`AGENTS.md`](AGENTS.md) → "Branch-specific notes". Neither branch is a downgrade of the other.
 
 ---
 
 ## What you get
 
-**Next.js app** — App Router with locale-aware routing (`[locale]/[slug]`), `generateStaticParams`, ISR-style revalidation via cache tags, fully wired Sanity Draft Mode + Visual Editing (`SanityLive`, Presentation, stega). Published content stays fresh through the revalidate webhook, or — without one — through `SanityLive` for every visitor (see `web/README.md`, *Freshness*).
-
-**Sanity Studio v6** — Structure, Presentation with configurable preview origin, one document per language (`@sanity/document-internationalization`) with the language list driven by a `siteLanguageSettings` singleton, safe production → development dataset clone. Hosted on Netlify on its own domain by default (`studio/netlify.toml`); Sanity Hosting stays one command away.
-
-**Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
-
-**Hardened revalidation** — `POST /api/revalidate` verifies Sanity's webhook signature (`parseBody` from `next-sanity/webhook`), acts only on allow-listed document types, expires the matching cache tags immediately, and is fail-closed in production.
-
-**SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `metadataFromSanityPageData` builds canonical + `hreflang` metadata for every route.
-
-**Hardened by default** — CSP with `frame-ancestors` (Studio-friendly), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options` from `headers()` in `web/next.config.ts`, so they reach the SSR HTML on any host. Netlify `build.ignore` skips web builds on Studio-only commits.
-
-**Cookie consent (optional)** — Sanity-driven [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner with light/dark theming via `--color-*` tokens. Copy per language, consent sections with their cookies and a privacy policy link (a page or a URL) are edited in the Studio; whatever the document leaves empty falls back to defaults in the visitor's language. An `open-cookie-preferences` link function lets any nav item reopen the preferences modal, and `hasConsent(category)` is exposed for gating analytics scripts. Toggle it on under **Settings → Cookie Banner**; the banner stays inert until `useCookieBanner` is `true`.
-
-**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration; `check:typegen` fails when TypeGen skips a query.
-
-**Tailwind CSS v4** — CSS-first config (`@theme`), token-driven dark mode without class hacks, PostCSS pipeline with custom `rem()` helper. Design tokens live in `web/src/assets/styles/`.
+- **Next.js app** — App Router with locale routing (default locale unprefixed, others under `/<locale>/…`), static routes via `generateStaticParams`, cache tags per document type, Draft Mode + Visual Editing (Presentation, stega, `SanityLive`).
+- **Sanity Studio v6** — Structure and Presentation, one document per language (`@sanity/document-internationalization`) with the languages from the **Site languages** singleton, a production → development dataset clone, Netlify hosting on your own domain (Sanity Hosting stays one command away).
+- **Content modules** — every content block is a paired Studio schema + React component, scaffolded and wired by `pnpm gen:module`, checked in CI by `pnpm check:wiring`.
+- **Media** — native `<img>` with deterministic Sanity CDN URLs, `srcset`/`sizes`, crop and hotspot, no layout shift. Mux video with the official player (`/lazy`) and a light `hls.js` background loop that respects `prefers-reduced-motion`. Video code loads with the page that has a video; the player and `hls.js` wait until it nears the viewport.
+- **Revalidation** — `POST /api/revalidate` verifies Sanity's webhook signature, acts only on allow-listed document types and expires their cache tags immediately. It refuses every request while `SANITY_REVALIDATE_SECRET` is unset.
+- **SEO** — `sitemap.ts` with per-locale alternates and `x-default`, canonical + `hreflang` metadata on every route, `robots.ts` that allows crawling only on a production deployment.
+- **Security headers** — CSP (with `frame-ancestors` for the Studio), HSTS, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options`, all from `headers()` in `web/next.config.ts`, so they reach the SSR HTML on any host.
+- **Cookie consent and analytics (optional)** — a [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner edited in the Studio, plus GA4, Microsoft Clarity, PostHog, Plausible and Matomo, gated by consent. See [Analytics & cookie consent](#analytics--cookie-consent).
+- **Typed GROQ** — `sanity typegen` generates result types from the schema; CI fails on an uncommitted diff or a query TypeGen skipped.
+- **Tailwind CSS v4** — CSS-first tokens (`@theme`), element defaults in `@layer base`, a manual light/dark toggle (`data-theme` on `<html>`).
 
 ---
 
 ## Stack at a glance
 
-Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packages/*`).
+pnpm workspaces (`pnpm-workspace.yaml`: `web`, `studio`, `packages/*`).
 
 | Package | Path | Role |
-|---------|------|------|
-| **Web** | `web/` | Next.js 16 App Router app — i18n routing, GROQ data fetching, Portable Text, Mux, sitemap/robots, cache-tag revalidation |
-| **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
-| **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
-| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and wires it, the `ModulesRenderer.tsx` `case` included |
-| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` and `check:typegen` — module wiring and query typing (CI gates) |
+|---|---|---|
+| **Web** | `web/` | Next.js 16 app: routing, data fetching, rendering |
+| **Studio** | `studio/` | Sanity Studio v6: schema, structure, Presentation, migrations |
+| `@repo/sanity-dataset-resolve` | `packages/sanity-dataset-resolve/` | Picks the dataset for web and Studio; decides whether a deploy is production |
+| `@repo/site-languages` | `packages/site-languages/` | Language fallback, normalizer and query projection shared by web and Studio |
+| `@repo/scaffold-module` | `packages/scaffold-module/` | `pnpm gen:module <Name>` |
+| `@repo/check-wiring` | `packages/check-wiring/` | `pnpm check:wiring` and `check:typegen` (CI gates) |
 
 ---
 
@@ -69,140 +63,215 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 git clone <your-fork>.git my-site
 cd my-site
 pnpm install
+cp web/.env.example web/.env.local
+cp studio/.env.example studio/.env
 ```
 
-Copy the env templates and set your project id (the only required variable for local dev):
+Set `SANITY_STUDIO_PROJECT_ID` in both files (same project). That is the only required value for local development.
+
+Create a `development` dataset in the Sanity project (sanity.io/manage → Datasets, or `pnpm --filter studio exec sanity dataset create development`). Local runs prefer it, so you never edit production while iterating. Without it they fall back to `production`.
 
 ```bash
-cp web/.env.example     web/.env.local
-cp studio/.env.example  studio/.env
-# Set SANITY_STUDIO_PROJECT_ID in both files (same project). Everything else has sensible defaults.
+pnpm dev          # web on http://localhost:3000, Studio on http://localhost:3333
 ```
 
-Optional but recommended: create a `development` dataset in Sanity (UI or CLI) so you never edit production while iterating — or pin `SANITY_STUDIO_DATASET=production` to skip dataset splitting.
+In the Studio:
 
-Start Studio and the web app:
+1. **Settings → Site languages** — check the languages (pre-filled `en` + `de`, default `en`) and publish.
+2. **Home** — add a module and publish.
+3. **Pages** — create a page with a slug and publish.
+
+Open `http://localhost:3000/<slug>` for the default language, `http://localhost:3000/de/<slug>` for German.
+
+---
+
+## Content model
+
+| Studio item | Type | Notes |
+|---|---|---|
+| Home, Work | singletons `home`, `work` | The site root and the `/work` landing |
+| Pages | `page` | Routed at `/<slug>` |
+| Work → Projects, Categories | `project`, `projectCategory` | Projects at `/work/<slug>`; categories filter project lists |
+| Settings → Settings | `siteSettings` | Site title, SEO defaults, favicon |
+| Settings → Navigation | `siteNav` | Main and footer menus, language switch, theme toggle |
+| Settings → Error pages | `errorSettings` | 404 copy |
+| Settings → Cookie Banner | `siteCookieBanner` | Banner and preferences copy, sections, privacy link |
+| Settings → Analytics & Tracking | `siteAnalyticsSettings` | Consent switch, loading mode, trackers |
+| Settings → Site languages | `siteLanguageSettings` | Available languages (order of the language switch) and the default |
+
+Links (menus, rich text) point at a home, page, work or project document, an external URL, or the `open-cookie-preferences` function.
+
+---
+
+## Modules
+
+Pages render a `modules[]` array; rich text can embed modules inline. Four ship with the starter:
+
+| Module | What it renders |
+|---|---|
+| `module.text` | Heading + rich text |
+| `module.media` | Image, video or background loop, with caption |
+| `module.carousel` | Slides of `module.media`, optional thumbnails |
+| `module.contentRefs` | A list of pages or projects, with filter and sort for projects |
+
+A module is a Studio schema plus a React component, wired in a fixed set of places. Never wire one by hand:
 
 ```bash
-pnpm dev               # both in parallel
-# or:
-pnpm studio:dev        # Studio at http://localhost:3333
-pnpm web:dev           # Web at http://localhost:3000
+pnpm gen:module Quote            # schema, component, query; patches registries and the renderer
+pnpm gen:module Quote --inline   # also insertable inside rich text
+pnpm generate                    # regenerate TypeGen output
+pnpm check:wiring                # verify every wiring point
 ```
 
-In Studio, open **Settings → Site languages** (pre-filled `en` + `de` on first create, default `en`), publish, then create a `page` with a unique slug. Visit `http://localhost:3000/<locale>/<slug>` — done.
+The rules are in [`AGENTS.md`](AGENTS.md) → "The module pattern".
 
 ---
 
 ## Environment
 
-Variables you actually care about — full comments live in [`web/.env.example`](web/.env.example) and [`studio/.env.example`](studio/.env.example).
+Full comments live in [`web/.env.example`](web/.env.example) and [`studio/.env.example`](studio/.env.example). **BUILD** values are inlined at build time; a change needs a redeploy.
 
-| File | Variable | Required | Purpose |
-|------|----------|----------|---------|
-| `web/.env.local` + `studio/.env` | `SANITY_STUDIO_PROJECT_ID` | yes | Your Sanity project id |
-| `web/.env.local` | `SANITY_API_READ_TOKEN` | optional | Draft mode + server-side draft reads |
-| `web/.env.local` | `SANITY_REVALIDATE_SECRET` | **prod yes** | Webhook secret for `/api/revalidate` (fail-closed in prod) |
-| `web/.env.local` | `NEXT_PUBLIC_SITE_URL` | yes (prod) | Used by `sitemap.ts`, `robots.ts`, metadata base |
-| both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | optional | Switch dataset per environment (`staging`, `development`, …) |
-| both | `SANITY_STUDIO_DATASET` | optional | Hard pin a specific dataset name (skips auto-resolution) |
-| `studio/.env` | `SANITY_STUDIO_PREVIEW_ORIGIN` | yes (Studio) | Origin used by the Presentation iframe |
-| `studio/.env` | `SANITY_STUDIO_HOSTING_URL` | yes (Netlify Studio) | The Studio's own URL — registered with Sanity by `pnpm studio:register` |
-| `web/.env.local` | `NEXT_PUBLIC_SANITY_STUDIO_URL` | yes (prod) | Studio URL for CSP `frame-ancestors` and click-to-edit links — same value as `SANITY_STUDIO_HOSTING_URL` |
-| Netlify Studio site | `SANITY_AUTH_TOKEN` | optional | Deploy token; production deploys then register the Studio URL and upload the schema |
-| `studio/.env` | `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` | optional | Mux API token for the one-off `pnpm --filter studio run mux:migrate-assets` (the Mux plugin stores its own credentials) |
+| Where | Variable | Required | Purpose |
+|---|---|---|---|
+| web + Studio | `SANITY_STUDIO_PROJECT_ID` | yes | Sanity project id (BUILD) |
+| web + Studio | `SANITY_STUDIO_DATASET` | no | Pins the dataset; unset, it is resolved (below) (BUILD) |
+| web + Studio | `SANITY_STUDIO_DEPLOYMENT_TARGET` | no | Dataset preference when unpinned; on the web also whether the deploy is production (`robots.txt`, canonical origin) (BUILD) |
+| web + Studio | `SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION` | no | Only if your datasets have other names |
+| web | `SANITY_API_READ_TOKEN` | for Draft Mode | Viewer token: Draft Mode and Presentation (secret) |
+| web | `SANITY_REVALIDATE_SECRET` | production | Signs the revalidate webhook (secret) |
+| web | `NEXT_PUBLIC_SANITY_STUDIO_URL` | production | Studio URL for click-to-edit and CSP `frame-ancestors`; default `http://localhost:3333` (BUILD) |
+| web | `NEXT_PUBLIC_SITE_URL` | no | Canonical origin; unset, the host's own URL on Netlify/Vercel (BUILD) |
+| web | `CSP_ANALYTICS_ORIGINS` | no | Self-hosted analytics origins for the CSP (BUILD) |
+| web | `SANITY_USE_CDN` | no | Force the Sanity API CDN on or off |
+| Studio | `SANITY_STUDIO_PREVIEW_ORIGIN` | no | Web origin Presentation opens; default `http://localhost:3000` |
+| Studio | `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` | no | Extra origins Presentation may open (deploy previews) |
+| Studio | `SANITY_STUDIO_HOSTING_URL` | Netlify Studio | The Studio's own URL; default Netlify's `URL` |
+| Studio | `SANITY_STUDIO_APP_ID` | Sanity Hosting | App id `sanity deploy` prints on the first deploy |
+| Netlify Studio site | `SANITY_AUTH_TOKEN` | no | Deploy token: registers the Studio and uploads the schema on production deploys (secret) |
 
-**Every `SANITY_STUDIO_*` variable is public**: the Studio build inlines all of them into its JS bundle. Never give a token or secret that prefix — `sanity build` / `sanity deploy` refuse to run with one set.
+**Every `SANITY_STUDIO_*` variable is public**: the Studio bundle inlines them. Never give a token that prefix.
 
 ### How `@repo/sanity-dataset-resolve` picks a dataset
 
-1. **Explicit pin** wins — `SANITY_STUDIO_DATASET` / `NEXT_PUBLIC_SANITY_DATASET`.
-2. Otherwise, `SANITY_STUDIO_DEPLOYMENT_TARGET` decides preference order:
-   - `production` → prefer `production`, fall back to `development`.
-   - `development` / `preview` → prefer `development`, fall back to `production`.
-   - unset → `production` first on a Netlify / Vercel production build (`CONTEXT` / `VERCEL_ENV`) and in a production Studio build, `development` first everywhere else.
-   - any other value (e.g. `staging`) → that dataset first, then the two above.
-3. Canonical names are configurable (`SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION`).
-4. Each candidate is probed on the public Data API (no token; 404 = missing), and the first that exists wins. Offline, or with no project id, the first preferred name is used — never a silent switch to production.
+Runs once per web build and per Studio load (the Netlify Studio pins its dataset in `studio/netlify.toml` and skips this):
 
-Consumed by `web/next.config.ts` (resolved once per build and inlined, so queries and image URLs share it) and `studio/config/sync/studioDataset.ts`.
+1. `SANITY_STUDIO_DATASET` wins.
+2. Otherwise `SANITY_STUDIO_DEPLOYMENT_TARGET` sets the order: `production` → production first; `development` / `preview` → development first; any other value (e.g. `staging`) → that dataset first. Unset: production first on a Netlify/Vercel production build and in a production Studio build, development first everywhere else.
+3. The first candidate that exists wins (checked on the public API, no token). Offline it takes the first candidate, never a silent switch to production.
 
 ---
 
-## Architecture in brief
+## Content freshness and the revalidate webhook
 
-The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)). The short version:
+Routes are static and every Sanity read is cached with tags. A publish reaches visitors through a webhook:
 
-- **Data access** — `web/sanity/fetchSanityData.ts` is the only place React talks to Sanity; it wraps `sanityFetch` from `defineLive` for Draft Mode / Presentation. Published-only reads (sitemap, `generateStaticParams`, no-token paths) go through `web/sanity/cachedSanityQuery.ts` (`unstable_cache` + cache tags).
-- **GROQ** — strings live under `web/sanity/queries/` (snippets, page-level queries, component projections). The final queries are wrapped in `defineQuery` so `sanity typegen` emits result types.
-- **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the Studio's document languages. Each language is its own document; queries select it with `language == $locale`. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
-- **Media** — `<MediaImage />` (Sanity CDN `srcset`, crop and hotspot), `<MediaVideo />` (Mux Player) and `<MediaVideoLoop />` (hls.js). Video code loads only when a video nears the viewport; the server HTML already has the final size, so nothing shifts.
+| | Webhook configured | No webhook |
+|---|---|---|
+| On publish | `/api/revalidate` expires the matching tags; the next request renders fresh. | `SanityLive` revalidates while some visitor has a tab open. A publish while nobody is on the site stays invisible until the next publish event reaches an open tab, or the next deploy. |
+
+**Production needs the webhook.** Set it up once per site:
+
+1. Generate a secret, e.g. `openssl rand -base64 32`.
+2. Set it as `SANITY_REVALIDATE_SECRET` on the web host and redeploy.
+3. In [sanity.io/manage](https://www.sanity.io/manage) → your project → **API → Webhooks → Create webhook**:
+   - **URL:** `https://<your-site>/api/revalidate`
+   - **Dataset:** the dataset this site reads (usually `production`)
+   - **Trigger on:** Create, Update, Delete
+   - **Filter:**
+     ```groq
+     _type in ["home", "work", "page", "project", "projectCategory", "siteSettings", "siteNav", "siteCookieBanner", "siteAnalyticsSettings", "errorSettings", "siteLanguageSettings", "translation.metadata", "sanity.imageAsset", "mux.videoAsset"]
+     ```
+   - **Projection:** `{_type}`
+   - **HTTP method:** POST; drafts and versions off
+   - **Secret:** the value from step 1
+4. Publish any document and open the webhook's **attempts log**: the response is `{"revalidated":true,"tags":[…]}`.
+
+The filter mirrors `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts), which also decides which tags each type purges. Asset types are in it so alt text and poster frames reach the site. When you add a document type, add it to both. Details: [`web/README.md`](web/README.md) → "Freshness".
 
 ---
 
-## Scripts
+## Analytics & cookie consent
 
-Every root, `web` and `studio` script is described once, in [`AGENTS.md`](AGENTS.md) → "CLI command reference". Run a package's own script with `pnpm --filter <web|studio> run <script>`.
+Both live under **Settings** in the Studio:
 
----
+- **Analytics & Tracking** — the trackers (GA4, Microsoft Clarity, PostHog, Plausible, Matomo), the loading mode and **Use cookie banner**. With the banner on and "Respect cookie banner", cookie-based trackers wait for consent and cookie-free ones load immediately. With the banner off, nothing asks for consent: only do that when no tracker needs it.
+- **Cookie Banner** — one per language: the banner and preferences copy, consent sections and the privacy link. A language without its own banner shows the default language's. Empty fields fall back to defaults in the visitor's language.
 
-## Tooling
-
-- **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`; Studio uses a 2-space override, the rest of the repo is tabs.
-- **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them, and refuses a file that also has unstaged changes; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
-- **GitHub Actions** — `.github/workflows/ci.yml` runs four parallel jobs on Node 22: `biome ci` (format, lint, imports) + `pnpm typecheck` + `check:wiring` + `test:tooling`; `pnpm generate` with a diff guard on the committed typegen artifacts; `next build` with the first-load JS budget (`.github/bundle-budget.json`); `sanity build`. Every action is pinned to a commit SHA.
-- **Dependabot** — monthly on `main` and `variant/document-level` (`.github/dependabot.yml`): npm in two groups — minor + patch auto-merges after CI, majors wait for review, `@types/node` and `typescript` majors are ignored — and all GitHub Actions in one group per branch.
-- **TypeScript** — strict, ES2022 target; `web` and `studio` add `noUncheckedIndexedAccess`, `noImplicitOverride` and `noFallthroughCasesInSwitch`. Root `pnpm typecheck` walks every workspace package's own `typecheck` script (the apps and the two tooling packages).
-- **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, and editor caches under `.cursor/` are ignored; the committed `.cursor/rules/` folder (Cursor IDE rules) is explicitly re-included. See root `.gitignore`.
-- **Agent guardrails** — AI coding assistants (Claude Code, Cursor, Windsurf, Copilot) read [`AGENTS.md`](AGENTS.md) at the repo root. Sub-paths get auto-loaded `CLAUDE.md` files and `.cursor/rules/*.mdc` rules with file-glob scoping. Update `AGENTS.md` first; the others defer to it.
+Any menu or rich-text link can use the `open-cookie-preferences` function; it only renders while the banner is on. Origins of self-hosted trackers go into `CSP_ANALYTICS_ORIGINS`.
 
 ---
 
 ## Deploy
 
-### Netlify (web)
+The site and the Studio are two Netlify sites from the same repository. Each skips its build when a push changed nothing it builds from.
 
-`netlify.toml` sets the build command, the Next.js plugin and a path-based `build.ignore`: a push that changed nothing the web app builds from since the last built commit (`web/`, its shared package, the workspace manifests) skips the build.
+### Web on Netlify
 
-Security headers (CSP, HSTS, …) are not in `netlify.toml`: they come from `headers()` in `web/next.config.ts`, because Netlify's `[[headers]]` rules never reach the HTML the Next.js function renders. Caching of `/_next/static/*` comes from the Next.js adapter (`@netlify/plugin-nextjs`).
+1. Import the repository as a new Netlify project. Base directory and package directory stay empty; the root [`netlify.toml`](netlify.toml) sets build command, publish directory and the Next.js plugin.
+2. Environment: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN`, `SANITY_REVALIDATE_SECRET`, `NEXT_PUBLIC_SANITY_STUDIO_URL`; optionally `NEXT_PUBLIC_SITE_URL` (or set it in `netlify.toml` → production context) and `CSP_ANALYTICS_ORIGINS`. Production deploys read `production`, deploy previews `development`.
+3. Add your domain, then [the revalidate webhook](#content-freshness-and-the-revalidate-webhook).
 
-Set on the host: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` (optional), `SANITY_REVALIDATE_SECRET` (required in prod), `NEXT_PUBLIC_SITE_URL`, `SANITY_STUDIO_DEPLOYMENT_TARGET` (only if you want to point at a non-production dataset).
+### Studio on Netlify
 
-### Netlify (Studio) — default
+[`studio/netlify.toml`](studio/netlify.toml) is the whole pipeline: `sanity build`, SPA routing, `noindex`, `frame-ancestors`, and the dataset per deploy context (production → `production`, previews and branch deploys → `development`).
 
-The Studio is a second Netlify site from the same repository: package directory `studio`, configured by [`studio/netlify.toml`](studio/netlify.toml) (build, SPA routing, dataset per deploy context, `noindex`, `frame-ancestors` against clickjacking). Commits that only touch the web app don't rebuild it.
+1. **Site** — import the same repository as a second project. Base directory empty, **package directory `studio`**, build command and publish directory empty.
+2. **Environment** — `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL` (the Studio's URL); optionally `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` and `SANITY_AUTH_TOKEN`. A different dataset name per context: edit the toml.
+3. **Domain** — add the Studio domain (e.g. `studio.your-domain.tld`) under Domain management.
+4. **CORS** — in sanity.io/manage → API → CORS origins, add that origin **with Allow credentials**, or login fails: `pnpm --filter studio exec sanity cors add https://studio.your-domain.tld --credentials`.
+5. **Web site** — set `NEXT_PUBLIC_SANITY_STUDIO_URL` to the Studio URL and redeploy the web app, so Presentation can embed it and click-to-edit opens it.
+6. **Register** — `pnpm studio:register` lists the URL as the project's Studio and uploads the schema (`--dry-run` to preview; uses your `sanity login`). With `SANITY_AUTH_TOKEN` (a deploy token) on the Studio site, every production deploy does it.
 
-Set on that site: `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET` (per deploy context: `production` / `development`), `SANITY_STUDIO_PREVIEW_ORIGIN` (production web origin), `SANITY_STUDIO_HOSTING_URL`, optionally `SANITY_AUTH_TOKEN`. Then add the domain to the Sanity project's CORS origins with credentials, set `NEXT_PUBLIC_SANITY_STUDIO_URL` on the web site, and register the Studio (`pnpm studio:register`). Step by step: [`studio/README.md`](studio/README.md#deploying-the-studio).
+### Studio on Sanity Hosting (alternative)
 
-### Sanity Hosting (Studio) — alternative
+`pnpm studio:deploy` publishes to `*.sanity.studio` (always allowed by the web CSP). The first deploy asks for a hostname and prints an app id: set it as `SANITY_STUDIO_APP_ID` so later deploys update the same Studio. Both targets can run side by side.
 
-`pnpm studio:deploy` ships to Sanity's hosted Studio (`*.sanity.studio`). The deploy script forces `SANITY_STUDIO_DEPLOYMENT_TARGET=production`.
+### Other hosts
 
-Configure the **Revalidate webhook** in Sanity Manage → API → Webhooks, targeting `https://<your-site>/api/revalidate` with the same `SANITY_REVALIDATE_SECRET` (signed delivery). Projection `{_type}`; the document types it acts on (and which cache tags each one purges) are the keys of `WEBHOOK_TAG_MAP` in `web/sanity/cacheTags.ts` — asset types (`sanity.imageAsset`, `mux.videoAsset`) included, so alt text and poster frames reach the site.
+Standard Next.js + Sanity: mirror the env vars. Headers come from `web/next.config.ts`; `robots.ts` and the canonical origin recognise Netlify and Vercel production builds, elsewhere set `SANITY_STUDIO_DEPLOYMENT_TARGET=production` and `NEXT_PUBLIC_SITE_URL`.
 
-### Any other host (Vercel, Docker, …)
+---
 
-Everything is standard Next.js + Sanity — mirror the env vars and you're done. CSP / HSTS come from `headers()` in `web/next.config.ts` and need no platform config.
+## Content migrations
+
+Schema changes that move existing content ship as [`sanity migration`](https://www.sanity.io/docs/schema-and-content-migrations) scripts in [`studio/migrations/`](studio/migrations). After pulling an update, run each new one once per dataset, from `studio/`:
+
+```bash
+pnpm exec sanity migration run <name>                                # dry run
+pnpm exec sanity migration run <name> --no-dry-run --dataset <name>  # apply
+```
+
+Every migration is idempotent; what it changes and when it is needed is listed in [`studio/scripts/README.md`](studio/scripts/README.md) → "Content migrations".
+
+---
+
+## Tooling
+
+- **Scripts** — every root, `web` and `studio` script is described once, in [`AGENTS.md`](AGENTS.md) → "CLI command reference". Day to day: `pnpm dev`, `pnpm generate` after a schema or query change, `pnpm lint`, `pnpm typecheck`, `pnpm format`.
+- **Biome** — [`biome.json`](biome.json) formats and lints everything (tabs; 2 spaces in `studio/`).
+- **Hooks** — pre-commit formats staged files; pre-push runs `pnpm lint` and `pnpm typecheck`.
+- **CI** — `.github/workflows/ci.yml` on Node 22: lint + typecheck + wiring + tooling tests, TypeGen diff guard, `next build` with the first-load JS budget (`.github/bundle-budget.json`), `sanity build`.
+- **Dependabot** — monthly on both branches; minor + patch auto-merge after CI, majors wait for review.
+- **AI agents** — [`AGENTS.md`](AGENTS.md) is canonical for Claude Code, Cursor, Copilot and others; the `CLAUDE.md` files and `.cursor/rules/` defer to it.
+
+### Forking
+
+The workflows besides `ci.yml` serve the starter's own organisation (Claude review, Dependabot review and auto-merge, Slack notifications). Delete them in a fork unless you set up the same secrets. Nested READMEs are part of the documentation; keep them.
 
 ---
 
 ## Going deeper
 
-- [`web/README.md`](web/README.md) — languages, content freshness, local dev.
-- [`web/sanity/README.md`](web/sanity/README.md) — GROQ layer, fetchers, Presentation setup.
-- [`web/src/i18n/README.md`](web/src/i18n/README.md) — localisation flow end-to-end.
-- [`studio/README.md`](studio/README.md) — Studio customisation, plugins, schema patterns.
-- [`packages/sanity-dataset-resolve/src/index.ts`](packages/sanity-dataset-resolve/src/index.ts) — shared dev/prod resolver, API documented inline.
+[`AGENTS.md`](AGENTS.md) → "Per-folder README index" lists every README and what it covers.
 
 ---
 
 ## Requirements
 
-- **Node.js** 22.12 or newer (`engines` in the root `package.json`); CI runs Node 22.
-- **pnpm** 10 (pinned in root `package.json` `packageManager`).
-- **Sanity project** with a **project id**.
-- **(optional)** Mux API tokens for video uploads.
-- **(optional)** Netlify for hosting — the included `netlify.toml` is production-ready.
+- **Node.js** 22.12 or newer (`engines`; `.nvmrc` pins 22).
+- **pnpm** 10 (`packageManager` in the root `package.json`).
+- A **Sanity project**.
+- Optional: a **Mux** account for video, **Netlify** for hosting.
 
 ---
 

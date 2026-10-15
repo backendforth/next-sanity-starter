@@ -147,7 +147,7 @@ export const moduleMedia = defineType({
         ? (videoTrack as { max_height?: number }).max_height
         : undefined;
 
-      /** Main line: filename (image), “Video”, or “Loop”. Kicker “Media” comes from `MediaPreview`. */
+      /** Main line: filename (image), “Video”, or “Loop”. Kicker “Media” comes from `moduleRowPreview("Media")`. */
       let mainTitle: string;
       if (isLoop) {
         mainTitle = "Loop";

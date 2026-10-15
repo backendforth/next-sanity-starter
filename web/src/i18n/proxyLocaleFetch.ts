@@ -14,13 +14,8 @@ type CacheEntry = { config: SiteLocaleConfig; expires: number };
 let cache: CacheEntry | null = null;
 let refreshInFlight: Promise<SiteLocaleConfig> | null = null;
 
-async function resolveDatasetName(): Promise<string> {
-	const explicit =
-		process.env.SANITY_STUDIO_DATASET?.trim() ||
-		process.env.NEXT_PUBLIC_SANITY_DATASET?.trim();
-	if (explicit) {
-		return explicit;
-	}
+/** Explicit env wins inside the resolver; its existence checks are memoized per process. */
+function resolveDatasetName(): Promise<string> {
 	return resolveStudioDatasetAsync(process.env);
 }
 

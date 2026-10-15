@@ -115,7 +115,7 @@ You do **not** need a Desk structure item for a module (modules are not document
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`, `contentRefTypesForScope`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`).
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`).
 
 Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SUGGESTIONS`** (same file) into the field’s `options`, next to any `filter`. Do the same on new reference fields.
 
@@ -127,7 +127,7 @@ The encoding ceiling is set per field: `options: { max_resolution_tier }` on a `
 
 ## 10. Initial value templates (optional)
 
-If you need “New document” templates with presets, register them in **`config/initialValueTemplates.ts`** and wire through `sanity.config.ts` (`initialValueTemplates`). The default in this repo is an empty array.
+If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of the global “Create” menu by `document.newDocumentOptions` (`isSingletonTemplate` in `config/singletons.ts`).
 
 ## Checklist summary
 

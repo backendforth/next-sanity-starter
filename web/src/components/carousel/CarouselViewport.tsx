@@ -79,7 +79,7 @@ export function CarouselViewport({
 
 	const isMulti = options.multipleSlides;
 	const [emblaRef, emblaApi] = useEmblaCarousel(
-		/* A slide counts as in view (and plays) once half of it shows. */
+		/* A slide counts as in view once about half of it shows (browsers differ at the edge). */
 		{ loop: options.loop, align: "start", inViewThreshold: 0.5 },
 		autoplayPlugin.current ? [autoplayPlugin.current] : [],
 	);
@@ -125,9 +125,11 @@ export function CarouselViewport({
 	}, [emblaApi, onSelect, onSlidesInView]);
 
 	/* One slide at a time: the selected one is active. Several side by side: every slide in view
-	 * is — a loop plays, a video shows its player — so none waits for a selection it can't get. */
+	 * is — a loop plays, a video shows its player — so none waits for a selection it can't get.
+	 * The selected snap's first slide counts too: a slide wider than half the viewport is never
+	 * half in view, but scrolled to it sits at the start. */
 	const isSlideActive = (index: number) =>
-		isMulti ? slidesInView.includes(index) : index === selectedSnap;
+		index === selectedSnap || (isMulti && slidesInView.includes(index));
 
 	/* Suspend autoplay under reduced motion and resume it only when the preference flips back,
 	 * not on every effect run — a `stopOnInteraction` stop must survive unrelated re-renders. */

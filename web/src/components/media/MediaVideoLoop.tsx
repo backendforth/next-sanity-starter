@@ -182,74 +182,6 @@ function MuxVideoLoop({
 		[posterPayload, media, thumbWidthPx],
 	);
 
-	/* Stall rescue ceiling (see {@link LOOP_STALL_RESCUE_MS}): absolute, so a later resize
-	 * can't undo a downgrade by re-picking against a bigger container. */
-	const [rescueTierCeiling, setRescueTierCeiling] = useState<
-		MuxResolutionTier | undefined
-	>(undefined);
-	const hlsSrc = useMemo(() => {
-		/* Container-aware tier selection: `muxLoopHlsSrc` combines the DPR-
-		 * capped container size with `getNetworkAwareTierCeiling()` to pick
-		 * the highest tier this device + connection can comfortably serve,
-		 * up to the {@link MUX_PLAYBACK_MAX_TIER} = 2160p ceiling, and pins
-		 * the manifest's min and max to that single tier so ABR can't ramp
-		 * up from a lower rendition. The measurement gate on `attachHls`
-		 * keeps the pre-measurement value (bare ceiling) from ever being
-		 * attached. Resizing the viewport invalidates this memo and picks a
-		 * new tier; in practice resize is rare and the manifest is ~5 kB. */
-		return muxLoopHlsSrc(playbackId, {
-			videoWidthPx,
-			videoHeightPx,
-			containerWidthPx: slotWidthPx,
-			containerHeightPx: slotHeightPx,
-			devicePixelRatio,
-			tierCeiling: rescueTierCeiling,
-		});
-	}, [
-		playbackId,
-		videoWidthPx,
-		videoHeightPx,
-		slotWidthPx,
-		slotHeightPx,
-		devicePixelRatio,
-		rescueTierCeiling,
-	]);
-
-	const stallTimerRef = useRef<number | undefined>(undefined);
-	const disarmStallTimer = useCallback(() => {
-		if (stallTimerRef.current !== undefined) {
-			window.clearTimeout(stallTimerRef.current);
-			stallTimerRef.current = undefined;
-		}
-	}, []);
-	useEffect(() => disarmStallTimer, [disarmStallTimer]);
-	/* `waiting` arms the deadline, `playing` / `pause` disarm it. On expiry the pinned tier
-	 * steps one rung down; the new `hlsSrc` goes through `useMuxHlsSource`'s normal re-attach,
-	 * and the loop restarts from its first frame at the lighter tier. */
-	const onVideoWaiting = useCallback(() => {
-		if (stallTimerRef.current !== undefined) return;
-		stallTimerRef.current = window.setTimeout(() => {
-			stallTimerRef.current = undefined;
-			const current = resolveMuxLoopTier({
-				videoWidthPx,
-				videoHeightPx,
-				containerWidthPx: slotWidthPx,
-				containerHeightPx: slotHeightPx,
-				devicePixelRatio,
-				tierCeiling: rescueTierCeiling,
-			});
-			const below = muxTierBelow(current);
-			if (below !== current) setRescueTierCeiling(below);
-		}, LOOP_STALL_RESCUE_MS);
-	}, [
-		videoWidthPx,
-		videoHeightPx,
-		slotWidthPx,
-		slotHeightPx,
-		devicePixelRatio,
-		rescueTierCeiling,
-	]);
-
 	/* Attach only once the container measurement and DPR have landed, so the first `hlsSrc`
 	 * is the final URL. Without the gate, `useMuxHlsSource` attaches the bare-ceiling URL and
 	 * the measured re-render one commit later changes `src` — a full teardown that refetches
@@ -268,8 +200,75 @@ function MuxVideoLoop({
 		);
 		return () => window.clearTimeout(t);
 	}, [measurementsReady, attachFallback, shouldAttachHls]);
-	const attachHls = shouldAttachHls && (measurementsReady || attachFallback);
-	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc);
+
+	/* The slot the tier is picked for, latched when the stream first attaches (like
+	 * `MediaVideo`): a `src` change is that same full teardown and restarts the loop, so a
+	 * resize or rotation keeps the stream. The stall rescue is the only re-pick. */
+	const [attachSlot, setAttachSlot] = useState<{
+		widthPx: number | undefined;
+		heightPx: number | undefined;
+	} | null>(null);
+	if (
+		attachSlot === null &&
+		shouldAttachHls &&
+		(measurementsReady || attachFallback)
+	) {
+		setAttachSlot({ widthPx: slotWidthPx, heightPx: slotHeightPx });
+	}
+
+	/* Stall rescue ceiling (see {@link LOOP_STALL_RESCUE_MS}). */
+	const [rescueTierCeiling, setRescueTierCeiling] = useState<
+		MuxResolutionTier | undefined
+	>(undefined);
+	/* Container-aware tier: `muxLoopHlsSrc` combines the DPR-capped slot with
+	 * `getNetworkAwareTierCeiling()` to pick the highest tier this device + connection can
+	 * comfortably serve, up to the {@link MUX_PLAYBACK_MAX_TIER} = 2160p ceiling, and pins the
+	 * manifest's min and max to that single tier so ABR can't ramp up from a lower rendition. */
+	const tierArgs = useMemo(
+		() => ({
+			videoWidthPx,
+			videoHeightPx,
+			containerWidthPx: attachSlot?.widthPx,
+			containerHeightPx: attachSlot?.heightPx,
+			devicePixelRatio,
+			tierCeiling: rescueTierCeiling,
+		}),
+		[
+			videoWidthPx,
+			videoHeightPx,
+			attachSlot,
+			devicePixelRatio,
+			rescueTierCeiling,
+		],
+	);
+	const hlsSrc = useMemo(
+		() => muxLoopHlsSrc(playbackId, tierArgs),
+		[playbackId, tierArgs],
+	);
+	useMuxHlsSource(videoRef, attachSlot ? playbackId : null, hlsSrc);
+
+	const stallTimerRef = useRef<number | undefined>(undefined);
+	const disarmStallTimer = useCallback(() => {
+		if (stallTimerRef.current !== undefined) {
+			window.clearTimeout(stallTimerRef.current);
+			stallTimerRef.current = undefined;
+		}
+	}, []);
+	useEffect(() => disarmStallTimer, [disarmStallTimer]);
+	/* `waiting` arms the deadline, `playing` / `pause` disarm it. On expiry the pinned tier
+	 * steps one rung down; the new `hlsSrc` goes through `useMuxHlsSource`'s normal re-attach,
+	 * and the loop restarts from its first frame at the lighter tier, behind its poster. */
+	const onVideoWaiting = useCallback(() => {
+		if (stallTimerRef.current !== undefined) return;
+		stallTimerRef.current = window.setTimeout(() => {
+			stallTimerRef.current = undefined;
+			const current = resolveMuxLoopTier(tierArgs);
+			const below = muxTierBelow(current);
+			if (below === current) return;
+			setPosterHidden(false);
+			setRescueTierCeiling(below);
+		}, LOOP_STALL_RESCUE_MS);
+	}, [tierArgs]);
 
 	/* Every play path goes through here: only an active loop plays. */
 	const tryPlay = useCallback(() => {

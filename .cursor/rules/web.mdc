@@ -9,5 +9,5 @@ Canonical: `AGENTS.md`. Deep docs: `web/README.md`, `web/sanity/README.md`, `web
 - i18n: document-level — select per-language documents in GROQ with `language == $locale` (the design here, not `main`'s "no locale in GROQ" anti-pattern) and pass `{ locale, siteLocale }` to anything that builds hrefs. Fields arrive in the route's language and render directly.
 - Server components by default; `"use client"` only for state, effects or browser APIs.
 - Heavy client code that only some pages render goes behind a lazy boundary (`next/dynamic` in a `"use client"` file); CI fails a route over its first-load JS ceiling in `.github/bundle-budget.json`.
-- Never read the locale from `useRouter()`, `usePathname()`, `window.location` or cookies in a module — it comes in as a prop.
+- A module gets the locale as a prop, never from the router, the URL or cookies (`AGENTS.md` §"i18n DO / DON'T").
 - Build locale-prefixed URLs with the helpers in `web/src/i18n/`, never by concatenating prefixes.

@@ -2,6 +2,7 @@ import { CaseIcon } from "@sanity/icons/Case";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
 import { plainLabel } from "../../utils/plainLabel";
 import { isUniquePerLanguage, validateSlug } from "../../utils/validateSlug";
 import {
@@ -111,7 +112,9 @@ export const project = defineType({
         titleMediaLoopPoster,
       } = selection;
       const segment = slug?.current?.trim();
-      const path = segment ? `/work/${segment}` : "/work";
+      const path = segment
+        ? `${PROJECT_URL_PREFIX}/${segment}`
+        : PROJECT_URL_PREFIX;
       const headline = plainLabel(title, path);
 
       type PreviewMedia = NonNullable<PreviewValue["media"]>;

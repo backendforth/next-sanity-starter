@@ -1,6 +1,7 @@
 import { defineDocuments } from "sanity/presentation";
 
 import {
+  LANGUAGE_IDS,
   PREFIXED_SLUG_DOCUMENT_TYPES,
   PROJECT_URL_PREFIX,
   SLUG_BASED_DOCUMENT_TYPES,
@@ -19,9 +20,6 @@ const prefixedTypeList = typeList(PREFIXED_SLUG_DOCUMENT_TYPES);
  * unprefixed routes read it inside their filter (Presentation runs it as a plain fetch).
  */
 const DEFAULT_LANGUAGE = `*[_id == "siteLanguageSettings"][0].defaultLanguageId`;
-
-/** The site's language ids, which the web serves as `/:locale`. */
-const LANGUAGE_IDS = `*[_id == "siteLanguageSettings"][0].availableLanguages[].id`;
 
 /**
  * Which document opens when the Presentation iframe navigates to a route.

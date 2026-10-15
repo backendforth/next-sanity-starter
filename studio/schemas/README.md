@@ -67,7 +67,7 @@ The language list comes from **`siteLanguageSettings`** at runtime (`config/sync
 
 ## 6. Slugs
 
-For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
+For any field that maps to a URL segment, set a validator from `utils/validateSlug.ts` as the slug field’s **`validation`**: **`validatePageSlug`** for a type served at the site root (`/:slug`, as in `schemas/documents/page.ts`) — it also rejects the web's own routes and the language ids — or **`validateSlug`** for one under a prefix (`/work/:slug`, as in `schemas/documents/project.ts`).
 
 Give the slug a **Generate** button with `options.source: "title"`. On this branch each language variant is its own document with a plain-string `title`, so `source` points at it directly (`main` needs a helper for its localized titles).
 

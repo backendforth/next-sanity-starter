@@ -1,6 +1,7 @@
 import { LinkIcon } from "@sanity/icons/Link";
 import { defineType } from "sanity";
 
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
 import {
   LINK_REFERENCE_FILTER,
   LINK_REFERENCES,
@@ -129,9 +130,9 @@ export const link = defineType({
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
         } else if (referenceType === "project" && slug) {
-          subtitle = `→ /work/${slug}`;
+          subtitle = `→ ${PROJECT_URL_PREFIX}/${slug}`;
         } else if (referenceType === "work") {
-          subtitle = "→ /work";
+          subtitle = `→ ${PROJECT_URL_PREFIX}`;
         } else if (referenceType) {
           subtitle = `→ (${referenceType})`;
         } else {

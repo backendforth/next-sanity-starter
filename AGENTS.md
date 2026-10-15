@@ -119,7 +119,7 @@ pnpm typecheck             # web, studio, check-wiring, scaffold-module
 pnpm format                # biome check --write .
 ```
 
-The pre-commit hook formats and re-stages the staged files (it refuses a file that is only partly staged); the pre-push hook runs `biome ci .` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
+The pre-commit hook formats and re-stages the staged files (it refuses a file that is only partly staged); the pre-push hook runs `pnpm lint` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
 
 **IMPORTANT — never edit:**
 
@@ -144,10 +144,9 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`, production target) — the alternative to Netlify. |
 | `pnpm studio:register` | Register the Netlify-hosted Studio URL (`SANITY_STUDIO_HOSTING_URL`) with Sanity and upload the schema. Netlify production deploys run it when `SANITY_AUTH_TOKEN` is set. |
 | `pnpm generate` | Studio schema extract, web query typegen, then `check:typegen`. **Run after every schema or query edit.** |
-| `pnpm studio:generate` | Alias for `pnpm generate`. |
 | `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
 | `pnpm typecheck` | `tsc --noEmit` in every workspace package with a `typecheck` script (web, studio, check-wiring, scaffold-module). |
-| `pnpm lint` | `biome check .` (no writes). |
+| `pnpm lint` | `biome ci .`: format, lint and import order, no writes. The pre-push hook and CI run it. |
 | `pnpm format` | `biome check --write .` (auto-fix). |
 | `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component and query files and wires all 6 points, the `ModulesRenderer` `case` included (`--inline` also registers it in the three inline places). Writes nothing if any anchor is missing. PascalCase name. Add `--dry-run` to preview. |
 | `pnpm check:wiring` | Compare every module wiring list with the module schemas, both ways, and the inline places with each other. CI gate. |

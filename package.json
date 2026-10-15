@@ -4,7 +4,7 @@
 	"description": "Next and Sanity Starter",
 	"private": true,
 	"scripts": {
-		"lint": "biome check .",
+		"lint": "biome ci .",
 		"format": "biome check --write .",
 		"typecheck": "pnpm --stream -r run typecheck",
 		"gen:module": "pnpm --filter @repo/scaffold-module run gen --",
@@ -23,7 +23,6 @@
 		"studio:build": "pnpm --filter studio run build",
 		"studio:deploy": "pnpm --filter studio run deploy",
 		"studio:register": "pnpm --filter studio run register",
-		"studio:generate": "pnpm run generate",
 		"studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev"
 	},
 	"author": "backendforth",

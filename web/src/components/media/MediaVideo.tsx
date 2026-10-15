@@ -371,7 +371,7 @@ function MuxVideoPlayer({
 			className={clsx(
 				"mux-player relative w-full min-w-0 overflow-hidden bg-black",
 				fillParent &&
-					"h-full min-h-[100dvh] w-full [&_mux-player]:!block [&_mux-player]:!h-full [&_mux-player]:!min-h-full [&_mux-player]:!w-full",
+					"h-full w-full [&_mux-player]:!block [&_mux-player]:!h-full [&_mux-player]:!min-h-full [&_mux-player]:!w-full",
 				className,
 			)}
 			style={fillParent ? undefined : { aspectRatio: aspectCss }}

@@ -6,17 +6,21 @@ import { preconnect } from "react-dom";
  * image and poster code never pulls this in.
  */
 
-/** Mux HLS rendition tier identifiers usable with `min_resolution_tier` / `max_resolution_tier`. */
-export type MuxResolutionTier =
-	| "240p"
-	| "270p"
-	| "360p"
-	| "480p"
-	| "540p"
-	| "720p"
-	| "1080p"
-	| "1440p"
-	| "2160p";
+/** Mux HLS rendition tiers, lowest first (`min_resolution` / `max_resolution` values). */
+const TIER_LADDER = [
+	"270p",
+	"360p",
+	"480p",
+	"540p",
+	"720p",
+	"1080p",
+	"1440p",
+	"2160p",
+] as const;
+
+export type MuxResolutionTier = (typeof TIER_LADDER)[number];
+
+const tierRank = (tier: MuxResolutionTier): number => TIER_LADDER.indexOf(tier);
 
 /**
  * DPR cap for tier selection (loops and the full player). 2.0 honors retina (effective 2× CSS
@@ -39,37 +43,13 @@ export const MUX_PLAYBACK_MAX_TIER = "2160p" satisfies MuxResolutionTier;
  */
 const FINE_POINTER_DISPLAY_QUERY = "(hover: hover) and (pointer: fine)";
 
-const TIER_RANK: Record<MuxResolutionTier, number> = {
-	"270p": 0,
-	"360p": 1,
-	"480p": 2,
-	"540p": 3,
-	"720p": 4,
-	"1080p": 5,
-	"1440p": 6,
-	"2160p": 7,
-	"240p": 0,
-};
-
-/** Rank → tier, aligned with {@link TIER_RANK}. */
-const TIER_LADDER: readonly MuxResolutionTier[] = [
-	"270p",
-	"360p",
-	"480p",
-	"540p",
-	"720p",
-	"1080p",
-	"1440p",
-	"2160p",
-];
-
 /** A stall rescue never steps below this rung — the visual cliff for a full-width video. */
 const TIER_BELOW_FLOOR: MuxResolutionTier = "720p";
 
 /** One rung below `tier`; a tier at or below {@link TIER_BELOW_FLOOR} is returned unchanged. */
 export function muxTierBelow(tier: MuxResolutionTier): MuxResolutionTier {
-	if (TIER_RANK[tier] <= TIER_RANK[TIER_BELOW_FLOOR]) return tier;
-	return TIER_LADDER[TIER_RANK[tier] - 1] ?? tier;
+	if (tierRank(tier) <= tierRank(TIER_BELOW_FLOOR)) return tier;
+	return TIER_LADDER[tierRank(tier) - 1] ?? tier;
 }
 
 /** The lower of two tiers. */
@@ -77,7 +57,7 @@ function minResolutionTier(
 	a: MuxResolutionTier,
 	b: MuxResolutionTier,
 ): MuxResolutionTier {
-	return TIER_RANK[a] <= TIER_RANK[b] ? a : b;
+	return tierRank(a) <= tierRank(b) ? a : b;
 }
 
 /** Mux tier that covers the container at a capped DPR ({@link MUX_PLAYBACK_MAX_TIER} ceiling). */
@@ -317,7 +297,7 @@ export type MuxPlayerResolution = {
 
 /** Floor a ladder tier into the player-pinnable domain (720p is also the visual-cliff floor). */
 function playerTierFloor(tier: MuxResolutionTier): MuxPlayerResolutionTier {
-	return TIER_RANK[tier] <= TIER_RANK["720p"]
+	return tierRank(tier) <= tierRank("720p")
 		? "720p"
 		: (tier as MuxPlayerResolutionTier);
 }
@@ -391,6 +371,16 @@ export function resolveMuxPlayerResolution(args: {
 
 	const pinned = playerTierFloor(displayTier);
 	return { minResolution: pinned, maxResolution: pinned };
+}
+
+/** `autoplay && !controls` on a full video means a silent loop (no MuxPlayer chrome). */
+export function isLoopIntent(
+	settings:
+		| { autoplay?: boolean | null; controls?: boolean | null }
+		| null
+		| undefined,
+): boolean {
+	return Boolean(settings?.autoplay) && settings?.controls === false;
 }
 
 /** Codec family parsed from an HLS `#EXT-X-STREAM-INF` CODECS attribute. */

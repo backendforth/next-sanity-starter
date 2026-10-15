@@ -468,7 +468,7 @@ function MuxVideoLoop({
 			className={clsx(
 				"relative w-full overflow-hidden",
 				fillParent &&
-					"h-full min-h-[100dvh] w-full [&_video]:min-h-full [&_video]:min-w-full [&_video]:object-cover",
+					"h-full w-full [&_video]:min-h-full [&_video]:min-w-full [&_video]:object-cover",
 				/* Skip layout + paint + style cost while off-screen. The element
 				 * keeps its size (we have explicit dimensions / aspect-ratio) so
 				 * scroll position stays stable. Above-the-fold heros are visible

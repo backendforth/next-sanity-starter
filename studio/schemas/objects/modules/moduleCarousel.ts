@@ -43,6 +43,16 @@ export const moduleCarousel = defineType({
           options: { hotspot: true },
         },
       ],
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const parent = context.parent as { imagesOnly?: boolean } | undefined;
+          if (parent?.imagesOnly !== false) {
+            if (!Array.isArray(value) || value.length === 0) {
+              return "Add at least one slide.";
+            }
+          }
+          return true;
+        }),
     },
     {
       name: "slidesMedia",
@@ -125,6 +135,7 @@ export const moduleCarousel = defineType({
       mediaSlideType: "slidesMedia.0.type",
       mediaSlideImage: "slidesMedia.0.imageContent.image",
       mediaSlidePoster: "slidesMedia.0.videoContent.poster",
+      mediaSlideLoopPoster: "slidesMedia.0.videoLoopContent.poster",
     },
     prepare({
       heading,
@@ -135,6 +146,7 @@ export const moduleCarousel = defineType({
       mediaSlideType,
       mediaSlideImage,
       mediaSlidePoster,
+      mediaSlideLoopPoster,
     }) {
       const count =
         imagesOnly === false
@@ -155,6 +167,8 @@ export const moduleCarousel = defineType({
         media = mediaSlideImage as PreviewMedia;
       } else if (mediaSlideType === "video") {
         media = (mediaSlidePoster ?? PlayIcon) as PreviewMedia;
+      } else if (mediaSlideType === "loop") {
+        media = (mediaSlideLoopPoster ?? PlayIcon) as PreviewMedia;
       }
 
       return {

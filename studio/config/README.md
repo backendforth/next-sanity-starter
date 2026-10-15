@@ -11,7 +11,7 @@ This folder holds **structure** (sidebar), **presentation** (Visual Editing / We
 
 So: **new document or object type → add it to `schemas/index.ts`**. **New sidebar entry → add or extend items in `config/structure/`** (see `config/structure/README.md`).
 
-Only global singletons with a fixed document ID (`siteLanguageSettings`) use `S.document().schemaType("…").documentId("…")` in structure. Translatable types — including the per-language "singletons" `home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner` — have one document per language, so they use `S.documentTypeList("…")`. `config/singletons.ts` still locks delete / unpublish / duplicate on those types.
+Only global singletons with a fixed document ID (`siteLanguageSettings`, `siteAnalyticsSettings`) use `S.document().schemaType("…").documentId("…")` in structure, and `config/singletons.ts` locks delete / unpublish / duplicate on them. Translatable types — including the per-language "singletons" `home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner` — have one document per language, so they use `S.documentTypeList("…")` and keep those actions: a stray second document in a language (`onePerLanguage` blocks its publish) or an unwanted language version can be deleted.
 
 ## Web Preview (Presentation)
 

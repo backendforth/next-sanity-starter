@@ -7,26 +7,40 @@ import { uiLabel } from "@/src/i18n/uiLabels";
 
 import type { LinkLocaleOptions, LinkValue } from "./linkResolver";
 import { pickLocalizedString, plainText } from "./sanityLocalizedText";
+import { isStegaVariant } from "./stegaVariant";
 
-/**
- * Order: the link's title → what it points at (an internal target's title, the URL, the function
- * key) → `literalFallback` → the UI "Link" label.
- */
+/** What a link points at, as a label: the internal target's title, the URL or the function key. */
+function targetLabel(
+	link: LinkValue,
+	{ locale, siteLocale }: LinkLocaleOptions,
+): string | undefined {
+	if (isStegaVariant(link, "linkType", "linkInternal")) {
+		return pickLocalizedString(
+			link.resolvedReference?.title,
+			locale,
+			siteLocale,
+		);
+	}
+	if (isStegaVariant(link, "linkType", "linkExternal")) {
+		return plainText(link.url);
+	}
+	if (isStegaVariant(link, "linkType", "linkFunction")) {
+		return plainText(link.func?.key);
+	}
+	return undefined;
+}
+
+/** Order: the link's title → {@link targetLabel} → `literalFallback` → the UI "Link" label. */
 export function resolveLinkLabel(
 	link: LinkValue | null | undefined,
-	{ locale, siteLocale }: LinkLocaleOptions,
+	options: LinkLocaleOptions,
 	literalFallback?: string,
 ): string {
-	const pick = (entries: Parameters<typeof pickLocalizedString>[0]) =>
-		pickLocalizedString(entries, locale, siteLocale);
 	return (
-		pick(link?.title) ??
-		(link && "resolvedReference" in link
-			? pick(link.resolvedReference?.title)
-			: undefined) ??
-		(link && "url" in link ? plainText(link.url) : undefined) ??
-		(link && "func" in link ? plainText(link.func?.key) : undefined) ??
+		(link &&
+			(pickLocalizedString(link.title, options.locale, options.siteLocale) ??
+				targetLabel(link, options))) ??
 		literalFallback ??
-		uiLabel("link", locale)
+		uiLabel("link", options.locale)
 	);
 }

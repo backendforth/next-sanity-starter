@@ -16,14 +16,11 @@ import { routePathProjection } from "./routePath";
 export const linkQuery = `
   _key,
   _type,
-  type,
   title,
   ...select(
     type == "internal" => {
       "linkType": "linkInternal",
       "resolvedReference": reference->{
-        _id,
-        _type,
         title,
         "path": ${routePathProjection}
       }

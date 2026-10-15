@@ -18,21 +18,13 @@ export const projectSlugsQuery =
 }`);
 
 /**
- * All public URL entries for a sitemap: home + work landing + slug-based
- * `page`/`project` documents. Settings singletons are omitted — they are not
- * public routes.
- *
- * - `path`: URL path from site root (`/` for home, `/work`, `/{slug}` for pages,
- *   `/work/{slug}` for projects).
- * Extend the filter when you add new routable types (see Studio `SITE_ROOT_DOCUMENT_TYPES`).
+ * Every routable document with its `path` (`routePathProjection`, which decides what has a
+ * route): home, the work landing, pages and projects. Add a new routable type to this list and
+ * to `routePathProjection`.
  */
-export const sitemapPagesQuery = defineQuery(`*[
-  _type == "home" ||
-  _type == "work" ||
-  (_type == "page" && defined(slug.current)) ||
-  (_type == "project" && defined(slug.current))
-]{
+export const sitemapPagesQuery =
+	defineQuery(`*[_type in ["home", "work", "page", "project"]]{
   _type,
   _updatedAt,
   "path": ${routePathProjection}
-}`);
+}[defined(path)]`);

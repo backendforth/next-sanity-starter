@@ -1,110 +1,25 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, `path`, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`) and is passed into `metadataFromSanityPageData`.
-
-Import from `@/sanity/queries`.
+**Full queries** for the routable documents. Each selects one document in the route's language — `home` and `work` by type and `$locale` (`*[_type == "home" && language == $locale][0]`), slug types by `$slug` and `$locale` — and projects `title`, `path` (`routePathProjection`), the content (`modulesQuery`; `project` has a rich-text `body` instead), **`pageSeoQuery`** (the document's own `seo` only) and **`translationsQuery`** (its other language versions, for `hreflang` and the language switch). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`).
 
 ## Contents
 
-| File | Export | Description |
-|------|--------|-------------|
-| `home.ts` | `homeQuery` | Home document for `$locale` |
-| `work.ts` | `workQuery` | Work landing for `$locale` |
-| `page.ts` | `pageBySlugQuery` | Single page by `$slug` + `$locale` |
-| `project.ts` | `projectBySlugQuery` | Single project by `$slug` + `$locale` |
+| File | Export | Selects | Fetcher (`fetchSanityData.ts`) |
+|------|--------|---------|--------------------------------|
+| `home.ts` | `homeQuery` | `home` in `$locale` | `fetchHomeDocument(locale)` |
+| `page.ts` | `pageBySlugQuery` | `page` by `$slug` in `$locale` | `fetchPageBySlug(slug, locale)` |
+| `work.ts` | `workQuery` | `work` in `$locale` | `fetchWorkDocument(locale)` |
+| `project.ts` | `projectBySlugQuery` | `project` by `$slug` in `$locale` | `fetchProjectBySlug(slug, locale)` |
 
-Slug lists and sitemap-oriented queries live in **`queries/snippets/sitemap.ts`** (`pageSlugsQuery`, `projectSlugsQuery`, `sitemapPagesQuery`).
+Slug lists (one row per language version) and the sitemap query live in **`../snippets/sitemap.ts`**; `cachedSanityQuery.ts` reads them (`cachedPageSlugs`, `cachedProjectSlugs`, `cachedSitemapPages`).
 
-## Next.js — single page fetch (App Router)
+## Fetching
 
-```tsx
-// app/[locale]/[slug]/page.tsx
-import { notFound } from "next/navigation";
-import { client } from "@/sanity/client";
-import { pageBySlugQuery } from "@/sanity/queries";
-
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ locale: string; slug: string }>;
-}) {
-  const { locale, slug } = await params;
-  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`. No hand-written type.
-  const doc = await client.fetch(pageBySlugQuery, { slug, locale });
-  if (!doc) notFound();
-
-  return (
-    <main>
-      <h1>{doc.title}</h1>
-      {/* render modules */}
-    </main>
-  );
-}
-```
-
-## Static generation — `pageSlugsQuery`
-
-Defined in **`snippets/sitemap.ts`**, re-exported from `@/sanity/queries`. Returns one row per language version (`slug` + `language`), so each row maps to one `[locale]/[slug]` pair.
-
-```tsx
-import { client } from "@/sanity/client";
-import { pageSlugsQuery } from "@/sanity/queries";
-
-export async function generateStaticParams() {
-  const rows = await client.fetch(pageSlugsQuery);
-  return rows
-    .filter((r) => r.language)
-    .map((r) => ({ locale: r.language, slug: r.slug }));
-}
-```
-
-The app's version is `src/app/[locale]/[slug]/page.tsx` (via `cachedPageSlugs`).
-
-## Sitemap — `sitemapPagesQuery`
-
-Returns every **public route** in every language: `home` (`path: "/"`), `work` (`/work`), and all `page` / `project` documents with a slug (`/{slug}`, `/work/{slug}`). Each row includes `_id`, `_type`, `_updatedAt`, `language`, `translations` and **`path`** without the locale prefix — add it per `language` when building `loc` (see `src/app/sitemap.ts`).
-
-```ts
-import { client } from "@/sanity/client";
-import { sitemapPagesQuery } from "@/sanity/queries";
-
-const entries = await client.fetch(sitemapPagesQuery);
-```
-
-## Home route
-
-```tsx
-// app/[locale]/page.tsx
-import { client } from "@/sanity/client";
-import { homeQuery } from "@/sanity/queries";
-
-const data = await client.fetch(homeQuery, { locale });
-```
-
-## Store usage
-
-Page queries return **JSON**. Persist that in your store, not the query string.
-
-**Option A — `sanityFetch` via `fetchSanityData` (recommended for App Router):**
-
-Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request, so `generateMetadata` and the page share one fetch; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Metadata cleans the strings it uses (`metadataFromSanityPageData`).
-
-```ts
-import { fetchPageBySlug } from "@/sanity/fetchSanityData";
-
-// The same call in `generateMetadata` and the page — one fetch per request.
-const data = await fetchPageBySlug(slug, locale);
-```
-
-**Option A2 — published-only + `unstable_cache`:** the helpers in `@/sanity/cachedSanityQuery` (`cachedSitemapPages`, `cachedPageSlugs`, …) use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
-
-**Option B — Zustand (client):** fetch via `/api/...` or Server Action, then `set({ page: data })`.
-
-**Option C — TanStack Query:** `queryKey: ["page", locale, slug]`, `queryFn` calls your API that runs `pageBySlugQuery` with `{ slug, locale }`.
+Routes don't run these queries themselves: they call the fetcher. It goes through **`sanityFetch`** (Draft Mode, Stega, cache tags), and its primitive arguments let `generateMetadata` and the page share one React `cache` entry per request. Reference: `src/app/[locale]/[slug]/page.tsx`.
 
 ## Metadata
 
-Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata`. The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label); home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A page titled exactly like the brand skips the layout's `%s | brand` template.
+Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata`. The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The title goes page SEO title → heading → **`segmentFallback`** (the slug); home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A page titled exactly like the brand skips the layout's `%s | brand` template. `hreflang` alternates come from the document's `translations`, since slugs differ per language.
 
 ## Related
 

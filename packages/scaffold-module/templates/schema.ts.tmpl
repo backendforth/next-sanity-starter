@@ -10,18 +10,18 @@ export const __MODULE_VAR__ = defineType({
   icon: ComposeIcon,
   fields: [
     {
-      name: "title",
-      title: "Title",
+      name: "heading",
+      title: "Heading",
       type: "internationalizedArrayString",
     },
   ],
   preview: {
     select: {
-      titleEntries: "title",
+      heading: "heading",
     },
-    prepare({ titleEntries }) {
+    prepare({ heading }) {
       return {
-        title: firstLocalizedLabel(titleEntries, "__MODULE_TITLE__"),
+        title: firstLocalizedLabel(heading, "__MODULE_TITLE__"),
         subtitle: "__MODULE_TITLE__ module",
       };
     },

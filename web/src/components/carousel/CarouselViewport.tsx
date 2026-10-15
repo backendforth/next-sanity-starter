@@ -173,7 +173,6 @@ export function CarouselViewport({ slides, options, priority = false }: Props) {
 									isActive={index === selectedIndex}
 									priority={priority && index === 0}
 									imageSizes={layout?.sizes}
-									respectAspectRatio={isMulti}
 								/>
 							</div>
 						);

@@ -9,13 +9,7 @@
 
 import MuxPlayer from "@mux/mux-player-react/lazy";
 import clsx from "clsx";
-import {
-	type CSSProperties,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import {
@@ -39,7 +33,6 @@ type MediaVideoProps = {
 		autoplay?: boolean | null;
 		controls?: boolean | null;
 	} | null;
-	className?: string;
 	/** Fill the parent (no fixed aspect ratio) — e.g. fullscreen background video. */
 	fillParent?: boolean;
 	/**
@@ -138,7 +131,6 @@ function MuxVideoPlayer({
 	caption,
 	posterPayload,
 	videoSettings,
-	className,
 	fillParent = false,
 	priority = false,
 }: MediaVideoProps & { playbackId: string }) {
@@ -355,17 +347,6 @@ function MuxVideoPlayer({
 	/* `getMuxDisplayDimensions` already falls back to 16×9. */
 	const aspectCss = `${dims.width} / ${dims.height}`;
 
-	const muxSurfaceStyle = {
-		...(fillParent
-			? { height: "100%", width: "100%", minHeight: "100%" as const }
-			: { height: "100%", width: "100%" }),
-		...(chromeless
-			? ({
-					["--media-control-display" as string]: "none",
-				} as CSSProperties)
-			: {}),
-	} satisfies CSSProperties;
-
 	const videoTitle =
 		typeof caption === "string" && caption.length > 0 ? caption : "Video";
 
@@ -374,9 +355,7 @@ function MuxVideoPlayer({
 			ref={containerRef}
 			className={clsx(
 				"mux-player relative w-full min-w-0 overflow-hidden bg-black",
-				fillParent &&
-					"h-full w-full [&_mux-player]:!block [&_mux-player]:!h-full [&_mux-player]:!min-h-full [&_mux-player]:!w-full",
-				className,
+				fillParent && "h-full",
 			)}
 			style={fillParent ? undefined : { aspectRatio: aspectCss }}
 			data-poster-hidden={posterHidden ? "" : undefined}
@@ -426,8 +405,9 @@ function MuxVideoPlayer({
 				accentColor={MUX_ACCENT}
 				primaryColor={MUX_PRIMARY}
 				secondaryColor={MUX_SECONDARY}
+				/* Sized by the class alone; the lazy placeholder's injected rule sets no height. */
 				className="absolute inset-0 block h-full w-full max-w-none"
-				style={muxSurfaceStyle}
+				style={chromeless ? { "--media-control-display": "none" } : undefined}
 			/>
 		</div>
 	);

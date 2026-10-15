@@ -19,7 +19,6 @@ type MediaImageProps = {
 	muxFallbackMedia?: unknown;
 	alt?: string;
 	caption?: string | null;
-	className?: string;
 	/** Full-bleed in parent (no fixed aspect ratio) — e.g. intro background. */
 	fillParent?: boolean;
 	/**
@@ -77,7 +76,6 @@ export function MediaImage({
 	muxFallbackMedia,
 	alt,
 	caption,
-	className,
 	fillParent = false,
 	objectFit = "cover",
 	priority = false,
@@ -122,8 +120,7 @@ export function MediaImage({
 		<div
 			className={clsx(
 				"relative w-full overflow-hidden",
-				fillParent && "h-full w-full [&_img]:h-full [&_img]:w-full",
-				className,
+				fillParent && "h-full",
 			)}
 			style={
 				fillParent

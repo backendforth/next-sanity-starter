@@ -13,12 +13,10 @@ import { dataset, projectId } from "@/sanity/sanityEnv";
 type SanityImageAssetRef = {
 	_id?: string;
 	_ref?: string;
-	url?: string | null;
 	metadata?: {
 		dimensions?: {
 			width?: number;
 			height?: number;
-			aspectRatio?: number;
 		} | null;
 	} | null;
 };
@@ -142,16 +140,8 @@ export function buildFetchedImageUrl(
 	image: SanityImageField,
 	options: BuildImageUrlOptions = {},
 ): string | null {
-	/** Without a project id `@sanity/image-url` emits broken URLs; use the expanded `asset.url` from GROQ. */
-	if (!projectId) {
-		const direct = image?.asset?.url;
-		return typeof direct === "string" && direct.length > 0 ? direct : null;
-	}
-
 	const source = toSanityImageSource(image);
-	if (!source) {
-		return image?.asset?.url ?? null;
-	}
+	if (!source) return null;
 
 	let imageBuilder = builder.image(source);
 

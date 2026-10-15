@@ -104,14 +104,6 @@ export const fetchSiteChrome = cache(async (locale: string) => {
 	return data;
 });
 
-function draftClientForSiteLanguageSettings(token: string) {
-	return client.withConfig({
-		token,
-		useCdn: false,
-		perspective: "drafts",
-	});
-}
-
 /**
  * `draftMode()` throws outside a request scope (`generateStaticParams`, build-time
  * prerender collection) — treat that as "not in draft mode".
@@ -135,24 +127,21 @@ async function isDraftModeEnabled(): Promise<boolean> {
  *
  * The **drafts** perspective (uncached, no CDN) is reserved for renders that actually need
  * it: dev, and Draft Mode / Presentation requests. A production deploy sets
- * `SANITY_API_READ_TOKEN` for Visual Editing, and gating on the token alone made every
+ * `SANITY_API_READ_TOKEN` for Visual Editing, and gating on the token alone would make every
  * visitor-facing render pay an uncached Sanity API round trip before anything else.
  */
 export const fetchSiteLanguageSettings = cache(
 	async (): Promise<SiteLocaleConfig> => {
-		if (!isSanityConfigured) return cachedSiteLanguageSettingsPublished();
-		const token = readToken;
-		if (!token) {
+		if (
+			!isSanityConfigured ||
+			!readToken ||
+			!(process.env.NODE_ENV === "development" || (await isDraftModeEnabled()))
+		) {
 			return cachedSiteLanguageSettingsPublished();
 		}
-		const useDrafts =
-			process.env.NODE_ENV === "development" || (await isDraftModeEnabled());
-		if (!useDrafts) {
-			return cachedSiteLanguageSettingsPublished();
-		}
-		const data = await draftClientForSiteLanguageSettings(token).fetch(
-			siteLanguageSettingsQuery,
-		);
+		const data = await client
+			.withConfig({ token: readToken, useCdn: false, perspective: "drafts" })
+			.fetch(siteLanguageSettingsQuery);
 		return normalizeSiteLocaleConfig(data);
 	},
 );

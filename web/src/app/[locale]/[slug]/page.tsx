@@ -23,7 +23,7 @@ export async function generateStaticParams() {
 	]);
 	const { isAppLocale } = createLanguagePathUtils(siteLocale);
 	/* A document in a language the site doesn't serve has no route. */
-	return (rows ?? [])
+	return rows
 		.filter(
 			(row): row is { slug: string; language: string } =>
 				typeof row.slug === "string" &&

@@ -5,7 +5,6 @@
  */
 
 import { unstable_cache } from "next/cache";
-import { cache } from "react";
 import {
 	FALLBACK_SITE_LOCALE_CONFIG,
 	type SiteLocaleConfig,
@@ -36,8 +35,6 @@ const SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS: number | false =
 
 // ── Sitemap snapshot ────────────────────────────────────────────────────────
 
-type SitemapRow = SitemapPagesQueryResult[number];
-
 const fetchSitemapPagesCached = unstable_cache(
 	async () => client.fetch(sitemapPagesQuery),
 	["sitemap-pages"],
@@ -48,12 +45,11 @@ const fetchSitemapPagesCached = unstable_cache(
 	},
 );
 
-export const cachedSitemapPages = cache(async (): Promise<SitemapRow[]> => {
-	if (!isSanityConfigured) return [];
-	return fetchSitemapPagesCached();
-});
+export async function cachedSitemapPages(): Promise<SitemapPagesQueryResult> {
+	return isSanityConfigured ? fetchSitemapPagesCached() : [];
+}
 
-// ── `generateStaticParams` slug list (all languages) ───────────────────────
+// ── `generateStaticParams` slug lists (all languages) ──────────────────────
 
 const fetchPageSlugsCached = unstable_cache(
 	async () => client.fetch(pageSlugsQuery),
@@ -64,12 +60,9 @@ const fetchPageSlugsCached = unstable_cache(
 	},
 );
 
-export const cachedPageSlugs = cache(
-	async (): Promise<PageSlugsQueryResult> => {
-		if (!isSanityConfigured) return [];
-		return (await fetchPageSlugsCached()) ?? [];
-	},
-);
+export async function cachedPageSlugs(): Promise<PageSlugsQueryResult> {
+	return isSanityConfigured ? fetchPageSlugsCached() : [];
+}
 
 const fetchProjectSlugsCached = unstable_cache(
 	async () => client.fetch(projectSlugsQuery),
@@ -80,17 +73,15 @@ const fetchProjectSlugsCached = unstable_cache(
 	},
 );
 
-export const cachedProjectSlugs = cache(
-	async (): Promise<ProjectSlugsQueryResult> => {
-		if (!isSanityConfigured) return [];
-		return (await fetchProjectSlugsCached()) ?? [];
-	},
-);
+export async function cachedProjectSlugs(): Promise<ProjectSlugsQueryResult> {
+	return isSanityConfigured ? fetchProjectSlugsCached() : [];
+}
 
-// ── Site language settings (no-token path only) ─────────────────────────────
+// ── Site language settings, published ───────────────────────────────────────
 //
-// When `SANITY_API_READ_TOKEN` is set, draft state must be honored — that path
-// stays in `fetchSanityData.ts` and is not cached cross-request.
+// Every render outside dev and Draft Mode reads this, with a read token or without one;
+// `fetchSiteLanguageSettings` (`fetchSanityData.ts`) switches to an uncached drafts read only
+// for those two.
 const fetchSiteLanguageSettingsPublishedCached = unstable_cache(
 	async (): Promise<SiteLocaleConfig> => {
 		const data = await client.fetch(siteLanguageSettingsQuery);
@@ -103,9 +94,8 @@ const fetchSiteLanguageSettingsPublishedCached = unstable_cache(
 	},
 );
 
-export const cachedSiteLanguageSettingsPublished = cache(
-	async (): Promise<SiteLocaleConfig> => {
-		if (!isSanityConfigured) return FALLBACK_SITE_LOCALE_CONFIG;
-		return fetchSiteLanguageSettingsPublishedCached();
-	},
-);
+export async function cachedSiteLanguageSettingsPublished(): Promise<SiteLocaleConfig> {
+	return isSanityConfigured
+		? fetchSiteLanguageSettingsPublishedCached()
+		: FALLBACK_SITE_LOCALE_CONFIG;
+}

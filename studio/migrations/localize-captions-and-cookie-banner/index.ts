@@ -57,6 +57,14 @@ const BANNER_TEXTS: Record<
 
 const OLD_PRIVACY_LABEL = "Privacy policy";
 
+/** `cookieBannerLabels.ts` → `privacyPolicy`; the web cannot be imported from here. */
+const POLICY_LABELS: Record<string, string> = {
+  en: "Privacy policy",
+  de: "Datenschutzerklärung",
+  fr: "Politique de confidentialité",
+  nl: "Privacybeleid",
+};
+
 /** The old `sections` `initialValue`, parsed. */
 const OLD_DEFAULT_SECTIONS = [
   {
@@ -110,23 +118,47 @@ function localized(
     : undefined;
 }
 
-let defaultLanguage: Promise<string> | undefined;
+type SiteLanguages = { id: string; ids: string[] };
 
-function languageFor(context: MigrationContext): Promise<string> {
-  defaultLanguage ??= context.client
-    .fetch<{ id?: string; first?: string } | null>(
-      `*[_id == "siteLanguageSettings"][0]{ "id": defaultLanguageId, "first": availableLanguages[0].id }`,
+let siteLanguages: Promise<SiteLanguages> | undefined;
+
+/** The default language and every available one, from `siteLanguageSettings`. */
+function languagesFor(context: MigrationContext): Promise<SiteLanguages> {
+  siteLanguages ??= context.client
+    .fetch<{ id?: string | null; ids?: (string | null)[] | null } | null>(
+      `*[_id == "siteLanguageSettings"][0]{ "id": defaultLanguageId, "ids": availableLanguages[].id }`,
     )
     .then((settings) => {
-      const id = settings?.id?.trim() || settings?.first?.trim();
+      const ids = (settings?.ids ?? []).flatMap((id) =>
+        id?.trim() ? [id.trim()] : [],
+      );
+      const id = settings?.id?.trim() || ids[0];
       if (!id) {
         throw new Error(
           "siteLanguageSettings has no default language. Publish it in the Studio (Settings → Site languages), then run the migration again.",
         );
       }
-      return id;
+      return { id, ids: ids.includes(id) ? ids : [id, ...ids] };
     });
-  return defaultLanguage;
+  return siteLanguages;
+}
+
+async function languageFor(context: MigrationContext): Promise<string> {
+  return (await languagesFor(context)).id;
+}
+
+/**
+ * A migrated external policy link needs a title (the `link` type requires one). Without a custom
+ * label it gets the web's default (`web/src/i18n/cookieBannerLabels.ts`) in every language: an
+ * English-only title would override the other languages' defaults.
+ */
+function defaultPolicyTitle(languages: string[]) {
+  return languages.map((language) => ({
+    _key: newKey(),
+    _type: STRING,
+    language,
+    value: POLICY_LABELS[language] ?? OLD_PRIVACY_LABEL,
+  }));
 }
 
 /**
@@ -190,7 +222,8 @@ async function migrateCookieBanner(
   doc: Record<string, unknown> & { _id: string },
   context: MigrationContext,
 ): Promise<NodePatch[]> {
-  const language = await languageFor(context);
+  const languages = await languagesFor(context);
+  const language = languages.id;
   const consent = asRecord(doc.consentModal);
   const preferences = asRecord(doc.preferencesModal);
   const patches: NodePatch[] = [];
@@ -235,7 +268,7 @@ async function migrateCookieBanner(
               title:
                 label && label !== OLD_PRIVACY_LABEL
                   ? localized(label, STRING, language)
-                  : undefined,
+                  : defaultPolicyTitle(languages.ids),
             }),
           ),
         );

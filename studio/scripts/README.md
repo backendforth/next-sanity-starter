@@ -124,7 +124,7 @@ Run by `sanity migration`, which reads an export of the dataset (drafts included
 - Wraps string `caption`s of `media.image` / `media.video` / `media.videoLoop`, also inside modules and rich text, into one entry for the default language (`siteLanguageSettings.defaultLanguageId`; it stops if there is none).
 - Does the same for the cookie banner's texts. A text still equal to the old English `initialValue` is unset instead, so every language gets the web's default from `cookieBannerLabels.ts`.
 - Turns the `sections` JSON into `cookieSection` objects (`cookieTable.body` rows become `cookies[]`). The untouched default JSON is unset; JSON that does not parse to an array is left alone and reported.
-- Turns an absolute `privacyPolicyUrl` (with `privacyPolicyLabel` as its title) into an external `privacyPolicy` link. A relative path cannot become a page reference, so it is dropped and reported: pick the page in the Studio.
+- Turns an absolute `privacyPolicyUrl` into an external `privacyPolicy` link. Its title is a custom `privacyPolicyLabel`, else the web's default label in every language (the `link` type requires a title). A relative path cannot become a page reference, so it is dropped and reported: pick the page in the Studio.
 
 Values already in the new shape are skipped, so a re-run is safe.
 

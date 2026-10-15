@@ -28,9 +28,8 @@ import type {
 /**
  * How long these published reads stay cached. With the revalidate webhook configured
  * (`SANITY_REVALIDATE_SECRET`) they live until `/api/revalidate` expires their tags; without it
- * they fall back to 60 s. The window also caps the ISR period of every route that reads through
- * here (all of them, via the language settings): on a webhook-less deploy that is what refreshes
- * a page published while no visitor had `<SanityLive />` listening.
+ * they fall back to 60 s. Only these reads: `sanityFetch` content is cached without a time limit
+ * and refreshes through its tags alone (see `web/README.md`, Freshness).
  */
 const SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS: number | false =
 	process.env.SANITY_REVALIDATE_SECRET?.trim() ? false : 60;
@@ -43,14 +42,9 @@ const fetchSitemapPagesCached = unstable_cache(
 	async () => client.fetch(sitemapPagesQuery),
 	["sitemap-pages"],
 	{
-		revalidate: 3600,
-		tags: [
-			SANITY_CACHE_TAGS.sitemap,
-			SANITY_CACHE_TAGS.pages,
-			SANITY_CACHE_TAGS.projects,
-			SANITY_CACHE_TAGS.home,
-			SANITY_CACHE_TAGS.work,
-		],
+		revalidate: SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS,
+		/* Every routable type's webhook entry purges `sitemap`. */
+		tags: [SANITY_CACHE_TAGS.sitemap],
 	},
 );
 

@@ -8,7 +8,7 @@ Canonical guardrails: `/AGENTS.md`. Read it before writing code in this repo.
 Top-level rules (do not duplicate — see AGENTS.md for the full context):
 
 - Reuse before invention; grep `studio/schemas/objects/modules/`, `web/src/components/modules/`, `web/sanity/queries/snippets/` first.
-- Content blocks are **modules** — paired Sanity object + React component, wired in 7 places (`pnpm gen:module`). Skipping any one is a bug. Inline use in rich text is opt-in.
+- Content blocks are **modules** — paired Sanity object + React component, wired in 6 places (`pnpm gen:module`). Skipping any one is a bug. Inline use in rich text is opt-in.
 - Locale-aware at render time, never inside GROQ. Always use `pickLocalizedString` / `pickLocalizedPortableTextBlocks` from `web/sanity/utils/sanityLocalizedText.ts`.
 - After schema or query edits: `pnpm generate` → `pnpm typecheck` → `pnpm format`. Never edit `*.gen.ts` or `studio/schema.json`.
 - Sanity data types come from TypeGen (`web/sanity/types.ts` derives names); never hand-write them. Compare fetched strings to literals through `stegaClean` / `isStegaVariant`.

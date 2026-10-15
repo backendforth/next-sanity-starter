@@ -1,1 +1,8 @@
+# Formatting rewrites whole files and `--again` re-stages them, so a partly staged file would
+# carry its unstaged hunks into the commit. Refuse any path staged in column X that also changes
+# in column Y, whatever the change type (a file-type change shows as `T`).
+if git status --porcelain | grep -qE '^[^ ?!][^ ]'; then
+	echo "pre-commit: a staged file also has unstaged changes. Stage all of it, or stash the rest." >&2
+	exit 1
+fi
 pnpm exec biome check --write --staged --no-errors-on-unmatched && git update-index --again

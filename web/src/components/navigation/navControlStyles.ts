@@ -1,6 +1,9 @@
-/** Language / theme toggle groups and content-ref filters — tight gap between options in one control. */
+/**
+ * Language / theme toggle groups and content-ref filters (each a `<fieldset>`, reset here) —
+ * tight gap between options in one control.
+ */
 export const navControlGroupClass =
-	"inline-flex shrink-0 flex-wrap items-center gap-min";
+	"m-0 inline-flex min-w-0 shrink-0 flex-wrap items-center gap-min border-0 p-0";
 
 const FOCUS_RING =
 	"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-color-accent";

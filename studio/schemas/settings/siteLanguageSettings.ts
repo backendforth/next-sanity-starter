@@ -81,10 +81,8 @@ export const siteLanguageSettings = defineType({
             parent?.availableLanguages
               ?.map((row) => row.id)
               .filter((id): id is string => typeof id === "string") ?? [];
-          if (typeof value !== "string" || !value.trim()) {
-            return "Required";
-          }
-          if (!ids.includes(value.trim())) {
+          /* Exact match, no trimming: queries read the stored value as is. */
+          if (typeof value !== "string" || !ids.includes(value)) {
             return "Must be one of the language ids above";
           }
           return true;

@@ -4,7 +4,7 @@ import { draftMode } from "next/headers";
 import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
 import { SanityLive } from "@/sanity/live";
-import { siteFaviconIcons } from "@/sanity/seo";
+import { siteFaviconIcons } from "@/sanity/seo/siteFaviconIcons";
 import type { SiteFavicon } from "@/sanity/types";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";

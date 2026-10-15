@@ -22,7 +22,7 @@ Import the snippet and **interpolate** it into your own GROQ string (same patter
 ```ts
 // app/example/example-query.ts
 import { defineQuery } from "next-sanity";
-import { linkQuery } from "@/sanity/queries";
+import { linkQuery } from "@/sanity/queries/snippets/link";
 import { client } from "@/sanity/client";
 
 const myPortableTextField = `body[]{
@@ -49,10 +49,10 @@ Use `imageQuery` / `videoQuery` inside object projections when you need consiste
 
 ## Singleton settings
 
-- **`siteChromeQuery`** — `siteNav` with resolved main + footer menus, the cookie banner copy and the site title in one fetch (no `modules[]`).
+- **`siteChromeQuery`** — the app shell in one fetch: `siteNav` with resolved main + footer menus, the cookie banner copy, site settings (brand title, favicon, SEO fallback) and analytics.
 - Its `notFound` member is the 404 copy; deliberately no `modules[]` (no error page renders modules).
 
-Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
+Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). That is why `siteSettingsQuery`, `siteNavQuery` and `siteCookieBannerQuery` are unexported, field-scoped fragments of `siteChromeQuery` rather than full-document queries — compose from the fragments in `settings.ts` and `linkQuery` if you need a custom shape.
 
 Example:
 

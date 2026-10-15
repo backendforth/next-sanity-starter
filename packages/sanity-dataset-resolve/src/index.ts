@@ -2,17 +2,19 @@
  * Canonical Sanity dataset resolution for Studio and Web (`resolveStudioDatasetAsync`):
  *
  * 1. `SANITY_STUDIO_DATASET`, or (web) `NEXT_PUBLIC_SANITY_DATASET`, always wins.
- * 2. Otherwise the first name from {@link preference} that exists in the project: listed by the
- *    Management API when a token is set, else probed on the Data API. Checks are memoized.
+ * 2. Otherwise the first name from {@link preference} that exists in the project, probed on the
+ *    public Data API (no token needed).
  * 3. If none exists, or existence can't be checked (no project id, offline), the first
  *    preferred name — never a silent switch to production.
+ *
+ * Every caller resolves once per process: `web/next.config.ts` per build or server start, the
+ * Studio when `studioDataset.ts` loads (CLI or browser). Nothing is cached here.
  *
  * `NODE_ENV` is not used: a local `next start` runs with `NODE_ENV=production` but should still
  * prefer `development`.
  */
 
 const DATA_API_VERSION = "v2024-01-01";
-const MANAGEMENT_API_VERSION = "v2021-06-07";
 
 /** Minimal env shape for resolution (Studio and Next pass compatible objects). */
 export type SanityDatasetResolveEnv = {
@@ -23,12 +25,7 @@ export type SanityDatasetResolveEnv = {
 	SANITY_STUDIO_DATASET_DEVELOPMENT?: string | undefined;
 	SANITY_STUDIO_DATASET_PRODUCTION?: string | undefined;
 	SANITY_STUDIO_DEPLOYMENT_TARGET?: string | undefined;
-	/**
-	 * Management API token for listing datasets. Deliberately not `SANITY_STUDIO_*`: the
-	 * Studio build inlines every variable with that prefix into its public bundle.
-	 */
-	SANITY_DATASET_RESOLVER_TOKEN?: string | undefined;
-	SANITY_AUTH_TOKEN?: string | undefined;
+	/** Host build context: only Node callers see these, never the Studio's browser bundle. */
 	VERCEL?: string | undefined;
 	VERCEL_ENV?: string | undefined;
 	NETLIFY?: string | undefined;
@@ -72,72 +69,25 @@ function preference(env: SanityDatasetResolveInput): string[] {
 	return custom ? [custom, ...pair.filter((name) => name !== custom)] : pair;
 }
 
-/** `true` / `false` when known, `null` when the check itself failed (offline, API error). */
-type Existence = boolean | null;
-
-/* Memoized per process (the web proxy re-resolves on every locale-config refresh). Failed
- * checks are dropped from the cache, so a later call tries again. */
-const datasetLists = new Map<string, Promise<Set<string> | null>>();
-const probes = new Map<string, Promise<Existence>>();
-
-/** Every dataset of the project, via the Management API (needs a token). */
-function listDatasets(projectId: string, token: string) {
-	let list = datasetLists.get(projectId);
-	if (!list) {
-		list = fetch(
-			`https://api.sanity.io/${MANAGEMENT_API_VERSION}/projects/${projectId}/datasets`,
-			{ headers: { Authorization: `Bearer ${token}` } },
-		)
-			.then(async (res) => {
-				if (!res.ok) return null;
-				const data: unknown = await res.json();
-				if (!Array.isArray(data)) return null;
-				const names = data.map((item: unknown) =>
-					typeof item === "string" ? item : (item as { name?: unknown }).name,
-				);
-				return new Set(names.filter((n): n is string => typeof n === "string"));
-			})
-			.catch(() => null)
-			.then((names) => {
-				if (!names) datasetLists.delete(projectId);
-				return names;
-			});
-		datasetLists.set(projectId, list);
-	}
-	return list;
-}
-
-/** One dataset, probed on the Data API: 404 means missing; 401/403 means it exists but is private. */
-function probeDataset(projectId: string, dataset: string): Promise<Existence> {
-	const key = `${projectId}/${dataset}`;
-	let probe = probes.get(key);
-	if (!probe) {
-		const query = encodeURIComponent('*[_id == "sanity.imageAsset"][0]');
-		probe = fetch(
-			`https://${projectId}.api.sanity.io/${DATA_API_VERSION}/data/query/${dataset}?query=${query}`,
-		)
-			.then((res): Existence => {
-				if (res.status === 404) return false;
-				if (res.ok || res.status === 401 || res.status === 403) return true;
-				return null;
-			})
-			.catch((): Existence => null)
-			.then((exists) => {
-				if (exists === null) probes.delete(key);
-				return exists;
-			});
-		probes.set(key, probe);
-	}
-	return probe;
-}
-
+/**
+ * Whether `dataset` exists, probed on the Data API: 404 means missing, 401/403 that it exists but
+ * is private. `null` when the probe itself failed (offline, API error).
+ */
 async function datasetExists(
 	projectId: string,
 	dataset: string,
-	token: string | undefined,
-): Promise<Existence> {
-	const list = token ? await listDatasets(projectId, token) : null;
-	return list ? list.has(dataset) : probeDataset(projectId, dataset);
+): Promise<boolean | null> {
+	const query = encodeURIComponent('*[_id == "sanity.imageAsset"][0]');
+	try {
+		const res = await fetch(
+			`https://${projectId}.api.sanity.io/${DATA_API_VERSION}/data/query/${dataset}?query=${query}`,
+		);
+		if (res.status === 404) return false;
+		if (res.ok || res.status === 401 || res.status === 403) return true;
+		return null;
+	} catch {
+		return null;
+	}
 }
 
 /**
@@ -156,12 +106,8 @@ export async function resolveStudioDatasetAsync(
 	const projectId = env.SANITY_STUDIO_PROJECT_ID?.trim();
 	if (!projectId) return first;
 
-	const token =
-		env.SANITY_DATASET_RESOLVER_TOKEN?.trim() ||
-		env.SANITY_AUTH_TOKEN?.trim() ||
-		undefined;
 	for (const name of preferred) {
-		const exists = await datasetExists(projectId, name, token);
+		const exists = await datasetExists(projectId, name);
 		/* Can't tell: stay on the first choice rather than guess another dataset. */
 		if (exists === null) return first;
 		if (exists) {

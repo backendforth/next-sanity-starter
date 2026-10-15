@@ -8,7 +8,11 @@ import { languageField } from "../fields/languageField";
 /** An empty text is not hidden: the web shows its default text in the visitor's language. */
 const EMPTY_TEXT_HINT = "Empty texts show the default text.";
 
-/** Cookie banner copy. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
+/**
+ * Cookie banner copy. Whether the banner shows is `useCookieBanner` in `siteAnalyticsSettings`,
+ * next to the trackers it gates. Web Preview is disabled in Presentation (see
+ * `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`).
+ */
 export const siteCookieBanner = defineType({
   name: "siteCookieBanner",
   type: "document",
@@ -23,31 +27,6 @@ export const siteCookieBanner = defineType({
       type: "string",
       initialValue: "Cookie Banner",
       hidden: true,
-    },
-    {
-      title: "Use Cookie Banner",
-      name: "useCookieBanner",
-      description:
-        "Off does not stop tracking — it removes the gate. Every tracker enabled under Analytics & Tracking then loads with no consent, whatever its loading mode.",
-      type: "boolean",
-      initialValue: false,
-      validation: (rule) =>
-        rule.warning().custom(async (value, context) => {
-          if (value === true) return true;
-          const client = context.getClient({ apiVersion: "2024-01-01" });
-          const trackers = await client.fetch<{ enabled?: boolean }[] | null>(
-            `coalesce(
-              *[_id == "drafts.siteAnalyticsSettings"][0].trackers,
-              *[_id == "siteAnalyticsSettings"][0].trackers,
-              []
-            )`,
-          );
-          const count = (trackers ?? []).filter(
-            (tracker) => tracker?.enabled !== false,
-          ).length;
-          if (count === 0) return true;
-          return `${count === 1 ? "1 tracker is" : `${count} trackers are`} enabled under Analytics & Tracking and will run with no consent.`;
-        }),
     },
     {
       title: "Consent Modal Texts",
@@ -70,21 +49,15 @@ export const siteCookieBanner = defineType({
           description:
             "Linked after the description: visitors must be able to read what they are agreeing to before they agree. A page link gets the visitor's language prefix. The link title is the label.",
           type: "link",
-          /* Required only while the banner is on: a starter that keeps it off must still publish. */
-          validation: (rule) =>
+          validation: (rule) => [
             rule.custom(
-              (value: { type?: string; url?: string } | undefined, context) => {
-                if (!value) {
-                  return context.document?.useCookieBanner === true
-                    ? "Without this the banner has no policy link."
-                    : true;
-                }
-                if (value.type === "function") {
+              (value: { type?: string; url?: string } | undefined) => {
+                if (value?.type === "function") {
                   return "Link to a page or a URL.";
                 }
                 /* The banner renders page links and http(s) URLs only (`privacyPolicyHtml`). */
                 if (
-                  value.type === "external" &&
+                  value?.type === "external" &&
                   value.url &&
                   !/^https?:\/\//i.test(value.url)
                 ) {
@@ -93,6 +66,13 @@ export const siteCookieBanner = defineType({
                 return true;
               },
             ),
+            /* A warning: a site that keeps the banner off must still publish its copy. */
+            rule
+              .warning()
+              .custom((value) =>
+                value ? true : "Without this the banner has no policy link.",
+              ),
+          ],
         },
         {
           title: "Accept All Button",

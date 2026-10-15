@@ -132,6 +132,19 @@ pnpm exec sanity migration run type-cookie-banner-sections --project <id> --data
 pnpm exec sanity migration run type-cookie-banner-sections --project <id> --dataset development --no-dry-run
 ```
 
+### `move-cookie-banner-switch`
+
+**What it does** (`variant/document-level`; `main` has its own version for its singleton) — moves the cookie banner switch, `useCookieBanner`, from the per-language `siteCookieBanner` documents to `siteAnalyticsSettings`, next to the trackers it gates; the one switch then covers every language. The default language's published banner decides (`siteLanguageSettings.defaultLanguageId`; it stops if there is none): its value goes onto the analytics document and its draft, unless they have one already, and the analytics document is created when that banner was on and there is none. The field is then unset on every language's banner and its draft. A banner whose switch differs from the moved one (a draft, or another language) is reported. Banners without a `language` (`main`'s singleton in a shared dataset) are left alone. A re-run finds nothing to move.
+
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows and cookie-based trackers wait for consent, also on a site that had the banner off.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run move-cookie-banner-switch --project <id> --dataset development
+pnpm exec sanity migration run move-cookie-banner-switch --project <id> --dataset development --no-dry-run
+```
+
 ### `rename-text-module-title`
 
 **What it does** (both branches) — moves a text module's `title` to `heading`, the name `module.carousel` and `module.contentRefs` use. The value keeps its shape (i18n array on `main`, string on the variant). Modules that already have a `heading` are skipped, so a re-run is safe.

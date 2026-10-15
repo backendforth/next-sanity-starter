@@ -1,18 +1,4 @@
-import type {
-	AnalyticsTracker,
-	SiteAnalyticsSettings,
-	SiteCookieBanner,
-} from "@/sanity/types";
-
-type AnalyticsLoadMode = NonNullable<SiteAnalyticsSettings["loadMode"]>;
-
-/** All the tracking gate reads of the banner document — the client gets nothing else of it. */
-type CookieBannerToggle = Pick<SiteCookieBanner, "useCookieBanner">;
-
-export type TrackingConfig = {
-	analytics: SiteAnalyticsSettings | null;
-	cookieBanner: CookieBannerToggle | null;
-};
+import type { AnalyticsTracker, SiteAnalyticsSettings } from "@/sanity/types";
 
 export type { AnalyticsTracker };
 
@@ -60,20 +46,6 @@ export function getEnabledTrackers(
 	return (analytics?.trackers ?? []).filter(isTrackerEnabled);
 }
 
-function isCookieBannerActive(
-	cookieBanner: CookieBannerToggle | null,
-): boolean {
-	return cookieBanner?.useCookieBanner === true;
-}
-
-function shouldRespectCookieBanner(
-	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: CookieBannerToggle | null,
-): boolean {
-	if (loadMode === "onPageLoad") return false;
-	return isCookieBannerActive(cookieBanner);
-}
-
 /**
  * Providers that never qualify as cookie-free, whatever the document says.
  *
@@ -94,20 +66,24 @@ export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
 }
 
 /**
- * Whether the banner gates loading for this document.
- *
- * Derived from `shouldRespectCookieBanner` rather than an equality check on
- * `loadMode`, so a document missing that field (legacy or API-written) still
- * waits for consent instead of failing open.
+ * Whether the cookie banner is on. Only an explicit `false` turns it off, so a document without
+ * the field (unmigrated or API-written) shows the banner and gates trackers instead of failing
+ * open. No analytics document means no trackers, and no banner.
  */
-export function bannerGatesLoading(config: {
-	analytics: SiteAnalyticsSettings | null;
-	cookieBanner: CookieBannerToggle | null;
-}): boolean {
-	return shouldRespectCookieBanner(
-		config.analytics?.loadMode,
-		config.cookieBanner,
-	);
+export function cookieBannerEnabled(
+	analytics: SiteAnalyticsSettings | null,
+): boolean {
+	return analytics !== null && analytics.useCookieBanner !== false;
+}
+
+/**
+ * Whether the banner gates loading: it is on and `loadMode` does not opt out. Compared with the
+ * opt-out value for the same reason: a document missing `loadMode` still waits for consent.
+ */
+export function bannerGatesLoading(
+	analytics: SiteAnalyticsSettings | null,
+): boolean {
+	return cookieBannerEnabled(analytics) && analytics?.loadMode !== "onPageLoad";
 }
 
 /**
@@ -137,9 +113,7 @@ export function trackerLoadSignature(tracker: AnalyticsTracker): string {
 
 export function trackerRequiresConsent(
 	tracker: AnalyticsTracker,
-	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: CookieBannerToggle | null,
+	analytics: SiteAnalyticsSettings | null,
 ): boolean {
-	if (!shouldRespectCookieBanner(loadMode, cookieBanner)) return false;
-	return !isCookieFreeTracker(tracker);
+	return bannerGatesLoading(analytics) && !isCookieFreeTracker(tracker);
 }

@@ -42,16 +42,15 @@ const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
 }`;
 
 /**
- * `siteCookieBanner` for the active locale, else the default language's: analytics settings are
- * global, so a locale without its own banner must still ask for consent (in the default
- * language) instead of loading every tracker.
+ * `siteCookieBanner` for the active locale, else the default language's: the switch in the global
+ * `siteAnalyticsSettings` covers every locale, so a locale without its own banner must still ask
+ * for consent (in the default language) instead of loading every tracker.
  */
 const siteCookieBannerQuery = `coalesce(
   *[_type == "siteCookieBanner" && language == $locale][0],
   *[_type == "siteCookieBanner" && language == ${defaultLanguage}][0]
 ){
   language,
-  useCookieBanner,
   consentModal {
     description,
     privacyPolicy{
@@ -103,8 +102,9 @@ const siteSettingsQuery = `{
   "favicon": *[_type == "siteSettings" && language == ${defaultLanguage}][0].favicon${imageQuery}
 }`;
 
-/** Document id: `siteAnalyticsSettings` — tracking providers + load mode (global, not per language). */
+/** Document id: `siteAnalyticsSettings` — the cookie banner switch, load mode and tracking providers (global, not per language). */
 const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
+  useCookieBanner,
   loadMode,
   trackers[]{
     _key,

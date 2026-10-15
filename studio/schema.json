@@ -438,6 +438,13 @@
         },
         "optional": true
       },
+      "useCookieBanner": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "boolean"
+        },
+        "optional": true
+      },
       "loadMode": {
         "type": "objectAttribute",
         "value": {
@@ -2301,13 +2308,6 @@
         "type": "objectAttribute",
         "value": {
           "type": "string"
-        },
-        "optional": true
-      },
-      "useCookieBanner": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "boolean"
         },
         "optional": true
       },

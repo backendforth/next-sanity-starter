@@ -45,7 +45,7 @@ This branch keeps **one document per language** (`@sanity/document-international
 
 Pattern: `*[_type == "siteNav" && language == $locale][0]`. The cookie banner and the favicon fall back to the default language's document (see `siteChromeQuery`).
 
-Two global singletons are read by `_id`: **`siteLanguageSettings`** (site languages: routing and the Studio's document languages) and **`siteAnalyticsSettings`** (tracking providers + load mode).
+Two global singletons are read by `_id`: **`siteLanguageSettings`** (site languages: routing and the Studio's document languages) and **`siteAnalyticsSettings`** (cookie banner switch, load mode, tracking providers).
 
 ## Sanity Vision
 

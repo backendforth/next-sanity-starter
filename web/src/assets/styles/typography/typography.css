@@ -173,7 +173,7 @@
 	}
 
 	code {
-		@apply code-inline rounded px-xs py-min;
+		@apply code-inline rounded-4xl px-xs py-min;
 		color: var(--color-code-text);
 		background-color: var(--color-code-bg);
 	}

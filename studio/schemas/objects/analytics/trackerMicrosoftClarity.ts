@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { CONTROLLER_CHECKLIST } from "./complianceNotes";
+import { requiredWhenEnabled } from "./requiredWhenEnabled";
 
 export const trackerMicrosoftClarity = defineType({
   name: "trackerMicrosoftClarity",
@@ -22,13 +23,7 @@ export const trackerMicrosoftClarity = defineType({
       title: "Project ID",
       description: "Clarity project ID from the Clarity dashboard.",
       type: "string",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Project ID is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("Project ID")),
     }),
     defineField({
       name: "cookieFree",

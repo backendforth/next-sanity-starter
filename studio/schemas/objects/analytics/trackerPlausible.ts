@@ -1,5 +1,7 @@
 import { defineField, defineType } from "sanity";
 
+import { requiredWhenEnabled } from "./requiredWhenEnabled";
+
 export const trackerPlausible = defineType({
   name: "trackerPlausible",
   title: "Plausible Analytics",
@@ -18,13 +20,7 @@ export const trackerPlausible = defineType({
       title: "Domain",
       description: "Site domain registered in Plausible (e.g. example.com).",
       type: "string",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Domain is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("Domain")),
     }),
     defineField({
       name: "scriptUrl",
@@ -33,13 +29,7 @@ export const trackerPlausible = defineType({
         "Default https://plausible.io/js/script.js. Self-hosted: add the origin to the CSP_ANALYTICS_ORIGINS build variable of the web app.",
       type: "url",
       initialValue: "https://plausible.io/js/script.js",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Script URL is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("Script URL")),
     }),
     defineField({
       name: "cookieFree",

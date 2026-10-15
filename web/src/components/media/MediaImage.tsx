@@ -4,23 +4,11 @@ import clsx from "clsx";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import {
-	buildFetchedImageUrl,
 	cssObjectPositionFromSanityImageField,
-	getCroppedImageDisplayDimensions,
 	resolveSanityImageFieldForUrl,
 	type SanityImageField,
 } from "@/sanity/utils/sanityImageBuilder";
-import {
-	getMuxDisplayDimensions,
-	muxThumbnailRequestWidthPx,
-} from "@/src/utils/muxImage";
-import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
-
-/** Sanity CDN `w=` bounds — not layout breakpoints. */
-const SANITY_IMAGE_MIN_WIDTH = 320;
-const SANITY_IMAGE_MAX_WIDTH = 2400;
-/** `srcset` candidates — mobile → 2× retina desktop, capped by the asset width. */
-const SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2400] as const;
+import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 
 type MediaImageProps = {
 	imagePayload: unknown;
@@ -72,28 +60,10 @@ function imageAltFromField(
 	return "";
 }
 
-/** Ladder steps below the cap, plus the cap itself: with `w` descriptors `src` is ignored. */
-function buildSrcSet(
-	image: SanityImageField,
-	maxWidth: number,
-	quality: number,
-): string {
-	return [...SRCSET_WIDTHS.filter((w) => w < maxWidth), maxWidth]
-		.map((w) => {
-			const url = buildFetchedImageUrl(image, {
-				width: w,
-				auto: "format",
-				quality,
-			});
-			return url ? `${url} ${w}w` : null;
-		})
-		.filter(Boolean)
-		.join(", ");
-}
-
 /**
- * Sanity-driven image: **native `<img>`** with deterministic Sanity CDN URLs (same SSR / client),
- * responsive `srcset` + `sizes` so the browser picks the right variant per container / viewport.
+ * Sanity-driven image (or the Mux thumbnail fallback): **native `<img>`** with deterministic URLs
+ * (same SSR / client), responsive `srcset` + `sizes` so the browser picks the right variant per
+ * container / viewport.
  *
  * Avoids `next/image` optimizer `src` / `srcSet` hydration drift.
  *
@@ -112,9 +82,14 @@ export function MediaImage({
 	objectFit = "cover",
 	priority = false,
 	sizes = "100vw",
-	quality = 85,
+	quality,
 }: MediaImageProps) {
 	const image = resolveSanityImageFieldForUrl(imagePayload);
+	const source = resolveMediaImageSource({
+		image,
+		muxMedia: muxFallbackMedia,
+		quality,
+	});
 	const imgRef = useRef<HTMLImageElement>(null);
 	/* Priority images skip the fade — they render visible immediately. Non-priority
 	   images start at `loaded=false` (matches SSR) and flip to `true` from the load
@@ -141,40 +116,7 @@ export function MediaImage({
 		};
 	}, [priority]);
 
-	if (!image) {
-		return muxFallbackMedia ? (
-			<MuxThumbnailImage
-				media={muxFallbackMedia}
-				alt={imageAltFromField(undefined, alt, caption)}
-				className={className}
-				fillParent={fillParent}
-				objectFit={objectFit}
-				sizes={sizes}
-			/>
-		) : null;
-	}
-
-	const cropped = getCroppedImageDisplayDimensions(image);
-	/** Source image width caps the largest srcset candidate we request. */
-	const maxSrcWidth = Math.min(
-		SANITY_IMAGE_MAX_WIDTH,
-		Math.max(cropped.width, SANITY_IMAGE_MIN_WIDTH),
-	);
-
-	const src = buildFetchedImageUrl(image, {
-		width: maxSrcWidth,
-		auto: "format",
-		quality,
-	});
-	if (!src) return null;
-
-	const srcSet = buildSrcSet(image, maxSrcWidth, quality);
-
-	const objectPosition = cssObjectPositionFromSanityImageField(image);
-	const imgStyle: CSSProperties = {
-		objectFit: objectFit ?? "cover",
-		...(objectPosition ? { objectPosition } : {}),
-	};
+	if (!source) return null;
 
 	return (
 		<div
@@ -186,18 +128,18 @@ export function MediaImage({
 			style={
 				fillParent
 					? undefined
-					: { aspectRatio: `${cropped.width} / ${cropped.height}` }
+					: { aspectRatio: `${source.width} / ${source.height}` }
 			}
 		>
-			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity URLs; next/image caused hydration mismatches */}
+			{/* biome-ignore lint/performance/noImgElement: deterministic Sanity / Mux URLs; next/image caused hydration mismatches */}
 			<img
 				ref={imgRef}
-				src={src}
-				srcSet={srcSet || undefined}
-				sizes={srcSet ? sizes : undefined}
+				src={source.src}
+				srcSet={source.srcSet}
+				sizes={sizes}
 				alt={imageAltFromField(image, alt, caption)}
-				width={cropped.width}
-				height={cropped.height}
+				width={source.width}
+				height={source.height}
 				loading={priority ? "eager" : "lazy"}
 				fetchPriority={priority ? "high" : "auto"}
 				decoding={priority ? "sync" : "async"}
@@ -206,67 +148,10 @@ export function MediaImage({
 					"absolute inset-0 block h-full w-full max-w-none",
 					!priority && loaded && "img-loaded",
 				)}
-				style={imgStyle}
-			/>
-		</div>
-	);
-}
-
-/**
- * Mux thumbnail fallback for {@link MediaImage}. Requests up to the asset width (2× retina for an
- * unmeasured slot) and lets `srcset` + `sizes` pick the variant, so no container measurement and
- * no URL swap after mount.
- */
-function MuxThumbnailImage({
-	media,
-	alt,
-	className,
-	fillParent,
-	objectFit,
-	sizes,
-}: {
-	media: unknown;
-	alt: string;
-	className?: string;
-	fillParent: boolean;
-	objectFit: CSSProperties["objectFit"];
-	sizes: string;
-}) {
-	const dims = getMuxDisplayDimensions(media);
-	const poster = resolveMediaPosterUrls({
-		muxMedia: media,
-		thumbWidthPx: muxThumbnailRequestWidthPx({
-			containerWidthPx: undefined,
-			assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
-		}),
-	});
-	if (!poster) return null;
-
-	return (
-		<div
-			className={clsx(
-				"relative w-full overflow-hidden",
-				fillParent && "h-full w-full [&_img]:h-full [&_img]:w-full",
-				className,
-			)}
-			style={
-				fillParent
-					? undefined
-					: { aspectRatio: `${poster.width} / ${poster.height}` }
-			}
-		>
-			{/* biome-ignore lint/performance/noImgElement: deterministic Mux URLs, same reason as above */}
-			<img
-				src={poster.src}
-				srcSet={poster.srcSet}
-				sizes={poster.srcSet ? sizes : undefined}
-				alt={alt}
-				width={poster.width}
-				height={poster.height}
-				loading="lazy"
-				decoding="async"
-				className="absolute inset-0 block h-full w-full max-w-none"
-				style={{ objectFit: objectFit ?? "cover" }}
+				style={{
+					objectFit,
+					objectPosition: cssObjectPositionFromSanityImageField(image),
+				}}
 			/>
 		</div>
 	);

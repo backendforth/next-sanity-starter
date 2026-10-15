@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
 import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
 import { uiLabel } from "@/src/i18n/uiLabels";
-import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
+import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 import { CarouselSlide, type NormalizedSlide } from "./CarouselSlide";
@@ -35,11 +35,13 @@ const THUMBNAIL_WIDTH_PX = 160;
 /** Image slides use the image; video and loop slides their poster, else the Mux thumbnail. */
 function thumbnailUrlForSlide(slide: NormalizedSlide): string | null {
 	const isImage = slide.kind === "image";
-	return resolveMediaPosterUrl({
-		posterPayload: isImage ? slide.media : slide.poster,
-		muxMedia: isImage ? undefined : slide.media,
-		thumbWidthPx: THUMBNAIL_WIDTH_PX,
-	});
+	return (
+		resolveMediaImageSource({
+			image: isImage ? slide.media : slide.poster,
+			muxMedia: isImage ? undefined : slide.media,
+			maxWidthPx: THUMBNAIL_WIDTH_PX,
+		})?.src ?? null
+	);
 }
 
 /**

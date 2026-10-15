@@ -1,6 +1,6 @@
 /**
  * Mux video payload from Sanity (`videoQuery`) — resolve `playbackId`, display size and
- * `image.mux.com` thumbnail URLs. Image and poster code (`MediaImage`, `resolveMediaPoster`)
+ * `image.mux.com` thumbnail URLs. Image and poster code (`MediaImage`, `mediaImageSource`)
  * sits on the eager LCP path, so it imports only this file, never the HLS code in
  * `muxPlayback.ts`.
  */
@@ -19,8 +19,8 @@ export function extractMuxPlaybackId(media: unknown): string | null {
 /**
  * `image.mux.com` thumbnail as WebP — about a third of the JPG's bytes. Mux delivers both
  * untagged (no ICC profile), so the browser treats both as sRGB and the format cannot shift
- * colour. `widthPx` is CSS pixels; Mux downscales from source. Callers cap it to retina ×
- * container.
+ * colour. `widthPx` is the output width (`mediaImageSource` caps it); Mux downscales from
+ * source.
  */
 export function muxThumbnailUrl(
 	playbackId: string,
@@ -34,26 +34,6 @@ export function muxThumbnailUrl(
 		u.searchParams.set("width", String(Math.round(widthPx)));
 	}
 	return u.toString();
-}
-
-/**
- * Pixel width for `image.mux.com` thumbnails: ~2× layout width, capped by the source asset and
- * the Mux practical upper bound (3840). Falls back to 1280 when the container width is unknown.
- */
-export function muxThumbnailRequestWidthPx(args: {
-	containerWidthPx: number | undefined;
-	assetMaxWidthPx: number | undefined;
-}): number {
-	const assetCap =
-		args.assetMaxWidthPx && args.assetMaxWidthPx > 0
-			? args.assetMaxWidthPx
-			: 3840;
-	const base =
-		typeof args.containerWidthPx === "number" && args.containerWidthPx > 0
-			? args.containerWidthPx
-			: 1280;
-	const retina = Math.ceil(base * 2);
-	return Math.min(3840, assetCap, retina);
 }
 
 /**
@@ -100,9 +80,6 @@ export function getMuxDisplayDimensions(media: unknown): {
 	}
 	return fallback;
 }
-
-/** Poster width cap — hero loops; `srcset` tops out here (still retina-sharp at ~1 MB WebP). */
-export const LOOP_POSTER_MAX_WIDTH_PX = 1920;
 
 /**
  * Mux `asset.thumbTime` — the time (in seconds) selected in Studio for the poster frame.

@@ -46,7 +46,6 @@ This branch stores one document per language (`@sanity/document-internationaliza
 Builds CDN URLs from fetched **`image`** fields with `@sanity/image-url`, honouring crop and hotspot. Its input type `SanityImageField` (exported from the same file) is the shape `imageQuery` projects, checked at runtime by `resolveSanityImageFieldForUrl`.
 
 - **`buildFetchedImageUrl(image, { width, height, quality, fit, auto, format, dpr })`**
-- **`urlForFetchedImage(image, width)`** — the default for content images (`auto=format`, quality)
 - **`getCroppedImageDisplayDimensions`** — pixel size of the cropped area, for `width` / `height` attributes
 - **`cssObjectPositionFromSanityImageField`** — hotspot → `object-position`
 

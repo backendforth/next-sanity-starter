@@ -51,11 +51,11 @@
 	line-height: var(--line-height-md);
 }
 
-/* lg — big text (Geist Sans regular) */
+/* lg — big text (Geist Sans regular), rich text only */
 @utility big-text {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-lg);
-	line-height: var(--line-height-lg);
+	line-height: var(--line-height-big-text);
 	max-width: var(--measure-heading-3-big);
 }
 

@@ -33,9 +33,7 @@ export function RichTextMedia({
 		: undefined;
 
 	return (
-		<div
-			className={clsx("rich-text rich-text-media w-full min-w-0", className)}
-		>
+		<div className={clsx("rich-text w-full min-w-0", className)}>
 			<PortableText
 				value={value}
 				components={portableTextMediaComponents({

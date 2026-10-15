@@ -30,7 +30,7 @@ export function NotFoundContent({ copy, locale, siteLocale }: Props) {
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
-				<h2 className="page-title">{title}</h2>
+				<h2 className="content-title">{title}</h2>
 				{body.length ? (
 					<RichTextMedia value={body} locale={locale} siteLocale={siteLocale} />
 				) : (

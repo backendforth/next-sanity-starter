@@ -3,5 +3,4 @@ export const moduleSectionClassName = "flex flex-col";
 
 export const moduleHeadingClassName = "content-title";
 
-export const moduleCaptionClassName =
-	"mt-xs text-color-text-muted paragraph-small";
+export const moduleCaptionClassName = "mt-xs text-color-text-muted text-small";

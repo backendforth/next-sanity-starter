@@ -73,12 +73,8 @@ export function portableTextMediaComponents({
 			bullet: ({ children }) => <li>{children}</li>,
 			number: ({ children }) => <li>{children}</li>,
 		},
+		/* `strong`, `em` and `code` use the default elements; `typography.css` styles them. */
 		marks: {
-			strong: ({ children }) => (
-				<strong className="font-mono">{children}</strong>
-			),
-			em: ({ children }) => <em className="font-mono italic">{children}</em>,
-			code: ({ children }) => <code>{children}</code>,
 			link: ({ children, value }) => (
 				<LinkMarkRenderer value={value} localeOptions={{ locale, siteLocale }}>
 					{children}

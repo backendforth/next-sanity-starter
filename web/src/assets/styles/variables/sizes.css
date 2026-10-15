@@ -1,8 +1,6 @@
 /* Layout + spacing — `--space-*`, content widths, `--container-spacing`; tiers via `theme(--breakpoint-*)`. */
 
 :root {
-	--footer-height: rem(624);
-
 	/* `max-w-container`: full width of parent up to this cap — only ever steps up with viewport (`w-full max-w-container mx-auto`). */
 	--content-max-width: theme(--breakpoint-wide);
 	--container-spacing: rem(24);
@@ -36,7 +34,6 @@
 
 @media (width >= theme(--breakpoint-lg)) {
 	:root {
-		--footer-height: rem(283);
 		--container-spacing: rem(32);
 
 		--space-min: rem(2);

@@ -135,7 +135,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 		siteLocale,
 	);
 	const homeHref = localePath("/", currentLocale);
-	/** `siteSettings.title` from `fetchSiteChrome` (not `siteNav.title`). */
 
 	const [open, setOpen] = useState(false);
 	const menuId = useId();

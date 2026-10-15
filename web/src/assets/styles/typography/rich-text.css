@@ -34,16 +34,6 @@
 	line-height: var(--line-height-big-text);
 }
 
-.rich-text > blockquote {
-	@apply quote-paragraph;
-	margin-bottom: var(--space-sm);
-	max-width: var(--measure-heading-4-text);
-}
-
-.rich-text > blockquote:last-child {
-	margin-bottom: 0;
-}
-
 .rich-text > h2.heading-1 {
 	margin-top: var(--space-xl);
 	margin-bottom: var(--space-md);
@@ -95,9 +85,14 @@
 	max-width: var(--measure-heading-4-text);
 }
 
-.rich-text > ul > li + li,
-.rich-text > ol > li + li {
+.rich-text li + li {
 	margin-top: var(--space-min);
+}
+
+/* Nested list levels (Portable Text `level`): indent like the top level. */
+.rich-text li > :is(ul, ol) {
+	margin-top: var(--space-min);
+	padding-left: calc(var(--space-sm) + var(--space-xs));
 }
 
 .rich-text .rich-text-embed {

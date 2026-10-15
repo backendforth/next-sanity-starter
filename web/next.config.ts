@@ -193,13 +193,7 @@ const nextConfig: NextConfig = {
 	/** Default in Next 16; pinned explicitly to make the starter's choice obvious. */
 	reactStrictMode: true,
 
-	/**
-	 * Tree-shake heavy packages at build time.
-	 * Next.js rewrites barrel-file imports (e.g. `import { X } from "@portabletext/react"`)
-	 * to direct module paths, eliminating unused exports from the client bundle.
-	 */
 	experimental: {
-		optimizePackageImports: ["@portabletext/react", "@sanity/image-url"],
 		/** Client router cache for prefetched static segments (seconds). */
 		staleTimes: {
 			static: 180,

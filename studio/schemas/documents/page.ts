@@ -2,7 +2,10 @@ import { DocumentTextIcon } from "@sanity/icons/DocumentText";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
-import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
+import {
+  isUniqueLocaleAgnostic,
+  validatePageSlug,
+} from "../../utils/validateSlug";
 import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
@@ -43,7 +46,7 @@ export const page = defineType({
         source: "title",
         isUnique: isUniqueLocaleAgnostic,
       },
-      validation: validateSlug,
+      validation: validatePageSlug,
       group: "editorial",
     },
     modulesArrayField({ group: "editorial" }),

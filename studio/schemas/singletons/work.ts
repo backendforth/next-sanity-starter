@@ -3,6 +3,7 @@ import { TextIcon } from "@sanity/icons/Text";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
 
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
@@ -48,7 +49,7 @@ export const work = defineType({
       const title = firstLocalizedLabel(titleEntries, "Work");
       return {
         title,
-        subtitle: "/work",
+        subtitle: PROJECT_URL_PREFIX,
       };
     },
   },

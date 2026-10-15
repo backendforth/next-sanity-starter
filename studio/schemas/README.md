@@ -61,7 +61,7 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 ## 6. Slugs
 
-For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
+For any field that maps to a URL segment, set a validator from `utils/validateSlug.ts` as the slug field’s **`validation`**: **`validatePageSlug`** for a type served at the site root (`/:slug`, as in `schemas/documents/page.ts`) — it also rejects the web's own routes and the language ids — or **`validateSlug`** for one under a prefix (`/work/:slug`, as in `schemas/documents/project.ts`).
 
 Give the slug a **Generate** button with `options.source: titleSlugSource` (`utils/titleSlugSource.ts`). Titles are `internationalizedArrayString`, so a plain `source: "title"` would not resolve to a string; the helper takes the first non-empty localized title.
 

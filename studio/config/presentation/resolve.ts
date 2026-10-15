@@ -1,6 +1,7 @@
 import { defineDocuments } from "sanity/presentation";
 
 import {
+  LANGUAGE_IDS,
   PREFIXED_SLUG_DOCUMENT_TYPES,
   PROJECT_URL_PREFIX,
   SITE_ROOT_DOCUMENT_TYPES,
@@ -15,9 +16,6 @@ const typeList = (types: readonly string[]) =>
 const rootFilter = `_type in [${typeList([...SITE_ROOT_DOCUMENT_TYPES])}]`;
 const prefixedFilter = `_type in [${typeList(PREFIXED_SLUG_DOCUMENT_TYPES)}] && slug.current == $slug`;
 const slugTypeList = typeList(SLUG_BASED_DOCUMENT_TYPES);
-
-/** The site's language ids. They live in `siteLanguageSettings`, so the filter reads them. */
-const LANGUAGE_IDS = `*[_id == "siteLanguageSettings"][0].availableLanguages[].id`;
 
 /**
  * Which document opens when the Presentation iframe navigates to a route.

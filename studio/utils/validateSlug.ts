@@ -1,9 +1,14 @@
 import type { Rule, SlugValue } from "sanity";
 
+import {
+  LANGUAGE_IDS,
+  PROJECT_URL_PREFIX,
+} from "../config/presentation/conventions";
+
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** First URL segments the web routes itself (`web/src/app/[locale]/work`): a page there is unreachable. */
-const RESERVED_PAGE_SLUGS = new Set(["work"]);
+const RESERVED_PAGE_SLUGS = new Set([PROJECT_URL_PREFIX.slice(1)]);
 
 function slugRule(rule: Rule, reserved?: ReadonlySet<string>) {
   return rule.required().custom((value: SlugValue | undefined) => {
@@ -24,9 +29,6 @@ function slugRule(rule: Rule, reserved?: ReadonlySet<string>) {
 export function validateSlug(rule: Rule) {
   return slugRule(rule);
 }
-
-/** The language ids, which the web serves as `/:locale`. */
-const LANGUAGE_IDS = `*[_id == "siteLanguageSettings"][0].availableLanguages[].id`;
 
 /** Page slugs share the site root with the web's own routes and the language prefixes. */
 export function validatePageSlug(rule: Rule) {

@@ -12,6 +12,9 @@ export const PREFIXED_SLUG_DOCUMENT_TYPES = ["project"] as const;
 
 export const PROJECT_URL_PREFIX = "/work";
 
+/** GROQ for the site's language ids, which the web serves as `/:locale`. */
+export const LANGUAGE_IDS = `*[_id == "siteLanguageSettings"][0].availableLanguages[].id`;
+
 /**
  * Singletons that resolve Web Preview to `/` (same behaviour as the live site root).
  * Derived from the canonical singleton map (`config/singletons.ts`, role `root`).

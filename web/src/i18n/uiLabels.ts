@@ -1,7 +1,6 @@
 /**
  * Fixed UI copy that is not authored in Sanity: landmark and control `aria-label`s, the error
- * boundary, the 404 fallback (when `errorSettings` has no text), the content-refs controls and
- * the cookie banner's defaults (for every text `siteCookieBanner` leaves empty).
+ * boundary, the 404 fallback (when `errorSettings` has no text), and the content-refs controls.
  * Same shape as `skipLinkLabel.ts`; add a locale here when you add one in `siteLanguageSettings`.
  * Unknown locales fall back to English.
  */
@@ -35,26 +34,6 @@ type UiLabels = {
 	sortNewest: string;
 	sortAz: string;
 	noItems: string;
-	cookieConsentDescription: string;
-	cookieAccept: string;
-	cookieReject: string;
-	cookieManagePreferences: string;
-	cookiePrivacyPolicy: string;
-	cookiePreferencesTitle: string;
-	cookieAcceptAll: string;
-	cookieRejectAll: string;
-	cookieSavePreferences: string;
-	cookieNecessaryTitle: string;
-	cookieNecessaryDescription: string;
-	cookieAnalyticsTitle: string;
-	cookieAnalyticsDescription: string;
-	cookieTableName: string;
-	cookieTableDomain: string;
-	cookieTableDescription: string;
-	/** Row text for a tracker without a cookie banner description. */
-	cookieTrackerDescription: string;
-	/** Appended in brackets to a cookie-free tracker's row. */
-	cookieFreeNote: string;
 };
 
 export type UiLabelKey = keyof UiLabels;
@@ -88,27 +67,6 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Neueste",
 		sortAz: "A–Z",
 		noItems: "Keine Einträge vorhanden.",
-		cookieConsentDescription:
-			"Unsere Website verwendet notwendige Cookies für den Grundbetrieb. Analysen mit Cookies laufen erst, nachdem du zugestimmt hast; datenschutzfreundliche Analysen ohne Cookies können schon vorher laden.",
-		cookieAccept: "Akzeptieren",
-		cookieReject: "Ablehnen",
-		cookieManagePreferences: "Einstellungen verwalten",
-		cookiePrivacyPolicy: "Datenschutzerklärung",
-		cookiePreferencesTitle: "Cookie-Einstellungen",
-		cookieAcceptAll: "Alle akzeptieren",
-		cookieRejectAll: "Alle ablehnen",
-		cookieSavePreferences: "Einstellungen speichern",
-		cookieNecessaryTitle: "Unbedingt erforderlich",
-		cookieNecessaryDescription:
-			"Notwendig für den grundlegenden Betrieb der Website und nicht deaktivierbar.",
-		cookieAnalyticsTitle: "Analyse",
-		cookieAnalyticsDescription:
-			"Hilft uns, die Nutzung der Website zu verstehen und das Erlebnis zu verbessern.",
-		cookieTableName: "Name",
-		cookieTableDomain: "Domain",
-		cookieTableDescription: "Beschreibung",
-		cookieTrackerDescription: "In Sanity eingerichteter Analyse-Anbieter.",
-		cookieFreeNote: "ohne Cookies — lädt ohne Einwilligung in Analysen",
 	},
 	en: {
 		mainNav: "Main",
@@ -138,27 +96,6 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Newest",
 		sortAz: "A–Z",
 		noItems: "No items to show.",
-		cookieConsentDescription:
-			"Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.",
-		cookieAccept: "Accept",
-		cookieReject: "Reject",
-		cookieManagePreferences: "Manage preferences",
-		cookiePrivacyPolicy: "Privacy policy",
-		cookiePreferencesTitle: "Cookie preferences",
-		cookieAcceptAll: "Accept all",
-		cookieRejectAll: "Reject all",
-		cookieSavePreferences: "Save preferences",
-		cookieNecessaryTitle: "Strictly Necessary",
-		cookieNecessaryDescription:
-			"Essential for basic website functionality and cannot be disabled.",
-		cookieAnalyticsTitle: "Analytics",
-		cookieAnalyticsDescription:
-			"Helps us understand usage patterns and improve the website experience.",
-		cookieTableName: "Name",
-		cookieTableDomain: "Domain",
-		cookieTableDescription: "Description",
-		cookieTrackerDescription: "Analytics provider configured in Sanity.",
-		cookieFreeNote: "cookie-free — loads without analytics consent",
 	},
 	fr: {
 		mainNav: "Navigation principale",
@@ -187,28 +124,6 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Plus récents",
 		sortAz: "A–Z",
 		noItems: "Aucun élément à afficher.",
-		cookieConsentDescription:
-			"Notre site utilise des cookies essentiels à son fonctionnement. La mesure d’audience avec cookies ne démarre qu’après votre accord ; une mesure respectueuse de la vie privée, sans cookies, peut se charger avant.",
-		cookieAccept: "Accepter",
-		cookieReject: "Refuser",
-		cookieManagePreferences: "Gérer les préférences",
-		cookiePrivacyPolicy: "Politique de confidentialité",
-		cookiePreferencesTitle: "Préférences de cookies",
-		cookieAcceptAll: "Tout accepter",
-		cookieRejectAll: "Tout refuser",
-		cookieSavePreferences: "Enregistrer les préférences",
-		cookieNecessaryTitle: "Strictement nécessaires",
-		cookieNecessaryDescription:
-			"Indispensables au fonctionnement de base du site, ils ne peuvent pas être désactivés.",
-		cookieAnalyticsTitle: "Mesure d’audience",
-		cookieAnalyticsDescription:
-			"Nous aide à comprendre l’utilisation du site et à l’améliorer.",
-		cookieTableName: "Nom",
-		cookieTableDomain: "Domaine",
-		cookieTableDescription: "Description",
-		cookieTrackerDescription:
-			"Outil de mesure d’audience configuré dans Sanity.",
-		cookieFreeNote: "sans cookies — se charge sans consentement à la mesure",
 	},
 	nl: {
 		mainNav: "Hoofdnavigatie",
@@ -237,27 +152,6 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Nieuwste",
 		sortAz: "A–Z",
 		noItems: "Geen items om te tonen.",
-		cookieConsentDescription:
-			"Onze website gebruikt essentiële cookies voor de basiswerking. Analyse met cookies start pas nadat je die accepteert; privacyvriendelijke analyse zonder cookies kan eerder laden.",
-		cookieAccept: "Accepteren",
-		cookieReject: "Weigeren",
-		cookieManagePreferences: "Voorkeuren beheren",
-		cookiePrivacyPolicy: "Privacybeleid",
-		cookiePreferencesTitle: "Cookievoorkeuren",
-		cookieAcceptAll: "Alles accepteren",
-		cookieRejectAll: "Alles weigeren",
-		cookieSavePreferences: "Voorkeuren opslaan",
-		cookieNecessaryTitle: "Strikt noodzakelijk",
-		cookieNecessaryDescription:
-			"Onmisbaar voor de basiswerking van de website en niet uit te schakelen.",
-		cookieAnalyticsTitle: "Analyse",
-		cookieAnalyticsDescription:
-			"Helpt ons te begrijpen hoe de website wordt gebruikt en de ervaring te verbeteren.",
-		cookieTableName: "Naam",
-		cookieTableDomain: "Domein",
-		cookieTableDescription: "Beschrijving",
-		cookieTrackerDescription: "In Sanity ingestelde analyseprovider.",
-		cookieFreeNote: "zonder cookies — laadt zonder toestemming voor analyse",
 	},
 };
 

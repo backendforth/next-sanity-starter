@@ -12,7 +12,10 @@ import {
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
 import { isCookieFreeTracker } from "@/src/components/tracking/lib/trackingConfig";
-import { type UiLabelKey, uiLabel } from "@/src/i18n/uiLabels";
+import {
+	type CookieBannerLabelKey,
+	cookieBannerLabel,
+} from "@/src/i18n/cookieBannerLabels";
 
 type CookieTableRow = Record<string, string>;
 type ConsentModal = NonNullable<SiteCookieBanner["consentModal"]>;
@@ -57,16 +60,16 @@ function hostnameOf(
 
 function tableHeaders(locale: string): CookieTableRow {
 	return {
-		name: uiLabel("cookieTableName", locale),
-		domain: uiLabel("cookieTableDomain", locale),
-		desc: uiLabel("cookieTableDescription", locale),
+		name: cookieBannerLabel("tableName", locale),
+		domain: cookieBannerLabel("tableDomain", locale),
+		desc: cookieBannerLabel("tableDescription", locale),
 	};
 }
 
 function analyticsSection(locale: string): Section {
 	return {
-		title: uiLabel("cookieAnalyticsTitle", locale),
-		description: uiLabel("cookieAnalyticsDescription", locale),
+		title: cookieBannerLabel("analyticsTitle", locale),
+		description: cookieBannerLabel("analyticsDescription", locale),
 		linkedCategory: "analytics",
 	};
 }
@@ -75,8 +78,8 @@ function analyticsSection(locale: string): Section {
 function defaultSections(locale: string): Section[] {
 	return [
 		{
-			title: uiLabel("cookieNecessaryTitle", locale),
-			description: uiLabel("cookieNecessaryDescription", locale),
+			title: cookieBannerLabel("necessaryTitle", locale),
+			description: cookieBannerLabel("necessaryDescription", locale),
 			linkedCategory: "necessary",
 		},
 		analyticsSection(locale),
@@ -90,9 +93,9 @@ function trackerCookieRow(
 	const label = tracker.cookieBannerLabel?.trim() || tracker._type;
 	const baseDescription =
 		tracker.cookieBannerDescription?.trim() ||
-		uiLabel("cookieTrackerDescription", locale);
+		cookieBannerLabel("trackerDescription", locale);
 	const description = isCookieFreeTracker(tracker)
-		? `${baseDescription} (${uiLabel("cookieFreeNote", locale)})`
+		? `${baseDescription} (${cookieBannerLabel("cookieFreeNote", locale)})`
 		: baseDescription;
 
 	let domain = "—";
@@ -189,7 +192,7 @@ function privacyPolicyHtml(
 		linkTitle: link?.title,
 		locale: options.locale,
 		siteLocale: options.siteLocale,
-		literalFallback: uiLabel("cookiePrivacyPolicy", options.locale),
+		literalFallback: cookieBannerLabel("privacyPolicy", options.locale),
 	});
 	const target = resolved.target
 		? ` target="${resolved.target}" rel="${resolved.rel}"`
@@ -211,8 +214,10 @@ export function cookieConsentTranslation(
 	/* How the branch stores a banner text: `main` keeps every language in the field. */
 	const read = (entries: LocalizedStrings) =>
 		pickLocalizedString(entries, locale, siteLocale);
-	const text = (entries: LocalizedStrings, fallback?: UiLabelKey) =>
-		escapeHtml(read(entries) ?? (fallback ? uiLabel(fallback, locale) : ""));
+	const text = (entries: LocalizedStrings, fallback?: CookieBannerLabelKey) =>
+		escapeHtml(
+			read(entries) ?? (fallback ? cookieBannerLabel(fallback, locale) : ""),
+		);
 
 	const consent = doc.consentModal;
 	const preferences = doc.preferencesModal;
@@ -231,30 +236,27 @@ export function cookieConsentTranslation(
 		},
 	}));
 
-	const description = text(consent?.description, "cookieConsentDescription");
+	const description = text(consent?.description, "consentDescription");
 	const policyLink = privacyPolicyHtml(consent?.privacyPolicy, options);
 
 	return {
 		consentModal: {
 			title: "",
 			description: policyLink ? `${description} ${policyLink}` : description,
-			acceptAllBtn: text(consent?.acceptAllBtn, "cookieAccept"),
-			acceptNecessaryBtn: text(consent?.acceptNecessaryBtn, "cookieReject"),
+			acceptAllBtn: text(consent?.acceptAllBtn, "accept"),
+			acceptNecessaryBtn: text(consent?.acceptNecessaryBtn, "reject"),
 			showPreferencesBtn: text(
 				consent?.showPreferencesBtn,
-				"cookieManagePreferences",
+				"managePreferences",
 			),
 		},
 		preferencesModal: {
-			title: text(preferences?.title, "cookiePreferencesTitle"),
-			acceptAllBtn: text(preferences?.acceptAllBtn, "cookieAcceptAll"),
-			acceptNecessaryBtn: text(
-				preferences?.acceptNecessaryBtn,
-				"cookieRejectAll",
-			),
+			title: text(preferences?.title, "preferencesTitle"),
+			acceptAllBtn: text(preferences?.acceptAllBtn, "acceptAll"),
+			acceptNecessaryBtn: text(preferences?.acceptNecessaryBtn, "rejectAll"),
 			savePreferencesBtn: text(
 				preferences?.savePreferencesBtn,
-				"cookieSavePreferences",
+				"savePreferences",
 			),
 			sections: withTrackerSection(
 				sections.length > 0 ? sections : defaultSections(locale),

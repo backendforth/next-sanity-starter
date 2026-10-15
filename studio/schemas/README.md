@@ -49,11 +49,11 @@ See **`config/structure/README.md`** for patterns.
 If the type is **routable** in the Next.js app:
 
 - Add the type name to **`PAGE_REFERENCES`** in `schemas/constants/references.ts` if it should appear in internal links.
-- Extend **`SLUG_BASED_DOCUMENT_TYPES`** in `config/presentation/conventions.ts` if the URL is `/:slug` from `slug.current`.
+- Extend **`SLUG_BASED_DOCUMENT_TYPES`** in `config/presentation/conventions.ts` if the URL is `/:slug` from `slug.current`, or **`PREFIXED_SLUG_DOCUMENT_TYPES`** if it sits under `PROJECT_URL_PREFIX` (`/work/:slug`).
 - Update **`config/presentation/resolve.ts`** (`presentationMainDocuments`) if you need a route other than `/` or `/:slug`.
 - Adjust **`config/presentation/locationsResolver.ts`** (or `staticLocationsForType`) for custom paths or error pages.
 
-Singletons that should open Web Preview at `/` belong in **`SITE_ROOT_DOCUMENT_TYPES`** (`conventions.ts`). Types that must **not** show Web Preview (e.g. global settings) go in **`DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`**.
+A singleton gets its Web Preview from its role in **`SINGLETON_PREVIEW_ROLE`** (`config/singletons.ts`): `root` opens `/`, `none` offers no link (global settings), `custom` is handled in `locationsResolver.ts`. `conventions.ts` derives `SITE_ROOT_DOCUMENT_TYPES` and `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` from it.
 
 ## 5. Multi-language fields
 

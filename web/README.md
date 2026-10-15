@@ -1,6 +1,6 @@
 # Next.js app (`web/`)
 
-Copy **`.env.example`** to **`.env.local`** and set at least `SANITY_STUDIO_PROJECT_ID` (same values as `studio/.env`). For **Sanity Presentation / Visual Editing**, also set **`SANITY_API_READ_TOKEN`**, **`SANITY_STUDIO_PREVIEW_ORIGIN`**, and (Studio) **`SANITY_STUDIO_WEB_PREVIEW_ORIGINS`** when the iframe is not localhost — see **`sanity/README.md`** (*Presentation & Visual Editing*).
+Copy **`.env.example`** to **`.env.local`** and set at least `SANITY_STUDIO_PROJECT_ID` (same values as `studio/.env`). For **Sanity Presentation / Visual Editing**, also set **`SANITY_API_READ_TOKEN`** here, and in `studio/.env` **`SANITY_STUDIO_PREVIEW_ORIGIN`** (plus **`SANITY_STUDIO_WEB_PREVIEW_ORIGINS`** when the iframe is not localhost) — see **`sanity/README.md`** (*Presentation & Visual Editing*).
 
 From the monorepo root:
 
@@ -44,14 +44,6 @@ Routes are static (`generateStaticParams`) and every `sanityFetch` result is cac
 | `<SanityLive />` | Draft Mode / Presentation only. | Everyone. No token needed for published content. |
 
 Production needs the webhook; without it freshness depends on visitors. Routes don't export `revalidate`; the table above is the whole story.
-
-## Build / routing (reference)
-
-From `pnpm run build` (Next.js 16): routes are labeled **Static** (○), **SSG** (● `generateStaticParams`), or **Dynamic** (ƒ). Example output:
-
-(Your tree may differ once you add routes.)
-
----
 
 ## More docs
 

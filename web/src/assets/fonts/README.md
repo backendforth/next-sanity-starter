@@ -12,9 +12,9 @@ Stacks are wired in [`../styles/typography/fonts.css`](../styles/typography/font
 To switch from Google to local files:
 
 1. Add **WOFF2** (or variable-font) files under this folder or `public/fonts/`.
-2. Replace `next/font/google` in `layout.tsx` with `next/font/local` (see commented patterns in git history / layout docs).
+2. Replace `next/font/google` in `components/layout/DocumentShell.tsx` with `next/font/local`.
 3. Keep the same CSS variable names: `--font-family-sans`, `--font-family-mono`.
 
 ## `font-display`
 
-The app uses **`display: "block"`** on both families (see `layout.tsx`). With `next/font` preload + subsetting, the FOIT window is typically short on first paint.
+Both families use **`display: "swap"`** (`DocumentShell.tsx`): text paints at once in the metrics-adjusted fallback `next/font` generates, then swaps to Geist.

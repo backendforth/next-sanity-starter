@@ -9,7 +9,7 @@ This package is the Sanity Studio for the project: schemas, Desk structure, Visu
 | **Presentation (Web Preview)** | Embeds the Next.js app in an iframe, Draft Mode, and maps documents to URLs so editors can preview content in context. | `config/README.md`, `config/presentation/` |
 | **Multi-dataset** | Resolves which Content Lake dataset the Studio uses (e.g. `development` vs `production`) from env and the datasets that exist in the project, so local work does not have to hit production data. | `@repo/sanity-dataset-resolve`, `config/sync/studioDataset.ts`, `utils/README.md`, `.env.example` |
 | **Prod → dev sync** | Optional CLI script exports `production` to a local tarball and imports into `development` (`--replace`). Shown as a hint when you start `pnpm dev` in `studio/`. | `scripts/sync-prod-to-dev.mjs`, below |
-| **Multi-language** | **`siteLanguageSettings`** (Settings → Site languages). `sanity-plugin-internationalized-array` loads tabs from Sanity at runtime (`config/sync/internationalizedArrayLanguages.ts`). | `utils/README.md`, root **`README.md`** (*Multilanguage*) |
+| **Multi-language** | **`siteLanguageSettings`** (Settings → Site languages). `sanity-plugin-internationalized-array` loads tabs from Sanity at runtime (`config/sync/internationalizedArrayLanguages.ts`). | `utils/README.md`, root **`README.md`** (*Two flavours*) |
 | **Slug validation** | Shared `validateSlug` helper enforces URL-safe slugs (lowercase, numbers, hyphens) on fields that power frontend routes. | `utils/validateSlug.ts`, used e.g. in `schemas/documents/page.ts` |
 | **Mux integration** | `sanity-plugin-mux-input` is registered in `sanity.config.ts`; video fields use the `mux.video` type in schema objects (e.g. media modules). | `sanity.config.ts`, `schemas/objects/modules/moduleMedia.ts` |
 
@@ -53,7 +53,7 @@ One-time setup:
 
 To publish the Studio to **Sanity Hosting** (`*.sanity.studio`), run the Sanity CLI **`sanity deploy`**:
 
-- **From this package:** `pnpm deploy` or `pnpm exec sanity deploy` (both run `sanity deploy`).
+- **From this package:** `pnpm run deploy` (with `run`: `pnpm deploy` is pnpm's own command). It sets `SANITY_STUDIO_DEPLOYMENT_TARGET=production` before `sanity deploy`.
 - **From the monorepo root:** `pnpm studio:deploy` (runs the same deploy in the `studio` workspace).
 
 The CLI will prompt for a hostname on the first deploy and upload the production build. Set **`SANITY_STUDIO_APP_ID`** in `studio/.env` to the app id it prints, and later deploys update that Studio without asking (`sanity.cli.ts` → `deployment.appId`). Ensure production env (dataset, `SANITY_STUDIO_PREVIEW_ORIGIN`, etc.) matches your deployment targets—see `.env.example` and `utils/README.md` for dataset behaviour. Both targets can run side by side; `*.sanity.studio` is always allowed by the web CSP.

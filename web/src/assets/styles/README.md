@@ -2,7 +2,7 @@
 
 Entry: **`tokens.css`** then **`globals.css`** (both from `components/layout/DocumentShell.tsx`; the layout-less `app/not-found.tsx` imports them too).
 
-**Why two files:** Tailwind’s pipeline **drops** `sizes.css` / `typography.css` when they only sit after `@import "tailwindcss"` in one file. **`tokens.css`** loads first. **`globals.css`** holds `fonts` → `colors` → Tailwind → **`breakpoints.css`** → utilities → safelist.
+**Why two files:** Tailwind’s pipeline **drops** `sizes.css` / `fontsizes.css` when they only sit after `@import "tailwindcss"` in one file. **`tokens.css`** loads first: `breakpoints.css` → `sizes.css` → `fontsizes.css`. **`globals.css`** holds `fonts` → `colors` → **`breakpoints.css`** → typography → safelist → animations → Tailwind → `tailwind/theme.css` → rich text → Mux player.
 
 ## Breakpoints
 
@@ -10,12 +10,12 @@ Entry: **`tokens.css`** then **`globals.css`** (both from `components/layout/Doc
 
 **Using those thresholds in custom CSS:**
 
-- **`@media (width >= theme(--breakpoint-md)) { … }`** (and other `--breakpoint-*`) — same values as the utilities; works in **`tokens.css`** imports (e.g. **`sizes.css`**, **`typography.css`**).
+- **`@media (width >= theme(--breakpoint-md)) { … }`** (and other `--breakpoint-*`) — same values as the utilities; works in **`tokens.css`** imports (e.g. **`sizes.css`**, **`fontsizes.css`**).
 - **`@variant md { … }`** (or **`sm`**, **`2xl`**, **`wide`**, …) — wraps rules in the same screen variant as **`md:`** in markup; use in files that load **after** **`@import "tailwindcss"`** (e.g. **`globals.css`**), not in the early **`tokens.css`** chain.
 
 Orientation/touch via **`@custom-variant`** in **`breakpoints.css`**.
 
-It is **imported twice**: in **`tokens.css`** (before sizes/typography) and in **`globals.css`** after **`tailwindcss`**. Same rules may appear in two CSS chunks; that is intentional.
+It is **imported twice**: in **`tokens.css`** (before sizes / font sizes) and in **`globals.css`**. Same rules may appear in two CSS chunks; that is intentional.
 
 | Folder / file | Role |
 |---------------|------|
@@ -23,7 +23,6 @@ It is **imported twice**: in **`tokens.css`** (before sizes/typography) and in *
 | `variables/sizes.css` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
 | `typography/fonts.css` | Geist / Geist Mono stacks (`next/font/google` in `components/layout/DocumentShell.tsx`) |
 | `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`); tiers via `theme(--breakpoint-*)` |
-| `variables/typography-clamp.css` | optional fluid `clamp()` — import manually if needed |
 | `variables/typography-variable-fonts.css` | optional variable-font axes (`--font-variation-settings-*`, `--font-feature-settings-*`) — import manually if needed |
 | `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); **screens** from `breakpoints.css` `@theme` |
 

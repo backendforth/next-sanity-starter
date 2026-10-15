@@ -1,7 +1,7 @@
 // @ts-check
 /**
  * End to end: scaffold two modules — one of them inline — into a copy of this checkout, then
- * run what `pnpm generate` and CI run: both typegens, `check:typegen`, `check:wiring` and
+ * run what `pnpm generate` and CI run: schema extract and typegen, `check:typegen`, `check:wiring` and
  * `tsc` for web and studio. The copy shares this checkout's `node_modules` through symlinks.
  */
 import assert from "node:assert/strict";

@@ -58,7 +58,7 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      # Studio schema extract + typegen, web query typegen, then `check:typegen`
+      # Studio schema extract, web query typegen, then `check:typegen`
       # (every `defineQuery` got a type). `sanity schema extract` loads
       # sanity.config.ts, which throws without a project id; nothing here calls
       # the Sanity API, so a placeholder is enough — same as the build jobs.

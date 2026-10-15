@@ -4,7 +4,7 @@
  * Checks that Sanity TypeGen typed every query in `web/sanity/`.
  *
  * Usage:
- *   pnpm check:typegen   (part of `pnpm generate`, after both typegens)
+ *   pnpm check:typegen   (part of `pnpm generate`, after the web typegen)
  *
  * TypeGen skips a `defineQuery` it cannot evaluate statically — a function call, a
  * non-`const` fragment — with nothing but a spinner warning, and the generated file simply

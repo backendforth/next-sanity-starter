@@ -26,11 +26,11 @@ export const schemaTypes = [
 
 Order can matter for UI in rare cases; keep related types together. Anything omitted here is **invisible** to Studio and APIs.
 
-After schema changes, regenerate and commit the typegen artifacts (Studio schema and types, and the web query types that follow from them):
+After schema changes, regenerate and commit the extracted schema and the web query types that follow from it:
 
 ```bash
 pnpm generate
-git add studio/schema.json studio/sanity.types.gen.ts web/sanity/sanity.types.gen.ts
+git add studio/schema.json web/sanity/sanity.types.gen.ts
 ```
 
 CI fails if `pnpm generate` produces a diff. The web app has no hand-written Sanity types: `web/sanity/types.ts` derives them from the generated file.

@@ -57,7 +57,7 @@ A **module** is one content block. It exists as two halves that must always evol
 | 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch ends in `const unhandled: never = mod`, so a module the query returns without a `case` fails `tsc`. |
 | 6 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` — the GROQ projection (`_type == "module.<id>" => { ...fields }`), listed in `modulesQuery` in `queries/components/modules/index.ts`. |
 
-Then `pnpm generate` and commit `studio/schema.json`, `studio/sanity.types.gen.ts` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types.
+Then `pnpm generate` and commit `studio/schema.json` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types.
 
 ### Inline modules (opt-in)
 
@@ -76,7 +76,7 @@ A module can also be insertable inside rich text (`richTextMedia`). That is a ch
 | Ship schema + component + query + generated types in **one** commit. | Land a Studio schema without its web counterpart (or vice versa). |
 | Render new content via `ModulesRenderer`. | Add an ad-hoc page section directly inside a page template. |
 | Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`. | Re-declare image/video field shapes inline in a new module. |
-| Run `pnpm generate` after every schema or query edit. | Hand-edit `studio/sanity.types.gen.ts`, `web/sanity/sanity.types.gen.ts` or `studio/schema.json`. |
+| Run `pnpm generate` after every schema or query edit. | Hand-edit `web/sanity/sanity.types.gen.ts` or `studio/schema.json`. |
 | Make a module inline only when it belongs inside text, and then in all three places. | Register an inline type in one place and not the others. |
 | Use `pnpm typecheck` to catch wiring drift. | Mark work "done" without typecheck + format passing. |
 
@@ -112,7 +112,7 @@ If a piece of code does not fit any branch, stop and ask — do not invent a new
 After any schema or query edit:
 
 ```bash
-pnpm generate              # schema extract + both typegens + check:typegen
+pnpm generate              # schema extract + web typegen + check:typegen
 pnpm check:wiring          # YOU MUST verify the module wiring is consistent
 pnpm typecheck             # web, studio, check-wiring, scaffold-module
 pnpm format                # biome check --write .
@@ -122,7 +122,6 @@ The pre-commit hook formats and re-stages the staged files (it refuses a file th
 
 **IMPORTANT — never edit:**
 
-- `studio/sanity.types.gen.ts`
 - `web/sanity/sanity.types.gen.ts`
 - `studio/schema.json`
 - Any `*.gen.*` file
@@ -143,7 +142,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm studio:build` | Build the Studio only. |
 | `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`, production target) — the alternative to Netlify. |
 | `pnpm studio:register` | Register the Netlify-hosted Studio URL (`SANITY_STUDIO_HOSTING_URL`) with Sanity and upload the schema. Netlify production deploys run it when `SANITY_AUTH_TOKEN` is set. |
-| `pnpm generate` | Studio schema extract + typegen, web query typegen, then `check:typegen`. **Run after every schema or query edit.** |
+| `pnpm generate` | Studio schema extract, web query typegen, then `check:typegen`. **Run after every schema or query edit.** |
 | `pnpm studio:generate` | Alias for `pnpm generate`. |
 | `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
 | `pnpm typecheck` | `tsc --noEmit` in every workspace package with a `typecheck` script (web, studio, check-wiring, scaffold-module). |
@@ -176,7 +175,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm build` | `sanity build`. |
 | `pnpm run deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). Needs `run`: `pnpm deploy` is a pnpm built-in. |
 | `pnpm register` | `node scripts/register-hosting.mjs` → `sanity deploy --external`. Pass `--dry-run` to preview. |
-| `pnpm generate` | `sanity schema extract --enforce-required-fields --force && sanity typegen generate`. Run via the root `pnpm generate`. |
+| `pnpm generate` | `sanity schema extract --enforce-required-fields --force` → `schema.json`, which the web typegen reads. Run via the root `pnpm generate`. |
 | `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
 | `pnpm migrate:seo-i18n` | `main` only: one-off migration of plain-string SEO fields to i18n arrays (see `studio/scripts/README.md`). Only run when explicitly needed. |
 | `pnpm mux:migrate-assets` | One-off: lists Mux assets with static MP4 or premium encoding; `-- --apply` turns static MP4 off. Needs `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`. |

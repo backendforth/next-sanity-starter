@@ -35,6 +35,15 @@
 		max-width: var(--measure-heading-4-text);
 	}
 
+	/* Markers only here: preflight leaves every other list bare. */
+	.rich-text ul {
+		list-style-type: disc;
+	}
+
+	.rich-text ol {
+		list-style-type: decimal;
+	}
+
 	.rich-text li + li {
 		margin-top: var(--space-min);
 	}

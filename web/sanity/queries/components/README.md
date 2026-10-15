@@ -18,7 +18,7 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 | `modules/text.ts` | `moduleTextQuery` | `module.text` (title + body using `richTextMediaBodyQuery`) |
 | `modules/media.ts` | `moduleMediaQuery` | `module.media` |
 | `modules/carousel.ts` | `moduleCarouselQuery` | `module.carousel` |
-| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, resolved `references`). With `selection == "all"` it lists documents filtered by `language == $locale`, so every query that embeds `modulesQuery` must pass `$locale`. |
+| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, resolved `references`: every routable target of the scope in `$locale`, newest first, or the editor's picks in order). The `$locale` filter means every query that embeds `modulesQuery` must pass `$locale`. |
 
 ## Usage
 

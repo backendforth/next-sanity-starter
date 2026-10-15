@@ -2876,21 +2876,6 @@
           "name": "richText"
         },
         "optional": true
-      },
-      "serverErrorTitle": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": false
-      },
-      "serverErrorBody": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "richText"
-        },
-        "optional": true
       }
     }
   },

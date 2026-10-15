@@ -516,8 +516,6 @@ export type ErrorSettings = {
   language?: string;
   notFoundTitle: string;
   notFoundBody?: RichText;
-  serverErrorTitle: string;
-  serverErrorBody?: RichText;
 };
 
 export type ProjectCategory = {

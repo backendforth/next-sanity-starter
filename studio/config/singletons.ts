@@ -5,7 +5,7 @@
  * - `root`   — Web Preview resolves to the site root `/` (e.g. `home`).
  * - `none`   — settings-only; Presentation offers no Web Preview link.
  * - `custom` — bespoke locations handled in `presentation/locationsResolver.ts`
- *              (e.g. `errorSettings` → `/404`, `/500`).
+ *              (e.g. `errorSettings` → `/404`).
  *
  * This is the single source of truth: `presentation/conventions.ts` derives its
  * role-sets from this map, and `SINGLETON_SCHEMA_TYPES` (used to lock document

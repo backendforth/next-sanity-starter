@@ -6,7 +6,7 @@ import type { SanityClient } from "sanity";
  * Reading only the published doc meant a freshly added language had no tab until
  * publish. The fetch forces the `raw` perspective: the client the plugin hands in
  * may default to `published`, which hides the `drafts.` id before GROQ runs.
- * Same projection as `web/sanity/queries/snippets/settings.ts` / locale codegen.
+ * Same projection as `web/sanity/queries/snippets/settings.ts`.
  */
 export const siteLanguageSettingsInternationalizedQuery = `coalesce(
   *[_id == "drafts.siteLanguageSettings"][0],
@@ -58,7 +58,8 @@ function normalizeFromDoc(doc: SiteLanguageSettingsDoc): Array<{
 /**
  * Languages for `sanity-plugin-internationalized-array`, loaded on each Studio session
  * from the `siteLanguageSettings` singleton (draft preferred over published, see the
- * query above). Falls back to the minimal `en` list when the fetch fails, so Studio still boots.
+ * query above). Falls back to the minimal `en` list when the singleton is missing or has no
+ * usable rows, or when the fetch fails (Studio still boots).
  */
 export async function internationalizedArrayLanguagesFromClient(
   client: SanityClient,

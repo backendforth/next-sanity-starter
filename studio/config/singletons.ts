@@ -1,6 +1,6 @@
 /**
- * Canonical declaration of every singleton schema type (documents backed by a
- * fixed id in the desk structure) and its Presentation web-preview role:
+ * Canonical declaration of every singleton schema type (documents opened from
+ * the desk structure, not from a Create menu) and its Presentation web-preview role:
  *
  * - `root`   — Web Preview resolves to the site root `/` (e.g. `home`).
  * - `none`   — settings-only; Presentation offers no Web Preview link.
@@ -25,7 +25,7 @@ export const SINGLETON_PREVIEW_ROLE = {
 
 export type SingletonSchemaType = keyof typeof SINGLETON_PREVIEW_ROLE;
 
-/** Schema types backed by a fixed document id in structure (singletons). */
+/** Singleton schema types: opened from the structure, not from a Create menu. */
 export const SINGLETON_SCHEMA_TYPES = new Set<string>(
   Object.keys(SINGLETON_PREVIEW_ROLE),
 );
@@ -40,7 +40,7 @@ export function singletonTypesWithRole(
 }
 
 /**
- * Singletons are opened from the structure (fixed ids), never created from a "Create" menu or a
+ * Singletons are opened from the structure, never created from a "Create" menu or a
  * reference input: a second document of the type would be invisible to the structure and the
  * queries. Their only templates are the defaults, whose id is the schema type.
  */

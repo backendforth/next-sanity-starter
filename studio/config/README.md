@@ -2,7 +2,7 @@
 
 For a **feature overview** (Presentation, datasets, i18n, slugs, Mux), see the [Studio readme](../README.md). For **adding and registering schema types** step by step, see [`schemas/README.md`](../schemas/README.md).
 
-This folder holds **structure** (sidebar), **presentation** (Visual Editing / Web Preview), **initial value templates**, and **`config/sync/`** (resolved dataset + Studio i18n plugin language fetch). `sanity.config.ts` at the studio root wires these into Sanity.
+This folder holds **structure** (sidebar), **presentation** (Visual Editing / Web Preview), the singleton roles (**`singletons.ts`**), and **`config/sync/`** (resolved dataset + Studio i18n plugin language fetch). `sanity.config.ts` at the studio root wires these into Sanity.
 
 ## Schemas vs structure (not automatic)
 

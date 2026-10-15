@@ -31,7 +31,7 @@ function aspectHeightRatioForSlide(slide: NormalizedSlide): number {
 	return 9 / 16;
 }
 
-export type MultiSlideLayout = { style: CSSProperties; sizes: string };
+type MultiSlideLayout = { style: CSSProperties; sizes: string };
 
 /**
  * Multi-slide row: every slide is as tall as the tallest one at column width, and as wide as its

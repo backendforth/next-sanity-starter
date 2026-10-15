@@ -76,9 +76,6 @@ const WEBHOOK_TAG_MAP: Record<string, readonly string[]> = {
 	"mux.videoAsset": EMBEDDED_CONTENT_TAGS,
 };
 
-/** Document types the webhook acts on — use them in the Sanity webhook's filter. */
-export const WEBHOOK_DOCUMENT_TYPES = Object.keys(WEBHOOK_TAG_MAP);
-
 /**
  * Tags to invalidate for one webhook payload; empty when the type is not allow-listed (the
  * caller answers `200 { revalidated: false }`).

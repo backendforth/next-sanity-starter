@@ -31,7 +31,7 @@ type LinkFields = LinkMark extends infer T
  */
 type LinkValue = LinkFields | StegaBranded<LinkFields>;
 
-export type ResolvedLink =
+type ResolvedLink =
 	| {
 			kind: "anchor";
 			href: string;

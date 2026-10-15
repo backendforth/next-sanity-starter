@@ -48,7 +48,7 @@ function pickLabel(
 	return undefined;
 }
 
-export type ResolveLinkLabelInput = {
+type ResolveLinkLabelInput = {
 	linkTitle?: LocalizableLabel;
 	referenceTitle?: LocalizableLabel;
 	externalUrl?: string | null;

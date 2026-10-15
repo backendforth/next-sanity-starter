@@ -20,7 +20,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type StudioLanguageOption = SiteLocaleConfig["languages"][number];
+type StudioLanguageOption = SiteLocaleConfig["languages"][number];
 
 type LanguageContextValue = LanguagePathUtils & {
 	/** Locale implied by the URL (when valid), otherwise the server-provided fallback. */

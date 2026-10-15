@@ -1,7 +1,7 @@
 /**
  * Normalize a pathname or internal href for equality checks (trailing slashes, etc.).
  */
-export function normalizeComparablePathname(path: string): string {
+function normalizeComparablePathname(path: string): string {
 	const withoutQueryHash = path.split("?")[0]?.split("#")[0] ?? "/";
 	const withLeading = withoutQueryHash.startsWith("/")
 		? withoutQueryHash

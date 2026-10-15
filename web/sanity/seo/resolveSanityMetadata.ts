@@ -76,7 +76,7 @@ export function siteBrandTitle(site: SiteSettings | null | undefined): string {
 	return stegaClean(site?.title)?.trim() || "Site";
 }
 
-export type MetadataFromSanityPageDataInput = {
+type MetadataFromSanityPageDataInput = {
 	/** Route document (home / work singletons or `page` / `project` by slug). */
 	data: RouteDocument;
 	/** Active route locale id. */

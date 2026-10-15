@@ -1,4 +1,10 @@
-import type { Rule, SlugIsUniqueValidator, SlugValue } from "sanity";
+import {
+  getDraftId,
+  getPublishedId,
+  type Rule,
+  type SlugIsUniqueValidator,
+  type SlugValue,
+} from "sanity";
 
 import {
   LANGUAGE_IDS,
@@ -11,6 +17,10 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
  * Slug uniqueness scoped per `_type` AND `language`, so the same slug can
  * coexist on different language variants of the same document — required
  * under document-level translation (`@sanity/document-internationalization`).
+ *
+ * The document's draft and published version don't count as others, whichever of its versions
+ * is validated (`getPublishedId`). Release versions don't count at all: the Studio's client
+ * reads raw, so every release's copy of this document would otherwise collide with it.
  */
 export const isUniquePerLanguage: SlugIsUniqueValidator = async (
   slug,
@@ -18,11 +28,11 @@ export const isUniquePerLanguage: SlugIsUniqueValidator = async (
 ) => {
   const { document, getClient } = context;
   if (!document) return true;
-  const id = document._id.replace(/^drafts\./, "");
+  const published = getPublishedId(document._id);
   const client = getClient({ apiVersion: "2024-01-01" });
   const params = {
-    draft: `drafts.${id}`,
-    published: id,
+    draft: getDraftId(published),
+    published,
     slug,
     type: document._type,
     language: (document as { language?: string | null }).language ?? null,
@@ -30,6 +40,7 @@ export const isUniquePerLanguage: SlugIsUniqueValidator = async (
   const query = `count(*[
     _type == $type &&
     !(_id in [$draft, $published]) &&
+    !(_id in path("versions.**")) &&
     slug.current == $slug &&
     language == $language
   ]) == 0`;

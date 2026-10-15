@@ -141,7 +141,8 @@ export async function DocumentShell({ lang, children }: Props) {
 
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
-			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
+			{/* Font, colour and background come from the base `body` rule in `globals.css`. */}
+			<body className="min-h-full flex flex-col">
 				<ThemeSync />
 				{children}
 				{shouldMountSanityLive ? (

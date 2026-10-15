@@ -9,6 +9,11 @@ name: Dependabot council
 # migration fixes, then hands its evaluation to a council of 4x Gemini 3.1 Flash
 # Lite (council.mjs) that deliberate over two rounds. Claude posts ONE advisory
 # comment with the analysis + council verdict + recommendation. No merge, no push.
+#
+# Changelogs are untrusted input, so Claude runs on an allowlist (`--allowedTools`):
+# it reads this checkout, researches on the web, writes its two files under
+# /tmp/council, and runs only the gh/node commands the prompt names, against the
+# target PR. The PR number is checked to be numeric before it reaches any of them.
 
 on:
   repository_dispatch:
@@ -19,16 +24,16 @@ on:
         description: PR number to convene the council on
         required: true
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-  id-token: write # claude-code-action fetches its GitHub App token via OIDC
+permissions: {}
 
 jobs:
   council:
     if: github.repository == 'backendforth/next-sanity-starter'
     runs-on: ubuntu-latest
+    # Claude reads and comments with the GitHub App token, not GITHUB_TOKEN.
+    permissions:
+      contents: read
+      id-token: write # claude-code-action fetches its GitHub App token via OIDC
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -40,9 +45,13 @@ jobs:
 
       - name: Resolve target PR
         id: target
+        env:
+          PR: ${{ inputs.pr || github.event.client_payload.pr }}
         run: |
-          PR="${{ github.event.inputs.pr || github.event.client_payload.pr }}"
-          if [ -z "$PR" ]; then echo "no PR number supplied"; exit 1; fi
+          if [[ ! "$PR" =~ ^[0-9]+$ ]]; then
+            echo "::error::PR number missing or not numeric"
+            exit 1
+          fi
           echo "pr=$PR" >> "$GITHUB_OUTPUT"
           echo "Convening council on PR #$PR"
 
@@ -52,7 +61,9 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--max-turns 40"
+          claude_args: |
+            --max-turns 40
+            --allowedTools "WebFetch,WebSearch,Read(//tmp/council/**),Edit(//tmp/council/**),Bash(gh pr view ${{ steps.target.outputs.pr }} *),Bash(gh pr diff ${{ steps.target.outputs.pr }} *),Bash(node .github/scripts/council.mjs /tmp/council/eval.json),Bash(gh pr comment ${{ steps.target.outputs.pr }} --body-file /tmp/council/comment.md)"
           prompt: |
             You are the analyst and chair of a "breaking-change council" for
             Dependabot MAJOR dependency PR #${{ steps.target.outputs.pr }} in this repository.
@@ -64,9 +75,9 @@ jobs:
             2. Research the BREAKING CHANGES between those versions (release notes,
                changelog, migration guides) and assess how they affect THIS codebase.
                Propose concrete migration fixes.
-            3. Write your evaluation to `/tmp/eval.json` — breaking changes, affected
-               files/areas, proposed fixes, and your own risk read.
-            4. Convene the council: run `node .github/scripts/council.mjs /tmp/eval.json`.
+            3. Write your evaluation to `/tmp/council/eval.json` — breaking changes,
+               affected files/areas, proposed fixes, and your own risk read.
+            4. Convene the council: run `node .github/scripts/council.mjs /tmp/council/eval.json`.
                It returns the two-round deliberation of 4 independent reviewers as JSON
                on stdout. Read it.
             5. Post exactly ONE comment on PR #${{ steps.target.outputs.pr }} containing:
@@ -75,10 +86,17 @@ jobs:
                - the council's verdict (tally, key risks, conditions),
                - your final recommendation.
                The comment MUST start with the exact marker line `<!-- dep-council -->`.
+               Write it to `/tmp/council/comment.md` and post it with
+               `gh pr comment ${{ steps.target.outputs.pr }} --body-file /tmp/council/comment.md`.
 
             This is advisory ONLY: do NOT merge the PR and do NOT push any code.
-            If a comment starting with `<!-- dep-council -->` already exists, post an
-            updated assessment rather than duplicating boilerplate.
+            If a comment starting with `<!-- dep-council -->` already exists
+            (`gh pr view ${{ steps.target.outputs.pr }} --comments`), post an updated
+            assessment rather than duplicating boilerplate.
+
+            Your tools are limited to reading this repository, web research, writing
+            the two files under `/tmp/council/` (use the Write tool), and the gh/node
+            commands above.
 
       # Ping #github-logs when the council finishes (best-effort; reuses the org
       # Slack secrets). Skips cleanly if the Slack secrets aren't present.

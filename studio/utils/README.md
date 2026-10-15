@@ -10,24 +10,15 @@ See the [Studio readme](../README.md) for a high-level feature list. Helpers use
 
 3. **Frontend** — Ensure the Next.js app uses the same locale ids for routing and content.
 
-## Development vs production datasets
+## Datasets
 
-Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/sync/studioDataset.ts`**, using **`@repo/sanity-dataset-resolve`**:
+**`config/sync/studioDataset.ts`** picks the Studio's dataset with **`@repo/sanity-dataset-resolve`** — `development` for local work and previews, `production` for production builds, unless **`SANITY_STUDIO_DATASET`** pins one. The full rules: [root README](../../README.md#how-reposanity-dataset-resolve-picks-a-dataset).
 
-- Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production builds** **prefer** `production` (`studio/netlify.toml` sets `SANITY_STUDIO_DEPLOYMENT_TARGET` per deploy context, so deploy previews prefer `development`).
-- If the preferred name does not exist yet, resolution **falls back** to the other name (checked on the public Data API, no token needed).
-
-**Why keep both datasets?**
-
-- **`development`** — safe place to try schema changes, test content, and avoid breaking live content.
-- **`production`** — what deployed Studio builds and the live site should use for real content.
-
-You do not “switch” datasets inside the running Studio UI; the **build or dev server** picks the dataset from env + resolution rules. To point Studio at a specific dataset regardless of mode, set **`SANITY_STUDIO_DATASET`** in `.env`.
-
-To **copy content from production into development** on demand (e.g. refresh your dev dataset), use the manual script documented in **`studio/README.md`**: `pnpm run sync:prod-to-dev` inside `studio/` (or `pnpm studio:sync-prod-to-dev` from the repo root).
+To refresh `development` from `production`: `pnpm studio:sync-prod-to-dev` ([`scripts/README.md`](../scripts/README.md)).
 
 ## Other files (short)
 
 - **`imageUrl.ts`** — `@sanity/image-url` builder for the project id and the resolved **`studioDataset`**.
 - **`validateSlug.ts`**, **`helpers.ts`** — validation and small helpers as used by schemas or structure.
+- **`validateModuleMedia.ts`** — `validateModuleMediaRequired` for an embedded `module.media` (the project's `titleMedia`) and `hasMuxAsset` (a Mux field has an uploaded asset).
 - **`titleSlugSource.ts`** — slug `options.source` that uses the first non-empty localized `title` (via **`firstLocalizedLabel.ts`**), so the slug's Generate button works on `internationalizedArrayString` titles.

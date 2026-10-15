@@ -6,10 +6,10 @@
  * - `@variant md { … }` / `@variant 2xl { … }` — reuse the screen variant (needs a stylesheet processed after `@import "tailwindcss"`, e.g. `globals.css`).
  *
  * Literal copies in TS (keep in sync manually — `sizes` and JS can't read CSS variables):
- * - `MediaVideoLoop` poster `sizes` fallback: `--breakpoint-sm` (900px), `--breakpoint-wide`.
+ * - `MEDIA_SIZES` in `components/modules/ModuleMedia.tsx` (`min(100vw, 2000px)`): `--breakpoint-wide`.
  * - `ModuleContentRefsClient` card `sizes`: `--breakpoint-sm`, `--breakpoint-lg` (grid columns).
  * - `carouselMultiSlideLayout.ts` `MD_BREAKPOINT_PX`: `--breakpoint-md` (slides per view).
- * - `MediaImage` Sanity URL `w=` min/max (320 / 2400) are delivery caps, not layout breakpoints.
+ * - `MAX_WIDTH_PX` (2560) in `utils/mediaImageSource.ts` is a delivery cap for Sanity image URLs, not a layout breakpoint.
  */
 
 @theme {

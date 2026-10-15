@@ -11,10 +11,7 @@ import { uiLabel } from "@/src/i18n/uiLabels";
 import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
 
 import { CarouselSlide, type NormalizedSlide } from "./CarouselSlide";
-import {
-	slideWidthAtRowHeightPx,
-	useMultiSlideRowHeight,
-} from "./carouselMultiSlideLayout";
+import { multiSlideLayout } from "./carouselMultiSlideLayout";
 
 type CarouselOptions = {
 	loop: boolean;
@@ -80,15 +77,6 @@ export function CarouselViewport({ slides, options }: Props) {
 		{ loop: options.loop, align: "start" },
 		autoplayPlugin.current ? [autoplayPlugin.current] : [],
 	);
-	const viewportRef = useRef<HTMLDivElement | null>(null);
-
-	const setViewportRef = useCallback(
-		(node: HTMLDivElement | null) => {
-			viewportRef.current = node;
-			emblaRef(node);
-		},
-		[emblaRef],
-	);
 	const [thumbsRef, thumbsApi] = useEmblaCarousel({
 		containScroll: "keepSnaps",
 		dragFree: true,
@@ -149,61 +137,46 @@ export function CarouselViewport({ slides, options }: Props) {
 	);
 
 	const isMulti = options.multipleSlides;
-	const multiSlideRowHeight = useMultiSlideRowHeight(
-		isMulti,
-		slides,
-		viewportRef,
+	const multiLayout = useMemo(
+		() => (isMulti ? multiSlideLayout(slides) : null),
+		[isMulti, slides],
 	);
-
-	useEffect(() => {
-		if (!emblaApi || !isMulti || !multiSlideRowHeight) return;
-		emblaApi.reInit();
-	}, [emblaApi, isMulti, multiSlideRowHeight]);
 
 	if (slides.length === 0) return null;
 
-	const imageSizes = isMulti ? "(max-width: 768px) 50vw, 33vw" : "100vw";
 	const showNavigation = slides.length > 1;
 
 	return (
 		<div className="flex flex-col gap-sm">
 			<div
-				ref={setViewportRef}
+				ref={emblaRef}
 				className={clsx(
 					"overflow-hidden",
-					isMulti ? undefined : "rounded-md bg-black",
+					isMulti ? "@container" : "rounded-md bg-black",
 				)}
 			>
-				<div className={clsx("flex", isMulti && "gap-md")}>
+				<div
+					className={clsx(
+						"flex",
+						isMulti && "gap-md [--slides:2] md:[--slides:3]",
+					)}
+				>
 					{slides.map((slide, index) => {
-						const slideWidthPx =
-							isMulti && multiSlideRowHeight
-								? slideWidthAtRowHeightPx(slide, multiSlideRowHeight)
-								: undefined;
-
+						const layout = multiLayout?.[index];
 						return (
 							<div
 								key={slide.key}
 								className={clsx(
-									"relative shrink-0 grow-0",
-									isMulti ? "min-h-0" : "min-w-0 aspect-video basis-full",
+									"relative min-w-0 shrink-0 grow-0",
+									!layout && "aspect-video basis-full",
 								)}
-								style={
-									isMulti && multiSlideRowHeight && slideWidthPx
-										? {
-												height: multiSlideRowHeight,
-												width: slideWidthPx,
-												flexBasis: slideWidthPx,
-											}
-										: undefined
-								}
+								style={layout?.style}
 							>
 								<CarouselSlide
 									slide={slide}
 									isActive={index === selectedIndex}
-									imageSizes={imageSizes}
+									imageSizes={layout?.sizes}
 									respectAspectRatio={isMulti}
-									rowHeightPx={multiSlideRowHeight}
 								/>
 							</div>
 						);

@@ -4,10 +4,7 @@ import {
 	fetchSiteLanguageSettings,
 	fetchWorkDocument,
 } from "@/sanity/fetchSanityData";
-import {
-	metadataFromSanityPageData,
-	siteBrandTitle,
-} from "@/sanity/seo/resolveSanityMetadata";
+import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 
@@ -29,12 +26,8 @@ export async function generateMetadata({
 		fetchSiteLanguageSettings(),
 		fetchSiteChrome(locale),
 	]);
-	if (!data) {
-		return {
-			title: { absolute: siteBrandTitle(chrome?.settings) },
-			description: undefined,
-		};
-	}
+	/* No document: the layout's `title.default` (the brand) applies. */
+	if (!data) return {};
 	return metadataFromSanityPageData({
 		data,
 		locale,
@@ -76,10 +69,10 @@ export default async function Work({ params }: PageProps) {
 					<section className="flex flex-col gap-sm">
 						<ModulesRenderer
 							modules={data.modules}
-							documentId={data._id}
-							documentType="work"
 							locale={locale}
 							siteLocale={siteLocale}
+							documentId={data._id}
+							documentType="work"
 						/>
 					</section>
 				) : null}

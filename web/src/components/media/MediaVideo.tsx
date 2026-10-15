@@ -368,9 +368,8 @@ function MuxVideoPlayer({
 		}
 	}
 
-	const aspectCss = dims.isFallback
-		? "16 / 9"
-		: `${dims.width} / ${dims.height}`;
+	/* `getMuxDisplayDimensions` already falls back to 16×9. */
+	const aspectCss = `${dims.width} / ${dims.height}`;
 
 	const muxSurfaceStyle = {
 		...(fillParent

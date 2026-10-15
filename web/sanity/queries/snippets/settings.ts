@@ -9,6 +9,9 @@ const richTextBody = `[]{
   ${blockFields}
 }`;
 
+/** The site default language (`siteLanguageSettings.defaultLanguageId`), for chrome fallbacks. */
+const defaultLanguage = `*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0].defaultLanguageId`;
+
 /** Main menu: links plus optional `nav.languageSwitch` blocks (order preserved). */
 const navMainMenuQuery = `mainMenu[]{
   _key,
@@ -31,26 +34,24 @@ const navFooterMenuQuery = `footerMenu[]{
   ${linkQuery}
 }`;
 
-/**
- * `siteNav` for the active locale — main + footer menus with resolved links, no `modules[]`.
- * Falls back to a legacy document with no `language` (pre–document-level i18n) when no
- * locale-specific doc exists.
- */
-const siteNavQuery = `coalesce(
-  *[_type == "siteNav" && language == $locale][0],
-  *[_type == "siteNav" && !defined(language)][0]
-){
+/** `siteNav` for the active locale — main + footer menus with resolved links, no `modules[]`. */
+const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
   _id,
   title,
-  language,
   "mainMenu": ${navMainMenuQuery},
   "footerMenu": ${navFooterMenuQuery}
 }`;
 
-/** `siteCookieBanner` for the active locale — banner copy for the app shell, no `modules[]`. */
-const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && language == $locale][0]{
+/**
+ * `siteCookieBanner` for the active locale, else the default language's: analytics settings are
+ * global, so a locale without its own banner must still ask for consent (in the default
+ * language) instead of loading every tracker. No `modules[]`.
+ */
+const siteCookieBannerQuery = `coalesce(
+  *[_type == "siteCookieBanner" && language == $locale][0],
+  *[_type == "siteCookieBanner" && language == ${defaultLanguage}][0]
+){
   _id,
-  language,
   useCookieBanner,
   consentModal,
   preferencesModal {
@@ -71,23 +72,22 @@ export const siteLanguageSettingsQuery =
 }`);
 
 /**
- * `siteSettings` for the shell and route metadata: the brand title, the favicon and the
- * site-wide SEO fallback. The favicon comes from the default language's document on every
- * route: it is the brand's, not a translation. It is the raw image field, `crop` and `hotspot`
- * included: the browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`), so
- * cropping the source in the Studio is what makes a wide logo usable at 32 px.
+ * `siteSettings` for the shell and route metadata: the brand title and site-wide SEO fallback
+ * of the active locale, and the favicon. The favicon comes from the default language's
+ * document on every route, also when the locale has no `siteSettings` of its own: it is the
+ * brand's, not a translation. It is the raw image field, `crop` and `hotspot` included: the
+ * browser icons are derived from it on the Sanity CDN (`siteFaviconIcons`), so cropping the
+ * source in the Studio is what makes a wide logo usable at 32 px.
  */
-const siteSettingsQuery = `*[_type == "siteSettings" && language == $locale][0]{
-  title,
-  "favicon": *[
-    _type == "siteSettings" &&
-    language == *[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0].defaultLanguageId
-  ][0].favicon${imageQuery},
-  "seo": seo{
+const localSiteSettings = `*[_type == "siteSettings" && language == $locale][0]`;
+const siteSettingsQuery = `{
+  "title": ${localSiteSettings}.title,
+  "seo": ${localSiteSettings}.seo{
     title,
     description,
     "imageUrl": image.asset->url
-  }
+  },
+  "favicon": *[_type == "siteSettings" && language == ${defaultLanguage}][0].favicon${imageQuery}
 }`;
 
 /** Document id: `siteAnalyticsSettings` — tracking providers + load mode (global, not per language). */

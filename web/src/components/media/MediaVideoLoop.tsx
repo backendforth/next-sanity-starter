@@ -92,10 +92,11 @@ export function MediaVideoLoop(props: MediaVideoLoopProps) {
 	const playbackId = extractMuxPlaybackId(props.media);
 	if (!playbackId) return null;
 	preconnectMux();
-	return <MuxVideoLoop key={playbackId} {...props} />;
+	return <MuxVideoLoop key={playbackId} {...props} playbackId={playbackId} />;
 }
 
 function MuxVideoLoop({
+	playbackId,
 	media,
 	caption,
 	posterPayload,
@@ -104,8 +105,7 @@ function MuxVideoLoop({
 	isActive = true,
 	posterPriority = false,
 	allowUnmute = false,
-}: MediaVideoLoopProps) {
-	const playbackId = extractMuxPlaybackId(media);
+}: MediaVideoLoopProps & { playbackId: string }) {
 	const locale =
 		useOptionalLanguage()?.currentLocale ??
 		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
@@ -159,31 +159,35 @@ function MuxVideoLoop({
 		return () => mq.removeEventListener?.("change", sync);
 	}, []);
 
-	const dims = playbackId ? getMuxDisplayDimensions(media) : null;
-	const aspectCss = dims?.isFallback
-		? "16 / 9"
-		: `${dims?.width ?? 16} / ${dims?.height ?? 9}`;
+	/* 16×9 when the asset has no video track data (`isFallback`). */
+	const {
+		width: videoWidthPx,
+		height: videoHeightPx,
+		isFallback: dimsUnknown,
+	} = getMuxDisplayDimensions(media);
+	const aspectCss = `${videoWidthPx} / ${videoHeightPx}`;
+	const knownDims = dimsUnknown
+		? undefined
+		: { width: videoWidthPx, height: videoHeightPx };
 
 	const thumbWidthPx = muxThumbnailRequestWidthPx({
 		containerWidthPx: slotWidthPx,
-		assetMaxWidthPx: dims && !dims.isFallback ? dims.width : undefined,
+		assetMaxWidthPx: knownDims?.width,
 	});
 
 	const poster = useMemo(
 		() =>
-			playbackId
-				? resolveMediaPosterUrls({
-						posterPayload,
-						muxMedia: media,
-						thumbWidthPx,
-						/* The uploaded poster wins, so a video shows the same still everywhere
-						 * (accepting a possible one-frame step at the fade). The Mux fallback
-						 * stays at t=0, the frame playback starts on. */
-						muxTimeSec: 0,
-						muxMaxWidthPx: LOOP_POSTER_MAX_WIDTH_PX,
-					})
-				: null,
-		[playbackId, posterPayload, media, thumbWidthPx],
+			resolveMediaPosterUrls({
+				posterPayload,
+				muxMedia: media,
+				thumbWidthPx,
+				/* The uploaded poster wins, so a video shows the same still everywhere
+				 * (accepting a possible one-frame step at the fade). The Mux fallback
+				 * stays at t=0, the frame playback starts on. */
+				muxTimeSec: 0,
+				muxMaxWidthPx: LOOP_POSTER_MAX_WIDTH_PX,
+			}),
+		[posterPayload, media, thumbWidthPx],
 	);
 
 	/* Stall rescue ceiling (see {@link LOOP_STALL_RESCUE_MS}): absolute, so a later resize
@@ -192,9 +196,6 @@ function MuxVideoLoop({
 		MuxResolutionTier | undefined
 	>(undefined);
 	const hlsSrc = useMemo(() => {
-		if (!playbackId) return "";
-		const vw = dims && !dims.isFallback ? dims.width : 16;
-		const vh = dims && !dims.isFallback ? dims.height : 9;
 		/* Container-aware tier selection: `muxLoopHlsSrc` combines the DPR-
 		 * capped container size with `getNetworkAwareTierCeiling()` to pick
 		 * the highest tier this device + connection can comfortably serve,
@@ -205,8 +206,8 @@ function MuxVideoLoop({
 		 * attached. Resizing the viewport invalidates this memo and picks a
 		 * new tier; in practice resize is rare and the manifest is ~5 kB. */
 		return muxLoopHlsSrc(playbackId, {
-			videoWidthPx: vw,
-			videoHeightPx: vh,
+			videoWidthPx,
+			videoHeightPx,
 			containerWidthPx: slotWidthPx,
 			containerHeightPx: slotHeightPx,
 			devicePixelRatio,
@@ -214,7 +215,8 @@ function MuxVideoLoop({
 		});
 	}, [
 		playbackId,
-		dims,
+		videoWidthPx,
+		videoHeightPx,
 		slotWidthPx,
 		slotHeightPx,
 		devicePixelRatio,
@@ -233,12 +235,12 @@ function MuxVideoLoop({
 	 * steps one rung down; the new `hlsSrc` goes through `useMuxHlsSource`'s normal re-attach,
 	 * and the loop restarts from its first frame at the lighter tier. */
 	const onVideoWaiting = useCallback(() => {
-		if (stallTimerRef.current !== undefined || !playbackId) return;
+		if (stallTimerRef.current !== undefined) return;
 		stallTimerRef.current = window.setTimeout(() => {
 			stallTimerRef.current = undefined;
 			const current = resolveMuxLoopTier({
-				videoWidthPx: dims && !dims.isFallback ? dims.width : 16,
-				videoHeightPx: dims && !dims.isFallback ? dims.height : 9,
+				videoWidthPx,
+				videoHeightPx,
 				containerWidthPx: slotWidthPx,
 				containerHeightPx: slotHeightPx,
 				devicePixelRatio,
@@ -248,18 +250,14 @@ function MuxVideoLoop({
 			if (below !== current) setRescueTierCeiling(below);
 		}, LOOP_STALL_RESCUE_MS);
 	}, [
-		playbackId,
-		dims,
+		videoWidthPx,
+		videoHeightPx,
 		slotWidthPx,
 		slotHeightPx,
 		devicePixelRatio,
 		rescueTierCeiling,
 	]);
 
-	const objectCoverVideoPx =
-		dims && !dims.isFallback
-			? { width: dims.width, height: dims.height }
-			: undefined;
 	/* Attach only once the container measurement and DPR have landed, so the first `hlsSrc`
 	 * is the final URL. Without the gate, `useMuxHlsSource` attaches the bare-ceiling URL and
 	 * the measured re-render one commit later changes `src` — a full teardown that refetches
@@ -278,13 +276,10 @@ function MuxVideoLoop({
 		);
 		return () => window.clearTimeout(t);
 	}, [measurementsReady, attachFallback, shouldAttachHls]);
-	const attachHls =
-		shouldAttachHls &&
-		(measurementsReady || attachFallback) &&
-		Boolean(playbackId);
+	const attachHls = shouldAttachHls && (measurementsReady || attachFallback);
 	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc, {
 		audioEnabled: !muted,
-		objectCoverVideoPx,
+		objectCoverVideoPx: knownDims,
 	});
 
 	const tryPlay = useCallback(() => {
@@ -395,7 +390,7 @@ function MuxVideoLoop({
 
 	useEffect(() => {
 		const root = containerRef.current;
-		if (!root || !playbackId) return;
+		if (!root) return;
 
 		let pauseTimer: number | undefined;
 		const io = new IntersectionObserver(
@@ -420,7 +415,7 @@ function MuxVideoLoop({
 			io.disconnect();
 			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
 		};
-	}, [playbackId, isActive, tryPlay, containerRef, reducedMotion]);
+	}, [isActive, tryPlay, containerRef, reducedMotion]);
 
 	/* Safari autoplay rescue: Low Power Mode (iOS/macOS) and the per-site "Never Auto-Play"
 	 * setting deny even muted `playsinline` autoplay — iOS then draws a struck-through play
@@ -428,7 +423,7 @@ function MuxVideoLoop({
 	 * made inside its handler, so the first pointer / key / touch retries `play()` on a visible,
 	 * paused loop. The listeners detach after the first `playing`. */
 	useEffect(() => {
-		if (reducedMotion || !playbackId) return;
+		if (reducedMotion) return;
 		const el = videoRef.current;
 		if (!el) return;
 		let removed = false;
@@ -464,11 +459,9 @@ function MuxVideoLoop({
 		document.addEventListener("touchend", onGesture);
 		document.addEventListener("keydown", onGesture);
 		return remove;
-	}, [reducedMotion, playbackId]);
+	}, [reducedMotion]);
 
-	if (!playbackId || !poster) {
-		return null;
-	}
+	if (!poster) return null;
 
 	/* Pre-measurement fallback: a literal width — `var()` is invalid inside the `sizes`
 	 * grammar, so the entry silently fell back to 100vw. 2000px mirrors
@@ -499,9 +492,7 @@ function MuxVideoLoop({
 		>
 			<video
 				ref={videoRef}
-				{...(dims && !dims.isFallback
-					? { width: dims.width, height: dims.height }
-					: {})}
+				{...knownDims}
 				className={clsx(
 					/* `object-center` is the CSS default but explicit so the
 					 * `[&_video]:object-cover` overrides further up the cascade
@@ -540,8 +531,8 @@ function MuxVideoLoop({
 				srcSet={poster.srcSet}
 				sizes={poster.srcSet ? posterSizes : undefined}
 				alt={caption || ""}
-				width={dims && !dims.isFallback ? dims.width : undefined}
-				height={dims && !dims.isFallback ? dims.height : undefined}
+				width={knownDims?.width}
+				height={knownDims?.height}
 				loading={posterPriority ? "eager" : "lazy"}
 				fetchPriority={posterPriority ? "high" : "auto"}
 				decoding={posterPriority ? "sync" : "async"}

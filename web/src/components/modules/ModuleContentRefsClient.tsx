@@ -55,7 +55,10 @@ function createdAtMs(target: ContentRefListItem): number {
 	return Number.isNaN(ms) ? 0 : ms;
 }
 
-function collectCategoryOptions(items: ContentRefListItem[]): CategoryOption[] {
+function collectCategoryOptions(
+	items: ContentRefListItem[],
+	locale: string,
+): CategoryOption[] {
 	const byId = new Map<string, string>();
 	for (const item of items) {
 		for (const cat of item?.categories ?? []) {
@@ -65,7 +68,9 @@ function collectCategoryOptions(items: ContentRefListItem[]): CategoryOption[] {
 			if (label) byId.set(id, label);
 		}
 	}
-	return [...byId.entries()].map(([id, label]) => ({ id, label }));
+	return [...byId.entries()]
+		.map(([id, label]) => ({ id, label }))
+		.sort((a, b) => a.label.localeCompare(b.label, locale));
 }
 
 function itemMatchesCategory(
@@ -92,11 +97,13 @@ export function ModuleContentRefsClient({
 	const [categoryId, setCategoryId] = useState<string | null>(null);
 	const [sort, setSort] = useState<SortMode>("newest");
 
-	const categoryOptions = useMemo(() => {
-		const options =
-			isProjectList && showCategoryFilters ? collectCategoryOptions(items) : [];
-		return options.sort((a, b) => a.label.localeCompare(b.label, locale));
-	}, [isProjectList, showCategoryFilters, items, locale]);
+	const categoryOptions = useMemo(
+		() =>
+			isProjectList && showCategoryFilters
+				? collectCategoryOptions(items, locale)
+				: [],
+		[isProjectList, showCategoryFilters, items, locale],
+	);
 
 	const visibleItems = useMemo(() => {
 		const filtered = items.filter((item) =>
@@ -124,7 +131,7 @@ export function ModuleContentRefsClient({
 					{showFilters ? (
 						<fieldset
 							aria-label={uiLabel("filterByCategory", locale)}
-							className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
+							className={navControlGroupClass}
 						>
 							<button
 								type="button"
@@ -152,7 +159,7 @@ export function ModuleContentRefsClient({
 					{showSort ? (
 						<fieldset
 							aria-label={uiLabel("sortProjects", locale)}
-							className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
+							className={navControlGroupClass}
 						>
 							<button
 								type="button"

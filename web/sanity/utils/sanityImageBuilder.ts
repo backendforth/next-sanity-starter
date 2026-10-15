@@ -2,11 +2,9 @@ import {
 	createImageUrlBuilder,
 	type SanityImageSource,
 } from "@sanity/image-url";
+import { stegaClean } from "next-sanity";
 
-import {
-	syncSanityDataset,
-	syncSanityProjectId,
-} from "@/sanity/sanitySyncConfig";
+import { dataset, projectId } from "@/sanity/sanityEnv";
 
 /**
  * What the image helpers read from an `image` field projected with `imageQuery` (or a raw
@@ -30,6 +28,7 @@ export type SanityImageField = {
 	crop?: unknown;
 	hotspot?: unknown;
 	asset?: SanityImageAssetRef | null;
+	alt?: string | null;
 } | null;
 
 type ImageFit = "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
@@ -49,8 +48,8 @@ type BuildImageUrlOptions = {
 };
 
 const builder = createImageUrlBuilder({
-	projectId: syncSanityProjectId,
-	dataset: syncSanityDataset,
+	projectId,
+	dataset,
 });
 
 function assetRefForBuilder(
@@ -219,8 +218,8 @@ export function buildFetchedImageUrl(
 	image: SanityImageField,
 	options: BuildImageUrlOptions = {},
 ): string | null {
-	/** Client bundles only see `NEXT_PUBLIC_*`; without it `projectId` can be empty and `@sanity/image-url` emits broken URLs. Prefer expanded `asset.url` from GROQ. */
-	if (!syncSanityProjectId?.trim()) {
+	/** Without a project id `@sanity/image-url` emits broken URLs; use the expanded `asset.url` from GROQ. */
+	if (!projectId) {
 		const direct = image?.asset?.url;
 		return typeof direct === "string" && direct.length > 0 ? direct : null;
 	}
@@ -280,7 +279,7 @@ export function sanityImageFieldFromMediaQueryPayload(
 	}
 	const o = payload as Record<string, unknown>;
 
-	if (o.kind === "video") {
+	if (stegaClean(o.kind) === "video") {
 		return null;
 	}
 
@@ -289,15 +288,12 @@ export function sanityImageFieldFromMediaQueryPayload(
 		return null;
 	}
 
-	const img: SanityImageField = {
+	return {
 		crop: o.crop,
 		hotspot: o.hotspot,
 		asset,
+		alt: typeof o.alt === "string" ? o.alt : undefined,
 	};
-	if (typeof o.alt === "string") {
-		(img as { alt?: string }).alt = o.alt;
-	}
-	return img;
 }
 
 /** `sanityImageFieldFromMediaQueryPayload` plus plain Studio image fields (no `kind`). */

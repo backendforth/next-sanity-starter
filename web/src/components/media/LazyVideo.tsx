@@ -3,11 +3,8 @@
 import dynamic from "next/dynamic";
 
 /*
- * The video players — Mux Player, the hls.js loop and their helpers — load only on pages that
- * render one. A server component importing them directly would put them in every route's
- * first-load JS; a lazy client boundary splits them into their own chunk. SSR stays on, so the
- * poster markup is still in the first paint. Images stay static (`MediaImage`): they are the
- * usual LCP element.
+ * Mux Player, the hls.js loop and their helpers, only on pages that render a video. SSR on, so
+ * the poster is in the first paint. Images stay static (`MediaImage`): they are the usual LCP.
  */
 
 export const LazyMediaVideo = dynamic(() =>

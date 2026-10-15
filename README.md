@@ -37,13 +37,13 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Hardened revalidation** — `POST /api/revalidate` verifies Sanity's webhook signature (`parseBody` from `next-sanity/webhook`), acts only on allow-listed document types, expires the matching cache tags immediately, and is fail-closed in production.
 
-**SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `resolveSanityMetadata` builds canonical + `hreflang` metadata for every route.
+**SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `metadataFromSanityPageData` builds canonical + `hreflang` metadata for every route.
 
 **Hardened by default** — CSP with `frame-ancestors` (Studio-friendly), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options` from `headers()` in `web/next.config.ts`, so they reach the SSR HTML on any host. Netlify `build.ignore` skips web builds on Studio-only commits.
 
 **Cookie consent (optional)** — Sanity-driven [`vanilla-cookieconsent`](https://github.com/orestbida/cookieconsent) banner with light/dark theming via `--color-*` tokens, editable copy and per-category sections in JSON, plus `en` / `de` defaults when the doc is empty. An `open-cookie-preferences` link function lets any nav item reopen the preferences modal, and `hasConsent(category)` is exposed for gating analytics scripts. Toggle it on under **Settings → Cookie Banner**; the banner stays inert until `useCookieBanner` is `true`.
 
-**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration. (Hybrid coverage on `main`; **full coverage** on the `variant/document-level` branch — no recursive fragment to block the analyser.)
+**Typed GROQ pipeline** — `sanity typegen` generates result types straight from the schema, gated in CI by a `git diff --exit-code` after every regeneration; `check:typegen` fails when TypeGen skips a query.
 
 **Tailwind CSS v4** — CSS-first config (`@theme`), token-driven dark mode without class hacks, PostCSS pipeline with custom `rem()` helper. Design tokens live in `web/src/assets/styles/`.
 
@@ -59,8 +59,8 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
 | **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
-| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and prints the `ModulesRenderer.tsx` branch to paste |
-| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` — validates module wiring across schema, component, query, and type files (CI gate) |
+| **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and wires it, the `ModulesRenderer.tsx` `case` included |
+| **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` and `check:typegen` — module wiring and query typing (CI gates) |
 
 ---
 
@@ -120,11 +120,13 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 1. **Explicit pin** wins — `SANITY_STUDIO_DATASET` / `NEXT_PUBLIC_SANITY_DATASET`.
 2. Otherwise, `SANITY_STUDIO_DEPLOYMENT_TARGET` decides preference order:
    - `production` → prefer `production`, fall back to `development`.
-   - `development` / `preview` / unset → prefer `development`, fall back to `production`.
+   - `development` / `preview` → prefer `development`, fall back to `production`.
+   - unset → `production` first on a Netlify / Vercel production build (`CONTEXT` / `VERCEL_ENV`), `development` first everywhere else.
+   - any other value (e.g. `staging`) → that dataset first, then the two above.
 3. Canonical names are configurable (`SANITY_STUDIO_DATASET_DEVELOPMENT` / `_PRODUCTION`).
-4. If needed, the resolver enumerates actual datasets via the Management API (`SANITY_DATASET_RESOLVER_TOKEN` / `SANITY_AUTH_TOKEN`) to avoid requesting one that doesn't exist.
+4. Each candidate is probed on the public Data API (no token; 404 = missing), and the first that exists wins. Offline, or with no project id, the first preferred name is used — never a silent switch to production.
 
-Consumed by `web/sanity/resolveStudioDataset.ts` + `web/sanity/sanityEnv.ts` and `studio/config/sync/studioDataset.ts`.
+Consumed by `web/next.config.ts` (resolved once per build and inlined, so queries and image URLs share it) and `studio/config/sync/studioDataset.ts`.
 
 ---
 
@@ -153,7 +155,8 @@ All from the repo root.
 | `pnpm studio:register` | Register the Netlify-hosted Studio URL with Sanity and upload the schema (`--dry-run` to preview) |
 | `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`) — the alternative to Netlify |
 | `pnpm generate` | Schema extract, Studio + web typegen, `check:typegen` (`studio:generate` is an alias) |
-| `pnpm check:wiring` | Module wiring check (`gen:module` scaffolds a wired module) |
+| `pnpm gen:module <Name>` | Scaffold a content module and wire it, the `ModulesRenderer.tsx` `case` included. PascalCase name; `--inline` also registers it inside rich text, `--dry-run` previews |
+| `pnpm check:wiring` | Check the module wiring against the module schemas, both ways, and the inline places with each other. Runs in CI |
 | `pnpm test:tooling` | Tests for the wiring check and the scaffolder |
 | `pnpm studio:sync-prod-to-dev` | Clone `production` → `development` dataset |
 | `pnpm lint` | Biome check (repo-wide) |
@@ -161,8 +164,6 @@ All from the repo root.
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
 | `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
-| `pnpm gen:module <Name>` | Scaffold a new content module (files, barrels, `schemaTypes`, `moduleTypes`; prints the `ModulesRenderer.tsx` branch to paste). PascalCase name; `--dry-run` to preview, `--inline` to also register inside Portable Text. |
-| `pnpm check:wiring` | Validate the 8-point module wiring (schema, component, query, type, and their barrels/registrations). Runs in CI. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.
 
@@ -171,7 +172,7 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 ## Tooling
 
 - **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`; Studio uses a 2-space override, the rest of the repo is tabs.
-- **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
+- **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them, and refuses a file that also has unstaged changes; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
 - **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 22, `check:wiring` and `test:tooling`, `pnpm generate` with a diff guard on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
 - **Dependabot** — weekly npm updates, Sanity plugins grouped, `@types/node` major bumps explicitly ignored (typings track Node 22 LTS).
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
@@ -202,7 +203,7 @@ Set on that site: `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DATASET` (per deplo
 
 `pnpm studio:deploy` ships to Sanity's hosted Studio (`*.sanity.studio`). The deploy script forces `SANITY_STUDIO_DEPLOYMENT_TARGET=production`.
 
-Configure the **Revalidate webhook** in Sanity Manage → API → Webhooks, targeting `https://<your-site>/api/revalidate` with the same `SANITY_REVALIDATE_SECRET` (signed delivery). Projection `{_id, _type, slug, language}`; the document types it acts on (and which cache tags each one purges) are `WEBHOOK_DOCUMENT_TYPES` in `web/sanity/cacheTags.ts`.
+Configure the **Revalidate webhook** in Sanity Manage → API → Webhooks, targeting `https://<your-site>/api/revalidate` with the same `SANITY_REVALIDATE_SECRET` (signed delivery). Projection `{_type, slug}`; the document types it acts on (and which cache tags each one purges) are `WEBHOOK_DOCUMENT_TYPES` in `web/sanity/cacheTags.ts`.
 
 ### Any other host (Vercel, Docker, …)
 

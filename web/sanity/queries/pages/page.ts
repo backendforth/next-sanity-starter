@@ -10,7 +10,6 @@ export const pageBySlugQuery =
   _id,
   title,
   "path": ${routePathProjection},
-  language,
   ${modulesQuery},
   ${pageSeoQuery},
   ${translationsQuery}

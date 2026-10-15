@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`) and is passed into `metadataFromSanityPageData`.
+**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, `path`, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`) and is passed into `metadataFromSanityPageData`.
 
 Import from `@/sanity/queries`.
 
@@ -22,7 +22,6 @@ Slug lists and sitemap-oriented queries live in **`queries/snippets/sitemap.ts`*
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
-import type { PageDocument } from "@/sanity/types/pages";
 
 export default async function Page({
   params,
@@ -30,7 +29,8 @@ export default async function Page({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const doc = await client.fetch<PageDocument | null>(pageBySlugQuery, { slug, locale });
+  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`. No hand-written type.
+  const doc = await client.fetch(pageBySlugQuery, { slug, locale });
   if (!doc) notFound();
 
   return (
@@ -51,11 +51,9 @@ import { client } from "@/sanity/client";
 import { pageSlugsQuery } from "@/sanity/queries";
 
 export async function generateStaticParams() {
-  const rows = await client.fetch<Array<{ slug: string | null; language: string | null }>>(
-    pageSlugsQuery,
-  );
+  const rows = await client.fetch(pageSlugsQuery);
   return rows
-    .filter((r): r is { slug: string; language: string } => Boolean(r.slug && r.language))
+    .filter((r) => r.language)
     .map((r) => ({ locale: r.language, slug: r.slug }));
 }
 ```
@@ -64,22 +62,13 @@ The app's version is `src/app/[locale]/[slug]/page.tsx` (via `cachedPageSlugs`).
 
 ## Sitemap — `sitemapPagesQuery`
 
-Returns every **public route** in every language: `home` (`path: "/"`), `work` (`/work`), and all `page` / `project` documents with a slug (`/{slug}`, `/work/{slug}`). Each row includes `_id`, `_type`, `_updatedAt`, `language`, optional `slug`, and **`path`** without the locale prefix — add it per `language` when building `loc` (see `src/app/sitemap.ts`).
+Returns every **public route** in every language: `home` (`path: "/"`), `work` (`/work`), and all `page` / `project` documents with a slug (`/{slug}`, `/work/{slug}`). Each row includes `_id`, `_type`, `_updatedAt`, `language`, `translations` and **`path`** without the locale prefix — add it per `language` when building `loc` (see `src/app/sitemap.ts`).
 
 ```ts
 import { client } from "@/sanity/client";
 import { sitemapPagesQuery } from "@/sanity/queries";
 
-const entries = await client.fetch<
-  Array<{
-    _id: string;
-    _type: string;
-    _updatedAt: string;
-    language: string | null;
-    slug: string | null;
-    path: string;
-  }>
->(sitemapPagesQuery);
+const entries = await client.fetch(sitemapPagesQuery);
 ```
 
 ## Home route
@@ -98,7 +87,7 @@ Page queries return **JSON**. Persist that in your store, not the query string.
 
 **Option A — `sanityFetch` via `fetchSanityData` (recommended for App Router):**
 
-Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request, so `generateMetadata` and the page share one fetch; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Metadata cleans the strings it uses (`resolveSanityMetadata`).
+Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request, so `generateMetadata` and the page share one fetch; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Metadata cleans the strings it uses (`metadataFromSanityPageData`).
 
 ```ts
 import { fetchPageBySlug } from "@/sanity/fetchSanityData";
@@ -115,7 +104,7 @@ const data = await fetchPageBySlug(slug, locale);
 
 ## Metadata
 
-Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label) → site SEO title; home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A title equal to the brand skips the layout's `%s | brand` template.
+Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata`. The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label); home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A page titled exactly like the brand skips the layout's `%s | brand` template.
 
 ## Related
 

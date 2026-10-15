@@ -5,63 +5,41 @@ import { parseBody } from "next-sanity/webhook";
 import { tagsForWebhookDocument } from "@/sanity/cacheTags";
 
 const REVALIDATE_SECRET = process.env.SANITY_REVALIDATE_SECRET?.trim();
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-/** The webhook projection (`{_id, _type, slug, language}`); fields are checked, not trusted. */
+/** The webhook projection, `{_type, slug}`. `parseBody` only hands it over signed. */
 type WebhookPayload = {
-	_type?: unknown;
-	slug?: { current?: unknown } | null;
-	language?: unknown;
+	_type?: string;
+	slug?: { current?: string } | null;
 };
 
 export async function POST(request: NextRequest) {
-	if (!REVALIDATE_SECRET && IS_PRODUCTION) {
+	if (!REVALIDATE_SECRET) {
 		return NextResponse.json(
 			{ message: "SANITY_REVALIDATE_SECRET is not configured" },
 			{ status: 500 },
 		);
 	}
 
-	let body: WebhookPayload | null;
+	let parsed: Awaited<ReturnType<typeof parseBody<WebhookPayload>>>;
 	try {
-		if (REVALIDATE_SECRET) {
-			/* Verifies Sanity's `sanity-webhook-signature` (base64url HMAC over `t.<body>`) and
-			 * waits out Content Lake's eventual consistency, so the re-render reads the new data. */
-			const parsed = await parseBody<WebhookPayload>(
-				request,
-				REVALIDATE_SECRET,
-			);
-			if (parsed.isValidSignature !== true) {
-				return NextResponse.json(
-					{ message: "Invalid signature" },
-					{ status: 401 },
-				);
-			}
-			body = parsed.body;
-		} else {
-			console.warn(
-				"[api/revalidate] SANITY_REVALIDATE_SECRET is not set — accepting an unsigned request outside production.",
-			);
-			body = await request.json();
-		}
+		/* Verifies Sanity's `sanity-webhook-signature` (base64url HMAC over `t.<body>`) and waits
+		 * out Content Lake's eventual consistency, so the re-render reads the new data. */
+		parsed = await parseBody<WebhookPayload>(request, REVALIDATE_SECRET);
 	} catch {
 		return NextResponse.json(
 			{ message: "Error parsing request body" },
 			{ status: 400 },
 		);
 	}
+	if (parsed.isValidSignature !== true) {
+		return NextResponse.json({ message: "Invalid signature" }, { status: 401 });
+	}
 
-	const type = typeof body?._type === "string" ? body._type : undefined;
-	const slug =
-		typeof body?.slug?.current === "string" ? body.slug.current : undefined;
-	const language =
-		typeof body?.language === "string" && body.language.trim()
-			? body.language.trim()
-			: undefined;
-
-	/* The allow-list lives in `cacheTags.ts`: an unknown `_type` yields no tags, so a forged
-	 * payload cannot force cache churn. */
-	const tags = tagsForWebhookDocument(type, slug, language);
+	/* The allow-list lives in `cacheTags.ts`: an unknown `_type` yields no tags. */
+	const tags = tagsForWebhookDocument(
+		parsed.body?._type,
+		parsed.body?.slug?.current,
+	);
 	if (tags.length === 0) {
 		return NextResponse.json({
 			revalidated: false,

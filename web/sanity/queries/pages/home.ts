@@ -9,7 +9,6 @@ export const homeQuery =
 	defineQuery(`*[_type == "home" && language == $locale][0]{
   _id,
   title,
-  language,
   "path": ${routePathProjection},
   ${modulesQuery},
   ${pageSeoQuery},

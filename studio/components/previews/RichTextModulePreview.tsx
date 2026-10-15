@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { PreviewProps } from "sanity";
 
-import { RichTextBlockMediaArea } from "./previewMedia";
+import { renderPreviewMedia } from "./previewMedia";
 
 const blockShell: CSSProperties = {
   width: "100%",
@@ -10,6 +10,18 @@ const blockShell: CSSProperties = {
   borderRadius: 6,
   border: "1px solid rgba(0, 0, 0, 0.08)",
   overflow: "hidden",
+};
+
+/** 16:9 and as wide as the rich-text block (not the Studio window). */
+const mediaFrameStyle: CSSProperties = {
+  position: "relative",
+  width: "100%",
+  aspectRatio: "16 / 9",
+  overflow: "hidden",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "var(--card-muted-bg-color, rgba(0,0,0,0.07))",
 };
 
 const titleBarStyle: CSSProperties = {
@@ -36,11 +48,16 @@ export function richTextModulePreview(
     const title = showTitle ? props.title : undefined;
     const subtitleText =
       typeof subtitle === "string" ? subtitle : String(subtitle);
+    const mediaNode = renderPreviewMedia(media, {
+      width: 1600,
+      height: 900,
+      iconSize: 48,
+    });
 
     return (
       <div style={blockShell}>
         <div style={titleBarStyle}>{componentTitle}</div>
-        <RichTextBlockMediaArea media={media} />
+        {mediaNode ? <div style={mediaFrameStyle}>{mediaNode}</div> : null}
         {title || subtitle ? (
           <div
             style={{

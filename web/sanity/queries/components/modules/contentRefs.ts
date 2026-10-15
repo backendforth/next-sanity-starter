@@ -9,7 +9,6 @@ const contentRefTargetProjection = `
   _id,
   _type,
   _createdAt,
-  language,
   title,
   "slug": slug.current,
   "path": ${routePathProjection},
@@ -28,7 +27,7 @@ const contentRefTargetProjection = `
 /**
  * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`). `selection == "all"` lists every
  * routable target of `sourceScope` in `$locale` (`^` is the module inside the subquery):
- * `pages` = home and pages, `projects` = projects with a title medium, `all` = both — the sets
+ * `pages` = home and pages, `projects` = projects, `all` = both — the sets
  * the Studio's picker offers (`contentRefReferenceFilter` in
  * `studio/schemas/constants/references.ts`). Otherwise the editor's picks, in their order.
  */
@@ -46,7 +45,7 @@ export const moduleContentRefsInnerFields = `
         ) ||
         (
           ^.sourceScope != "pages" &&
-          _type == "project" && defined(slug.current) && defined(titleMedia.type)
+          _type == "project" && defined(slug.current)
         )
       )
     ] | order(_updatedAt desc) {

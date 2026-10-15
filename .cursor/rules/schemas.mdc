@@ -13,7 +13,7 @@ Hard rules:
 - New document types also need a structure item under `studio/config/structure/items/` and registration in `studio/config/structure/index.ts`. The sidebar does NOT auto-populate from schemas.
 - Routable types must be wired into Presentation: `studio/config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`) and `resolve.ts` / `locationsResolver.ts`.
 - Internally linkable types go into `studio/schemas/constants/references.ts` (`PAGE_REFERENCES`).
-- Document-level i18n (`@sanity/document-internationalization`): a translatable document type has the hidden, read-only `language` field (copy from `studio/schemas/documents/page.ts`; never edit it) and is listed in `TRANSLATABLE_SCHEMA_TYPES` in `studio/sanity.config.ts`. Content fields stay plain (`string`, `richText`, `richTextMedia`) — never `internationalizedArray*` on this branch.
+- Document-level i18n (`@sanity/document-internationalization`): a translatable document type has the hidden, read-only `language` field (`languageField` from `studio/schemas/fields/languageField.ts`; never edit it) and is listed in `TRANSLATABLE_SCHEMA_TYPES` in `studio/sanity.config.ts`. Content fields stay plain (`string`, `richText`, `richTextMedia`) — never `internationalizedArray*` on this branch.
 - Slug fields use `validateSlug` from `studio/utils/validateSlug.ts`.
 - Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
 - Mux encoding ceilings live on the `mux.video` field (`options.max_resolution_tier`: video 2160p, loop 1440p). See "Mux video resolution" in `AGENTS.md`.
@@ -22,7 +22,7 @@ After every schema edit:
 
 ```
 pnpm generate
-git add studio/schema.json studio/sanity.types.gen.ts
+git add studio/schema.json studio/sanity.types.gen.ts web/sanity/sanity.types.gen.ts
 pnpm typecheck
 ```
 
@@ -30,7 +30,7 @@ CI rejects any uncommitted gen diff.
 
 NEVER edit:
 
-- `studio/sanity.types.gen.ts`
+- `studio/sanity.types.gen.ts`, `web/sanity/sanity.types.gen.ts` (any `*.gen.*`)
 - `studio/schema.json`
 - Anything under `studio/.sanity/`
 

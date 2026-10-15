@@ -38,11 +38,7 @@ export const fetchHomeDocument = cache(async (locale: string) => {
 	const { data } = await sanityFetch({
 		query: homeQuery,
 		params: { locale },
-		tags: [
-			SANITY_CACHE_TAGS.home(locale),
-			SANITY_CACHE_TAGS.homeAll,
-			...EMBEDDED_CONTENT_TAGS,
-		],
+		tags: [SANITY_CACHE_TAGS.home, ...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -53,7 +49,7 @@ export const fetchPageBySlug = cache(async (slug: string, locale: string) => {
 	const { data } = await sanityFetch({
 		query: pageBySlugQuery,
 		params: { slug, locale },
-		tags: [SANITY_CACHE_TAGS.pageSlug(slug, locale), ...EMBEDDED_CONTENT_TAGS],
+		tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -64,11 +60,7 @@ export const fetchWorkDocument = cache(async (locale: string) => {
 	const { data } = await sanityFetch({
 		query: workQuery,
 		params: { locale },
-		tags: [
-			SANITY_CACHE_TAGS.work(locale),
-			SANITY_CACHE_TAGS.workAll,
-			...EMBEDDED_CONTENT_TAGS,
-		],
+		tags: [SANITY_CACHE_TAGS.work, ...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -80,10 +72,7 @@ export const fetchProjectBySlug = cache(
 		const { data } = await sanityFetch({
 			query: projectBySlugQuery,
 			params: { slug, locale },
-			tags: [
-				SANITY_CACHE_TAGS.projectSlug(slug, locale),
-				...EMBEDDED_CONTENT_TAGS,
-			],
+			tags: [SANITY_CACHE_TAGS.projectSlug(slug), ...EMBEDDED_CONTENT_TAGS],
 		});
 		return data;
 	},
@@ -99,14 +88,16 @@ export const fetchSiteChrome = cache(async (locale: string) => {
 	const { data } = await sanityFetch({
 		query: siteChromeQuery,
 		params: { locale },
-		/* Embedded tags: nav links and the 404 body's links resolve page and project slugs. */
+		/* `pages`: nav and 404-body links resolve home and page paths (`PAGE_REFERENCES`).
+		 * `siteLanguageSettings`: the favicon and banner fallbacks read the default language. */
 		tags: [
 			SANITY_CACHE_TAGS.siteNav,
 			SANITY_CACHE_TAGS.siteCookieBanner,
 			SANITY_CACHE_TAGS.siteSettings,
 			SANITY_CACHE_TAGS.siteAnalyticsSettings,
 			SANITY_CACHE_TAGS.errorSettings,
-			...EMBEDDED_CONTENT_TAGS,
+			SANITY_CACHE_TAGS.siteLanguageSettings,
+			SANITY_CACHE_TAGS.pages,
 		],
 	});
 	return data;

@@ -111,14 +111,10 @@ export function resolveNavMenuLink(
 
 	if (isStegaVariant(link, "linkType", "linkFunction")) {
 		const key = stegaClean(link.func?.key);
-		const params =
-			typeof link.func?.params === "string" ? link.func.params : null;
 
 		if (key === "scroll-to") {
-			const anchor =
-				typeof params === "string" && params.trim().length > 0
-					? params.trim()
-					: "";
+			/* Cleaned: in Presentation the markers would end up in the hash and match no id. */
+			const anchor = stegaClean(link.func?.params)?.trim();
 			if (!anchor) {
 				return null;
 			}

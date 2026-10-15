@@ -10,7 +10,6 @@ export const workQuery =
 	defineQuery(`*[_type == "work" && language == $locale][0]{
   _id,
   title,
-  language,
   "path": ${routePathProjection},
   ${modulesQuery},
   ${pageSeoQuery},

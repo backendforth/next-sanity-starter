@@ -11,6 +11,7 @@ const kickerStyle = {
 };
 
 const thumbStyle = {
+  position: "relative" as const,
   width: 56,
   height: 56,
   flexShrink: 0,
@@ -39,7 +40,9 @@ export function moduleRowPreview(kicker?: string) {
           padding: "4px 0",
         }}
       >
-        <div style={thumbStyle}>{renderPreviewMedia(media)}</div>
+        <div style={thumbStyle}>
+          {renderPreviewMedia(media, { width: 112, height: 112, iconSize: 28 })}
+        </div>
         <div style={{ minWidth: 0, flex: 1 }}>
           {kicker ? <div style={kickerStyle}>{kicker}</div> : null}
           {title ? (

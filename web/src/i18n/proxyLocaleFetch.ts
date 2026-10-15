@@ -1,9 +1,7 @@
-import { resolveStudioDatasetAsync } from "@repo/sanity-dataset-resolve";
-
 import { normalizeSiteLocaleConfig } from "@/sanity/normalizeSiteLocaleConfig";
 import { siteLanguageSettingsQuery } from "@/sanity/queries";
-import { getSanityStudioProjectId } from "@/sanity/resolveStudioDataset";
 import type { SiteLanguageSettingsQueryResult } from "@/sanity/sanity.types.gen";
+import { dataset, projectId } from "@/sanity/sanityEnv";
 
 import type { SiteLocaleConfig } from "./fallbackSiteLocales";
 
@@ -14,11 +12,6 @@ type CacheEntry = { config: SiteLocaleConfig; expires: number };
 let cache: CacheEntry | null = null;
 let refreshInFlight: Promise<SiteLocaleConfig> | null = null;
 
-/** Explicit env wins inside the resolver; its existence checks are memoized per process. */
-function resolveDatasetName(): Promise<string> {
-	return resolveStudioDatasetAsync(process.env);
-}
-
 /**
  * One GROQ round trip for `siteLanguageSettings`. Published reads go through the
  * CDN host (edge-cached, no auth); draft reads hit the live API with the read
@@ -27,8 +20,6 @@ function resolveDatasetName(): Promise<string> {
  * offline fallback.
  */
 async function querySiteLanguageSettings(
-	projectId: string,
-	dataset: string,
 	drafts: boolean,
 ): Promise<SiteLocaleConfig | null> {
 	const token = process.env.SANITY_API_READ_TOKEN?.trim();
@@ -61,16 +52,8 @@ function refreshPublishedConfig(): Promise<SiteLocaleConfig> {
 		const previous = cache?.config ?? null;
 		let config = previous ?? normalizeSiteLocaleConfig(null);
 		try {
-			const projectId = getSanityStudioProjectId();
-			if (projectId) {
-				const dataset = await resolveDatasetName();
-				const fresh = await querySiteLanguageSettings(
-					projectId,
-					dataset,
-					false,
-				);
-				if (fresh) config = fresh;
-			}
+			const fresh = await querySiteLanguageSettings(false);
+			if (fresh) config = fresh;
 		} catch (err) {
 			console.error("[proxyLocaleFetch] fetch or parse failed", err);
 		}
@@ -100,21 +83,17 @@ function refreshPublishedConfig(): Promise<SiteLocaleConfig> {
  * which applies the same published-unless-draft rule via `unstable_cache` (tag
  * `site-language-settings`). Keep those two paths; only the GROQ string is
  * shared via `siteLanguageSettingsQuery` from `web/sanity/queries`.
- *
- * Dataset resolution matches `web/sanity/sanityEnv.ts` when env is not pinned.
  */
 export async function fetchSiteLocaleConfigForProxy(options?: {
 	preferDrafts?: boolean;
 }): Promise<SiteLocaleConfig> {
-	const projectId = getSanityStudioProjectId();
 	if (!projectId) {
 		return normalizeSiteLocaleConfig(null);
 	}
 
 	if (options?.preferDrafts && process.env.SANITY_API_READ_TOKEN?.trim()) {
 		try {
-			const dataset = await resolveDatasetName();
-			const config = await querySiteLanguageSettings(projectId, dataset, true);
+			const config = await querySiteLanguageSettings(true);
 			if (config) return config;
 		} catch (err) {
 			console.error("[proxyLocaleFetch] drafts fetch failed", err);

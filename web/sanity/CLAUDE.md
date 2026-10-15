@@ -20,7 +20,7 @@ This is the **data layer**: GROQ queries, the names for their generated types, a
 | `queries/components/modules/` | Per-module projections (one file per `module.<id>`) + barrel. |
 | `queries/components/` | Per-component (non-module) projections. |
 | `queries/pages/` | Per-route projections. |
-| `types.ts` | Names for the generated query types (`HomeDocument`, `ModuleOf<…>`, …) and `StegaAware`. |
+| `types.ts` | Names for the generated query types (`ModuleOf<…>`, `SiteCookieBanner`, …), stega-branded like `sanityFetch` returns them. |
 | `sanity.types.gen.ts` | TypeGen output (`pnpm generate`). Never edit. |
 | `fetchSanityData.ts` | `fetch*` helpers; per-language ones take `locale` and pass it as `$locale`. |
 | `utils/sanityLocalizedText.ts` | Resolver for `internationalizedArray*` values. Only `resolveLinkLabel.ts` calls it here, for link titles that arrive as arrays. |

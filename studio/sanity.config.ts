@@ -26,8 +26,7 @@ import { schemaTypes } from "./schemas";
 /**
  * Document types that carry a `language` field and have parallel-per-locale
  * documents (see `@sanity/document-internationalization`). Add new translatable
- * types here AND give the schema the hidden read-only `language` field (see
- * `schemas/documents/page.ts`).
+ * types here AND add `languageField` (`schemas/fields/languageField.ts`) to the schema.
  */
 const TRANSLATABLE_SCHEMA_TYPES = [
   "home",
@@ -112,9 +111,11 @@ export default defineConfig({
   document: {
     actions: (prev, { schemaType }) =>
       filterSingletonDocumentActions(prev, schemaType),
+    // `global` is the "Create" menu, `document` feeds the "Create new" button of reference
+    // inputs in a document pane; only `structure` items open singletons (by fixed id).
     newDocumentOptions: (prev, { creationContext }) =>
-      creationContext.type === "global"
-        ? prev.filter((item) => !isSingletonTemplate(item.templateId))
-        : prev,
+      creationContext.type === "structure"
+        ? prev
+        : prev.filter((item) => !isSingletonTemplate(item.templateId)),
   },
 });

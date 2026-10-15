@@ -33,8 +33,6 @@ function parseSections(
 	locale: string,
 	trackers: AnalyticsTracker[],
 ): CookieConsent.Section[] {
-	// The query projects `sections.code`, but normalise anyway so an unprojected
-	// `code` object does not silently fall through to the defaults.
 	const raw = sectionsJsonFromSanity(doc.preferencesModal?.sections);
 	if (raw && raw.trim().length > 0) {
 		try {

@@ -19,7 +19,7 @@ export function LanguageSwitch({ onAfterLocaleChange }: LanguageSwitchProps) {
 	return (
 		<fieldset
 			aria-label={uiLabel("language", currentLocale)}
-			className={`${navControlGroupClass} m-0 min-w-0 border-0 p-0`}
+			className={navControlGroupClass}
 		>
 			{languages.map((languageOption) => {
 				const active = currentLocale === languageOption.id;

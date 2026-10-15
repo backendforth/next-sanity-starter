@@ -6,13 +6,6 @@ import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
 /**
- * Refresh on tag invalidation (`pages`, `site-pages`, `site-language-settings`)
- * via `/api/revalidate`. The 1 h fail-safe revalidate ensures editors who skip
- * the webhook still get fresh sitemaps within reasonable time.
- */
-export const revalidate = 3600;
-
-/**
  * One sitemap entry per language variant of a routable document. With
  * document-level translation each language is its own document and slugs may
  * differ, so the `hreflang` alternates come from the row's `translations`

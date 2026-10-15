@@ -9,15 +9,12 @@
  */
 
 export const SANITY_CACHE_TAGS = {
-	home: (locale: string) => `home-${locale}`,
-	work: (locale: string) => `work-${locale}`,
-	/** Every language's home/work entry — each one projects its sibling variants (`translationsQuery`). */
-	homeAll: "home-all",
-	workAll: "work-all",
+	home: "home",
+	work: "work",
 	pages: "pages",
 	projects: "projects",
-	pageSlug: (slug: string, locale: string) => `page-${slug}-${locale}`,
-	projectSlug: (slug: string, locale: string) => `project-${slug}-${locale}`,
+	pageSlug: (slug: string) => `page-${slug}`,
+	projectSlug: (slug: string) => `project-${slug}`,
 	sitemap: "site-pages",
 	siteLanguageSettings: "site-language-settings",
 	siteSettings: "site-settings",
@@ -45,40 +42,25 @@ export const EMBEDDED_CONTENT_TAGS: readonly string[] = [
 /**
  * Webhook document type → tags to invalidate. Also the allow-list: a `_type` missing here is
  * ignored by `/api/revalidate`, so forged payloads cannot force cache churn.
- *
- * Every route document projects its other-language variants (`translationsQuery`) for hreflang
- * and the language switch, so a publish in one language refreshes its siblings too: `pages` /
- * `projects` already span all languages, home and work purge their `*-all` tags. Per-language
- * tags need the payload's `language`; without it the collection tags still cover the change.
  */
-const WEBHOOK_TAG_MAP: Record<
-	string,
-	(slug?: string, language?: string) => string[]
-> = {
+const WEBHOOK_TAG_MAP: Record<string, (slug?: string) => string[]> = {
 	/* `home` is a page reference too (`PAGE_REFERENCES`): content-refs lists and internal links
 	 * embed its title, so it purges the embedding entries like a page does. */
-	home: (_slug, language) => [
-		...(language ? [SANITY_CACHE_TAGS.home(language)] : []),
-		SANITY_CACHE_TAGS.homeAll,
+	home: () => [
+		SANITY_CACHE_TAGS.home,
 		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.sitemap,
 	],
-	work: (_slug, language) => [
-		...(language ? [SANITY_CACHE_TAGS.work(language)] : []),
-		SANITY_CACHE_TAGS.workAll,
-		SANITY_CACHE_TAGS.sitemap,
-	],
-	page: (slug, language) => [
+	work: () => [SANITY_CACHE_TAGS.work, SANITY_CACHE_TAGS.sitemap],
+	page: (slug) => [
 		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.sitemap,
-		...(slug && language ? [SANITY_CACHE_TAGS.pageSlug(slug, language)] : []),
+		...(slug ? [SANITY_CACHE_TAGS.pageSlug(slug)] : []),
 	],
-	project: (slug, language) => [
+	project: (slug) => [
 		SANITY_CACHE_TAGS.projects,
 		SANITY_CACHE_TAGS.sitemap,
-		...(slug && language
-			? [SANITY_CACHE_TAGS.projectSlug(slug, language)]
-			: []),
+		...(slug ? [SANITY_CACHE_TAGS.projectSlug(slug)] : []),
 	],
 	/* Category titles render inside project pages and content-refs lists, not on a route of
 	 * their own — purge the collection that displays them. */
@@ -89,12 +71,13 @@ const WEBHOOK_TAG_MAP: Record<
 	siteAnalyticsSettings: () => [SANITY_CACHE_TAGS.siteAnalyticsSettings],
 	errorSettings: () => [SANITY_CACHE_TAGS.errorSettings],
 	siteLanguageSettings: () => [SANITY_CACHE_TAGS.siteLanguageSettings],
-	/* Linking or unlinking translations in Studio only edits this document. */
+	/* Linking or unlinking a translation changes every route's sibling list (`translationsQuery`:
+	 * hreflang, the language switch) and the sitemap's alternates. */
 	"translation.metadata": () => [
 		SANITY_CACHE_TAGS.pages,
 		SANITY_CACHE_TAGS.projects,
-		SANITY_CACHE_TAGS.homeAll,
-		SANITY_CACHE_TAGS.workAll,
+		SANITY_CACHE_TAGS.home,
+		SANITY_CACHE_TAGS.work,
 		SANITY_CACHE_TAGS.sitemap,
 	],
 };
@@ -104,16 +87,15 @@ export const WEBHOOK_DOCUMENT_TYPES = Object.keys(WEBHOOK_TAG_MAP);
 
 /**
  * Tags to invalidate for one webhook payload; empty when the type is not allow-listed (the
- * caller answers `200 { revalidated: false }`). Per-slug and per-language tags are skipped when
- * the payload lacks a slug or language; the collection tags still cover the change.
+ * caller answers `200 { revalidated: false }`). Per-slug tags are skipped when the payload has
+ * no slug; the collection tag still covers the change.
  */
 export function tagsForWebhookDocument(
 	type: string | undefined,
 	slug: string | undefined,
-	language: string | undefined,
 ): string[] {
 	/* Own keys only: a forged `_type` like "constructor" must not reach `Object.prototype`. */
 	if (!type || !Object.hasOwn(WEBHOOK_TAG_MAP, type)) return [];
 	const resolve = WEBHOOK_TAG_MAP[type];
-	return resolve ? [...new Set(resolve(slug, language))] : [];
+	return resolve ? [...new Set(resolve(slug))] : [];
 }

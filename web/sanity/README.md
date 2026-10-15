@@ -8,17 +8,16 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 |------|------|
 | `client.ts` | `createClient` — base client; `defineLive` / `sanityFetch` use it with draft perspective when enabled |
 | `live.ts` | `defineLive` → **`sanityFetch`**, **`SanityLive`** — required for Presentation, Draft Mode, and Visual Editing (Stega) |
-| `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
-| `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
+| `sanityEnv.ts` | **`projectId`** and **`dataset`** for every reader (client, proxy, image URLs) — resolved once in `next.config.ts` and inlined into every bundle |
 | `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers with primitive arguments only, so `generateMetadata` and the page share one React `cache` entry: `fetchHomeDocument(locale)`, `fetchPageBySlug(slug, locale)`, `fetchWorkDocument(locale)`, `fetchProjectBySlug(slug, locale)`, `fetchSiteChrome(locale)` (nav, cookie banner, site settings, analytics, 404 copy — one query for the whole shell). Each per-language helper passes `locale` as `$locale`. A render makes two `sanityFetch` calls |
-| `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + document title |
+| `seo/` | `metadataFromSanityPageData` — route metadata from merged SEO + document title; `siteFaviconIcons` |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
-| `types.ts` | App-facing names derived from it: `HomeDocument`, `PageDocument`, `ModuleOf<"module.x">`, `RichTextMediaValue`, `SiteNav`, `LinkMark`, `StegaAware`, … |
-| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) — see barrel `utils/index.ts` |
+| `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
+| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) |
 
-Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
+Import full queries from **`@/sanity/queries`**, utilities from their file (`@/sanity/utils/sanityImageBuilder`, …).
 
 ---
 
@@ -54,7 +53,7 @@ import {
   buildFetchedImageUrl,
   getImageOrientation,
   type SanityImageField,
-} from "@/sanity/utils";
+} from "@/sanity/utils/sanityImageBuilder";
 
 function HeroImage({ image }: { image: SanityImageField | null }) {
   if (!image) return null;
@@ -65,7 +64,7 @@ function HeroImage({ image }: { image: SanityImageField | null }) {
 }
 ```
 
-Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (from **`sanityEnv.ts`**). Set **`SANITY_STUDIO_DATASET`** if you want a fixed dataset; otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`); missing `development` or `production` is detected and the other name is used when possible.
+Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (both from **`sanityEnv.ts`**). `next.config.ts` resolves the dataset once per build and inlines it: **`SANITY_STUDIO_DATASET`** when set, otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`) and uses the other name when the preferred dataset does not exist.
 
 ---
 
@@ -96,7 +95,6 @@ This example fetches a page in the route's language. `title` is a plain string; 
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/client";
 import { pageBySlugQuery } from "@/sanity/queries";
-import type { PageDocument } from "@/sanity/types/pages";
 
 export default async function Page({
   params,
@@ -104,10 +102,8 @@ export default async function Page({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const doc = await client.fetch<PageDocument | null>(pageBySlugQuery, {
-    slug,
-    locale,
-  });
+  // Typed by `pnpm generate` — `pageBySlugQuery` is a `defineQuery`.
+  const doc = await client.fetch(pageBySlugQuery, { slug, locale });
 
   if (!doc) {
     notFound();
@@ -138,7 +134,7 @@ For production, use `fetchPageBySlug(slug, locale)` (Draft Mode + Stega) and ren
 
 ## Environment
 
-See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. Further options (Management API tokens, `SANITY_USE_CDN`, site URL, revalidate) live in **`@repo/sanity-dataset-resolve`** and this README when needed.
+See **`web/.env.example`**: copy to **`.env.local`** — project id, optional **`SANITY_STUDIO_DEPLOYMENT_TARGET`** (same name on Studio/host for staging vs prod), preview/VE vars. For custom dataset names (e.g. `staging`), set that target to the dataset name on each deploy environment. Further options (`SANITY_USE_CDN`, site URL, revalidate) are covered in this README.
 
 ### Presentation & Visual Editing (checklist)
 

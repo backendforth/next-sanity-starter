@@ -73,7 +73,7 @@ function imageAltFromField(
 	caption?: string | null,
 ): string {
 	if (typeof alt === "string" && alt.length > 0) return alt;
-	const fromField = (image as { alt?: string | null } | null | undefined)?.alt;
+	const fromField = image?.alt;
 	if (typeof fromField === "string" && fromField.length > 0) return fromField;
 	if (typeof caption === "string" && caption.length > 0) return caption;
 	return "";

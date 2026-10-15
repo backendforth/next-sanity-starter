@@ -40,10 +40,10 @@ Routes are static (`generateStaticParams`) and every `sanityFetch` result is cac
 | | Webhook configured (secret set, Sanity webhook → `/api/revalidate`) | No webhook |
 |---|---|---|
 | On publish | `/api/revalidate` expires the matching tags; the next request renders fresh. | `<SanityLive />` runs for every visitor and revalidates the tags of each publish event while a tab is open. |
-| Time-based fallback | None — caches live until a tag expires. | 60 s: the published `unstable_cache` reads (`cachedSanityQuery.ts`) cap the ISR period of every route, so a page published while nobody had the site open is at most a minute stale. |
+| Time-based fallback | None — caches live until a tag expires. | 60 s for the `cachedSanityQuery.ts` reads only (language settings, slug lists, sitemap). Page content has none: next-sanity caches every `sanityFetch` without a time limit, so a publish while no tab is open stays invisible until a later publish event reaches an open tab, or the next deploy. |
 | `<SanityLive />` | Draft Mode / Presentation only. | Everyone. No token needed for published content. |
 
-Routes don't export `revalidate`; the table above is the whole story.
+Production needs the webhook; without it freshness depends on visitors. Routes don't export `revalidate`; the table above is the whole story.
 
 ## Build / routing (reference)
 

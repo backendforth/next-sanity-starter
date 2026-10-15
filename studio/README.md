@@ -7,7 +7,7 @@ This package is the Sanity Studio for the project: schemas, Desk structure, Visu
 | Feature | What it does | Where to learn more |
 |--------|----------------|---------------------|
 | **Presentation (Web Preview)** | Embeds the Next.js app in an iframe, Draft Mode, and maps documents to URLs so editors can preview content in context. | `config/README.md`, `config/presentation/` |
-| **Multi-dataset** | Resolves which Content Lake dataset the Studio uses (e.g. `development` vs `production`) from env and optional Management API, so local work does not have to hit production data. | `@repo/sanity-dataset-resolve`, `config/sync/studioDataset.ts`, `utils/README.md`, `.env.example` |
+| **Multi-dataset** | Resolves which Content Lake dataset the Studio uses (e.g. `development` vs `production`) from env and the datasets that exist in the project, so local work does not have to hit production data. | `@repo/sanity-dataset-resolve`, `config/sync/studioDataset.ts`, `utils/README.md`, `.env.example` |
 | **Prod → dev sync** | Optional CLI script exports `production` to a local tarball and imports into `development` (`--replace`). Shown as a hint when you start `pnpm dev` in `studio/`. | `scripts/sync-prod-to-dev.mjs`, below |
 | **Multi-language** | Document-level: one document per language via **`@sanity/document-internationalization`**. Languages come from **`siteLanguageSettings`** (Settings → Site languages), fetched once per Studio session (`config/sync/supportedLanguages.ts`). Translatable types are listed in `TRANSLATABLE_SCHEMA_TYPES` in `sanity.config.ts`. | `utils/README.md`, root **`README.md`** (*Two flavours*) |
 | **Slug validation** | Shared `validateSlug` helper enforces URL-safe slugs (lowercase, numbers, hyphens) on fields that power frontend routes. | `utils/validateSlug.ts`, used e.g. in `schemas/documents/page.ts` |
@@ -24,7 +24,7 @@ Other plugins in this Studio include **structure** (custom sidebar, the start sc
 
 ## Quick start
 
-1. Copy `studio/.env.example` to `studio/.env` and set `SANITY_STUDIO_PROJECT_ID` (and preview origin if needed). Every `SANITY_STUDIO_*` value ends up in the public Studio bundle, so secrets (`MUX_TOKEN_*`, `SANITY_DATASET_RESOLVER_TOKEN`, `SANITY_AUTH_TOKEN`) use plain names; `sanity.cli.ts` stops `sanity build` / `sanity deploy` when a `SANITY_STUDIO_*TOKEN|SECRET|PASSWORD` variable is set.
+1. Copy `studio/.env.example` to `studio/.env` and set `SANITY_STUDIO_PROJECT_ID` (and preview origin if needed). Every `SANITY_STUDIO_*` value ends up in the public Studio bundle, so secrets (`MUX_TOKEN_*`, `SANITY_AUTH_TOKEN`) use plain names; `sanity.cli.ts` stops `sanity build` / `sanity deploy` when a `SANITY_STUDIO_*TOKEN|SECRET|PASSWORD` variable is set.
 2. Run `pnpm dev` from the repo root or `pnpm dev` inside `studio/` (shows a **sync hint**; run `sanity dev` directly if you want to skip it).
 3. Run `pnpm build` in `studio/` for a production Studio bundle.
 

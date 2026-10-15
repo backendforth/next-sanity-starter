@@ -2,7 +2,7 @@
 
 Canonical: @../../../../AGENTS.md §"The module pattern". On this branch (`variant/document-level`), AGENTS.md §"Branch-specific notes" wins over the field-level §i18n.
 
-This folder holds the **component half** of every module. You are touching points 4–6 of the 7-point wiring.
+This folder holds the **component half** of every module. You are touching points 4–5 of the 6-point wiring.
 
 ## YOU MUST
 
@@ -10,7 +10,7 @@ This folder holds the **component half** of every module. You are touching point
 2. Name the file `Module<Name>.tsx` (PascalCase). The Sanity schema `name` must be `module.<name>` (dot-lowercase). 1:1 correspondence.
 3. Accept `{ module, locale, siteLocale }` — the `ModulesRenderer` case `gen:module` writes passes all three. Fields are plain values in the document's language: render them directly, no `pickLocalizedString`; `locale` / `siteLocale` are for hrefs (as in `ModuleContentRefs`).
 4. Don't set `data-sanity` yourself. `ModulesRenderer` wraps every module in an element carrying its field-level `data-sanity` path (built with `dataAttr`) — Visual Editing click-to-edit depends on that wrapper, so always render through it.
-5. Register in `ModulesRenderer.tsx` (a `case` in the `_type` switch — its `never` fallback turns a missing one into a `tsc` error) and the barrel `index.ts`.
+5. Register in `ModulesRenderer.tsx` (a `case` in the `_type` switch — its `never` fallback turns a missing one into a `tsc` error).
 6. Type `module` as `ModuleOf<"module.<id>">` from `@/sanity/types`. Compare fetched strings to literals through `stegaClean` / `isStegaVariant` — in Presentation they carry stega markers.
 
 ## Component shape

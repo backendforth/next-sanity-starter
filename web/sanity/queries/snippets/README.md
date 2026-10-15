@@ -23,7 +23,7 @@ Import the snippet and **interpolate** it into your own GROQ string (same patter
 ```ts
 // app/example/example-query.ts
 import { defineQuery } from "next-sanity";
-import { linkQuery } from "@/sanity/queries";
+import { linkQuery } from "@/sanity/queries/snippets/link";
 import { client } from "@/sanity/client";
 
 const myPortableTextField = `body[]{
@@ -52,9 +52,9 @@ Use `imageQuery` / `videoQuery` inside object projections when you need consiste
 
 Settings are per-language documents (one `siteNav`, `siteSettings`, … per language), so the queries below take `$locale`.
 
-- **`siteChromeQuery`** — `siteNav` for `$locale` with resolved main + footer menus (falls back to a legacy `siteNav` without `language`), the cookie banner copy, site settings, analytics and the 404 copy in one fetch (no `modules[]` anywhere: no error page renders modules).
+- **`siteChromeQuery`** — `siteNav` for `$locale` with resolved main + footer menus, the cookie banner copy (default language when `$locale` has none, so consent is always asked), site settings (favicon from the default language), analytics and the 404 copy in one fetch (no `modules[]` anywhere: no error page renders modules).
 
-Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
+Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). That is why `siteSettingsQuery`, `siteNavQuery` and `siteCookieBannerQuery` are unexported, field-scoped fragments of `siteChromeQuery` rather than full-document queries — compose from the fragments in `settings.ts` and `linkQuery` if you need a custom shape.
 
 Example:
 

@@ -23,7 +23,8 @@ import { navLinkButtonClass } from "./navControlStyles";
 
 type Props = {
 	mainMenu?: MainMenuItem[] | null;
-	siteTitle?: string | null;
+	/** `siteSettings.title`, never empty (the layout falls back to "Site"). */
+	siteTitle: string;
 };
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -135,8 +136,6 @@ export function Header({ mainMenu, siteTitle }: Props) {
 	);
 	const homeHref = localePath("/", currentLocale);
 	/** `siteSettings.title` from `fetchSiteChrome` (not `siteNav.title`). */
-	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
-	const brandLabel = trimmedTitle.length > 0 ? trimmedTitle : "Site";
 
 	const [open, setOpen] = useState(false);
 	const menuId = useId();
@@ -151,7 +150,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 		return (
 			<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
 				<div className="mx-auto flex w-full max-w-container items-center justify-between gap-sm px-md py-sm sm:px-container">
-					<SiteTitle href={homeHref} label={brandLabel} />
+					<SiteTitle href={homeHref} label={siteTitle} />
 				</div>
 			</header>
 		);
@@ -160,7 +159,7 @@ export function Header({ mainMenu, siteTitle }: Props) {
 	return (
 		<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
 			<div className="mx-auto flex w-full max-w-container items-center justify-between gap-sm px-md py-sm sm:px-container">
-				<SiteTitle href={homeHref} label={brandLabel} onClick={close} />
+				<SiteTitle href={homeHref} label={siteTitle} onClick={close} />
 
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-xs sm:gap-sm">
 					<nav

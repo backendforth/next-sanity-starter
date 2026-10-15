@@ -6,7 +6,7 @@ import { studioDataset } from "./config/sync/studioDataset";
  * The Studio build inlines every `SANITY_STUDIO_*` variable into the public bundle (`sanity
  * build` lists them as it goes), so a token or secret under that prefix ships to everyone who
  * can load the Studio. Commands that bundle fail on one; the rest only warn. Secrets belong
- * under unprefixed names: `MUX_TOKEN_*`, `SANITY_DATASET_RESOLVER_TOKEN`, `SANITY_AUTH_TOKEN`.
+ * under unprefixed names: `MUX_TOKEN_*`, `SANITY_AUTH_TOKEN`.
  */
 function assertNoSecretsInPublicEnv(): void {
   const names = Object.keys(process.env).filter(

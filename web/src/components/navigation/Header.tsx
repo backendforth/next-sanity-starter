@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 
 import { CloseIcon } from "@/src/components/icons/CloseIcon";
 import { HamburgerIcon } from "@/src/components/icons/HamburgerIcon";
+import { containerClassName } from "@/src/components/layout/containerStyles";
 import { ThemeToggle } from "@/src/components/theme/ThemeToggle";
 import { isCurrentNavHref } from "@/src/i18n/paths";
 import { uiLabel } from "@/src/i18n/uiLabels";
@@ -132,7 +133,9 @@ export function Header({ locale, entries, homeHref, siteTitle }: Props) {
 	if (!entries.length) {
 		return (
 			<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
-				<div className="mx-auto flex w-full max-w-container items-center justify-between gap-sm px-md py-sm sm:px-container">
+				<div
+					className={`${containerClassName} flex items-center justify-between gap-sm py-sm`}
+				>
 					<SiteTitle href={homeHref} label={siteTitle} />
 				</div>
 			</header>
@@ -141,7 +144,9 @@ export function Header({ locale, entries, homeHref, siteTitle }: Props) {
 
 	return (
 		<header className="sticky top-0 z-50 border-b border-color-border-subtle bg-color-bg/95 backdrop-blur-sm">
-			<div className="mx-auto flex w-full max-w-container items-center justify-between gap-sm px-md py-sm sm:px-container">
+			<div
+				className={`${containerClassName} flex items-center justify-between gap-sm py-sm`}
+			>
 				<SiteTitle href={homeHref} label={siteTitle} onClick={close} />
 
 				<div className="flex min-w-0 flex-1 items-center justify-end gap-xs sm:gap-sm">
@@ -169,7 +174,7 @@ export function Header({ locale, entries, homeHref, siteTitle }: Props) {
 					className="border-t border-color-border-subtle bg-color-bg md:hidden"
 				>
 					<nav
-						className="mx-auto flex max-w-container flex-col gap-md px-md py-sm sm:px-container"
+						className={`${containerClassName} flex flex-col gap-md py-sm`}
 						aria-label={uiLabel("mainNav", locale)}
 					>
 						<MainMenuItems entries={entries} onNavigate={close} />

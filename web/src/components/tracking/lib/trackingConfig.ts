@@ -6,9 +6,12 @@ import type {
 
 export type AnalyticsLoadMode = NonNullable<SiteAnalyticsSettings["loadMode"]>;
 
+/** All the tracking gate reads of the banner document — the client gets nothing else of it. */
+export type CookieBannerToggle = Pick<SiteCookieBanner, "useCookieBanner">;
+
 export type TrackingConfig = {
 	analytics: SiteAnalyticsSettings | null;
-	cookieBanner: SiteCookieBanner | null;
+	cookieBanner: CookieBannerToggle | null;
 };
 
 export type { AnalyticsTracker };
@@ -58,14 +61,14 @@ export function getEnabledTrackers(
 }
 
 export function isCookieBannerActive(
-	cookieBanner: SiteCookieBanner | null,
+	cookieBanner: CookieBannerToggle | null,
 ): boolean {
 	return cookieBanner?.useCookieBanner === true;
 }
 
 export function shouldRespectCookieBanner(
 	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: SiteCookieBanner | null,
+	cookieBanner: CookieBannerToggle | null,
 ): boolean {
 	if (loadMode === "onPageLoad") return false;
 	return isCookieBannerActive(cookieBanner);
@@ -99,7 +102,7 @@ export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
  */
 export function bannerGatesLoading(config: {
 	analytics: SiteAnalyticsSettings | null;
-	cookieBanner: SiteCookieBanner | null;
+	cookieBanner: CookieBannerToggle | null;
 }): boolean {
 	return shouldRespectCookieBanner(
 		config.analytics?.loadMode,
@@ -135,7 +138,7 @@ export function trackerLoadSignature(tracker: AnalyticsTracker): string {
 export function trackerRequiresConsent(
 	tracker: AnalyticsTracker,
 	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: SiteCookieBanner | null,
+	cookieBanner: CookieBannerToggle | null,
 ): boolean {
 	if (!shouldRespectCookieBanner(loadMode, cookieBanner)) return false;
 	return !isCookieFreeTracker(tracker);

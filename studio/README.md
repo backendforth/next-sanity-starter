@@ -13,7 +13,7 @@ This package is the Sanity Studio for the project: schemas, Desk structure, Visu
 | **Slug validation** | Shared `validateSlug` helper enforces URL-safe slugs (lowercase, numbers, hyphens) on fields that power frontend routes. | `utils/validateSlug.ts`, used e.g. in `schemas/documents/page.ts` |
 | **Mux integration** | `sanity-plugin-mux-input` is registered in `sanity.config.ts`; video fields use the `mux.video` type in schema objects (e.g. media modules). | `sanity.config.ts`, `schemas/objects/modules/moduleMedia.ts` |
 
-Other plugins in this Studio include **structure** (custom sidebar, the start screen), **presentation**, **code input**, **media library**, and **Vision** (GROQ) in development only. `sanity-plugin-internationalized-array` is in `package.json` only as a required peer of `@sanity/document-internationalization` (it backs the `translations` array on `translation.metadata`); no content field uses it.
+Other plugins in this Studio include **structure** (custom sidebar, the start screen), **presentation**, **media library**, and **Vision** (GROQ) in development only. `sanity-plugin-internationalized-array` is in `package.json` only as a required peer of `@sanity/document-internationalization` (it backs the `translations` array on `translation.metadata`); no content field uses it.
 
 ## Documentation map
 

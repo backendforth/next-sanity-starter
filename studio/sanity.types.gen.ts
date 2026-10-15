@@ -26,6 +26,20 @@ export type VideoSettings = {
   controls?: boolean;
 };
 
+export type CookieSection = {
+  _type: "cookieSection";
+  title: string;
+  description?: string;
+  linkedCategory?: "necessary" | "analytics";
+  cookies?: Array<{
+    name: string;
+    domain?: string;
+    description?: string;
+    _type: "cookie";
+    _key: string;
+  }>;
+};
+
 export type TrackerPlausible = {
   _type: "trackerPlausible";
   enabled?: boolean;
@@ -415,27 +429,22 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: string;
-    privacyPolicyUrl: string;
-    privacyPolicyLabel?: string;
+    privacyPolicy?: Link;
     acceptAllBtn?: string;
-    acceptNecessaryBtn: string;
+    acceptNecessaryBtn?: string;
     showPreferencesBtn?: string;
   };
   preferencesModal?: {
     title?: string;
     acceptAllBtn?: string;
-    acceptNecessaryBtn: string;
+    acceptNecessaryBtn?: string;
     savePreferencesBtn?: string;
-    sections?: Code;
+    sections?: Array<
+      {
+        _key: string;
+      } & CookieSection
+    >;
   };
-};
-
-export type Code = {
-  _type: "code";
-  language?: string;
-  filename?: string;
-  code?: string;
-  highlightedLines?: Array<number>;
 };
 
 export type SiteSettings = {
@@ -857,6 +866,7 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | VideoSettings
+  | CookieSection
   | TrackerPlausible
   | TrackerPostHog
   | TrackerMicrosoftClarity
@@ -893,7 +903,6 @@ export type AllSanitySchemaTypes =
   | SiteCookieBannerReference
   | InternationalizedArrayReferenceValue
   | SiteCookieBanner
-  | Code
   | SiteSettings
   | SanityImageCrop
   | SanityImageHotspot

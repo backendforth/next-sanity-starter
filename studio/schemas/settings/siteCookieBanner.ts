@@ -2,8 +2,10 @@ import { CodeBlockIcon } from "@sanity/icons/CodeBlock";
 import { StackIcon } from "@sanity/icons/Stack";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
-import { defaultCookieSections } from "../../utils/defaultCookieSections";
 import { languageField } from "../fields/languageField";
+
+/** An empty text is not hidden: the web shows its default text in the visitor's language. */
+const EMPTY_TEXT_HINT = "Empty texts show the default text.";
 
 /** Cookie banner copy. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteCookieBanner = defineType({
@@ -50,59 +52,61 @@ export const siteCookieBanner = defineType({
       name: "consentModal",
       type: "object",
       icon: StackIcon,
+      description: EMPTY_TEXT_HINT,
       fields: [
         {
           title: "Description",
           name: "description",
           description:
-            "Must name the controller and say why (GDPR Art. 13). Plain text — it is escaped before rendering; use the policy link fields below rather than HTML. Note any provider outside the EEA.",
+            "Must name the controller and say why (GDPR Art. 13). Plain text — it is escaped before rendering; the policy link below is appended. Note any provider outside the EEA.",
           type: "string",
-          initialValue:
-            "Our website uses essential cookies for basic operation. Cookie-based analytics run only after you accept them; privacy-friendly analytics without cookies may load earlier.",
         },
         {
-          title: "Privacy Policy URL",
-          name: "privacyPolicyUrl",
+          title: "Privacy Policy",
+          name: "privacyPolicy",
           description:
-            "Linked from the banner. Visitors must be able to read what they are agreeing to before they agree.",
-          type: "url",
-          options: { allowRelative: true },
-          initialValue: "/privacy",
+            "Linked after the description: visitors must be able to read what they are agreeing to before they agree. A page link gets the visitor's language prefix. The link title is the label.",
+          type: "link",
+          /* Required only while the banner is on: a starter that keeps it off must still publish. */
           validation: (rule) =>
-            rule
-              .warning()
-              .required()
-              .error("Without this the banner has no policy link."),
-        },
-        {
-          title: "Privacy Policy Link Label",
-          name: "privacyPolicyLabel",
-          type: "string",
-          initialValue: "Privacy policy",
+            rule.custom(
+              (value: { type?: string; url?: string } | undefined, context) => {
+                if (!value) {
+                  return context.document?.useCookieBanner === true
+                    ? "Without this the banner has no policy link."
+                    : true;
+                }
+                if (value.type === "function") {
+                  return "Link to a page or a URL.";
+                }
+                /* The banner renders page links and http(s) URLs only (`privacyPolicyHtml`). */
+                if (
+                  value.type === "external" &&
+                  value.url &&
+                  !/^https?:\/\//i.test(value.url)
+                ) {
+                  return "Use an http(s) URL: the banner shows no mailto: or tel: link.";
+                }
+                return true;
+              },
+            ),
         },
         {
           title: "Accept All Button",
           name: "acceptAllBtn",
           type: "string",
-          initialValue: "Accept",
         },
         {
           title: "Accept Necessary Button",
           name: "acceptNecessaryBtn",
           description:
-            "Reject button. An empty label removes the button entirely, leaving Accept as the only option — which invalidates the consent.",
+            "Reject button. Always shown — consent without a way to refuse is invalid.",
           type: "string",
-          initialValue: "Reject",
-          validation: (rule) =>
-            rule
-              .required()
-              .error("Required — an empty label hides the reject button."),
         },
         {
           title: "Show Preferences Button",
           name: "showPreferencesBtn",
           type: "string",
-          initialValue: "Manage preferences",
         },
       ],
     },
@@ -111,49 +115,36 @@ export const siteCookieBanner = defineType({
       name: "preferencesModal",
       type: "object",
       icon: ThLargeIcon,
+      description: EMPTY_TEXT_HINT,
       fields: [
         {
           title: "Title",
           name: "title",
           type: "string",
-          initialValue: "Cookie preferences",
         },
         {
           title: "Accept All Button",
           name: "acceptAllBtn",
           type: "string",
-          initialValue: "Accept all",
         },
         {
           title: "Accept Necessary Button",
           name: "acceptNecessaryBtn",
-          description: "Reject button. An empty label removes it entirely.",
+          description: "Reject button. Always shown.",
           type: "string",
-          initialValue: "Reject all",
-          validation: (rule) =>
-            rule
-              .required()
-              .error("Required — an empty label hides the reject button."),
         },
         {
           title: "Save Preferences Button",
           name: "savePreferencesBtn",
           type: "string",
-          initialValue: "Save preferences",
         },
         {
           title: "Sections",
           name: "sections",
           description:
-            "Analytics rows are appended from the enabled trackers. Generated rows show the provider domain, not the real cookie host, and no durations — add exact names and retention if your jurisdiction expects them.",
-          type: "code",
-          options: {
-            language: "json",
-            languageAlternatives: [
-              { title: "JSON", value: "json", mode: "json" },
-            ],
-          },
-          initialValue: defaultCookieSections,
+            "Empty = a Necessary and an Analytics section with the default text. The Analytics section lists every enabled tracker after its own cookies, and is added when trackers are enabled and no section has that category. Generated rows show the provider domain, not the real cookie host, and no durations — add exact names and retention if your jurisdiction expects them.",
+          type: "array",
+          of: [{ type: "cookieSection" }],
         },
       ],
     },

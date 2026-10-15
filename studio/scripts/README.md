@@ -97,6 +97,31 @@ Runs `sanity deploy --external --url <SANITY_STUDIO_HOSTING_URL> --yes`: registe
 
 ---
 
+## Content migrations (`../migrations/`)
+
+Run by `sanity migration`, which reads an export of the dataset (drafts included) and writes patches. A run is a **dry run** unless you pass `--no-dry-run`: it prints every patch and writes nothing. Run each migration once per dataset, logged in with `sanity login`. Pass `--project` and `--dataset` together, or neither (then `sanity.cli.ts` decides).
+
+### `type-cookie-banner-sections`
+
+**What it does** (`variant/document-level` only), on every language's `siteCookieBanner`
+
+- Turns the `sections` JSON into `cookieSection` objects (`cookieTable.body` rows become `cookies[]`). The untouched default JSON is unset; JSON that does not parse to an array is left alone and reported.
+- Turns an absolute `privacyPolicyUrl` into an external `privacyPolicy` link. Its title is a custom `privacyPolicyLabel`, else the web's default label in the document's language (the `link` type requires a title). A relative path cannot become a page reference, so it is dropped and reported: pick the page in the Studio.
+- Unsets texts still equal to the old English `initialValue`, so each language's document gets the web's default from `cookieBannerLabels.ts` in its own language.
+
+Values already in the new shape are skipped, so a re-run is safe.
+
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web shows the default sections for the old JSON; nothing breaks.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run type-cookie-banner-sections --project <id> --dataset development
+pnpm exec sanity migration run type-cookie-banner-sections --project <id> --dataset development --no-dry-run
+```
+
+---
+
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary

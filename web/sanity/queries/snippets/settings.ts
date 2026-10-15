@@ -52,14 +52,34 @@ const siteCookieBannerQuery = `coalesce(
   *[_type == "siteCookieBanner" && language == ${defaultLanguage}][0]
 ){
   _id,
+  language,
   useCookieBanner,
-  consentModal,
+  consentModal {
+    description,
+    privacyPolicy{
+      ${linkQuery}
+    },
+    acceptAllBtn,
+    acceptNecessaryBtn,
+    showPreferencesBtn
+  },
   preferencesModal {
     title,
     acceptAllBtn,
     acceptNecessaryBtn,
     savePreferencesBtn,
-    "sections": sections.code
+    sections[]{
+      _key,
+      title,
+      description,
+      linkedCategory,
+      cookies[]{
+        _key,
+        name,
+        domain,
+        description
+      }
+    }
   }
 }`;
 

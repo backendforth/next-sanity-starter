@@ -260,7 +260,7 @@ URL /[locale]/[slug]
 2. Fill in the schema fields and the GROQ projection, then `pnpm generate` → the component's `ModuleOf<"module.<id>">` has the fields. Commit the generated files.
 3. `pnpm check:wiring && pnpm typecheck && pnpm format`.
 
-`studio/schemas/README.md` §8 "Content modules" has the long version.
+`studio/schemas/README.md` §8 "Content modules" has the Studio details.
 
 ### Add a document type (page-like)
 
@@ -295,7 +295,7 @@ Always link to these; never duplicate their content.
 |---|---|
 | `README.md` (root) | Project overview, monorepo layout. |
 | `studio/README.md` | Studio architecture, schema/structure wiring. |
-| `studio/schemas/README.md` | Adding schemas + the canonical module checklist. |
+| `studio/schemas/README.md` | Adding schema types; module details beyond the wiring checklist. |
 | `studio/config/README.md` | Structure + Presentation wiring. |
 | `studio/config/structure/README.md` | Sidebar / desk structure patterns. |
 | `studio/utils/README.md` | Slug validation, label utils, language sync. |
@@ -310,6 +310,8 @@ Always link to these; never duplicate their content.
 | `web/src/assets/styles/README.md` | Tailwind v4 token setup. |
 | `web/src/assets/styles/tailwind/README.md` | Tailwind config split. |
 | `web/src/assets/fonts/README.md` | Font loading conventions. |
+| `packages/check-wiring/README.md` | What `check:wiring` and `check:typegen` check; the wiring manifest. |
+| `packages/scaffold-module/README.md` | `gen:module` usage, templates, tests. |
 
 ## Branch-specific notes
 

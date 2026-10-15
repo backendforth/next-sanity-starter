@@ -14,7 +14,7 @@ import "../../assets/styles/tokens.css";
 import "../../assets/styles/globals.css";
 
 /**
- * Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`).
+ * Body text, big text, RT h1/h2 — the `font-text` stack (`tailwind/theme.css`).
  *
  * `display: "swap"` paints text immediately in the metrics-adjusted fallback that
  * `next/font` generates (`adjustFontFallback`), so first paint isn't held for up
@@ -26,7 +26,7 @@ const geistSans = Geist({
 	display: "swap",
 });
 
-/** Tags, buttons, inline code — `font-mono` utilities. */
+/** RT h3/h4, tags, buttons, inline code, bold/italic in body text — the `font-mono` stack. */
 const geistMono = Geist_Mono({
 	subsets: ["latin"],
 	variable: "--font-family-mono",

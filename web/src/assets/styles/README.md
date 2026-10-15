@@ -2,7 +2,7 @@
 
 Entry: **`tokens.css`** then **`globals.css`** (both from `components/layout/DocumentShell.tsx`; the layout-less `app/not-found.tsx` imports them too).
 
-**Why two files:** Tailwind’s pipeline **drops** `sizes.css` / `fontsizes.css` when they only sit after `@import "tailwindcss"` in one file. **`tokens.css`** loads first: `breakpoints.css` → `sizes.css` → `fontsizes.css`. **`globals.css`** holds `fonts` → `colors` → **`breakpoints.css`** → typography → safelist → animations → Tailwind → `tailwind/theme.css` → rich text → Mux player.
+**Why two files:** Tailwind’s pipeline **drops** `sizes.css` / `fontsizes.css` when they only sit after `@import "tailwindcss"` in one file. **`tokens.css`** loads first: `breakpoints.css` → `sizes.css` → `fontsizes.css`. **`globals.css`** holds `colors` → **`breakpoints.css`** → safelist → animations → Tailwind → `tailwind/theme.css` → typography → rich text → Mux player.
 
 ## Breakpoints
 
@@ -21,9 +21,8 @@ It is **imported twice**: in **`tokens.css`** (before sizes / font sizes) and in
 |---------------|------|
 | `variables/colors.css` | `--color-*`; dark tokens under `:root[data-theme="dark"]`, set by the theme toggle (OS preference is ignored) |
 | `variables/sizes.css` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
-| `typography/fonts.css` | Geist / Geist Mono stacks (`next/font/google` in `components/layout/DocumentShell.tsx`) |
 | `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`); tiers via `theme(--breakpoint-*)` |
 | `variables/typography-variable-fonts.css` | optional variable-font axes (`--font-variation-settings-*`, `--font-feature-settings-*`) — import manually if needed |
-| `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); **screens** from `breakpoints.css` `@theme` |
+| `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); font stacks in `@theme inline` (Geist / Geist Mono from `next/font/google` in `components/layout/DocumentShell.tsx`); **screens** from `breakpoints.css` `@theme` |
 
 Rename or add a token → update the **variable** and the matching **tailwind** key when you expose it as a utility.

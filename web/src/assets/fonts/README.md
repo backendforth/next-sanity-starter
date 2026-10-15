@@ -5,7 +5,7 @@ The web app loads **Geist** and **Geist Mono** via **`next/font/google`** in [`c
 - **Geist Sans regular** — `text` (md), `big-text` (lg), `heading-2` (2lg), `heading-1` / `content-title` (3lg)
 - **Geist Mono semibold** — `heading-3` (lg), `heading-4` (md); tags, buttons, code; `strong` / `em` in body
 
-Stacks are wired in [`../styles/typography/fonts.css`](../styles/typography/fonts.css) and [`../styles/tailwind/theme.css`](../styles/tailwind/theme.css).
+The `font-text` / `font-mono` stacks are wired in [`../styles/tailwind/theme.css`](../styles/tailwind/theme.css) (`@theme inline`, so they resolve wherever the `next/font` class sits).
 
 ## Self-hosting later (optional)
 

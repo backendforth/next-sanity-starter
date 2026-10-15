@@ -7,11 +7,19 @@ import {
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
 import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
+import {
+	type LocalizedEntry,
+	pickLocalizedString,
+} from "@/sanity/utils/sanityLocalizedText";
 import { isCookieFreeTracker } from "@/src/components/tracking/lib/trackingConfig";
 import { type UiLabelKey, uiLabel } from "@/src/i18n/uiLabels";
 
 type CookieTableRow = Record<string, string>;
 type ConsentModal = NonNullable<SiteCookieBanner["consentModal"]>;
+type LocalizedStrings =
+	| ReadonlyArray<LocalizedEntry<string>>
+	| null
+	| undefined;
 
 const HTML_ESCAPES: Record<string, string> = {
 	"&": "&amp;",
@@ -199,13 +207,12 @@ export function cookieConsentTranslation(
 	trackers: AnalyticsTracker[],
 	options: LinkLocaleOptions,
 ): Translation {
-	const { locale } = options;
-	/* How the branch stores a banner text: plain here. Blank values still carry stega markers in
-	 * Presentation, hence the clean before the emptiness check. */
-	const read = (value: string | null | undefined) =>
-		value && stegaClean(value).trim() ? value : undefined;
-	const text = (value: string | null | undefined, fallback?: UiLabelKey) =>
-		escapeHtml(read(value) ?? (fallback ? uiLabel(fallback, locale) : ""));
+	const { locale, siteLocale } = options;
+	/* How the branch stores a banner text: `main` keeps every language in the field. */
+	const read = (entries: LocalizedStrings) =>
+		pickLocalizedString(entries, locale, siteLocale);
+	const text = (entries: LocalizedStrings, fallback?: UiLabelKey) =>
+		escapeHtml(read(entries) ?? (fallback ? uiLabel(fallback, locale) : ""));
 
 	const consent = doc.consentModal;
 	const preferences = doc.preferencesModal;
@@ -217,8 +224,8 @@ export function cookieConsentTranslation(
 		cookieTable: {
 			headers: tableHeaders(locale),
 			body: (section.cookies ?? []).map((cookie) => ({
-				name: text(cookie.name),
-				domain: text(cookie.domain),
+				name: escapeHtml(cookie.name ?? ""),
+				domain: escapeHtml(cookie.domain ?? ""),
 				desc: text(cookie.description),
 			})),
 		},

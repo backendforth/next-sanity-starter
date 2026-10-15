@@ -622,7 +622,8 @@
             "description": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayText"
               },
               "optional": true
             },
@@ -637,21 +638,24 @@
             "acceptAllBtn": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             },
             "acceptNecessaryBtn": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             },
             "showPreferencesBtn": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             }
@@ -667,28 +671,32 @@
             "title": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             },
             "acceptAllBtn": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             },
             "acceptNecessaryBtn": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             },
             "savePreferencesBtn": {
               "type": "objectAttribute",
               "value": {
-                "type": "string"
+                "type": "inline",
+                "name": "internationalizedArrayString"
               },
               "optional": true
             },
@@ -865,6 +873,28 @@
     }
   },
   {
+    "name": "internationalizedArrayText",
+    "type": "type",
+    "value": {
+      "type": "array",
+      "of": {
+        "type": "object",
+        "attributes": {
+          "_key": {
+            "type": "objectAttribute",
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        "rest": {
+          "type": "inline",
+          "name": "internationalizedArrayTextValue"
+        }
+      }
+    }
+  },
+  {
     "name": "cookieSection",
     "type": "type",
     "value": {
@@ -880,14 +910,16 @@
         "title": {
           "type": "objectAttribute",
           "value": {
-            "type": "string"
+            "type": "inline",
+            "name": "internationalizedArrayString"
           },
           "optional": false
         },
         "description": {
           "type": "objectAttribute",
           "value": {
-            "type": "string"
+            "type": "inline",
+            "name": "internationalizedArrayText"
           },
           "optional": true
         },
@@ -932,7 +964,8 @@
                 "description": {
                   "type": "objectAttribute",
                   "value": {
-                    "type": "string"
+                    "type": "inline",
+                    "name": "internationalizedArrayString"
                   },
                   "optional": true
                 },
@@ -3164,28 +3197,6 @@
           "name": "seo.page"
         },
         "optional": true
-      }
-    }
-  },
-  {
-    "name": "internationalizedArrayText",
-    "type": "type",
-    "value": {
-      "type": "array",
-      "of": {
-        "type": "object",
-        "attributes": {
-          "_key": {
-            "type": "objectAttribute",
-            "value": {
-              "type": "string"
-            }
-          }
-        },
-        "rest": {
-          "type": "inline",
-          "name": "internationalizedArrayTextValue"
-        }
       }
     }
   },

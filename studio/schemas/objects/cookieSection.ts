@@ -1,5 +1,7 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
+import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
+
 /** One section of the cookie preferences modal (`siteCookieBanner.preferencesModal.sections`). */
 export const cookieSection = defineType({
   name: "cookieSection",
@@ -9,14 +11,13 @@ export const cookieSection = defineType({
     defineField({
       name: "title",
       title: "Title",
-      type: "string",
+      type: "internationalizedArrayString",
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: "description",
       title: "Description",
-      type: "text",
-      rows: 3,
+      type: "internationalizedArrayText",
     }),
     defineField({
       name: "linkedCategory",
@@ -53,7 +54,7 @@ export const cookieSection = defineType({
             defineField({
               name: "description",
               title: "Description",
-              type: "string",
+              type: "internationalizedArrayString",
             }),
           ],
           preview: { select: { title: "name", subtitle: "domain" } },
@@ -64,7 +65,10 @@ export const cookieSection = defineType({
   preview: {
     select: { title: "title", category: "linkedCategory" },
     prepare({ title, category }) {
-      return { title: title || "Section", subtitle: category };
+      return {
+        title: firstLocalizedLabel(title, "Section"),
+        subtitle: category,
+      };
     },
   },
 });

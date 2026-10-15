@@ -57,7 +57,7 @@ export const siteCookieBanner = defineType({
           name: "description",
           description:
             "Must name the controller and say why (GDPR Art. 13). Plain text — it is escaped before rendering; the policy link below is appended. Note any provider outside the EEA.",
-          type: "string",
+          type: "internationalizedArrayText",
         },
         {
           title: "Privacy Policy",
@@ -77,19 +77,19 @@ export const siteCookieBanner = defineType({
         {
           title: "Accept All Button",
           name: "acceptAllBtn",
-          type: "string",
+          type: "internationalizedArrayString",
         },
         {
           title: "Accept Necessary Button",
           name: "acceptNecessaryBtn",
           description:
             "Reject button. Always shown — consent without a way to refuse is invalid.",
-          type: "string",
+          type: "internationalizedArrayString",
         },
         {
           title: "Show Preferences Button",
           name: "showPreferencesBtn",
-          type: "string",
+          type: "internationalizedArrayString",
         },
       ],
     },
@@ -103,23 +103,23 @@ export const siteCookieBanner = defineType({
         {
           title: "Title",
           name: "title",
-          type: "string",
+          type: "internationalizedArrayString",
         },
         {
           title: "Accept All Button",
           name: "acceptAllBtn",
-          type: "string",
+          type: "internationalizedArrayString",
         },
         {
           title: "Accept Necessary Button",
           name: "acceptNecessaryBtn",
           description: "Reject button. Always shown.",
-          type: "string",
+          type: "internationalizedArrayString",
         },
         {
           title: "Save Preferences Button",
           name: "savePreferencesBtn",
-          type: "string",
+          type: "internationalizedArrayString",
         },
         {
           title: "Sections",

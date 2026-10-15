@@ -139,17 +139,17 @@ export type SiteCookieBanner = {
   title?: string;
   useCookieBanner?: boolean;
   consentModal?: {
-    description?: string;
+    description?: InternationalizedArrayText;
     privacyPolicy: Link;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
-    showPreferencesBtn?: string;
+    acceptAllBtn?: InternationalizedArrayString;
+    acceptNecessaryBtn?: InternationalizedArrayString;
+    showPreferencesBtn?: InternationalizedArrayString;
   };
   preferencesModal?: {
-    title?: string;
-    acceptAllBtn?: string;
-    acceptNecessaryBtn?: string;
-    savePreferencesBtn?: string;
+    title?: InternationalizedArrayString;
+    acceptAllBtn?: InternationalizedArrayString;
+    acceptNecessaryBtn?: InternationalizedArrayString;
+    savePreferencesBtn?: InternationalizedArrayString;
     sections?: Array<
       {
         _key: string;
@@ -182,15 +182,21 @@ export type Link = {
   func?: LinkFunctions;
 };
 
+export type InternationalizedArrayText = Array<
+  {
+    _key: string;
+  } & InternationalizedArrayTextValue
+>;
+
 export type CookieSection = {
   _type: "cookieSection";
-  title: string;
-  description?: string;
+  title: InternationalizedArrayString;
+  description?: InternationalizedArrayText;
   linkedCategory?: "necessary" | "analytics";
   cookies?: Array<{
     name: string;
     domain?: string;
-    description?: string;
+    description?: InternationalizedArrayString;
     _type: "cookie";
     _key: string;
   }>;
@@ -568,12 +574,6 @@ export type Home = {
   seo?: SeoPage;
 };
 
-export type InternationalizedArrayText = Array<
-  {
-    _key: string;
-  } & InternationalizedArrayTextValue
->;
-
 export type LinkFunctions = {
   _type: "linkFunctions";
   key: "scroll-to" | "open-cookie-preferences";
@@ -861,6 +861,7 @@ export type AllSanitySchemaTypes =
   | HomeReference
   | PageReference
   | Link
+  | InternationalizedArrayText
   | CookieSection
   | TrackerPlausible
   | TrackerPostHog
@@ -889,7 +890,6 @@ export type AllSanitySchemaTypes =
   | NavLanguageSwitch
   | Page
   | Home
-  | InternationalizedArrayText
   | LinkFunctions
   | InternationalizedArrayRichTextMediaValue
   | InternationalizedArrayRichTextValue
@@ -3766,7 +3766,7 @@ export type SiteChromeQueryResult = {
     _id: "siteCookieBanner";
     useCookieBanner: boolean | null;
     consentModal: {
-      description: string | null;
+      description: InternationalizedArrayText | null;
       privacyPolicy:
         | {
             _key: null;
@@ -3810,25 +3810,25 @@ export type SiteChromeQueryResult = {
                 }
               | null;
           };
-      acceptAllBtn: string | null;
-      acceptNecessaryBtn: string | null;
-      showPreferencesBtn: string | null;
+      acceptAllBtn: InternationalizedArrayString | null;
+      acceptNecessaryBtn: InternationalizedArrayString | null;
+      showPreferencesBtn: InternationalizedArrayString | null;
     } | null;
     preferencesModal: {
-      title: string | null;
-      acceptAllBtn: string | null;
-      acceptNecessaryBtn: string | null;
-      savePreferencesBtn: string | null;
+      title: InternationalizedArrayString | null;
+      acceptAllBtn: InternationalizedArrayString | null;
+      acceptNecessaryBtn: InternationalizedArrayString | null;
+      savePreferencesBtn: InternationalizedArrayString | null;
       sections: Array<{
         _key: string;
-        title: string;
-        description: string | null;
+        title: InternationalizedArrayString;
+        description: InternationalizedArrayText | null;
         linkedCategory: "analytics" | "necessary" | null;
         cookies: Array<{
           _key: string;
           name: string;
           domain: string | null;
-          description: string | null;
+          description: InternationalizedArrayString | null;
         }> | null;
       }> | null;
     } | null;

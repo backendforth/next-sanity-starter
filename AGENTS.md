@@ -31,7 +31,6 @@ Before writing code:
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/check-wiring/` | `check:wiring`, `check:typegen` and the wiring manifest (`src/manifest.mjs`) both checks and the scaffolder use. |
 | `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module. |
-| `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
 | `web/src/components/modules/` | **Component half** of every module. |
 | `web/sanity/queries/components/modules/` | GROQ projection per module. |
@@ -154,8 +153,6 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm check:wiring` | Compare every module wiring list with the module schemas, both ways, and the inline places with each other. CI gate. |
 | `pnpm check:typegen` | Every `defineQuery` in `web/sanity/` got a generated type (TypeGen skips queries it can't evaluate silently). Part of `pnpm generate`. |
 | `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including an end-to-end scaffold. CI gate. |
-| `pnpm strip-readmes` | Remove nested READMEs after forking the starter. The root `README.md` is preserved. |
-| `pnpm strip-readmes:dry-run` | Preview what `strip-readmes` would delete. |
 | `pnpm update` | `pnpm up --stream -r` (interactive upgrade across workspaces). |
 | `pnpm studio:update` | Upgrade Studio dependencies only. |
 

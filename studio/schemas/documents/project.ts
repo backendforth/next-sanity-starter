@@ -2,8 +2,9 @@ import { CaseIcon } from "@sanity/icons/Case";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
+import { plainLabel } from "../../utils/plainLabel";
 import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
-import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
+import { isUniquePerLanguage, validateSlug } from "../../utils/validateSlug";
 import {
   NEWEST_FIRST_SUGGESTIONS,
   PROJECT_CATEGORY_REFERENCE_FILTER,
@@ -71,7 +72,7 @@ export const project = defineType({
       options: {
         maxLength: 96,
         source: "title",
-        isUnique: isUniqueLocaleAgnostic,
+        isUnique: isUniquePerLanguage,
       },
       validation: validateSlug,
       group: "editorial",
@@ -111,7 +112,7 @@ export const project = defineType({
       } = selection;
       const segment = slug?.current?.trim();
       const path = segment ? `/work/${segment}` : "/work";
-      const headline = typeof title === "string" && title.trim() ? title : path;
+      const headline = plainLabel(title, path);
 
       type PreviewMedia = NonNullable<PreviewValue["media"]>;
       let media: PreviewMedia = CaseIcon as PreviewMedia;

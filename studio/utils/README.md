@@ -29,4 +29,6 @@ To **copy content from production into development** on demand (e.g. refresh you
 ## Other files (short)
 
 - **`imageUrl.ts`** — `@sanity/image-url` builder for the project id and the resolved **`studioDataset`**.
-- **`validateSlug.ts`**, **`helpers.ts`** — validation and small helpers as used by schemas or structure.
+- **`validateSlug.ts`** — slug format rules (`validatePageSlug` also reserves `work`) and `isUniquePerLanguage`, which lets each language version reuse a slug.
+- **`plainLabel.ts`** — a string field's trimmed value or a fallback, for `preview.prepare` labels.
+- **`helpers.ts`** — small helpers used by schemas or structure.

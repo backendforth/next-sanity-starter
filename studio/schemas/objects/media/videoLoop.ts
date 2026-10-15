@@ -2,6 +2,7 @@ import { PlayIcon } from "@sanity/icons/Play";
 import { defineType } from "sanity";
 
 import { getDurationString } from "../../../utils/helpers";
+import { plainLabel } from "../../../utils/plainLabel";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 /**
@@ -79,10 +80,7 @@ export const mediaVideoLoop = defineType({
         ? `Loop · ${durationString} (${videoWidth}px × ${videoHeight}px)`
         : `Loop${durationString ? ` · ${durationString}` : ""}`;
       return {
-        title:
-          typeof caption === "string" && caption.trim()
-            ? caption
-            : "Video loop",
+        title: plainLabel(caption, "Video loop"),
         subtitle,
         media: poster ?? PlayIcon,
       };

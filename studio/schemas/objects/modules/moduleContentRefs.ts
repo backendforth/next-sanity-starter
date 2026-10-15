@@ -1,6 +1,6 @@
 import { DocumentsIcon } from "@sanity/icons/Documents";
 import { defineType } from "sanity";
-
+import { plainLabel } from "../../../utils/plainLabel";
 import {
   type ContentRefSelectionMode,
   type ContentRefSourceScope,
@@ -124,10 +124,7 @@ export const moduleContentRefs = defineType({
       refCount: "references",
     },
     prepare({ heading, sourceScope, selection, showProjectFilters, refCount }) {
-      const title =
-        typeof heading === "string" && heading.trim()
-          ? heading
-          : "Content references";
+      const title = plainLabel(heading, "Content references");
       const scopeLabel =
         SOURCE_SCOPE_LABELS[(sourceScope as ContentRefSourceScope) ?? "all"] ??
         "All sources";

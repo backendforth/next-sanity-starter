@@ -7,7 +7,7 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
  * coexist on different language variants of the same document — required
  * under document-level translation (`@sanity/document-internationalization`).
  */
-export const isUniqueLocaleAgnostic: SlugIsUniqueValidator = async (
+export const isUniquePerLanguage: SlugIsUniqueValidator = async (
   slug,
   context,
 ) => {

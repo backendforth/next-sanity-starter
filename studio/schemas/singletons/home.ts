@@ -2,6 +2,7 @@ import { HomeIcon } from "@sanity/icons/Home";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
+import { plainLabel } from "../../utils/plainLabel";
 import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
@@ -44,7 +45,7 @@ export const home = defineType({
     select: { title: "title", language: "language" },
     prepare({ title, language }) {
       return {
-        title: typeof title === "string" && title.trim() ? title : "Home",
+        title: plainLabel(title, "Home"),
         subtitle: language ? `/ · ${language}` : "/",
       };
     },

@@ -1,7 +1,7 @@
 import { ImagesIcon } from "@sanity/icons/Images";
 import { PlayIcon } from "@sanity/icons/Play";
 import { defineType, type PreviewValue } from "sanity";
-
+import { plainLabel } from "../../../utils/plainLabel";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const moduleCarousel = defineType({
@@ -171,8 +171,7 @@ export const moduleCarousel = defineType({
       }
 
       return {
-        title:
-          typeof heading === "string" && heading.trim() ? heading : "Carousel",
+        title: plainLabel(heading, "Carousel"),
         subtitle: `${count} slide${count === 1 ? "" : "s"}`,
         media,
       };

@@ -1,5 +1,6 @@
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
+import { plainLabel } from "../../../utils/plainLabel";
 
 export const moduleText = defineType({
   name: "module.text",
@@ -24,7 +25,7 @@ export const moduleText = defineType({
     },
     prepare({ title }) {
       return {
-        title: typeof title === "string" && title.trim() ? title : "Text",
+        title: plainLabel(title, "Text"),
         subtitle: "Text module",
       };
     },

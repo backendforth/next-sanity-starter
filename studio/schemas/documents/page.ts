@@ -2,8 +2,9 @@ import { DocumentTextIcon } from "@sanity/icons/DocumentText";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
+import { plainLabel } from "../../utils/plainLabel";
 import {
-  isUniqueLocaleAgnostic,
+  isUniquePerLanguage,
   validatePageSlug,
 } from "../../utils/validateSlug";
 import { languageField } from "../fields/languageField";
@@ -44,7 +45,7 @@ export const page = defineType({
       options: {
         maxLength: 96,
         source: "title",
-        isUnique: isUniqueLocaleAgnostic,
+        isUnique: isUniquePerLanguage,
       },
       validation: validatePageSlug,
       group: "editorial",
@@ -66,7 +67,7 @@ export const page = defineType({
     prepare({ title, slug, language }) {
       const segment = slug?.current?.trim();
       const path = segment ? `/${segment}` : "/";
-      const headline = typeof title === "string" && title.trim() ? title : path;
+      const headline = plainLabel(title, path);
       const subtitle = language ? `${path} · ${language}` : path;
       return {
         title: headline,

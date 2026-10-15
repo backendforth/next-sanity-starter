@@ -1,6 +1,6 @@
 import { ImageIcon } from "@sanity/icons/Image";
 import { defineType } from "sanity";
-
+import { plainLabel } from "../../../utils/plainLabel";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
 export const mediaImage = defineType({
@@ -37,8 +37,7 @@ export const mediaImage = defineType({
           ? `${filename} (${dimensions.width}px × ${dimensions.height}px)`
           : undefined;
       return {
-        title:
-          typeof caption === "string" && caption.trim() ? caption : "Image",
+        title: plainLabel(caption, "Image"),
         subtitle,
         media: selection.image,
       };

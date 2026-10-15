@@ -1,23 +1,15 @@
+import { isProductionDeployment } from "@repo/sanity-dataset-resolve";
 import type { MetadataRoute } from "next";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 
 /**
- * Production-only crawling. Deploy previews and staging environments are
- * blanket-disallowed so they don't pollute search results with duplicate
- * content. Detection covers Vercel, Netlify, and the explicit Sanity
- * deployment-target convention used by this starter.
+ * Production-only crawling (`isProductionDeployment`). Deploy previews, branch deploys and any
+ * deploy whose `SANITY_STUDIO_DEPLOYMENT_TARGET` is not `production` are blanket-disallowed, so
+ * they don't pollute search results with duplicate content — a staging site on a host's
+ * production context included.
  */
-function isProductionDeployment(): boolean {
-	if (process.env.SANITY_STUDIO_DEPLOYMENT_TARGET === "production") return true;
-	if (process.env.VERCEL_ENV === "production") return true;
-	if (process.env.NETLIFY === "true" && process.env.CONTEXT === "production") {
-		return true;
-	}
-	return false;
-}
-
 export default function robots(): MetadataRoute.Robots {
-	if (!isProductionDeployment()) {
+	if (!isProductionDeployment(process.env)) {
 		return {
 			rules: { userAgent: "*", disallow: "/" },
 		};

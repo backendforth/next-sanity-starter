@@ -1,4 +1,4 @@
-import { imageQuery, mediaQuerySpread } from "../../snippets/media";
+import { imageQuery, videoQuery } from "../../snippets/media";
 
 /**
  * `resolvedMedia` for `module.media`, and per slide in the carousel's `resolvedSlides`.
@@ -12,20 +12,20 @@ export const moduleMediaResolvedMediaQuery = `
       "kind": "loop",
       "caption": videoLoopContent.caption,
       "allowUnmute": videoLoopContent.allowUnmute,
-      "media": videoLoopContent.video{ ${mediaQuerySpread} },
+      "media": videoLoopContent.video${videoQuery},
       "poster": videoLoopContent.poster${imageQuery}
     },
     type == "video" => {
       "kind": "video",
       "caption": videoContent.caption,
       "videoSettings": videoContent.videoSettings,
-      "media": videoContent.video{ ${mediaQuerySpread} },
+      "media": videoContent.video${videoQuery},
       "poster": videoContent.poster${imageQuery}
     },
     {
       "kind": "image",
       "caption": imageContent.caption,
-      "media": imageContent.image{ ${mediaQuerySpread} }
+      "media": imageContent.image${imageQuery}
     }
   )
 `;

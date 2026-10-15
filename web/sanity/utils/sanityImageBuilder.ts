@@ -2,7 +2,6 @@ import {
 	createImageUrlBuilder,
 	type SanityImageSource,
 } from "@sanity/image-url";
-import { stegaClean } from "next-sanity";
 
 import { dataset, projectId } from "@/sanity/sanityEnv";
 
@@ -268,49 +267,22 @@ export function urlForFetchedImage(
 }
 
 /**
- * GROQ `mediaQuery` attaches `kind: "image"` plus image fields.
- * Strip `kind` and pass through `crop`, `hotspot`, `asset`, optional `alt`.
+ * The image field in a fetched payload (`imageQuery`, or a raw Studio field), or `null` for
+ * anything else — a Mux payload (`videoQuery`, it carries `playbackId`) included.
  */
-export function sanityImageFieldFromMediaQueryPayload(
+export function resolveSanityImageFieldForUrl(
 	payload: unknown,
 ): SanityImageField | null {
-	if (!payload || typeof payload !== "object") {
+	if (!payload || typeof payload !== "object" || "playbackId" in payload) {
 		return null;
 	}
 	const o = payload as Record<string, unknown>;
-
-	if (stegaClean(o.kind) === "video") {
-		return null;
-	}
-
 	const asset = o.asset as SanityImageAssetRef | null | undefined;
-	if (!asset || typeof asset !== "object") {
-		return null;
-	}
-
+	if (!asset || typeof asset !== "object") return null;
 	return {
 		crop: o.crop,
 		hotspot: o.hotspot,
 		asset,
 		alt: typeof o.alt === "string" ? o.alt : undefined,
 	};
-}
-
-/** `sanityImageFieldFromMediaQueryPayload` plus plain Studio image fields (no `kind`). */
-export function resolveSanityImageFieldForUrl(
-	payload: unknown,
-): SanityImageField | null {
-	const normalized = sanityImageFieldFromMediaQueryPayload(payload);
-	if (normalized) {
-		return normalized;
-	}
-	if (
-		payload &&
-		typeof payload === "object" &&
-		"asset" in (payload as object) &&
-		(payload as { kind?: string }).kind !== "video"
-	) {
-		return payload as SanityImageField;
-	}
-	return null;
 }

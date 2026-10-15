@@ -1,34 +1,19 @@
 /**
- * Mux asset / `mediaQuery` video payload from Sanity — resolve `playbackId`, display size and
+ * Mux video payload from Sanity (`videoQuery`) — resolve `playbackId`, display size and
  * `image.mux.com` thumbnail URLs. Image and poster code (`MediaImage`, `resolveMediaPoster`)
  * sits on the eager LCP path, so it imports only this file, never the HLS code in
  * `muxPlayback.ts`.
  */
 
+/** `playbackId` of a `videoQuery` payload (GROQ already falls back to `playback_ids`). */
 export function extractMuxPlaybackId(media: unknown): string | null {
-	if (!media || typeof media !== "object") return null;
-	const m = media as Record<string, unknown>;
-	if (typeof m.playbackId === "string" && m.playbackId.length > 0) {
-		return m.playbackId;
+	if (!media || typeof media !== "object" || !("playbackId" in media)) {
+		return null;
 	}
-	const asset = m.asset;
-	if (!asset || typeof asset !== "object") return null;
-	const a = asset as Record<string, unknown>;
-	if (typeof a.playbackId === "string" && a.playbackId.length > 0) {
-		return a.playbackId;
-	}
-	const data = a.data;
-	if (!data || typeof data !== "object") return null;
-	const d = data as Record<string, unknown>;
-	if (typeof d.playbackId === "string" && d.playbackId.length > 0) {
-		return d.playbackId;
-	}
-	const ids = d.playback_ids;
-	if (Array.isArray(ids) && ids[0] && typeof ids[0] === "object") {
-		const id = (ids[0] as { id?: string }).id;
-		if (typeof id === "string" && id.length > 0) return id;
-	}
-	return null;
+	const { playbackId } = media;
+	return typeof playbackId === "string" && playbackId.length > 0
+		? playbackId
+		: null;
 }
 
 /**

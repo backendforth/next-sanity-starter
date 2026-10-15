@@ -16,9 +16,8 @@ function slideKind(kind: string | null | undefined): SlideKind | null {
 
 /**
  * Normalize GROQ `resolvedSlides` into the shape {@link CarouselSlide} expects. With
- * `imagesOnly` the slides are plain images (`media` from `mediaQuery`); otherwise each slide is
- * a `module.media` with its `resolvedMedia`. The outer `resolvedMedia.kind` wins: a loop carries
- * a Mux asset that would look like a regular video at the asset level.
+ * `imagesOnly` the slides are plain images (`media` from `imageQuery`); otherwise each slide is
+ * a `module.media` with its `resolvedMedia`.
  */
 export function normalizeCarouselSlides(
 	module: CarouselModule,
@@ -28,11 +27,7 @@ export function normalizeCarouselSlides(
 		const key = slide._key ?? `slide-${index}`;
 		if ("media" in slide) {
 			if (!slide.media) return;
-			slides.push({
-				key,
-				kind: slideKind(slide.media.kind) ?? "image",
-				media: slide.media,
-			});
+			slides.push({ key, kind: "image", media: slide.media });
 			return;
 		}
 		const resolved = slide.resolvedMedia;
@@ -43,7 +38,7 @@ export function normalizeCarouselSlides(
 			kind,
 			media: resolved.media,
 			poster: "poster" in resolved ? (resolved.poster ?? undefined) : undefined,
-			caption: resolved.caption ?? null,
+			caption: resolved.caption ?? undefined,
 			videoSettings:
 				"videoSettings" in resolved ? (resolved.videoSettings ?? null) : null,
 			allowUnmute:

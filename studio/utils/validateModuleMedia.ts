@@ -7,7 +7,10 @@ type ModuleMediaRow = {
   videoLoopContent?: { video?: { asset?: unknown } | null };
 };
 
-function hasMuxAsset(mux: { asset?: unknown } | null | undefined): boolean {
+/** Whether a `mux.video` value has an uploaded asset. */
+export function hasMuxAsset(
+  mux: { asset?: unknown } | null | undefined,
+): boolean {
   return (
     mux != null &&
     typeof mux === "object" &&

@@ -22,28 +22,17 @@ export const projectSlugsQuery =
 }`);
 
 /**
- * All public URL entries for a sitemap across all languages: home + work
- * landing + slug-based `page`/`project` documents. Settings singletons are
- * omitted — they are not public routes.
- *
- * - `path`: URL path from site root, without the locale prefix (the route
- *   layer adds it per `language`).
- * - `language`: the document's locale (one row per language variant).
- * - `translations`: every language variant of the row (itself included) for
- *   the sitemap's `hreflang` alternates.
- *
- * Extend the filter when you add new routable types.
+ * Every routable document in every language with its `path` (`routePathProjection`, which
+ * decides what has a route; without the locale prefix, the route layer adds it per `language`):
+ * home, the work landing, pages and projects. One row per language variant; `translations` lists
+ * every variant of the row (itself included) for the sitemap's `hreflang` alternates. Add a new
+ * routable type to this list and to `routePathProjection`.
  */
-export const sitemapPagesQuery = defineQuery(`*[
-  _type == "home" ||
-  _type == "work" ||
-  (_type == "page" && defined(slug.current)) ||
-  (_type == "project" && defined(slug.current))
-]{
-  _id,
+export const sitemapPagesQuery =
+	defineQuery(`*[_type in ["home", "work", "page", "project"]]{
   _type,
   _updatedAt,
   language,
   "path": ${routePathProjection},
   ${translationsQuery}
-}`);
+}[defined(path)]`);

@@ -66,6 +66,16 @@
 }
 
 /*
+ * Lazy placeholder (`@mux/mux-player-react/lazy`, until the player chunk loads): it paints the
+ * `placeholder` URL (the poster) as its background. Same `cover` fit as the poster, without the
+ * library's 60 % black overlay.
+ */
+.mux-player mux-player[data-mux-player-react-lazy-placeholder] {
+	--media-object-fit: cover;
+	--controls-backdrop-color: transparent;
+}
+
+/*
  * Icon-only controls: no filled chips behind play, mute, volume, fullscreen, etc.
  * `::part(button)` targets shared control buttons in Media Chrome / Mux Player.
  */

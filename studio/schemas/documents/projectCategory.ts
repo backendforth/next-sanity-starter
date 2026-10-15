@@ -1,5 +1,6 @@
 import { TagIcon } from "@sanity/icons/Tag";
 import { defineType } from "sanity";
+import { plainLabel } from "../../utils/plainLabel";
 import { languageField } from "../fields/languageField";
 
 export const projectCategory = defineType({
@@ -22,8 +23,7 @@ export const projectCategory = defineType({
       language: "language",
     },
     prepare({ title, language }) {
-      const headline =
-        typeof title === "string" && title.trim() ? title : "Category";
+      const headline = plainLabel(title, "Category");
       return {
         title: headline,
         subtitle: language ?? undefined,

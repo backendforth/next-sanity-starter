@@ -17,15 +17,6 @@ const DRAFT_MODE_COOKIE = "__prerender_bypass";
  */
 export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl;
-
-	if (
-		pathname.startsWith("/_next") ||
-		pathname.startsWith("/api") ||
-		/\.[^/]+$/.test(pathname)
-	) {
-		return NextResponse.next();
-	}
-
 	const preferDrafts =
 		process.env.NODE_ENV === "development" ||
 		request.cookies.has(DRAFT_MODE_COOKIE);
@@ -41,7 +32,10 @@ export async function proxy(request: NextRequest) {
 			pathname === defaultPrefix
 				? "/"
 				: pathname.slice(defaultPrefix.length) || "/";
-		return NextResponse.redirect(new URL(stripped, request.url));
+		/* Clone the URL so the query string (`utm_*`, …) survives the redirect. */
+		const url = request.nextUrl.clone();
+		url.pathname = stripped;
+		return NextResponse.redirect(url);
 	}
 
 	const first = pathname.split("/")[1];
@@ -55,6 +49,8 @@ export async function proxy(request: NextRequest) {
 	return NextResponse.rewrite(url);
 }
 
+/* Everything but API routes, Next internals and files. Whole segments: a page slug like
+ * `api-docs` is still a page. */
 export const config = {
-	matcher: ["/((?!_next|.*\\..*).*)"],
+	matcher: ["/((?!api/|_next/|.*\\..*).*)"],
 };

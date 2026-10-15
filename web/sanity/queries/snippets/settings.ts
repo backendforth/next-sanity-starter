@@ -1,8 +1,10 @@
+import { SITE_LANGUAGE_SETTINGS_QUERY } from "@repo/site-languages";
 import { defineQuery } from "next-sanity";
 
 import { blockFields } from "../components/text/richTextMedia";
 import { linkQuery } from "./link";
 import { imageQuery } from "./media";
+import { pageSeoQuery } from "./seo";
 
 /** Portable Text `body[]` for plain `richText` fields (no embedded modules), `link` marks resolved. */
 const richTextBody = `[]{
@@ -34,26 +36,22 @@ const navFooterMenuQuery = `footerMenu[]{
   ${linkQuery}
 }`;
 
-/** `siteNav` for the active locale — main + footer menus with resolved links, no `modules[]`. */
+/** `siteNav` for the active locale — main + footer menus with resolved links. */
 const siteNavQuery = `*[_type == "siteNav" && language == $locale][0]{
-  _id,
-  title,
   "mainMenu": ${navMainMenuQuery},
   "footerMenu": ${navFooterMenuQuery}
 }`;
 
 /**
- * `siteCookieBanner` for the active locale, else the default language's: analytics settings are
- * global, so a locale without its own banner must still ask for consent (in the default
- * language) instead of loading every tracker. No `modules[]`.
+ * `siteCookieBanner` for the active locale, else the default language's: the switch in the global
+ * `siteAnalyticsSettings` covers every locale, so a locale without its own banner must still ask
+ * for consent (in the default language) instead of loading every tracker.
  */
 const siteCookieBannerQuery = `coalesce(
   *[_type == "siteCookieBanner" && language == $locale][0],
   *[_type == "siteCookieBanner" && language == ${defaultLanguage}][0]
 ){
-  _id,
   language,
-  useCookieBanner,
   consentModal {
     description,
     privacyPolicy{
@@ -83,13 +81,15 @@ const siteCookieBannerQuery = `coalesce(
   }
 }`;
 
-/** Document id: `siteLanguageSettings` — the global locale registry. */
-export const siteLanguageSettingsQuery =
-	defineQuery(`*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]{
-  _id,
-  availableLanguages[]{id, title},
-  defaultLanguageId
-}`);
+/**
+ * Document id: `siteLanguageSettings` — the site's locales, global (no `language`); the Studio
+ * reads the same projection for its document languages, the proxy the same query. TypeGen
+ * resolves the package import through pnpm's hoisted `node_modules/.pnpm/node_modules`, so a
+ * fresh `pnpm install` is all it needs.
+ */
+export const siteLanguageSettingsQuery = defineQuery(
+	SITE_LANGUAGE_SETTINGS_QUERY,
+);
 
 /**
  * `siteSettings` for the shell and route metadata: the brand title and site-wide SEO fallback
@@ -102,37 +102,36 @@ export const siteLanguageSettingsQuery =
 const localSiteSettings = `*[_type == "siteSettings" && language == $locale][0]`;
 const siteSettingsQuery = `{
   "title": ${localSiteSettings}.title,
-  "seo": ${localSiteSettings}.seo{
-    title,
-    description,
-    "imageUrl": image.asset->url
-  },
+  "seo": ${localSiteSettings}.${pageSeoQuery},
   "favicon": *[_type == "siteSettings" && language == ${defaultLanguage}][0].favicon${imageQuery}
 }`;
 
-/** Document id: `siteAnalyticsSettings` — tracking providers + load mode (global, not per language). */
+/** Document id: `siteAnalyticsSettings` — the cookie banner switch, load mode and tracking providers (global, not per language). */
 const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id == "siteAnalyticsSettings"][0]{
+  useCookieBanner,
   loadMode,
   trackers[]{
     _key,
     _type,
     enabled,
-    cookieFree,
     cookieBannerLabel,
     cookieBannerDescription,
     _type == "trackerGoogleAnalytics" => {
-      measurementId
+      measurementId,
+      cookieFree
     },
     _type == "trackerMatomo" => {
       url,
-      siteId
+      siteId,
+      cookieFree
     },
     _type == "trackerMicrosoftClarity" => {
       projectId
     },
     _type == "trackerPostHog" => {
       apiKey,
-      apiHost
+      apiHost,
+      cookieFree
     },
     _type == "trackerPlausible" => {
       domain,
@@ -141,11 +140,7 @@ const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id ==
   }
 }`;
 
-/**
- * `errorSettings` for `$locale` — the 404 copy. Its `modules[]` field is deliberately not
- * projected: no error page renders modules, and embedding `modulesQuery` inflated the query from
- * ~2 KB to ~79 KB.
- */
+/** `errorSettings` for `$locale` — the 404 copy. */
 const notFoundQuery = `*[_type == "errorSettings" && language == $locale][0]{
   notFoundTitle,
   "notFoundBody": notFoundBody${richTextBody}

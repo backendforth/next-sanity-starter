@@ -2,8 +2,9 @@ import { CaseIcon } from "@sanity/icons/Case";
 import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType, type PreviewValue } from "sanity";
-import { validateModuleMediaRequired } from "../../utils/validateModuleMedia";
-import { isUniqueLocaleAgnostic, validateSlug } from "../../utils/validateSlug";
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
+import { plainLabel } from "../../utils/plainLabel";
+import { isUniquePerLanguage, validateSlug } from "../../utils/validateSlug";
 import {
   NEWEST_FIRST_SUGGESTIONS,
   PROJECT_CATEGORY_REFERENCE_FILTER,
@@ -42,7 +43,8 @@ export const project = defineType({
       title: "Title media",
       type: "module.media",
       group: "editorial",
-      validation: (rule) => rule.required().custom(validateModuleMediaRequired),
+      /* `module.media` checks its own type and asset fields. */
+      validation: (rule) => rule.required(),
     },
     {
       name: "categories",
@@ -71,7 +73,7 @@ export const project = defineType({
       options: {
         maxLength: 96,
         source: "title",
-        isUnique: isUniqueLocaleAgnostic,
+        isUnique: isUniquePerLanguage,
       },
       validation: validateSlug,
       group: "editorial",
@@ -110,8 +112,10 @@ export const project = defineType({
         titleMediaLoopPoster,
       } = selection;
       const segment = slug?.current?.trim();
-      const path = segment ? `/work/${segment}` : "/work";
-      const headline = typeof title === "string" && title.trim() ? title : path;
+      const path = segment
+        ? `${PROJECT_URL_PREFIX}/${segment}`
+        : PROJECT_URL_PREFIX;
+      const headline = plainLabel(title, path);
 
       type PreviewMedia = NonNullable<PreviewValue["media"]>;
       let media: PreviewMedia = CaseIcon as PreviewMedia;

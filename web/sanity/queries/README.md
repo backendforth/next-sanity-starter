@@ -1,41 +1,34 @@
 # GROQ queries (`web/sanity/queries/`)
 
-This folder holds **GROQ** strings for the Next.js app: reusable **snippets**, **page-level** queries, and **component** projections (`modules[]`, rich text). Everything is exported from **`@/sanity/queries`** via [`index.ts`](./index.ts).
+This folder holds the **GROQ** for the Next.js app: reusable **snippets**, **page-level** queries, and **component** projections (`modules[]`, rich text). [`index.ts`](./index.ts) exports the full queries the fetchers use; fragments are imported from their file.
 
-## What is GROQ?
-
-**GROQ** (Graph-Relational Object Queries) is Sanity’s query language. You filter and project JSON documents from your Content Lake: filters like `*[_type == "page"]`, projections `{ title, slug }`, joins with `->`, and parameters like `$slug` for dynamic values.
-
-- **Docs:** [sanity.io/docs/groq](https://www.sanity.io/docs/groq)
-- **Tooling:** **Vision** in Sanity Studio (Tools → Vision) runs queries against the **current dataset** — use it to validate the examples below.
+GROQ reference: [sanity.io/docs/groq](https://www.sanity.io/docs/groq). **Vision** in the Studio (development only) runs a query against the Studio's dataset.
 
 ## Contents
 
 | Path | Role |
 |------|------|
-| [`index.ts`](./index.ts) | Barrel: re-exports all public query constants. |
-| [`snippets/`](./snippets/README.md) | Small fragments: `linkQuery`, `pageSeoQuery`, `imageQuery`, the shell bundle `siteChromeQuery` (nav, cookie banner, site settings, analytics, 404 copy), sitemap helpers. Composed into larger strings, not usually run alone. |
+| [`index.ts`](./index.ts) | The full queries (`defineQuery`): page queries, `siteChromeQuery`, `siteLanguageSettingsQuery`, slug and sitemap queries. |
+| [`snippets/`](./snippets/README.md) | Fragments: `linkQuery`, `pageSeoQuery`, `imageQuery`, `videoQuery`, `routePathProjection`; plus the shell bundle `siteChromeQuery` (nav, cookie banner, site settings, analytics, 404 copy) and the sitemap queries. |
 | [`components/`](./components/README.md) | `components/modules/` — `modulesQuery` and per-`module.*` projections; `components/text/richTextMedia.ts` — `richTextMediaQuery` for portable text bodies. |
 | [`pages/`](./pages/README.md) | Full document queries: `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery`. |
 
-**Flow:** `pages/*.ts` and `snippets/settings.ts` **import** snippets and `modulesQuery`, then **interpolate** them into template strings. The exported constants are the **final** GROQ strings your app passes to `client.fetch()` / `sanityFetch`.
+**Flow:** fragments are interpolated into the full queries in `pages/` and `snippets/`. Routes run those through the fetchers in [`../fetchSanityData.ts`](../fetchSanityData.ts) (`sanityFetch`); published-only reads go through [`../cachedSanityQuery.ts`](../cachedSanityQuery.ts).
 
 ## Typed queries (TypeGen)
 
-Every full query is a `defineQuery(...)`; `pnpm generate` writes its result type to `web/sanity/sanity.types.gen.ts`, and `sanityFetch` / `client.fetch` return that type on their own. Three rules keep it working:
+Every full query is a `defineQuery(...)`; `pnpm generate` writes its result type to `web/sanity/sanity.types.gen.ts`, and `sanityFetch` returns that type on its own. Three rules keep it working:
 
 1. **Fragments are plain `const` template strings**, built only from other `const` strings. A function call anywhere in the chain (`fragment(name)`, `JSON.stringify(...)`) makes TypeGen skip the query silently; `check:typegen` (part of `pnpm generate`) then fails.
-2. **Singletons filter by type too:** `*[_type == "siteSettings" && _id == "siteSettings"][0]`. An `_id` alone gives TypeGen no document type to narrow to.
+2. **A singleton read by `_id` filters by type too:** `*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]`. An `_id` alone gives TypeGen no document type to narrow to.
 3. **Name results in `web/sanity/types.ts`**, derived from the generated types (`NonNullable<HomeQueryResult>`, `ModuleOf<"module.x">`). Never hand-write a Sanity-shaped type, never `as` fetched data.
 
 ## Parameters
 
 | Query | Parameter | Example |
 |-------|-----------|--------|
-| Every query for a per-language document (pages and settings, see below) | `$locale` | Language id from `siteLanguageSettings`, e.g. `"en"`. |
+| Every query for a per-language document (pages and the shell, see below) | `$locale` | Language id from `siteLanguageSettings`, e.g. `"en"`. |
 | `pageBySlugQuery`, `projectBySlugQuery` | `$slug` | Slug string without leading slash, e.g. `"about"`. |
-
-In Vision, open the **Params** JSON editor and set e.g. `{ "slug": "about", "locale": "en" }` when using `pageBySlugQuery`.
 
 ## Per-language documents
 
@@ -43,165 +36,34 @@ This branch keeps **one document per language** (`@sanity/document-international
 
 | Type | Purpose |
 |------|--------|
-| `home` | Home page |
-| `work` | Work landing (`/work`) |
+| `home`, `work` | Home and Work landing pages (`modules[]`) |
 | `page`, `project` | Slug routes — `slug.current == $slug && language == $locale` |
-| `siteSettings` | Site metadata, favicon, SEO fallback (part of `siteChromeQuery`), optional modules |
-| `siteNav` | Main + footer menus, optional modules |
-| `errorSettings` | 404 / 500 copy |
-| `siteCookieBanner` | Cookie UI |
+| `siteSettings` | Brand title, favicon, SEO fallback (part of `siteChromeQuery`) |
+| `siteNav` | Main + footer menus |
+| `errorSettings` | 404 copy |
+| `siteCookieBanner` | Cookie banner copy |
 
-Pattern: `*[_type == "siteSettings" && language == $locale][0]`. The cookie banner and the favicon fall back to the default language's document (see `siteChromeQuery`).
+Pattern: `*[_type == "siteNav" && language == $locale][0]`. The cookie banner falls back to the default language's document, and the favicon always comes from it (see `siteChromeQuery`).
 
-The only fixed-id document is the global singleton **`siteLanguageSettings`** (`*[_id == "siteLanguageSettings"][0]`).
+Two global singletons are read by `_id`: **`siteLanguageSettings`** (site languages: routing and the Studio's document languages) and **`siteAnalyticsSettings`** (cookie banner switch, load mode, tracking providers).
 
----
+## Sanity Vision
 
-## Sanity Vision examples
-
-Paste into **Vision** (adjust dataset in Studio if needed). Add `$locale` (and `$slug` where used) in the Vision **Params** editor, e.g. `{ "locale": "en" }`.
-
-### Home
-
-**Quick existence check:**
+The query files interpolate fragments, so copy the expanded string from the code (or log it) when you need the app's exact shape. Two quick checks:
 
 ```groq
-*[_type == "home" && language == $locale][0]{ _id, title, language }
+*[_type == "page" && slug.current == $slug && language == $locale][0]{ _id, title, language, "slug": slug.current }
 ```
 
-**App route queries** interpolate **`pageSeoQuery`** from [`snippets/seo.ts`](./snippets/seo.ts) (local `seo` only). The site-wide `siteSettings.seo` fallback comes with the shell bundle (`fetchSiteChrome`, already fetched by the layout) and is merged in `metadataFromSanityPageData`. Minimal Vision check:
+Set the params in Vision, e.g. `{ "slug": "about", "locale": "en" }`.
 
 ```groq
-*[_type == "home" && language == $locale][0]{
-  _id,
-  title,
-  language,
-  modules,
-  seo {
-    title,
-    description,
-    "imageUrl": image.asset->url
-  }
-}
+*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]{ availableLanguages, defaultLanguageId }
 ```
-
-### Page by slug
-
-**Params (Vision):** `{ "slug": "<slug>", "locale": "en" }` — slug only, no leading slash.
-
-Aligned with [`pages/page.ts`](./pages/page.ts) (`pageSeoQuery` + raw `modules`):
-
-```groq
-*[_type == "page" && slug.current == $slug && language == $locale][0]{
-  _id,
-  title,
-  slug,
-  language,
-  modules,
-  seo {
-    title,
-    description,
-    "imageUrl": image.asset->url
-  }
-}
-```
-
-Minimal:
-
-```groq
-*[_type == "page" && slug.current == $slug && language == $locale][0]{ _id, title, "slug": slug.current }
-```
-
-### All page slugs (routing / static paths)
-
-From [`snippets/sitemap.ts`](./snippets/sitemap.ts) — `pageSlugsQuery` (all languages; one row per language version):
-
-```groq
-*[_type == "page" && defined(slug.current)]{
-  "slug": slug.current,
-  language
-}
-```
-
-### Sitemap-style list (paths)
-
-From `sitemapPagesQuery` (simplified — the real query also covers `work` and `project`). `path` has no locale prefix; the sitemap adds it per `language`:
-
-```groq
-*[_type == "home" || (_type == "page" && defined(slug.current))]{
-  _id,
-  _type,
-  _updatedAt,
-  language,
-  "slug": select(_type == "home" => null, slug.current),
-  "path": select(_type == "home" => "/", "/" + slug.current)
-}
-```
-
-### Navigation (`siteNav`)
-
-The app reads the menus through `siteChromeQuery` in [`snippets/settings.ts`](./snippets/settings.ts) (resolved links, no `modules[]`). **Smoke test** — document and raw menu fields:
-
-```groq
-*[_type == "siteNav" && language == $locale][0]{
-  _id,
-  title,
-  language,
-  mainMenu,
-  footerMenu
-}
-```
-
-To match the app’s resolved links, use the exported `siteChromeQuery` from code (its `nav` expands each menu item with `linkQuery`).
-
-### Site settings
-
-The app reads `siteSettings` through `siteChromeQuery` (`settings`: title, favicon, SEO fallback). Vision smoke test:
-
-```groq
-*[_type == "siteSettings" && language == $locale][0]{
-  _id,
-  title,
-  "favicon": favicon{
-    crop,
-    hotspot,
-    "alt": asset->altText,
-    "asset": asset->{ _id, url, metadata{ dimensions{ width, height, aspectRatio } } }
-  },
-  seo {
-    title,
-    description,
-    "imageUrl": image.asset->url
-  }
-}
-```
-
-Omit favicon/SEO lines if you only need to verify the document:
-
-```groq
-*[_type == "siteSettings" && language == $locale][0]{ _id, title }
-```
-
-### Settings + nav + errors + cookie banner (one object)
-
-Four sub-queries in one GROQ object — a handy Vision smoke test for all shell documents of one language at once (the app fetches them together, plus analytics, through `siteChromeQuery`):
-
-```groq
-{
-  "siteSettings": *[_type == "siteSettings" && language == $locale][0]{ _id, title },
-  "siteNav": *[_type == "siteNav" && language == $locale][0]{ _id, title },
-  "errorSettings": *[_type == "errorSettings" && language == $locale][0]{ _id, notFoundTitle },
-  "siteCookieBanner": *[_type == "siteCookieBanner" && language == $locale][0]{ _id, title, useCookieBanner }
-}
-```
-
-Extend each branch with the same fields as in [`snippets/settings.ts`](./snippets/settings.ts) when you need parity with production fetches.
-
----
 
 ## Related
 
-- [`snippets/README.md`](./snippets/README.md) — snippet roles and composition patterns  
-- [`components/README.md`](./components/README.md) — `modulesQuery` and `richTextMediaQuery`  
-- [`pages/README.md`](./pages/README.md) — page query usage in Next.js  
-- [`../README.md`](../README.md) — `web/sanity` data layer overview  
+- [`snippets/README.md`](./snippets/README.md) — fragment roles and composition rules
+- [`components/README.md`](./components/README.md) — `modulesQuery` and `richTextMediaQuery`
+- [`pages/README.md`](./pages/README.md) — page queries, their fetchers and route metadata
+- [`../README.md`](../README.md) — `web/sanity` data layer overview

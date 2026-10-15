@@ -6,17 +6,21 @@ import { preconnect } from "react-dom";
  * image and poster code never pulls this in.
  */
 
-/** Mux HLS rendition tier identifiers usable with `min_resolution_tier` / `max_resolution_tier`. */
-export type MuxResolutionTier =
-	| "240p"
-	| "270p"
-	| "360p"
-	| "480p"
-	| "540p"
-	| "720p"
-	| "1080p"
-	| "1440p"
-	| "2160p";
+/** Mux HLS rendition tiers, lowest first (`min_resolution` / `max_resolution` values). */
+const TIER_LADDER = [
+	"270p",
+	"360p",
+	"480p",
+	"540p",
+	"720p",
+	"1080p",
+	"1440p",
+	"2160p",
+] as const;
+
+export type MuxResolutionTier = (typeof TIER_LADDER)[number];
+
+const tierRank = (tier: MuxResolutionTier): number => TIER_LADDER.indexOf(tier);
 
 /**
  * DPR cap for tier selection (loops and the full player). 2.0 honors retina (effective 2× CSS
@@ -39,37 +43,13 @@ export const MUX_PLAYBACK_MAX_TIER = "2160p" satisfies MuxResolutionTier;
  */
 const FINE_POINTER_DISPLAY_QUERY = "(hover: hover) and (pointer: fine)";
 
-const TIER_RANK: Record<MuxResolutionTier, number> = {
-	"270p": 0,
-	"360p": 1,
-	"480p": 2,
-	"540p": 3,
-	"720p": 4,
-	"1080p": 5,
-	"1440p": 6,
-	"2160p": 7,
-	"240p": 0,
-};
-
-/** Rank → tier, aligned with {@link TIER_RANK}. */
-const TIER_LADDER: readonly MuxResolutionTier[] = [
-	"270p",
-	"360p",
-	"480p",
-	"540p",
-	"720p",
-	"1080p",
-	"1440p",
-	"2160p",
-];
-
 /** A stall rescue never steps below this rung — the visual cliff for a full-width video. */
 const TIER_BELOW_FLOOR: MuxResolutionTier = "720p";
 
 /** One rung below `tier`; a tier at or below {@link TIER_BELOW_FLOOR} is returned unchanged. */
 export function muxTierBelow(tier: MuxResolutionTier): MuxResolutionTier {
-	if (TIER_RANK[tier] <= TIER_RANK[TIER_BELOW_FLOOR]) return tier;
-	return TIER_LADDER[TIER_RANK[tier] - 1] ?? tier;
+	if (tierRank(tier) <= tierRank(TIER_BELOW_FLOOR)) return tier;
+	return TIER_LADDER[tierRank(tier) - 1] ?? tier;
 }
 
 /** The lower of two tiers. */
@@ -77,11 +57,11 @@ function minResolutionTier(
 	a: MuxResolutionTier,
 	b: MuxResolutionTier,
 ): MuxResolutionTier {
-	return TIER_RANK[a] <= TIER_RANK[b] ? a : b;
+	return tierRank(a) <= tierRank(b) ? a : b;
 }
 
-/** Target pixels + Mux tier for loop playback (DPR-capped, {@link MUX_PLAYBACK_MAX_TIER} ceiling). */
-export function computeLoopVideoTarget(args: {
+/** Mux tier that covers the container at a capped DPR ({@link MUX_PLAYBACK_MAX_TIER} ceiling). */
+function loopContainerTier(args: {
 	containerWidthPx: number;
 	containerHeightPx: number;
 	devicePixelRatio?: number;
@@ -89,23 +69,22 @@ export function computeLoopVideoTarget(args: {
 	videoHeightPx: number;
 	/** Pick the covering tier (round up) instead of the floor — see {@link isFinePointerDisplay}. */
 	roundTierUp?: boolean;
-}): { targetW: number; targetH: number; maxResolutionTier: MuxResolutionTier } {
+}): MuxResolutionTier {
 	const rawDpr =
 		typeof args.devicePixelRatio === "number" && args.devicePixelRatio > 0
 			? args.devicePixelRatio
 			: 1;
 	const dpr = Math.min(rawDpr, LOOP_VIDEO_DPR_CAP);
-	const { targetW, targetH } = computeObjectCoverTargetPx({
+	const { targetH } = computeObjectCoverTargetPx({
 		...args,
 		devicePixelRatio: dpr,
 	});
-	const tier = minResolutionTier(
+	return minResolutionTier(
 		args.roundTierUp
 			? muxCoveringResolutionTierFromHeight(targetH)
 			: muxResolutionTierFromHeight(targetH),
 		MUX_PLAYBACK_MAX_TIER,
 	);
-	return { targetW, targetH, maxResolutionTier: tier };
 }
 
 /**
@@ -232,7 +211,7 @@ function getNetworkAwareTierCeiling(): MuxResolutionTier {
  *
  * Tier selection takes the minimum of:
  *  - **Container tier** — derived from container width × height × capped DPR
- *    (see {@link computeLoopVideoTarget}). Desktop-class displays round up to
+ *    (see {@link loopContainerTier}). Desktop-class displays round up to
  *    the covering rung, touch displays round down ({@link isFinePointerDisplay}).
  *    A fullscreen retina hero targets up to the ceiling; small inline loops
  *    target 720p or below.
@@ -263,14 +242,14 @@ export function resolveMuxLoopTier(args: MuxLoopTierArgs): MuxResolutionTier {
 
 	let containerTier: MuxResolutionTier = MUX_PLAYBACK_MAX_TIER;
 	if (cw > 0 && ch > 0) {
-		containerTier = computeLoopVideoTarget({
+		containerTier = loopContainerTier({
 			containerWidthPx: cw,
 			containerHeightPx: ch,
 			devicePixelRatio: args.devicePixelRatio,
 			videoWidthPx: vw,
 			videoHeightPx: vh,
 			roundTierUp: isFinePointerDisplay(),
-		}).maxResolutionTier;
+		});
 	}
 
 	const tier = minResolutionTier(containerTier, getNetworkAwareTierCeiling());
@@ -295,11 +274,9 @@ export function muxLoopHlsSrc(
 	const resolutionTier = resolveMuxLoopTier(args);
 	const u = new URL(`https://stream.mux.com/${playbackId}.m3u8`);
 	u.searchParams.set("rendition_order", "desc");
-	/* Mux's documented parameter name is `min_resolution` (not
-	 * `min_resolution_tier`) — unknown params are silently dropped, so the
-	 * previous `min_resolution_tier=...` was a no-op and the manifest
-	 * contained every rendition from the asset's lowest tier upward.
-	 * Safari then naturally started ABR from the bottom rung. */
+	/* Mux's parameter is `min_resolution`, not `min_resolution_tier`: unknown
+	 * params are dropped silently. `min` = `max` leaves one rendition in the
+	 * manifest, so playback can't start ABR from the bottom rung. */
 	u.searchParams.set("min_resolution", resolutionTier);
 	u.searchParams.set("max_resolution", resolutionTier);
 	return u.toString();
@@ -318,7 +295,7 @@ export type MuxPlayerResolution = {
 
 /** Floor a ladder tier into the player-pinnable domain (720p is also the visual-cliff floor). */
 function playerTierFloor(tier: MuxResolutionTier): MuxPlayerResolutionTier {
-	return TIER_RANK[tier] <= TIER_RANK["720p"]
+	return tierRank(tier) <= tierRank("720p")
 		? "720p"
 		: (tier as MuxPlayerResolutionTier);
 }
@@ -508,31 +485,23 @@ export function getPreferredVideoCodec(): Promise<MuxLevelCodecFamily> {
 	return cachedPreferredCodec;
 }
 
-function pickSmallestSufficientLevelIndex(
+function highestLevelIndex(
 	candidates: { i: number; h: number; w: number }[],
-	targetW: number,
-	targetH: number,
 ): number | undefined {
-	if (!candidates.length) return undefined;
-	const ascending = [...candidates].sort((a, b) => a.h - b.h || a.w - b.w);
-	if (targetW > 0 && targetH > 0) {
-		return (
-			ascending.find((l) => l.h >= targetH && l.w >= targetW) ??
-			ascending[ascending.length - 1]
-		)?.i;
-	}
-	return ascending[ascending.length - 1]?.i;
+	return candidates.reduce<(typeof candidates)[number] | undefined>(
+		(best, l) =>
+			!best || l.h > best.h || (l.h === best.h && l.w > best.w) ? l : best,
+		undefined,
+	)?.i;
 }
 
 /**
- * Pick the hls.js level index: smallest rendition that saturates the player (DPR-aware).
- * Tries AV1 → HEVC → H.264 before falling back to any level.
+ * Pick the hls.js level: the first supported codec family (probe winner, then AV1 → HEVC →
+ * H.264), highest rendition within it. Loop manifests hold one tier, so this is a codec pick.
  */
 export function pickMuxHlsLevelIndex(
 	levels: MuxHlsLevelLike[],
 	opts: {
-		targetW: number;
-		targetH: number;
 		/** Codec families to skip (e.g. after a MEDIA_ERROR on AV1). */
 		excludedFamilies: ReadonlySet<MuxLevelCodecFamily>;
 		/**
@@ -544,42 +513,32 @@ export function pickMuxHlsLevelIndex(
 		preferredCodec: MuxLevelCodecFamily;
 	},
 ): number | undefined {
-	if (!levels.length) return undefined;
-
 	const indexed = levels.map((lvl, i) => ({
 		i,
 		h: lvl.height ?? 0,
 		w: lvl.width ?? 0,
 		family: detectMuxLevelCodecFamily(lvl.codecs),
 	}));
-
-	const excluded = opts.excludedFamilies;
 	const codecOrder = [
 		opts.preferredCodec,
 		...MODERN_CODEC_ORDER.filter((c) => c !== opts.preferredCodec),
 	];
-
 	for (const family of codecOrder) {
-		if (excluded.has(family) || !isMuxCodecFamilySupported(family)) continue;
-		const candidates = indexed.filter((l) => l.family === family);
-		if (!candidates.length) continue;
-		const pick = pickSmallestSufficientLevelIndex(
-			candidates,
-			opts.targetW,
-			opts.targetH,
-		);
-		if (typeof pick === "number") return pick;
+		if (opts.excludedFamilies.has(family) || !isMuxCodecFamilySupported(family))
+			continue;
+		const pick = highestLevelIndex(indexed.filter((l) => l.family === family));
+		if (pick !== undefined) return pick;
 	}
-
-	return pickSmallestSufficientLevelIndex(indexed, opts.targetW, opts.targetH);
+	return highestLevelIndex(indexed);
 }
 
 /**
- * Opens the connections to Mux early (`stream.mux.com` for the playlist and segments,
- * `image.mux.com` for posters). Called while a video component renders, so only pages with a
- * video pay for them; React hoists the hints into `<head>`, during SSR included.
+ * Opens the connections to Mux early: `stream.mux.com` for the master playlist (hls.js fetches
+ * it with CORS, so the hint must be `anonymous` to be reused), `image.mux.com` for posters.
+ * Called while a video component renders, so only pages with a video pay for them; React hoists
+ * the hints into `<head>`, during SSR included.
  */
 export function preconnectMux(): void {
-	preconnect("https://stream.mux.com");
+	preconnect("https://stream.mux.com", { crossOrigin: "anonymous" });
 	preconnect("https://image.mux.com");
 }

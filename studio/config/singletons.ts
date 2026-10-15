@@ -1,16 +1,17 @@
 /**
- * Canonical declaration of every singleton schema type (documents backed by a
- * fixed id in the desk structure) and its Presentation web-preview role:
+ * Canonical declaration of every singleton schema type (documents opened from
+ * the desk structure, not from a Create menu) and its Presentation web-preview role:
  *
  * - `root`   — Web Preview resolves to the site root `/` (e.g. `home`).
  * - `none`   — settings-only; Presentation offers no Web Preview link.
  * - `custom` — bespoke locations handled in `presentation/locationsResolver.ts`
- *              (e.g. `errorSettings` → `/404`, `/500`).
+ *              (e.g. `errorSettings` → `/404`).
  *
  * This is the single source of truth: `presentation/conventions.ts` derives its
- * role-sets from this map, and `SINGLETON_SCHEMA_TYPES` (used to lock document
- * actions) is its key set. Add a new singleton here once and the delete/
- * unpublish/duplicate locks and Presentation behaviour follow automatically.
+ * role-sets from this map, and `SINGLETON_SCHEMA_TYPES` (kept out of the Create
+ * menus) is its key set. Add a new singleton here once and the Create-menu filter
+ * and Presentation behaviour follow automatically; which singletons lock their
+ * delete/unpublish/duplicate actions is `FIXED_ID_SINGLETON_TYPES` below.
  */
 export const SINGLETON_PREVIEW_ROLE = {
   home: "root",
@@ -25,7 +26,7 @@ export const SINGLETON_PREVIEW_ROLE = {
 
 export type SingletonSchemaType = keyof typeof SINGLETON_PREVIEW_ROLE;
 
-/** Schema types backed by a fixed document id in structure (singletons). */
+/** Singleton schema types: opened from the structure, not from a Create menu. */
 export const SINGLETON_SCHEMA_TYPES = new Set<string>(
   Object.keys(SINGLETON_PREVIEW_ROLE),
 );
@@ -40,13 +41,26 @@ export function singletonTypesWithRole(
 }
 
 /**
- * Singletons are opened from the structure (fixed ids), never created from a "Create" menu or a
- * reference input: a second document of the type would be invisible to the structure and the
- * queries. Their only templates are the defaults, whose id is the schema type.
+ * Singletons are opened from the structure, never created from a "Create" menu or a
+ * reference input: the site reads one document of the type (per language, where the type is
+ * translatable), and the structure is where that one is managed. Their only templates are the
+ * defaults, whose id is the schema type.
  */
 export function isSingletonTemplate(templateId: string): boolean {
   return SINGLETON_SCHEMA_TYPES.has(templateId);
 }
+
+/**
+ * Singletons the site reads by their fixed `_id`, one document for every language. Deleting,
+ * unpublishing or duplicating one leaves the site without it or with a copy nothing reads, so
+ * those actions are locked. The per-language singletons are one document per language and keep
+ * them, like any document: a stray second document in a language (`onePerLanguage` blocks its
+ * publish) or an unwanted language version can be deleted.
+ */
+const FIXED_ID_SINGLETON_TYPES = new Set<string>([
+  "siteLanguageSettings",
+  "siteAnalyticsSettings",
+] satisfies SingletonSchemaType[]);
 
 const LOCKED_SINGLETON_ACTIONS = new Set(["delete", "unpublish", "duplicate"]);
 
@@ -54,7 +68,7 @@ export function filterSingletonDocumentActions<T extends { action?: string }>(
   actions: T[],
   schemaType: string,
 ): T[] {
-  if (!SINGLETON_SCHEMA_TYPES.has(schemaType)) {
+  if (!FIXED_ID_SINGLETON_TYPES.has(schemaType)) {
     return actions;
   }
   return actions.filter((a) => !LOCKED_SINGLETON_ACTIONS.has(a.action ?? ""));

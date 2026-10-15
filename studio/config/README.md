@@ -2,7 +2,7 @@
 
 For a **feature overview** (Presentation, datasets, i18n, slugs, Mux), see the [Studio readme](../README.md). For **adding and registering schema types** step by step, see [`schemas/README.md`](../schemas/README.md).
 
-This folder holds **structure** (sidebar), **presentation** (Visual Editing / Web Preview), **initial value templates**, and **`config/sync/`** (resolved dataset + Studio i18n plugin language fetch). `sanity.config.ts` at the studio root wires these into Sanity.
+This folder holds **structure** (sidebar), **presentation** (Visual Editing / Web Preview), the singleton roles (**`singletons.ts`**), and **`config/sync/`** (resolved dataset + Studio i18n plugin language fetch). `sanity.config.ts` at the studio root wires these into Sanity.
 
 ## Schemas vs structure (not automatic)
 
@@ -11,7 +11,7 @@ This folder holds **structure** (sidebar), **presentation** (Visual Editing / We
 
 So: **new document or object type → add it to `schemas/index.ts`**. **New sidebar entry → add or extend items in `config/structure/`** (see `config/structure/README.md`).
 
-Only global singletons with a fixed document ID (`siteLanguageSettings`) use `S.document().schemaType("…").documentId("…")` in structure. Translatable types — including the per-language "singletons" `home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner` — have one document per language, so they use `S.documentTypeList("…")`. `config/singletons.ts` still locks delete / unpublish / duplicate on those types.
+Only global singletons with a fixed document ID (`siteLanguageSettings`, `siteAnalyticsSettings`) use `S.document().schemaType("…").documentId("…")` in structure, and `config/singletons.ts` locks delete / unpublish / duplicate on them. Translatable types — including the per-language "singletons" `home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner` — have one document per language, so they use `S.documentTypeList("…")` and keep those actions: a stray second document in a language (`onePerLanguage` blocks its publish) or an unwanted language version can be deleted.
 
 ## Web Preview (Presentation)
 
@@ -22,20 +22,13 @@ Preview is provided by the **`presentationTool`** in `sanity.config.ts`:
 - **`resolve.locations`** — `presentationLocationsResolver` in `config/presentation/locationsResolver.ts` maps documents to iframe URLs (which path opens when you use “Web Preview”).
 - **`resolve.mainDocuments`** — `presentationMainDocuments` in `config/presentation/resolve.ts` tells Presentation which document type matches which route (e.g. home at `/`, pages at `/:slug`).
 
-Shared rules live in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `PREFIXED_SLUG_DOCUMENT_TYPES`, …). `SITE_ROOT_DOCUMENT_TYPES` and `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` are derived from the singleton roles in **`config/singletons.ts`** (`root` / `none`), so a settings singleton that should offer no Web Preview link is declared there. When you add a **new routable page type** with a slug, extend **`SLUG_BASED_DOCUMENT_TYPES`**, **`PAGE_REFERENCES`** (in `schemas/constants/references.ts`), and usually **structure** + **locations** if the URL pattern is non-standard.
+Shared rules live in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `PREFIXED_SLUG_DOCUMENT_TYPES`, …). `SITE_ROOT_DOCUMENT_TYPES` and `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` are derived from the singleton roles in **`config/singletons.ts`** (`root` / `none`), so a settings singleton that should offer no Web Preview link is declared there. What a new routable type needs: [`schemas/README.md`](../schemas/README.md) §4.
 
-## Checklist: new schema or singleton
+## New schema or singleton
 
-| Step | What to do |
-|------|------------|
-| 1 | Add the schema file and export the type. |
-| 2 | Register the type in **`schemas/index.ts`**. |
-| 3 | Add a **structure** item (or list) under `config/structure/` and include it in **`config/structure/index.ts`**. |
-| 4 | If the doc is linked internally, extend **`PAGE_REFERENCES`** (and link field definitions if needed). |
-| 5 | If it should preview on a specific URL, update **`config/presentation/conventions.ts`**, **`resolve.ts`** (`presentationMainDocuments`), and **`locationsResolver.ts`** as needed. A singleton instead takes its role in **`config/singletons.ts`**. |
+Nothing in this repo auto-registers new types in the sidebar or in Presentation; those steps are intentional so URLs and UX stay explicit. The checklist is in [`AGENTS.md`](../../AGENTS.md) → Cookbook → "Add a document type (page-like)".
 
-Nothing in this repo auto-registers new types in the sidebar or in Presentation; those steps are intentional so URLs and UX stay explicit.
+## `config/sync/`
 
-## Dataset resolution
-
-`config/sync/studioDataset.ts` wires **`@repo/sanity-dataset-resolve`** so the Studio uses the right dataset (development vs production naming, and dev-first vs prod-first order by deploy context). `config/sync/supportedLanguages.ts` supplies the runtime language list for `@sanity/document-internationalization`. See `studio/utils/README.md` for editor-facing notes.
+- **`studioDataset.ts`** — the Studio's dataset, resolved with **`@repo/sanity-dataset-resolve`** ([root README](../../README.md#datasets)).
+- **`supportedLanguages.ts`** — runtime languages for `@sanity/document-internationalization` and the language new documents start in, from `siteLanguageSettings` (see [`utils/README.md`](../utils/README.md)).

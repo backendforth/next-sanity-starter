@@ -9,10 +9,8 @@ import { muxInput } from "sanity-plugin-mux-input";
 import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
 
-import {
-  presentationLocationsResolver,
-  presentationMainDocuments,
-} from "./config/presentation/resolve";
+import { presentationLocationsResolver } from "./config/presentation/locationsResolver";
+import { presentationMainDocuments } from "./config/presentation/resolve";
 import {
   filterSingletonDocumentActions,
   isSingletonTemplate,
@@ -21,28 +19,24 @@ import { structure } from "./config/structure";
 import { studioDataset } from "./config/sync/studioDataset";
 import { supportedLanguagesFromClient } from "./config/sync/supportedLanguages";
 import { schemaTypes } from "./schemas";
+import { languageField } from "./schemas/fields/languageField";
 
 /**
- * Document types that carry a `language` field and have parallel-per-locale
- * documents (see `@sanity/document-internationalization`). Add new translatable
- * types here AND add `languageField` (`schemas/fields/languageField.ts`) to the schema.
+ * Document types with one document per language (`@sanity/document-internationalization`):
+ * every document type whose `fields` include `languageField` (`schemas/fields/languageField.ts`).
+ * Adding the field makes a type translatable; there is no second list to keep in step.
  */
-const TRANSLATABLE_SCHEMA_TYPES = [
-  "home",
-  "page",
-  "work",
-  "project",
-  "projectCategory",
-  "errorSettings",
-  "siteNav",
-  "siteSettings",
-  "siteCookieBanner",
-];
+const TRANSLATABLE_SCHEMA_TYPES = schemaTypes.flatMap((type) =>
+  type.type === "document" &&
+  type.fields.some((field) => field === languageField)
+    ? [type.name]
+    : [],
+);
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = studioDataset;
 const previewOrigin =
-  process.env.SANITY_STUDIO_PREVIEW_ORIGIN ?? "http://localhost:3000";
+  process.env.SANITY_STUDIO_PREVIEW_ORIGIN || "http://localhost:3000";
 
 if (!projectId) {
   throw new Error(
@@ -110,7 +104,7 @@ export default defineConfig({
     actions: (prev, { schemaType }) =>
       filterSingletonDocumentActions(prev, schemaType),
     // `global` is the "Create" menu, `document` feeds the "Create new" button of reference
-    // inputs in a document pane; only `structure` items open singletons (by fixed id).
+    // inputs in a document pane; singletons are created only from their `structure` items.
     newDocumentOptions: (prev, { creationContext }) =>
       creationContext.type === "structure"
         ? prev

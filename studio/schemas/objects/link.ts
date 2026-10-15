@@ -1,10 +1,12 @@
 import { LinkIcon } from "@sanity/icons/Link";
 import { defineType } from "sanity";
 
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
+import { plainLabel } from "../../utils/plainLabel";
 import {
+  LINK_REFERENCE_FILTER,
+  LINK_REFERENCES,
   NEWEST_FIRST_SUGGESTIONS,
-  PAGE_REFERENCE_FILTER,
-  PAGE_REFERENCES,
   sameLanguageReferenceFilter,
 } from "../constants/references";
 
@@ -35,14 +37,17 @@ export const link = defineType({
       name: "title",
       type: "string",
       description:
-        "If empty for internal links, the referenced document title is used where available. Required for external and function links.",
+        "If empty for internal links, the referenced document title is used where available. Required for external and function links, except in rich text, where the marked text is the label.",
       validation: (rule) =>
         rule.custom((value, context) => {
+          /* A rich-text link annotation (stored under `markDefs`) is labelled by its text. */
+          if (context.path?.includes("markDefs")) {
+            return true;
+          }
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
           if (t === "external" || t === "function") {
-            const text = typeof value === "string" ? value.trim() : "";
-            return text ? true : "Add a title.";
+            return plainLabel(value, "") ? true : "Add a title.";
           }
           return true;
         }),
@@ -51,10 +56,10 @@ export const link = defineType({
       name: "reference",
       type: "reference",
       weak: true,
-      to: [...PAGE_REFERENCES],
+      to: [...LINK_REFERENCES],
       options: {
         ...NEWEST_FIRST_SUGGESTIONS,
-        filter: sameLanguageReferenceFilter(PAGE_REFERENCE_FILTER),
+        filter: sameLanguageReferenceFilter(LINK_REFERENCE_FILTER),
       },
       hidden: ({ parent }) => parent?.type !== "internal",
       validation: (rule) =>
@@ -113,19 +118,10 @@ export const link = defineType({
       slug: "reference.slug.current",
       url: "url",
       funcKey: "func.key",
-      funcParams: "func.params",
     },
     prepare(selection) {
-      const {
-        type,
-        title,
-        refTitle,
-        referenceType,
-        slug,
-        url,
-        funcKey,
-        funcParams,
-      } = selection;
+      const { type, title, refTitle, referenceType, slug, url, funcKey } =
+        selection;
 
       let subtitle = "";
       if (type === "internal") {
@@ -134,9 +130,9 @@ export const link = defineType({
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
         } else if (referenceType === "project" && slug) {
-          subtitle = `→ /work/${slug}`;
+          subtitle = `→ ${PROJECT_URL_PREFIX}/${slug}`;
         } else if (referenceType === "work") {
-          subtitle = "→ /work";
+          subtitle = `→ ${PROJECT_URL_PREFIX}`;
         } else if (referenceType) {
           subtitle = `→ (${referenceType})`;
         } else {
@@ -145,13 +141,11 @@ export const link = defineType({
       } else if (type === "external" && url) {
         subtitle = `→ ${url}`;
       } else if (type === "function") {
-        subtitle = funcKey
-          ? `→ ${funcKey}${funcParams ? ` (${funcParams})` : ""}`
-          : "→ (function)";
+        subtitle = funcKey ? `→ ${funcKey}` : "→ (function)";
       }
 
-      const linkLabel = typeof title === "string" ? title.trim() : "";
-      const refLabel = typeof refTitle === "string" ? refTitle.trim() : "";
+      const linkLabel = plainLabel(title, "");
+      const refLabel = plainLabel(refTitle, "");
       const label =
         linkLabel ||
         refLabel ||

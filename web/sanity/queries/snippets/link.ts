@@ -11,19 +11,16 @@ import { routePathProjection } from "./routePath";
  * An internal link carries its target's `path` (`routePathProjection`); a reference to a deleted
  * or unpublished document resolves to `null` and renders as plain text.
  *
- * `func` matches `linkFunctions` (`key`, `params`).
+ * `func` matches `linkFunctions` (`key`).
  */
 export const linkQuery = `
   _key,
   _type,
-  type,
   title,
   ...select(
     type == "internal" => {
       "linkType": "linkInternal",
       "resolvedReference": reference->{
-        _id,
-        _type,
         title,
         "path": ${routePathProjection}
       }
@@ -31,15 +28,11 @@ export const linkQuery = `
     type == "external" => {
       "linkType": "linkExternal",
       url,
-      "href": url,
       blank
     },
     type == "function" => {
       "linkType": "linkFunction",
-      "func": func {
-        key,
-        params
-      }
+      "func": func { key }
     }
   )
 `;

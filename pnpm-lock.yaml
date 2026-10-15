@@ -42,6 +42,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/site-languages: {}
+
   studio:
     dependencies:
       '@fontsource-variable/geist':
@@ -53,6 +55,9 @@ importers:
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
+      '@repo/site-languages':
+        specifier: workspace:*
+        version: link:../packages/site-languages
       '@sanity/document-internationalization':
         specifier: ^6.2.38
         version: 6.2.38(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sanity-plugin-internationalized-array@5.3.1(15c5cd2b0ebe8e4152b583332d1efd3e))(sanity@6.16.0(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.11)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.1)(jiti@2.7.0)(tsx@4.23.5)(yaml@2.9.1)))(@types/node@22.20.4)(@types/react@19.3.0)(babel-plugin-react-compiler@1.0.0)(esbuild@0.28.1)(immer@11.1.18)(jiti@2.7.0)(prismjs@1.27.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(rolldown@1.2.11)(styled-components@6.5.3(css-to-react-native@3.2.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(tsx@4.23.5)(typescript@6.0.3))(styled-components@6.5.3(css-to-react-native@3.2.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))
@@ -105,15 +110,15 @@ importers:
       '@mux/mux-player-react':
         specifier: ^3.13.4
         version: 3.13.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@portabletext/react':
-        specifier: ^8.0.1
-        version: 8.0.1(react@19.3.0)
       '@portabletext/types':
         specifier: ^4.0.2
         version: 4.0.2
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
+      '@repo/site-languages':
+        specifier: workspace:*
+        version: link:../packages/site-languages
       '@sanity/client':
         specifier: ^8.7.0
         version: 8.7.0

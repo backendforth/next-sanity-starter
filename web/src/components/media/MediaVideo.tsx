@@ -9,19 +9,12 @@
 
 import MuxPlayer from "@mux/mux-player-react/lazy";
 import clsx from "clsx";
-import {
-	type CSSProperties,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { resolveSanityImageFieldForUrl } from "@/sanity/utils/sanityImageBuilder";
+import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
 import {
 	extractMuxPlaybackId,
 	getMuxDisplayDimensions,
-	muxThumbnailRequestWidthPx,
 	muxThumbnailTimeSec,
 } from "@/src/utils/muxImage";
 import {
@@ -30,8 +23,7 @@ import {
 	preconnectMux,
 	resolveMuxPlayerResolution,
 } from "@/src/utils/muxPlayback";
-import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
-import { useContainerPixelWidth } from "@/src/utils/useContainerPixelWidth";
+import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 type MediaVideoProps = {
 	media: unknown;
@@ -41,12 +33,11 @@ type MediaVideoProps = {
 		autoplay?: boolean | null;
 		controls?: boolean | null;
 	} | null;
-	className?: string;
 	/** Fill the parent (no fixed aspect ratio) — e.g. fullscreen background video. */
 	fillParent?: boolean;
 	/**
-	 * Above-the-fold hint: starts loading the player bundle + HLS manifest immediately
-	 * (no `IntersectionObserver` wait, `preload="auto"`). Use for hero / LCP videos only.
+	 * Above-the-fold hint: loads the player bundle immediately (no `IntersectionObserver` wait)
+	 * and, for autoplay clips, the stream (`preload="auto"`). Use for hero / LCP videos only.
 	 */
 	priority?: boolean;
 };
@@ -140,13 +131,15 @@ function MuxVideoPlayer({
 	caption,
 	posterPayload,
 	videoSettings,
-	className,
 	fillParent = false,
 	priority = false,
 }: MediaVideoProps & { playbackId: string }) {
-	const [containerRef, slotWidthPx] = useContainerPixelWidth<HTMLDivElement>();
+	const containerRef = useRef<HTMLDivElement>(null);
 	const dims = getMuxDisplayDimensions(media);
-	const autoplay = !!videoSettings?.autoplay;
+	/* Reduced motion: autoplay clips wait for the visitor, like loops and carousels. */
+	const reducedMotion = usePrefersReducedMotion();
+	const autoplayClip = !!videoSettings?.autoplay;
+	const autoplay = autoplayClip && !reducedMotion;
 	const chromeless = videoSettings?.controls === false;
 
 	/* Client-only and latched: screen and network are read after mount (SSR renders the
@@ -319,7 +312,17 @@ function MuxVideoPlayer({
 			io.disconnect();
 			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
 		};
-	}, [playerReady, containerRef, resumeAutoplay]);
+	}, [playerReady, resumeAutoplay]);
+
+	/* Reduced motion switched on mid-play: dropping `autoPlay` doesn't stop the clip, so pause
+	 * it here. Expected, so it doesn't count as the visitor's pause. */
+	useEffect(() => {
+		const player = playerRef.current;
+		if (!playerReady || !reducedMotion || !autoplayClip) return;
+		if (!player || player.paused) return;
+		expectingPauseRef.current = true;
+		player.pause();
+	}, [playerReady, reducedMotion, autoplayClip]);
 
 	/* Returning to a long-backgrounded tab: browsers suspend background media and may evict
 	 * the MSE buffer, leaving an autoplay clip paused with nothing watching it. Nudge it back
@@ -333,54 +336,16 @@ function MuxVideoPlayer({
 		return () => document.removeEventListener("visibilitychange", onVisible);
 	}, [playerReady, autoplay, resumeAutoplay]);
 
-	/* Poster URL latched once the slot is measured: the measurement lands in a layout effect,
-	 * before the lazy player mounts (its placeholder renders no poster), so the player sees one
-	 * URL sized to the slot. Re-latched when anything else in the URL changes — the uploaded
-	 * poster, its crop or hotspot, or the Mux thumbnail time — so Presentation shows the
-	 * editor's pick; only the slot width is deliberately left out. */
-	const thumbnailTime = muxThumbnailTimeSec(media);
-	const posterField = resolveSanityImageFieldForUrl(posterPayload);
-	const posterKey = JSON.stringify([
-		posterField?.asset?._id ?? posterField?.asset?._ref ?? null,
-		posterField?.crop ?? null,
-		posterField?.hotspot ?? null,
-		thumbnailTime ?? null,
-	]);
-	const posterLatchRef = useRef<{ key: string; url: string | null } | null>(
-		null,
-	);
-
-	let posterUrl: string | null;
-	if (posterLatchRef.current?.key === posterKey) {
-		posterUrl = posterLatchRef.current.url;
-	} else {
-		posterUrl = resolveMediaPosterUrl({
-			posterPayload,
-			muxMedia: media,
-			thumbWidthPx: muxThumbnailRequestWidthPx({
-				containerWidthPx: slotWidthPx,
-				assetMaxWidthPx: dims.isFallback ? undefined : dims.width,
-			}),
-			muxTimeSec: thumbnailTime,
-		});
-		if (slotWidthPx !== undefined) {
-			posterLatchRef.current = { key: posterKey, url: posterUrl };
-		}
-	}
+	/* One URL for the server HTML, the lazy placeholder and the player, so the poster is in the
+	 * first paint and downloads once. It is the `src` `MediaImage` builds for the same poster, the
+	 * one a carousel shows while the slide is inactive. */
+	const posterUrl = resolveMediaImageSource({
+		image: posterPayload,
+		muxMedia: media,
+	})?.src;
 
 	/* `getMuxDisplayDimensions` already falls back to 16×9. */
 	const aspectCss = `${dims.width} / ${dims.height}`;
-
-	const muxSurfaceStyle = {
-		...(fillParent
-			? { height: "100%", width: "100%", minHeight: "100%" as const }
-			: { height: "100%", width: "100%" }),
-		...(chromeless
-			? ({
-					["--media-control-display" as string]: "none",
-				} as CSSProperties)
-			: {}),
-	} satisfies CSSProperties;
 
 	const videoTitle =
 		typeof caption === "string" && caption.length > 0 ? caption : "Video";
@@ -390,9 +355,7 @@ function MuxVideoPlayer({
 			ref={containerRef}
 			className={clsx(
 				"mux-player relative w-full min-w-0 overflow-hidden bg-black",
-				fillParent &&
-					"h-full min-h-[100dvh] w-full [&_mux-player]:!block [&_mux-player]:!h-full [&_mux-player]:!min-h-full [&_mux-player]:!w-full",
-				className,
+				fillParent && "h-full",
 			)}
 			style={fillParent ? undefined : { aspectRatio: aspectCss }}
 			data-poster-hidden={posterHidden ? "" : undefined}
@@ -400,20 +363,25 @@ function MuxVideoPlayer({
 			<MuxPlayer
 				ref={bindPlayer}
 				loading={priority ? "page" : "viewport"}
-				preload={priority ? "auto" : "metadata"}
+				/* `auto` restores hls.js' full forward buffer; only worth it for a clip that plays
+				 * by itself. */
+				preload={priority && autoplay ? "auto" : "metadata"}
 				streamType="on-demand"
 				playbackId={playbackId}
 				poster={posterUrl ?? undefined}
-				thumbnailTime={thumbnailTime}
+				/* The lazy wrapper paints only `placeholder` until the player chunk loads. */
+				placeholder={posterUrl ?? undefined}
+				thumbnailTime={muxThumbnailTimeSec(media)}
 				startTime={resumeAtSec}
 				/* `"muted"` rather than `true`: playback-core forces the element muted before
 				 * play() and retries muted if an unmuted attempt is denied, instead of failing
 				 * silently on autoplay policy. */
 				autoPlay={autoplay ? "muted" : false}
 				/* Constant per instance, so React never re-applies it and fights the mute
-				 * button. Autoplay clips start muted (the only way autoplay may begin); clips
-				 * the visitor starts play with sound. */
-				muted={autoplay}
+				 * button (the reduced-motion preference is live). Autoplay clips start muted,
+				 * the only way autoplay may begin, also when reduced motion holds them back;
+				 * other clips play with sound. */
+				muted={autoplayClip}
 				playsInline
 				renditionOrder="desc"
 				/* Quality-first (see `resolveMuxPlayerResolution`): min = max pins the best
@@ -437,8 +405,9 @@ function MuxVideoPlayer({
 				accentColor={MUX_ACCENT}
 				primaryColor={MUX_PRIMARY}
 				secondaryColor={MUX_SECONDARY}
+				/* Sized by the class alone; the lazy placeholder's injected rule sets no height. */
 				className="absolute inset-0 block h-full w-full max-w-none"
-				style={muxSurfaceStyle}
+				style={chromeless ? { "--media-control-display": "none" } : undefined}
 			/>
 		</div>
 	);

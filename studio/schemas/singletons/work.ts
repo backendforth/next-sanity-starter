@@ -2,6 +2,9 @@ import { SearchIcon } from "@sanity/icons/Search";
 import { TextIcon } from "@sanity/icons/Text";
 import { ThLargeIcon } from "@sanity/icons/ThLarge";
 import { defineType } from "sanity";
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
+import { onePerLanguage } from "../../utils/onePerLanguage";
+import { plainLabel } from "../../utils/plainLabel";
 import { languageField } from "../fields/languageField";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
@@ -9,6 +12,7 @@ export const work = defineType({
   name: "work",
   title: "Work",
   type: "document",
+  validation: onePerLanguage,
   icon: ThLargeIcon,
   groups: [
     {
@@ -45,11 +49,12 @@ export const work = defineType({
       language: "language",
     },
     prepare({ title, language }) {
-      const headline =
-        typeof title === "string" && title.trim() ? title : "Work";
+      const headline = plainLabel(title, "Work");
       return {
         title: headline,
-        subtitle: language ? `/work · ${language}` : "/work",
+        subtitle: language
+          ? `${PROJECT_URL_PREFIX} · ${language}`
+          : PROJECT_URL_PREFIX,
       };
     },
   },

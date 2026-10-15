@@ -1,12 +1,14 @@
 import { ErrorOutlineIcon } from "@sanity/icons/ErrorOutline";
 import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
+import { onePerLanguage } from "../../utils/onePerLanguage";
 import { languageField } from "../fields/languageField";
 
 export const errorSettings = defineType({
   name: "errorSettings",
   title: "Error pages",
   type: "document",
+  validation: onePerLanguage,
   icon: ErrorOutlineIcon,
   groups: [
     {
@@ -27,20 +29,6 @@ export const errorSettings = defineType({
     {
       name: "notFoundBody",
       title: "404 — Body",
-      type: "richText",
-      description: "Basic rich text (no media modules).",
-      group: "editorial",
-    },
-    {
-      name: "serverErrorTitle",
-      title: "500 — Title",
-      type: "string",
-      group: "editorial",
-      validation: (rule) => rule.required(),
-    },
-    {
-      name: "serverErrorBody",
-      title: "500 — Body",
       type: "richText",
       description: "Basic rich text (no media modules).",
       group: "editorial",

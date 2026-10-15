@@ -1,7 +1,8 @@
 /*
  * Portable Text block-style previews in Studio (richText / richTextMedia).
  *
- * Token values mirror `web/src/assets/styles/variables/fontsizes.css` (keep in sync).
+ * Token values approximate `web/src/assets/styles/variables/fontsizes.css` (same steps, sized
+ * for the editor).
  * Utility mapping matches `web/src/assets/styles/typography/typography.css`:
  *   normal → text (md), bigText → big-text (lg),
  *   h1 → heading-1 (3lg), h2 → heading-2 (2lg), h3 → heading-3 (lg, Geist Mono semibold),
@@ -11,20 +12,17 @@
 :root {
   --pt-preview-font-text:
     "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --pt-preview-font-headline: "Geist Mono Variable", ui-monospace, monospace;
   --pt-preview-font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
   --pt-font-size-md: 0.875rem;
   --pt-font-size-lg: 1.125rem;
   --pt-font-size-2lg: 1.5rem;
   --pt-font-size-3lg: 1.75rem;
-  --pt-font-size-xl: 3.1875rem;
 
   --pt-line-height-md: 1.18125rem;
   --pt-line-height-lg: 1.51875rem;
   --pt-line-height-2lg: 2.025rem;
   --pt-line-height-3lg: 2.3625rem;
-  --pt-line-height-xl: 4.303125rem;
 }
 
 @media (width >= 1440px) {
@@ -33,13 +31,11 @@
     --pt-font-size-lg: 1.25rem;
     --pt-font-size-2lg: 1.625rem;
     --pt-font-size-3lg: 1.875rem;
-    --pt-font-size-xl: 6rem;
 
     --pt-line-height-md: 1.35rem;
     --pt-line-height-lg: 1.6875rem;
     --pt-line-height-2lg: 2.19375rem;
     --pt-line-height-3lg: 3.54375rem;
-    --pt-line-height-xl: 8.1rem;
   }
 }
 

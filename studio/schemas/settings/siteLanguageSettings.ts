@@ -4,19 +4,16 @@ import { defineType } from "sanity";
 /**
  * Defines the site's languages: URL segments, the `language` values on
  * translated documents, and the default (unprefixed) locale. Global singleton
- * (fixed `_id`, no `language` field). Next.js reads it at runtime; the Studio's
- * `@sanity/document-internationalization` loads it via
- * `config/sync/supportedLanguages.ts`.
+ * (fixed `_id`, no `language` field). Next.js and the Studio's
+ * `@sanity/document-internationalization` read it at runtime with the same row rules
+ * (`@repo/site-languages`; Studio side: `config/sync/supportedLanguages.ts`).
  */
 export const siteLanguageSettings = defineType({
   name: "siteLanguageSettings",
   title: "Site languages",
   type: "document",
   icon: TranslateIcon,
-  /**
-   * First-time create of the singleton — editors can add/remove/reorder languages after.
-   * `title` keeps its field-level `initialValue` below.
-   */
+  /** First-time create of the singleton — editors can add/remove/reorder languages after. */
   initialValue: {
     availableLanguages: [
       { _key: "lang-en", id: "en", title: "English" },
@@ -26,19 +23,22 @@ export const siteLanguageSettings = defineType({
   },
   fields: [
     {
-      name: "title",
-      title: "Title",
-      type: "string",
-      initialValue: "Site languages",
-      hidden: true,
-    },
-    {
       name: "availableLanguages",
       title: "Available languages",
       type: "array",
       description:
         "Order of the language switch on the website and of the translations menu in Studio. There is no fallback between languages: a page that doesn't exist in a language isn't shown in it.",
-      validation: (rule) => rule.required().min(1),
+      validation: (rule) => [
+        rule.required().min(1),
+        /* One URL prefix and one translation per id. */
+        rule.custom((rows: { id?: string }[] | undefined) => {
+          const ids = (rows ?? []).flatMap((row) => (row?.id ? [row.id] : []));
+          const repeated = ids.find((id, index) => ids.indexOf(id) !== index);
+          return repeated
+            ? `"${repeated}" is listed twice; each language id once.`
+            : true;
+        }),
+      ],
       of: [
         {
           type: "object",
@@ -74,7 +74,7 @@ export const siteLanguageSettings = defineType({
       title: "Default language",
       type: "string",
       description:
-        "Used for unprefixed URLs (e.g. /about) and as the primary default in Studio.",
+        "Used for unprefixed URLs (e.g. /about) and as the language of documents created outside the translation menu.",
       validation: (rule) =>
         rule.required().custom((value, context) => {
           const parent = context.parent as

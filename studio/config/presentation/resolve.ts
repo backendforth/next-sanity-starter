@@ -1,16 +1,16 @@
 import { defineDocuments } from "sanity/presentation";
 
 import {
+  LANGUAGE_IDS,
   PREFIXED_SLUG_DOCUMENT_TYPES,
   PROJECT_URL_PREFIX,
+  SITE_ROOT_DOCUMENT_TYPES,
   SLUG_BASED_DOCUMENT_TYPES,
 } from "./conventions";
-import { presentationLocationsResolver } from "./locationsResolver";
-
-export { presentationLocationsResolver };
 
 const typeList = (types: readonly string[]) =>
   types.map((t) => `"${t}"`).join(",");
+const rootTypeList = typeList([...SITE_ROOT_DOCUMENT_TYPES]);
 const slugTypeList = typeList(SLUG_BASED_DOCUMENT_TYPES);
 const prefixedTypeList = typeList(PREFIXED_SLUG_DOCUMENT_TYPES);
 
@@ -27,25 +27,26 @@ const DEFAULT_LANGUAGE = `*[_id == "siteLanguageSettings"][0].defaultLanguageId`
  * locales under `/:locale/…`. We register both shapes for every routable type
  * so editing any language variant lands on the right document:
  *
- * - `/`                   → default-locale `home`
+ * - `/`                   → default-locale site root (`home`)
  * - `/work`               → default-locale `work` landing
  * - `/work/:slug`         → default-locale `project`
  * - `/:locale/work`       → `work` landing filtered by `language`
  * - `/:locale/work/:slug` → `project` filtered by `language`
- * - `/:segment`           → `home` in that language, or a default-locale slugged doc
+ * - `/:segment`           → the site root in that language, or a default-locale slugged doc
  * - `/:locale/:slug`      → slugged doc filtered by `language`
  *
- * `/work` is `PROJECT_URL_PREFIX`, the prefixed types `PREFIXED_SLUG_DOCUMENT_TYPES`
- * (`conventions.ts`). Presentation takes the FIRST resolver whose route matches (`useMainDocument`
- * stops at the first hit), so order matters: the literal `work` routes come
- * before the `:locale` patterns they would otherwise be swallowed by. A single
- * segment can't be told apart by shape (`/de` is a locale, `/about` a slug),
- * so one filter covers both.
+ * The site root is `SITE_ROOT_DOCUMENT_TYPES`, `/work` is `PROJECT_URL_PREFIX`, the prefixed
+ * types `PREFIXED_SLUG_DOCUMENT_TYPES` (`conventions.ts`). Presentation takes the FIRST
+ * resolver whose route matches (`useMainDocument` stops at the first hit), so order matters:
+ * the literal `work` routes come before the `:locale` patterns they would otherwise be
+ * swallowed by. A single segment can't be told apart by shape (`/de` is a locale, `/about` a
+ * slug), so one filter covers both; a language id is never a page (the web serves the locale's
+ * home there too).
  */
 export const presentationMainDocuments = defineDocuments([
   {
     route: "/",
-    filter: `_type == "home" && language == ${DEFAULT_LANGUAGE}`,
+    filter: `_type in [${rootTypeList}] && language == ${DEFAULT_LANGUAGE}`,
   },
   {
     route: PROJECT_URL_PREFIX,
@@ -65,17 +66,10 @@ export const presentationMainDocuments = defineDocuments([
   },
   {
     route: "/:segment",
-    filter:
-      SLUG_BASED_DOCUMENT_TYPES.length > 0
-        ? `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE})`
-        : `_type == "home" && language == $segment`,
+    filter: `(_type in [${rootTypeList}] && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE} && !($segment in ${LANGUAGE_IDS}))`,
   },
-  ...(SLUG_BASED_DOCUMENT_TYPES.length > 0
-    ? [
-        {
-          route: "/:locale/:slug",
-          filter: `_type in [${slugTypeList}] && slug.current == $slug && language == $locale`,
-        },
-      ]
-    : []),
+  {
+    route: "/:locale/:slug",
+    filter: `_type in [${slugTypeList}] && slug.current == $slug && language == $locale`,
+  },
 ]);

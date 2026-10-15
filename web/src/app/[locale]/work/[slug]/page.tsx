@@ -7,22 +7,30 @@ import {
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
+import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
+import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
 
 export async function generateStaticParams() {
-	const rows = await cachedProjectSlugs();
-	return (rows ?? [])
+	const [rows, siteLocale] = await Promise.all([
+		cachedProjectSlugs(),
+		fetchSiteLanguageSettings(),
+	]);
+	const { isAppLocale } = createLanguagePathUtils(siteLocale);
+	/* A document in a language the site doesn't serve has no route. */
+	return rows
 		.filter(
 			(row): row is { slug: string; language: string } =>
 				typeof row.slug === "string" &&
 				row.slug.length > 0 &&
 				typeof row.language === "string" &&
-				row.language.length > 0,
+				isAppLocale(row.language),
 		)
 		.map((row) => ({ locale: row.language, slug: row.slug }));
 }
@@ -59,34 +67,27 @@ export default async function Project({ params }: PageProps) {
 		notFound();
 	}
 
-	const projectTitle = typeof data.title === "string" ? data.title.trim() : "";
+	const projectTitle = plainText(data.title);
 	const body = data.body ?? [];
 
 	return (
-		<div className="flex flex-col flex-1 bg-color-bg">
+		<div className={pageContainerClassName}>
 			<LocaleAlternates
 				locale={locale}
-				path={`/work/${slug}`}
+				path={data.path}
 				translations={data.translations}
 			/>
-			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{projectTitle ? (
-					<header className="flex flex-col gap-sm">
-						{projectTitle ? (
-							<h2 className="content-title">{projectTitle}</h2>
-						) : null}
-					</header>
-				) : null}
-				{body.length ? (
-					<article className="flex flex-col">
-						<RichTextMedia
-							value={body}
-							locale={locale}
-							siteLocale={siteLocale}
-						/>
-					</article>
-				) : null}
-			</div>
+			{projectTitle ? <h2 className="heading-1">{projectTitle}</h2> : null}
+			{body.length ? (
+				<article className="flex flex-col">
+					<RichTextMedia
+						value={body}
+						locale={locale}
+						siteLocale={siteLocale}
+						priority
+					/>
+				</article>
+			) : null}
 		</div>
 	);
 }

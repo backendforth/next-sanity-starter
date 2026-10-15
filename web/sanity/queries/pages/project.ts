@@ -1,6 +1,6 @@
 import { defineQuery } from "next-sanity";
 
-import { richTextMediaQuery } from "../components/text/richTextMedia";
+import { richTextMediaBodyQuery } from "../components/text/richTextMedia";
 import { routePathProjection } from "../snippets/routePath";
 import { pageSeoQuery } from "../snippets/seo";
 import { translationsQuery } from "../snippets/translations";
@@ -11,9 +11,7 @@ export const projectBySlugQuery =
   _id,
   title,
   "path": ${routePathProjection},
-  body[]{
-    ${richTextMediaQuery}
-  },
+  ${richTextMediaBodyQuery},
   ${pageSeoQuery},
   ${translationsQuery}
 }`);

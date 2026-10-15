@@ -1,7 +1,8 @@
 import { defineType } from "sanity";
 
 /**
- * App-level link actions resolved in the frontend (scroll-to anchor, cookie preferences).
+ * App-level link actions resolved in the frontend. Only the cookie-preferences opener ships;
+ * site-specific actions (e.g. scroll to a section) are added per project.
  */
 export const linkFunctions = defineType({
   name: "linkFunctions",
@@ -14,7 +15,6 @@ export const linkFunctions = defineType({
       type: "string",
       options: {
         list: [
-          { title: "Scroll to anchor", value: "scroll-to" },
           {
             title: "Cookie / Open preferences",
             value: "open-cookie-preferences",
@@ -23,12 +23,6 @@ export const linkFunctions = defineType({
         layout: "radio",
       },
       validation: (rule) => rule.required(),
-    },
-    {
-      name: "params",
-      title: "Parameters",
-      type: "string",
-      description: "Optional id, JSON, or query string for the handler.",
     },
   ],
 });

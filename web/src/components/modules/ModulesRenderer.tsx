@@ -3,7 +3,6 @@ import "server-only";
 import { draftMode } from "next/headers";
 import type { ContentModule } from "@/sanity/types";
 import { dataAttr } from "@/sanity/utils/dataAttr";
-import { getSanityModuleLabel } from "@/sanity/utils/sanityModuleLabel";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
 import { LazyModulesRendererClient } from "./LazyModulesRendererClient";
@@ -43,8 +42,8 @@ function UnknownModule({ moduleType }: { moduleType: string | undefined }) {
 		return null;
 	}
 	return (
-		<div className="rounded-md border border-dashed border-color-warning p-sm text-sm text-color-warning">
-			<strong className="block">{getSanityModuleLabel(moduleType)}</strong>
+		<div className="rounded-md border border-dashed border-color-danger p-sm text-sm text-color-danger">
+			<strong className="block">{moduleType ?? "Unknown module"}</strong>
 			<span className="block">
 				No frontend renderer for this module type yet.
 			</span>
@@ -63,12 +62,19 @@ function renderModuleChild(
 	switch (mod._type) {
 		case "module.text":
 			return (
-				<ModuleText module={mod} locale={locale} siteLocale={siteLocale} />
+				<ModuleText
+					module={mod}
+					locale={locale}
+					siteLocale={siteLocale}
+					priority={priority}
+				/>
 			);
 		case "module.media":
-			return <ModuleMedia module={mod} priority={priority} />;
+			return <ModuleMedia module={mod} locale={locale} priority={priority} />;
 		case "module.carousel":
-			return <ModuleCarousel module={mod} />;
+			return (
+				<ModuleCarousel module={mod} locale={locale} priority={priority} />
+			);
 		case "module.contentRefs":
 			return (
 				<ModuleContentRefs
@@ -95,12 +101,8 @@ function renderModuleChild(
  * same nodes go to `ModulesRendererClient` (lazy), which reorders them optimistically when
  * Visual Editing dispatches a document update.
  *
- * Each module wrapper carries a field-level `data-sanity` path
+ * In Draft Mode each module wrapper carries a field-level `data-sanity` path
  * (`modules[_key=="..."]`) so Presentation jumps directly to the right slot.
- * Modules without `_key` are kept in the initial order but cannot participate
- * in optimistic reordering — they'd lose their slot on the next Sanity update.
- * Production data from Sanity always carries `_key`s; this branch is only for
- * legacy edge cases.
  */
 export async function ModulesRenderer({
 	modules,
@@ -109,27 +111,21 @@ export async function ModulesRenderer({
 	documentId,
 	documentType,
 }: Props) {
-	const initialModules: PrerenderedModule[] = modules.map((mod, index) => {
-		const key = mod._key ?? `__legacy-${index}-${mod._type ?? "unknown"}`;
-		const sanityAttr = mod._key
+	const isDraft = (await draftMode()).isEnabled;
+	const initialModules: PrerenderedModule[] = modules.map((mod, index) => ({
+		_key: mod._key,
+		sanity: isDraft
 			? dataAttr({
 					id: documentId,
 					type: documentType,
 					path: `modules[_key=="${mod._key}"]`,
 				})
-			: undefined;
-		return {
-			_key: key,
-			rendered: (
-				<div data-sanity={sanityAttr}>
-					{/* The first module is the LCP candidate — its media loads eagerly. */}
-					{renderModuleChild(mod, locale, siteLocale, index === 0)}
-				</div>
-			),
-		};
-	});
+			: undefined,
+		/* The first module is the LCP candidate — its media loads eagerly. */
+		rendered: renderModuleChild(mod, locale, siteLocale, index === 0),
+	}));
 
-	if (!(await draftMode()).isEnabled) {
+	if (!isDraft) {
 		return <ModulesStack modules={initialModules} />;
 	}
 	return (

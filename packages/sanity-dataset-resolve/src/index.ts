@@ -1,7 +1,7 @@
 /**
  * Canonical Sanity dataset resolution for Studio and Web (`resolveStudioDatasetAsync`):
  *
- * 1. `SANITY_STUDIO_DATASET`, or (web) `NEXT_PUBLIC_SANITY_DATASET`, always wins.
+ * 1. `SANITY_STUDIO_DATASET` always wins.
  * 2. Otherwise the first name from {@link preference} that exists in the project, probed on the
  *    public Data API (no token needed).
  * 3. If none exists, or existence can't be checked (no project id, offline), the first
@@ -19,8 +19,6 @@ const DATA_API_VERSION = "v2024-01-01";
 /** Minimal env shape for resolution (Studio and Next pass compatible objects). */
 export type SanityDatasetResolveEnv = {
 	SANITY_STUDIO_DATASET?: string | undefined;
-	/** Web: inlined at build when prefixed with `NEXT_PUBLIC_`. */
-	NEXT_PUBLIC_SANITY_DATASET?: string | undefined;
 	SANITY_STUDIO_PROJECT_ID?: string | undefined;
 	SANITY_STUDIO_DATASET_DEVELOPMENT?: string | undefined;
 	SANITY_STUDIO_DATASET_PRODUCTION?: string | undefined;
@@ -40,6 +38,27 @@ export type SanityDatasetResolveInput =
 	| SanityDatasetResolveEnv
 	| NodeJS.ProcessEnv;
 
+/** The host's own production context (Vercel, Netlify), never set in the Studio's browser bundle. */
+function isProductionHost(env: SanityDatasetResolveInput): boolean {
+	return (
+		(env.VERCEL === "1" && env.VERCEL_ENV === "production") ||
+		(env.NETLIFY === "true" && env.CONTEXT === "production")
+	);
+}
+
+/**
+ * Whether this deploy is the production site: an explicit `SANITY_STUDIO_DEPLOYMENT_TARGET`
+ * decides (`production` or not, any case), otherwise the host's production context. A staging
+ * site on a production host context sets the target to stay non-production. The web's crawl
+ * switch (`robots.ts`) and canonical origin (`siteUrl.ts`) follow it.
+ */
+export function isProductionDeployment(
+	env: SanityDatasetResolveInput,
+): boolean {
+	const target = env.SANITY_STUDIO_DEPLOYMENT_TARGET?.trim().toLowerCase();
+	return target ? target === "production" : isProductionHost(env);
+}
+
 /**
  * Dataset names to try, in order: development and production (renamable via env; an empty
  * override counts as unset), production first on a production deploy. A custom
@@ -52,13 +71,10 @@ function preference(env: SanityDatasetResolveInput): string[] {
 		env.SANITY_STUDIO_DATASET_PRODUCTION?.trim() || "production";
 	const target = env.SANITY_STUDIO_DEPLOYMENT_TARGET?.trim() || undefined;
 	const named = target?.toLowerCase();
-	const isProductionHost =
-		(env.VERCEL === "1" && env.VERCEL_ENV === "production") ||
-		(env.NETLIFY === "true" && env.CONTEXT === "production");
 
 	const productionFirst =
 		named === "production" ||
-		(named !== "development" && named !== "preview" && isProductionHost);
+		(named !== "development" && named !== "preview" && isProductionHost(env));
 	const pair = productionFirst
 		? [production, development]
 		: [development, production];
@@ -97,8 +113,7 @@ async function datasetExists(
 export async function resolveStudioDatasetAsync(
 	env: SanityDatasetResolveInput,
 ): Promise<string> {
-	const explicit =
-		env.SANITY_STUDIO_DATASET?.trim() || env.NEXT_PUBLIC_SANITY_DATASET?.trim();
+	const explicit = env.SANITY_STUDIO_DATASET?.trim();
 	if (explicit) return explicit;
 
 	const preferred = preference(env);

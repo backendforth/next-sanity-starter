@@ -1,21 +1,17 @@
 #!/usr/bin/env node
 /**
  * One-off migration: disable static MP4 on existing Mux assets and list assets
- * that still use premium / 2160p encoding (re-upload or Mux dashboard re-encode).
+ * still encoded at the premium quality level (re-upload or Mux dashboard re-encode).
+ * 2160p is not flagged: `media.video` encodes up to 2160p on purpose.
  *
- * Requires in studio/.env:
+ * Requires in studio/.env (the package script loads it):
  *   MUX_TOKEN_ID=
  *   MUX_TOKEN_SECRET=
  *
  * Usage:
- *   node scripts/mux-migrate-assets.mjs           # dry-run (default)
- *   node scripts/mux-migrate-assets.mjs --apply     # PUT mp4_support=none
+ *   pnpm run mux:migrate-assets              # dry-run (default)
+ *   pnpm run mux:migrate-assets -- --apply   # PUT mp4_support=none
  */
-
-import { loadEnvFile, studioRootFromScript } from "./loadEnvFile.mjs";
-
-const root = studioRootFromScript(import.meta.url);
-loadEnvFile(`${root}/.env`);
 
 // The old `SANITY_STUDIO_MUX_*` names still work here, but the Studio build inlines every
 // `SANITY_STUDIO_*` variable into its public bundle, so `sanity build` now refuses them.
@@ -90,7 +86,7 @@ for (const asset of assets) {
   if (mp4 !== "none") {
     needsMp4Off.push({ id, mp4 });
   }
-  if (tier === "2160p" || quality === "premium") {
+  if (quality === "premium") {
     needsReencode.push({ id, tier, quality, mp4 });
   }
 }
@@ -113,7 +109,7 @@ if (needsMp4Off.length === 0) {
 
 if (needsReencode.length > 0) {
   console.log(
-    `\n${needsReencode.length} asset(s) may need re-upload for plus / 1440p ladder:`,
+    `\n${needsReencode.length} asset(s) may need re-upload for the plus quality level:`,
   );
   for (const { id, tier, quality, mp4 } of needsReencode) {
     console.log(`  ${id}  tier=${tier}  quality=${quality}  mp4=${mp4}`);
@@ -122,5 +118,5 @@ if (needsReencode.length > 0) {
     "\nMux does not re-encode in place. Re-upload in Sanity Studio or replace the asset in the Mux dashboard.",
   );
 } else {
-  console.log("\nNo assets flagged for premium/2160p re-encode.");
+  console.log("\nNo assets flagged for premium re-encode.");
 }

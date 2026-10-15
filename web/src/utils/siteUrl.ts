@@ -1,3 +1,5 @@
+import { isProductionDeployment } from "@repo/sanity-dataset-resolve";
+
 /**
  * The site's canonical origin, resolved once at module load.
  *
@@ -5,14 +7,10 @@
  * that Next never inlines into the client bundle, so import this from
  * metadata, `robots.ts` and `sitemap.ts` — not from a client component.
  *
- * This exists because the four call sites used to carry their own
- * `process.env.NEXT_PUBLIC_SITE_URL || "https://example.com"`. With the
- * variable unset the placeholder shipped: every canonical, every `hreflang`,
- * `og:url`, `metadataBase` and the sitemap reference in `robots.txt` pointed
- * at example.com, and nothing — typecheck, lint, build, deploy — said a word.
- * The chain below removes the silence: an explicit value wins, the deploy
- * host's own URL catches a missing one, and a deploy that can resolve neither
- * fails loudly instead of publishing a guess.
+ * Canonicals, `hreflang`, `og:url`, `metadataBase` and the sitemap reference
+ * in `robots.txt` all build on it. An explicit value wins, the deploy host's
+ * own URL catches a missing one, and a deploy that can resolve neither throws
+ * instead of publishing a placeholder origin.
  */
 
 /** Strip trailing slashes and add a scheme to the bare hosts Vercel exposes. */
@@ -25,15 +23,19 @@ function normalizeOrigin(value: string | undefined): string | null {
 	return withScheme.replace(/\/+$/, "");
 }
 
+/** Whether this deploy is the production site, the same rule `robots.ts` crawls by. */
+const isProduction = isProductionDeployment(process.env);
+
 /**
- * Netlify's own view of where this build is served from. Previews and branch
- * deploys resolve to their own origin (`DEPLOY_PRIME_URL`) rather than the
- * production domain, so a preview never claims to be canonical for the live
- * site. The `NETLIFY` guard keeps a stray local `URL` variable out.
+ * Netlify's own view of where this build is served from. Previews, branch
+ * deploys and non-production targets resolve to their own origin
+ * (`DEPLOY_PRIME_URL`) rather than the production domain, so they never claim
+ * to be canonical for the live site. The `NETLIFY` guard keeps a stray local
+ * `URL` variable out.
  */
 function netlifyOrigin(): string | null {
 	if (process.env.NETLIFY !== "true") return null;
-	if (process.env.CONTEXT === "production") {
+	if (isProduction) {
 		return normalizeOrigin(process.env.URL);
 	}
 	return (
@@ -45,7 +47,7 @@ function netlifyOrigin(): string | null {
 /** Same idea on Vercel; both variables are bare hosts, no scheme. */
 function vercelOrigin(): string | null {
 	if (process.env.VERCEL !== "1") return null;
-	if (process.env.VERCEL_ENV === "production") {
+	if (isProduction) {
 		return normalizeOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL);
 	}
 	return normalizeOrigin(process.env.VERCEL_URL);
@@ -63,7 +65,7 @@ function resolveSiteBaseUrl(): string {
 	if (host) return host;
 
 	/* On a deploy host with nothing resolvable, guessing would publish wrong
-	 * canonicals to real crawlers — the bug this module exists to prevent. */
+	 * canonicals to real crawlers. */
 	if (process.env.NETLIFY === "true" || process.env.VERCEL === "1") {
 		throw new Error(
 			"[siteUrl] No site origin resolved on a deploy host. Set " +

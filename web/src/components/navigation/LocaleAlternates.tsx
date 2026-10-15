@@ -9,8 +9,8 @@ import type { TranslationPath } from "@/src/i18n/siteLocalePathUtils";
 type LocaleAlternatesProps = {
 	/** Route locale of the rendered document. */
 	locale: string;
-	/** Its path without the locale prefix (`/`, `/about`, `/work/x`). */
-	path: string;
+	/** Its path without the locale prefix (`routePathProjection`: `/`, `/about`, `/work/x`). */
+	path: string | null;
 	/** Its published language variants (`translationsQuery`). */
 	translations?: readonly TranslationPath[] | null;
 };

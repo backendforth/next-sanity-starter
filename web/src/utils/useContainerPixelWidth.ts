@@ -1,14 +1,9 @@
-"use client";
-
 import { type RefObject, useLayoutEffect, useRef, useState } from "react";
 
 /**
  * Tracks the container’s CSS pixel width and height. The first measurement runs in a layout
- * effect, so consumers see real dimensions on the next render pass, before paint —
- * `MediaVideoLoop` gates its single HLS attach on these values. SSR markup is unaffected
- * (state starts `undefined` on server and client).
- * For `next/image` `sizes`, combine with a client-only guard (see `MediaImage`) so SSR and
- * the first client render stay identical and avoid hydration mismatches.
+ * effect, so consumers see real dimensions before paint; SSR markup is unaffected (state
+ * starts `undefined` on server and client).
  */
 export function useContainerPixelWidth<T extends HTMLElement>(): [
 	RefObject<T | null>,

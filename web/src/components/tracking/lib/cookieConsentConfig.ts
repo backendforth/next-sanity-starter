@@ -7,6 +7,7 @@ import {
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
 import { resolveLinkLabel } from "@/sanity/utils/resolveLinkLabel";
+import { plainText } from "@/sanity/utils/sanityLocalizedText";
 import { isCookieFreeTracker } from "@/src/components/tracking/lib/trackingConfig";
 import {
 	type CookieBannerLabelKey,
@@ -180,12 +181,11 @@ function privacyPolicyHtml(
 	const href = stegaClean(resolved.href).trim();
 	if (!/^(https?:\/\/|\/)/i.test(href)) return null;
 
-	const label = resolveLinkLabel({
-		linkTitle: link?.title,
-		locale: options.locale,
-		siteLocale: options.siteLocale,
-		literalFallback: cookieBannerLabel("privacyPolicy", options.locale),
-	});
+	const label = resolveLinkLabel(
+		link,
+		options,
+		cookieBannerLabel("privacyPolicy", options.locale),
+	);
 	const target = resolved.target
 		? ` target="${resolved.target}" rel="${resolved.rel}"`
 		: "";
@@ -193,20 +193,23 @@ function privacyPolicyHtml(
 }
 
 /**
- * The banner for one route, built on the server: every text resolved for `options.locale`,
- * escaped, with the defaults filled in and the tracker rows appended. The client banner gets
- * only this.
+ * The banner for one route, built on the server: every text escaped, with the defaults filled
+ * in and the tracker rows appended. Without a banner document every text is a default. The
+ * client banner gets only this.
+ *
+ * One language per banner: the document's. A locale without its own banner gets the default
+ * language's (`siteCookieBannerQuery`), so its default texts, table headers and policy link
+ * follow that document too instead of mixing in the route's language. The policy link's page
+ * prefix follows it as well, or `/privacy` becomes a `/de/privacy` that may not exist.
  */
 export function cookieConsentTranslation(
-	doc: SiteCookieBanner,
+	doc: SiteCookieBanner | null,
 	trackers: AnalyticsTracker[],
 	options: LinkLocaleOptions,
 ): Translation {
-	const { locale } = options;
-	/* How the branch stores a banner text: plain here. Blank values still carry stega markers in
-	 * Presentation, hence the clean before the emptiness check. */
-	const read = (value: string | null | undefined) =>
-		value && stegaClean(value).trim() ? value : undefined;
+	const locale = stegaClean(doc?.language) || options.locale;
+	/* How the branch stores a banner text: plain here. */
+	const read = plainText;
 	const text = (
 		value: string | null | undefined,
 		fallback?: CookieBannerLabelKey,
@@ -215,8 +218,8 @@ export function cookieConsentTranslation(
 			read(value) ?? (fallback ? cookieBannerLabel(fallback, locale) : ""),
 		);
 
-	const consent = doc.consentModal;
-	const preferences = doc.preferencesModal;
+	const consent = doc?.consentModal;
+	const preferences = doc?.preferencesModal;
 
 	const sections: Section[] = (preferences?.sections ?? []).map((section) => ({
 		title: text(section.title),
@@ -225,20 +228,17 @@ export function cookieConsentTranslation(
 		cookieTable: {
 			headers: tableHeaders(locale),
 			body: (section.cookies ?? []).map((cookie) => ({
-				name: text(cookie.name),
-				domain: text(cookie.domain),
+				name: escapeHtml(cookie.name ?? ""),
+				domain: escapeHtml(cookie.domain ?? ""),
 				desc: text(cookie.description),
 			})),
 		},
 	}));
 
 	const description = text(consent?.description, "consentDescription");
-	/* A locale without its own banner gets the default language's (`siteCookieBannerQuery`), whose
-	 * policy page is in that language: prefix the link with the document's language, not the
-	 * route's, or `/privacy` becomes a `/de/privacy` that may not exist. */
 	const policyLink = privacyPolicyHtml(consent?.privacyPolicy, {
 		...options,
-		locale: stegaClean(doc.language) || locale,
+		locale,
 	});
 
 	return {

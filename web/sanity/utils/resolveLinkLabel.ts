@@ -1,77 +1,58 @@
 /**
- * Resolve a human-readable label for a Sanity `link` object (Nav, Portable Text).
+ * The label of a `link` (`linkQuery`) that no text labels: nav rows and the cookie banner's
+ * policy link. A rich-text link's label is its marked text.
  *
- * On this branch (document-level i18n) `link.title` and the referenced document's title are
- * plain strings in the document's language. For internal links we fall back to the referenced
- * document title. External links fall back to the URL, function links to the function key —
- * both as a last resort before the literal "Link" placeholder.
- *
- * Localized entry arrays are still accepted on both fields and resolved with `pickLocalizedString`,
- * so the code matches `main`, where `link.title` is an `internationalizedArrayString`.
+ * On this branch both titles are plain strings in the document's language. Localized entry
+ * arrays are still accepted: a dataset shared with `main` holds main-shaped documents (e.g. a
+ * `home` whose title is an `internationalizedArrayString`), and a link can point at one.
  */
 
-import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
+
+import type { LinkLocaleOptions, LinkValue } from "./linkResolver";
 import {
 	type LocalizedEntry,
 	pickLocalizedString,
+	plainText,
 } from "./sanityLocalizedText";
+import { isStegaVariant } from "./stegaVariant";
 
-type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-
-type LocalizableLabel =
-	| ReadonlyArray<LocalizedEntry<string>>
-	| string
-	| null
-	| undefined;
-
-function trimToUndefined(value: string | undefined): string | undefined {
-	if (!value) return undefined;
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : undefined;
+/** A title: a plain string, or localized entries on a main-shaped target. */
+function pickTitle(
+	value: ReadonlyArray<LocalizedEntry<string>> | string | null | undefined,
+	{ locale, siteLocale }: LinkLocaleOptions,
+): string | undefined {
+	return typeof value === "string"
+		? plainText(value)
+		: pickLocalizedString(value, locale, siteLocale);
 }
 
-function pickLabel(
-	value: LocalizableLabel,
-	locale: string | undefined,
-	siteLocale: SiteLocaleSlice | null | undefined,
+/** What a link points at, as a label: the internal target's title, the URL or the function key. */
+function targetLabel(
+	link: LinkValue,
+	options: LinkLocaleOptions,
 ): string | undefined {
-	if (Array.isArray(value)) {
-		return trimToUndefined(pickLocalizedString(value, locale, siteLocale));
+	if (isStegaVariant(link, "linkType", "linkInternal")) {
+		return pickTitle(link.resolvedReference?.title, options);
 	}
-	if (typeof value === "string") {
-		return trimToUndefined(value);
+	if (isStegaVariant(link, "linkType", "linkExternal")) {
+		return plainText(link.url);
+	}
+	if (isStegaVariant(link, "linkType", "linkFunction")) {
+		return plainText(link.func?.key);
 	}
 	return undefined;
 }
 
-export type ResolveLinkLabelInput = {
-	linkTitle?: LocalizableLabel;
-	referenceTitle?: LocalizableLabel;
-	externalUrl?: string | null;
-	functionKey?: string | null;
-	locale?: string;
-	siteLocale?: SiteLocaleSlice | null;
-	/** Last-resort literal when no other source produced a usable label. */
-	literalFallback?: string;
-};
-
-/**
- * Order: explicit link title → referenced document title → external URL → function key → fallback.
- */
-export function resolveLinkLabel({
-	linkTitle,
-	referenceTitle,
-	externalUrl,
-	functionKey,
-	locale,
-	siteLocale,
-	literalFallback = "Link",
-}: ResolveLinkLabelInput): string {
+/** Order: the link's title → {@link targetLabel} → `literalFallback` → the UI "Link" label. */
+export function resolveLinkLabel(
+	link: LinkValue | null | undefined,
+	options: LinkLocaleOptions,
+	literalFallback?: string,
+): string {
 	return (
-		pickLabel(linkTitle, locale, siteLocale) ??
-		pickLabel(referenceTitle, locale, siteLocale) ??
-		trimToUndefined(externalUrl ?? undefined) ??
-		trimToUndefined(functionKey ?? undefined) ??
-		literalFallback
+		(link && (pickTitle(link.title, options) ?? targetLabel(link, options))) ??
+		literalFallback ??
+		uiLabel("link", options.locale)
 	);
 }

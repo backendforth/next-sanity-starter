@@ -16,7 +16,7 @@ The name must be PascalCase (`Hero`, `Quote`, `VideoStrip`).
 
 ## What it does
 
-Creates the module's schema, component and query from `templates/` and adds it to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the slots `pnpm check:wiring` reads) — together the six points of the wiring checklist in `AGENTS.md`. `--inline` also registers the three inline places; use it only for a module that belongs inside text. The schema starts with a `title` field.
+Creates the module's schema, component and query from `templates/` and adds it to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the slots `pnpm check:wiring` reads) — together the six points of the wiring checklist in `AGENTS.md`. `--inline` also registers the three inline places; use it only for a module that belongs inside text. The schema starts with a `heading` field, like `module.carousel` and `module.contentRefs`.
 
 Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written. Touched files are formatted with Biome.
 
@@ -34,4 +34,4 @@ pnpm typecheck
 
 ## Tests
 
-`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs both typegens, `check:typegen`, `check:wiring` and `tsc` for web and studio; a second test checks that a missing anchor writes nothing.
+`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs the schema extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio; a second test checks that a missing anchor writes nothing.

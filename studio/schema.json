@@ -1022,13 +1022,6 @@
           },
           "optional": true
         },
-        "cookieFree": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
-          },
-          "optional": true
-        },
         "cookieBannerLabel": {
           "type": "objectAttribute",
           "value": {
@@ -1128,13 +1121,6 @@
           "type": "objectAttribute",
           "value": {
             "type": "string"
-          },
-          "optional": true
-        },
-        "cookieFree": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
           },
           "optional": true
         },

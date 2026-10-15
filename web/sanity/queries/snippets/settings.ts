@@ -101,22 +101,24 @@ const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id ==
     _key,
     _type,
     enabled,
-    cookieFree,
     cookieBannerLabel,
     cookieBannerDescription,
     _type == "trackerGoogleAnalytics" => {
-      measurementId
+      measurementId,
+      cookieFree
     },
     _type == "trackerMatomo" => {
       url,
-      siteId
+      siteId,
+      cookieFree
     },
     _type == "trackerMicrosoftClarity" => {
       projectId
     },
     _type == "trackerPostHog" => {
       apiKey,
-      apiHost
+      apiHost,
+      cookieFree
     },
     _type == "trackerPlausible" => {
       domain,

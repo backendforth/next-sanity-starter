@@ -26,15 +26,6 @@ export const trackerMicrosoftClarity = defineType({
       validation: (rule) => rule.custom(requiredWhenEnabled("Project ID")),
     }),
     defineField({
-      name: "cookieFree",
-      title: "Cookie-free mode",
-      description:
-        "Not available — Clarity always uses cookies, so it never loads before consent.",
-      type: "boolean",
-      initialValue: false,
-      readOnly: true,
-    }),
-    defineField({
       name: "cookieBannerLabel",
       title: "Cookie banner label",
       type: "string",

@@ -30,10 +30,10 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      # Formatting, lint and import order in one read-only pass (same as the
-      # pre-push hook); findings are annotated on the PR. `pnpm format` fixes
-      # them locally.
-      - run: pnpm exec biome ci --reporter=github .
+      # Formatting, lint and import order in one read-only pass (`pnpm lint`,
+      # as in the pre-push hook); findings are annotated on the PR. `pnpm
+      # format` fixes them locally.
+      - run: pnpm run lint --reporter=github
       - run: pnpm run typecheck
       # Wiring drift between a module's schema, component, query and the lists
       # that register them is a silent bug class — `pnpm gen:module` wires them

@@ -18,10 +18,10 @@ export const blockFields = `
   `;
 
 /**
- * Portable Text `value[]` for schema `richTextMedia`: blocks
- * plus the inline modules. Inline modules are opt-in, and this list must name exactly the
- * modules in the editor's `of` (`objects/editors/richTextMedia.ts`) and the `types` map in
- * `portableTextComponents.tsx` — `pnpm check:wiring` compares the three.
+ * The blocks of a `richTextMedia` field: text blocks plus the inline modules. Inline modules
+ * are opt-in, and this list must name exactly the modules in the editor's `of`
+ * (`objects/editors/richTextMedia.ts`) and the `types` map in `portableTextComponents.tsx` —
+ * `pnpm check:wiring` compares the three.
  */
 export const richTextMediaQuery = `
     ${blockFields},

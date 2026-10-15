@@ -30,5 +30,5 @@ Nothing in this repo auto-registers new types in the sidebar or in Presentation;
 
 ## `config/sync/`
 
-- **`studioDataset.ts`** — the Studio's dataset, resolved with **`@repo/sanity-dataset-resolve`** ([root README](../../README.md#how-reposanity-dataset-resolve-picks-a-dataset)).
+- **`studioDataset.ts`** — the Studio's dataset, resolved with **`@repo/sanity-dataset-resolve`** ([root README](../../README.md#datasets)).
 - **`supportedLanguages.ts`** — runtime languages for `@sanity/document-internationalization` and the language new documents start in, from `siteLanguageSettings` (see [`utils/README.md`](../utils/README.md)).

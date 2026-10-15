@@ -291,7 +291,7 @@ Always link to these; never duplicate their content.
 
 | README | Covers |
 |---|---|
-| `README.md` (root) | Project overview, monorepo layout, env, dataset resolution. |
+| `README.md` (root) | Setup from clone to production: layout, local setup, how the site works, env, deploy (dataset per site, webhook), day-to-day commands. |
 | `studio/README.md` | Studio architecture, schema/structure wiring. |
 | `studio/schemas/README.md` | Adding schema types; module details beyond the wiring checklist. |
 | `studio/config/README.md` | Structure + Presentation wiring. |

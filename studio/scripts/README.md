@@ -175,5 +175,5 @@ pnpm exec sanity migration run unset-unused-fields --project <id> --dataset deve
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary
-- [`../../README.md`](../../README.md#how-reposanity-dataset-resolve-picks-a-dataset) — How the dataset is picked
+- [`../../README.md`](../../README.md#datasets) — How the dataset is picked
 - [`../.env.example`](../.env.example) — Env vars for project ID and dataset names

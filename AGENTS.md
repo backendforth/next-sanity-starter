@@ -29,6 +29,7 @@ Before writing code:
 | `studio/` | Sanity Studio v6. Editorial UI + schemas. |
 | `studio/netlify.toml` | Netlify pipeline for the Studio — the default hosting, a second Netlify site with package directory `studio`. The root `netlify.toml` is the web site's. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
+| `packages/site-languages/` | The `siteLanguageSettings` projection, row rules and `en` fallback, shared by the web's routing and the Studio's language tabs. |
 | `packages/check-wiring/` | `check:wiring`, `check:typegen` and the wiring manifest (`src/manifest.mjs`) both checks and the scaffolder use. |
 | `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |

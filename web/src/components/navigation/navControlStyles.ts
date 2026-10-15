@@ -31,7 +31,7 @@ export function navLinkButtonClass(
 				? "text-color-heading"
 				: "text-color-text hover:text-color-link";
 	const state = active ? ` ${ACTIVE_UNDERLINE}` : "";
-	return `nav-menu shrink-0 transition-colors ${FOCUS_RING} ${color}${state}`;
+	return `text shrink-0 transition-colors ${FOCUS_RING} ${color}${state}`;
 }
 
 /** Content-ref category / sort — pill buttons like language switch; active = brand. */

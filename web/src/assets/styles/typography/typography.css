@@ -5,13 +5,6 @@
  * RT scale: H1–H2 + big-text → Geist Sans regular · H3–H4 → Geist Mono semibold.
  */
 
-/* md — main menu links + site title (Geist Sans regular) */
-@utility nav-menu {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-md);
-	line-height: var(--line-height-md);
-}
-
 /* xs — tags (mono semibold) */
 @utility tag {
 	@apply font-semibold font-mono not-italic;
@@ -37,7 +30,7 @@
 	word-break: normal;
 }
 
-/* md — body text */
+/* md — body text, main menu links + site title */
 @utility text {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-md);
@@ -59,15 +52,15 @@
 	max-width: var(--measure-heading-3-big);
 }
 
-/* ─── Headings (RT + module titles) ─────────────────────────────────────────
- * 3lg heading-1 — RT “Heading 1” (same scale as content-title)
+/* ─── Headings (RT + page / module titles) ──────────────────────────────────
+ * 3lg heading-1 — RT “Heading 1”, page and module titles
  * 2lg heading-2 — RT “Heading 2”
  * lg  heading-3 — RT “Heading 3” (Geist Mono semibold)
  * md  heading-4 — RT “Heading 4” (Geist Mono semibold)
  * md  text       — body
  */
 
-/* 3lg — RT h1 / module title (Geist Sans regular) */
+/* 3lg — RT h1, page and module titles (Geist Sans regular) */
 @utility heading-1 {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-3lg);
@@ -97,16 +90,6 @@
 	font-size: var(--font-size-md);
 	line-height: var(--line-height-md);
 	max-width: var(--measure-heading-4-text);
-}
-
-/* ─── CMS field titles (h2 outside rich text — always 3lg, Geist Sans regular) ─ */
-
-@utility content-title {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-3lg);
-	line-height: var(--line-height-3lg);
-	margin-bottom: var(--space-md);
-	max-width: var(--measure-heading-1-2);
 }
 
 /* ─── Element defaults ──────────────────────────────────────────────────────

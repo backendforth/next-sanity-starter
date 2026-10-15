@@ -75,12 +75,8 @@ export default async function Project({ params }: PageProps) {
 				path={data.path}
 				translations={data.translations}
 			/>
-			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{projectTitle ? (
-					<header className="flex flex-col gap-sm">
-						<h2 className="content-title">{projectTitle}</h2>
-					</header>
-				) : null}
+			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
+				{projectTitle ? <h2 className="heading-1">{projectTitle}</h2> : null}
 				{body.length ? (
 					<article className="flex flex-col">
 						<RichTextMedia

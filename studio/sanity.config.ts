@@ -25,7 +25,7 @@ import { schemaTypes } from "./schemas";
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = studioDataset;
 const previewOrigin =
-  process.env.SANITY_STUDIO_PREVIEW_ORIGIN ?? "http://localhost:3000";
+  process.env.SANITY_STUDIO_PREVIEW_ORIGIN || "http://localhost:3000";
 
 if (!projectId) {
   throw new Error(

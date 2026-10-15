@@ -33,8 +33,8 @@ function resolvedDeploymentTarget(): string | undefined {
  * Env passed to the resolver must use **literal** `process.env.KEY` per field so Vite/Sanity
  * can replace values at build time in the hosted Studio bundle. Do not pass `process.env` or a
  * spread of it. Only `SANITY_STUDIO_*` is inlined there: host variables (`NETLIFY`, `CONTEXT`,
- * …) would reach the CLI alone and could split it from the browser, so the deploy context
- * arrives as `SANITY_STUDIO_DEPLOYMENT_TARGET` (`netlify.toml`).
+ * …) would reach the CLI alone and could split it from the browser, so the Netlify Studio site
+ * inlines `SANITY_STUDIO_DATASET` per deploy context (`studio/netlify.toml`).
  */
 function studioResolveEnv(): SanityDatasetResolveEnv {
   return {

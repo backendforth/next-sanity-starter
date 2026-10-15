@@ -1,8 +1,9 @@
 /*
  * ── Lazy-image fade-in ──────────────────────────────────────────────────────
  *
- * Progressive enhancement: the inline script in `DocumentShell` adds `.js-enabled` to <html>
- * before the first paint. Without JS, images stay at full opacity.
+ * Progressive enhancement: `applyBootState` (`components/theme/colorScheme.ts`, inlined by
+ * `DocumentShell`, re-run by `ThemeSync`) adds `.js-enabled` to <html> before the first paint.
+ * Without JS, images stay at full opacity.
  *
  * `MediaImage` marks non-priority images `data-lazy` and adds `.img-loaded` once they load.
  * Priority (LCP) images carry no `data-lazy` and never fade.

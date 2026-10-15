@@ -1,6 +1,6 @@
 # AGENTS.md — next-sanity-starter
 
-> This is the canonical guardrails file for AI coding assistants (Claude Code, Cursor, Windsurf, Codex, Copilot). Read this **before** writing or changing code. Per-subtree `CLAUDE.md`, `.cursor/rules/*.mdc`, and `.github/copilot-instructions.md` all defer to this document — keep edits here, not in mirrors.
+> This is the canonical guardrails file for AI coding assistants (Claude Code, Cursor, Windsurf, Codex, Copilot). Read this **before** writing or changing code. Subtree `CLAUDE.md` files, `.cursor/rules/*.mdc` and `.github/copilot-instructions.md` only point here and add local gotchas this file doesn't state — keep conventions here, not in them.
 
 ## TL;DR
 
@@ -348,11 +348,11 @@ Without that line, ten fixes from #182, #190 and #191 reached only `main` in 202
 
 ### Updating conventions on both branches
 
-`AGENTS.md` and `.github/copilot-instructions.md` are identical on both branches — the notes above describe both. The other mirrors are not: the root and subtree `CLAUDE.md` files and `.cursor/rules/*.mdc` carry the variant's document-level i18n rules on `variant/document-level`. Carry a change over by cherry-picking it, never by copying files from `main` — a copy silently overwrites those variant rules.
+`AGENTS.md` and `.github/copilot-instructions.md` are identical on both branches — the notes above describe both, and the Copilot file stays branch-neutral. The other mirrors are not: the root and subtree `CLAUDE.md` files and `.cursor/rules/*.mdc` carry the variant's document-level i18n rules on `variant/document-level`. Each mirror keeps its i18n-model statements on lines of their own that start with `i18n:`, so a port swaps those lines and takes the rest from `main`. Carry a change over by cherry-picking it, never by copying files from `main` — a copy silently overwrites those variant rules.
 
-1. Edit `AGENTS.md` (+ mirrors) on `main` and commit.
+1. Edit `AGENTS.md` on `main` (a mirror only when its local gotcha changes) and commit.
 2. On `variant/document-level`: `git cherry-pick -x <commit>`.
-3. Resolve conflicts in the mirrors by keeping the variant's i18n lines and taking everything else from `main`. A conflict outside the i18n lines is drift — reconcile it.
+3. Resolve conflicts in the mirrors by keeping the variant's `i18n:` lines and taking everything else from `main`. A conflict outside the i18n lines is drift — reconcile it.
 4. Re-read the notes above and fix a row if the branch contradicts it.
 5. Once both are merged, `git diff main variant/document-level -- AGENTS.md .github/copilot-instructions.md` must be empty.
 

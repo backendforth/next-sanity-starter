@@ -72,7 +72,7 @@ Paste into **Vision** (adjust dataset in Studio if needed). For queries using `$
   seo {
     title,
     description,
-    "imageUrl": image.asset->url
+    image{ crop, hotspot, "asset": asset->{ _id, url } }
   }
 }
 ```
@@ -92,7 +92,7 @@ Aligned with [`pages/page.ts`](./pages/page.ts) (`pageSeoQuery` + raw `modules`)
   seo {
     title,
     description,
-    "imageUrl": image.asset->url
+    image{ crop, hotspot, "asset": asset->{ _id, url } }
   }
 }
 ```
@@ -159,7 +159,7 @@ The app reads `siteSettings` through `siteChromeQuery` (`settings`: title, favic
   seo {
     title,
     description,
-    "imageUrl": image.asset->url
+    image{ crop, hotspot, "asset": asset->{ _id, url } }
   }
 }
 ```

@@ -7,8 +7,6 @@
 		"lint": "biome check .",
 		"format": "biome check --write .",
 		"typecheck": "pnpm --stream -r run typecheck",
-		"strip-readmes": "pnpm --filter @repo/strip-readmes run strip",
-		"strip-readmes:dry-run": "pnpm --filter @repo/strip-readmes run strip:dry-run",
 		"gen:module": "pnpm --filter @repo/scaffold-module run gen --",
 		"check:wiring": "pnpm --filter @repo/check-wiring run check",
 		"check:typegen": "pnpm --filter @repo/check-wiring run check:typegen",
@@ -26,9 +24,7 @@
 		"studio:deploy": "pnpm --filter studio run deploy",
 		"studio:register": "pnpm --filter studio run register",
 		"studio:generate": "pnpm run generate",
-		"studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev",
-		"update": "pnpm up --stream -r",
-		"studio:update": "pnpm up --filter studio"
+		"studio:sync-prod-to-dev": "pnpm --filter studio run sync:prod-to-dev"
 	},
 	"author": "backendforth",
 	"license": "ISC",

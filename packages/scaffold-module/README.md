@@ -16,15 +16,7 @@ The name must be PascalCase (`Hero`, `Quote`, `VideoStrip`).
 
 ## What it does
 
-Creates three files from `templates/`:
-
-| File | |
-|---|---|
-| `studio/schemas/objects/modules/module<Name>.ts` | schema with a `title` field |
-| `web/src/components/modules/Module<Name>.tsx` | component typed `module: ModuleOf<"module.<id>">` |
-| `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` projection |
-
-Adds the module to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the same slots `pnpm check:wiring` reads): `schemas/index.ts`, `moduleTypes`, a `case` in `ModulesRenderer`, `modulesQuery`. With `--inline` also the three inline places: the Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. Inline is opt-in — use it only for a module that belongs inside text.
+Creates the module's schema, component and query from `templates/` and adds it to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the slots `pnpm check:wiring` reads) — together the six points of the wiring checklist in `AGENTS.md`. `--inline` also registers the three inline places; use it only for a module that belongs inside text. The schema starts with a `title` field.
 
 Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written. Touched files are formatted with Biome.
 

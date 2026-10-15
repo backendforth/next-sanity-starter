@@ -30,16 +30,7 @@ Other plugins in this Studio include **structure** (custom sidebar, the start sc
 
 ## Sync production → development (manual)
 
-When your **development** dataset should match **production** (e.g. after content changes in prod), run explicitly (never automatic):
-
-- **From `studio/`:** `pnpm run sync:prod-to-dev`
-- **From repo root:** `pnpm studio:sync-prod-to-dev`
-
-Requires **`sanity login`** (or a token Sanity CLI can use) and `SANITY_STUDIO_PROJECT_ID` in `studio/.env`. Dataset names default to `production` and `development`; override with `SANITY_STUDIO_DATASET_PRODUCTION` / `SANITY_STUDIO_DATASET_DEVELOPMENT`.
-
-The script exports prod to `studio/.sync-tmp/prod-to-dev-export.tar.gz`, then imports into the dev dataset with **`--replace`**. Pass `--yes` to skip the confirmation prompt (e.g. CI). The export folder is gitignored.
-
-For a full walkthrough of what the scripts do and why, see **`scripts/README.md`**.
+`pnpm studio:sync-prod-to-dev` copies the `production` dataset into `development` (`--replace`). It never runs on its own; `pnpm dev` only prints the command. Requirements, flags and what it overwrites: [`scripts/README.md`](scripts/README.md).
 
 ## Deploying the Studio
 
@@ -62,7 +53,7 @@ One-time setup:
 
 To publish the Studio to **Sanity Hosting** (`*.sanity.studio`), run the Sanity CLI **`sanity deploy`**:
 
-- **From this package:** `pnpm deploy` or `pnpm exec sanity deploy` (both run `sanity deploy`).
+- **From this package:** `pnpm run deploy` (with `run`: `pnpm deploy` is pnpm's own command). It sets `SANITY_STUDIO_DEPLOYMENT_TARGET=production` before `sanity deploy`.
 - **From the monorepo root:** `pnpm studio:deploy` (runs the same deploy in the `studio` workspace).
 
 The CLI will prompt for a hostname on the first deploy and upload the production build. Set **`SANITY_STUDIO_APP_ID`** in `studio/.env` to the app id it prints, and later deploys update that Studio without asking (`sanity.cli.ts` → `deployment.appId`). Ensure production env (dataset, `SANITY_STUDIO_PREVIEW_ORIGIN`, etc.) matches your deployment targets—see `.env.example` and `utils/README.md` for dataset behaviour. Both targets can run side by side; `*.sanity.studio` is always allowed by the web CSP.

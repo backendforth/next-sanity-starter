@@ -55,8 +55,5 @@ const sectionsByLang: Record<string, CookieConsent.Section[]> = {
 export function defaultSectionsFor(
 	locale?: string | null,
 ): CookieConsent.Section[] {
-	if (typeof locale === "string" && locale in sectionsByLang) {
-		return sectionsByLang[locale];
-	}
-	return sectionsEN;
+	return (locale ? sectionsByLang[locale] : undefined) ?? sectionsEN;
 }

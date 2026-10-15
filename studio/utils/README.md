@@ -14,7 +14,7 @@ See the [Studio readme](../README.md) for a high-level feature list. Helpers use
 
 Content Lake stores data in **datasets** (e.g. `development`, `production`). This starter resolves which dataset the Studio uses in **`config/sync/studioDataset.ts`**, using **`@repo/sanity-dataset-resolve`**:
 
-- Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production builds** **prefer** `production` (`netlify.toml` sets `SANITY_STUDIO_DEPLOYMENT_TARGET` per deploy context, so deploy previews prefer `development`).
+- Without **`SANITY_STUDIO_DATASET`**, **local and preview** contexts **prefer** the `development` dataset when it exists; **production builds** **prefer** `production` (`studio/netlify.toml` sets `SANITY_STUDIO_DEPLOYMENT_TARGET` per deploy context, so deploy previews prefer `development`).
 - If the preferred name does not exist yet, resolution **falls back** to the other name (checked on the public Data API, no token needed).
 
 **Why keep both datasets?**

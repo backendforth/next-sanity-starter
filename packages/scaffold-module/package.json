@@ -4,9 +4,14 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"gen": "node ./bin/scaffold-module.mjs"
+		"gen": "node ./bin/scaffold-module.mjs",
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@repo/check-wiring": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^22.20.4",
+		"typescript": "^6.0.3"
 	}
 }

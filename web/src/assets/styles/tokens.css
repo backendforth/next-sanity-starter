@@ -1,4 +1,4 @@
-/* Responsive tokens — `breakpoints.css` (`@theme` breakpoints) first; globals imports it again after `tailwindcss`. */
+/* Responsive tokens — `breakpoints.css` (`@theme` breakpoints) first; globals imports it too, before `tailwindcss`. */
 
 @import "./variables/breakpoints.css";
 @import "./variables/sizes.css";

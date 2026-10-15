@@ -1,6 +1,6 @@
 # AGENTS.md — next-sanity-starter
 
-> This is the canonical guardrails file for AI coding assistants (Claude Code, Cursor, Windsurf, Codex, Copilot). Read this **before** writing or changing code. Per-subtree `CLAUDE.md`, `.cursor/rules/*.mdc`, and `.github/copilot-instructions.md` all defer to this document — keep edits here, not in mirrors.
+> This is the canonical guardrails file for AI coding assistants (Claude Code, Cursor, Windsurf, Codex, Copilot). Read this **before** writing or changing code. Subtree `CLAUDE.md` files, `.cursor/rules/*.mdc` and `.github/copilot-instructions.md` only point here and add local gotchas this file doesn't state — keep conventions here, not in them.
 
 ## TL;DR
 
@@ -31,7 +31,6 @@ Before writing code:
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/check-wiring/` | `check:wiring`, `check:typegen` and the wiring manifest (`src/manifest.mjs`) both checks and the scaffolder use. |
 | `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module. |
-| `packages/strip-readmes/` | CLI to clean READMEs when shipping a downstream fork. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
 | `web/src/components/modules/` | **Component half** of every module. |
 | `web/sanity/queries/components/modules/` | GROQ projection per module. |
@@ -115,7 +114,7 @@ After any schema or query edit:
 ```bash
 pnpm generate              # schema extract + both typegens + check:typegen
 pnpm check:wiring          # YOU MUST verify the module wiring is consistent
-pnpm typecheck             # web + studio
+pnpm typecheck             # web, studio, check-wiring, scaffold-module
 pnpm format                # biome check --write .
 ```
 
@@ -147,17 +146,14 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm generate` | Studio schema extract + typegen, web query typegen, then `check:typegen`. **Run after every schema or query edit.** |
 | `pnpm studio:generate` | Alias for `pnpm generate`. |
 | `pnpm studio:sync-prod-to-dev` | Clone production dataset → development. |
-| `pnpm typecheck` | `tsc --noEmit` across web + studio. |
+| `pnpm typecheck` | `tsc --noEmit` in every workspace package with a `typecheck` script (web, studio, check-wiring, scaffold-module). |
 | `pnpm lint` | `biome check .` (no writes). |
 | `pnpm format` | `biome check --write .` (auto-fix). |
 | `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component and query files and wires all 6 points, the `ModulesRenderer` `case` included (`--inline` also registers it in the three inline places). Writes nothing if any anchor is missing. PascalCase name. Add `--dry-run` to preview. |
 | `pnpm check:wiring` | Compare every module wiring list with the module schemas, both ways, and the inline places with each other. CI gate. |
 | `pnpm check:typegen` | Every `defineQuery` in `web/sanity/` got a generated type (TypeGen skips queries it can't evaluate silently). Part of `pnpm generate`. |
 | `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including an end-to-end scaffold. CI gate. |
-| `pnpm strip-readmes` | Remove nested READMEs after forking the starter. The root `README.md` is preserved. |
-| `pnpm strip-readmes:dry-run` | Preview what `strip-readmes` would delete. |
-| `pnpm update` | `pnpm up --stream -r` (interactive upgrade across workspaces). |
-| `pnpm studio:update` | Upgrade Studio dependencies only. |
+| `pnpm up -r` | pnpm built-in: update every workspace's dependencies within their ranges (`--latest` crosses them, `-i` picks interactively). `pnpm --filter studio up` does the Studio only. |
 
 ### web (run from `web/` or via `pnpm --filter web run …`)
 
@@ -168,7 +164,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm start` | `next start` (after `build`). |
 | `pnpm typecheck` | `tsc --noEmit` (web only). |
 | `pnpm lint` | Biome on `web/`. |
-| `pnpm format` | Biome write on `web/`. |
+| `pnpm format` | `biome check --write` on `web/`. |
 | `pnpm generate` | `sanity typegen generate` — query types into `sanity/sanity.types.gen.ts`. Run via the root `pnpm generate`. |
 
 ### studio (run from `studio/` or via `pnpm --filter studio run …`)
@@ -178,14 +174,15 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm dev` | Studio dev server via `scripts/dev-with-hint.mjs`. |
 | `pnpm start` | `sanity start`. |
 | `pnpm build` | `sanity build`. |
-| `pnpm deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). |
+| `pnpm run deploy` | `SANITY_STUDIO_DEPLOYMENT_TARGET=production sanity deploy` (Sanity Hosting). Needs `run`: `pnpm deploy` is a pnpm built-in. |
 | `pnpm register` | `node scripts/register-hosting.mjs` → `sanity deploy --external`. Pass `--dry-run` to preview. |
 | `pnpm generate` | `sanity schema extract --enforce-required-fields --force && sanity typegen generate`. Run via the root `pnpm generate`. |
 | `pnpm sync:prod-to-dev` | Sync production dataset → dev (interactive confirmation). |
 | `pnpm migrate:seo-i18n` | `main` only: one-off migration of plain-string SEO fields to i18n arrays (see `studio/scripts/README.md`). Only run when explicitly needed. |
+| `pnpm mux:migrate-assets` | One-off: lists Mux assets with static MP4 or 2160p / premium encoding; `-- --apply` turns static MP4 off. Needs `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET`. |
 | `pnpm typecheck` | `tsc --noEmit` (studio only). |
 | `pnpm lint` | Biome on `studio/`. |
-| `pnpm format` | Biome write on `studio/`. |
+| `pnpm format` | `biome check --write` on `studio/`. |
 
 ## i18n — the multilingual structure
 
@@ -263,13 +260,13 @@ URL /[locale]/[slug]
 2. Fill in the schema fields and the GROQ projection, then `pnpm generate` → the component's `ModuleOf<"module.<id>">` has the fields. Commit the generated files.
 3. `pnpm check:wiring && pnpm typecheck && pnpm format`.
 
-`studio/schemas/README.md` §8 "Content modules" has the long version.
+`studio/schemas/README.md` §8 "Content modules" has the Studio details.
 
 ### Add a document type (page-like)
 
 1. Define in `studio/schemas/documents/` and register in `studio/schemas/index.ts`.
 2. Add a structure item under `studio/config/structure/items/` and wire into `studio/config/structure/index.ts`.
-3. Decide Presentation behaviour — touch `studio/config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`) and `resolve.ts` / `locationsResolver.ts` as needed.
+3. Decide Presentation behaviour. A slug type goes into `SLUG_BASED_DOCUMENT_TYPES` (`/:slug`) or `PREFIXED_SLUG_DOCUMENT_TYPES` (`/work/:slug`) in `studio/config/presentation/conventions.ts`. A singleton goes into `SINGLETON_PREVIEW_ROLE` in `studio/config/singletons.ts`: its role (`root`, `none`, `custom`) fills `SITE_ROOT_DOCUMENT_TYPES` / `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` and locks delete, unpublish and duplicate. Other routes: `resolve.ts` / `locationsResolver.ts`.
 4. If internally linkable, add to `studio/schemas/constants/references.ts` (`PAGE_REFERENCES`).
 5. `pnpm generate` → typecheck → format.
 
@@ -298,7 +295,7 @@ Always link to these; never duplicate their content.
 |---|---|
 | `README.md` (root) | Project overview, monorepo layout. |
 | `studio/README.md` | Studio architecture, schema/structure wiring. |
-| `studio/schemas/README.md` | Adding schemas + the canonical module checklist. |
+| `studio/schemas/README.md` | Adding schema types; module details beyond the wiring checklist. |
 | `studio/config/README.md` | Structure + Presentation wiring. |
 | `studio/config/structure/README.md` | Sidebar / desk structure patterns. |
 | `studio/utils/README.md` | Slug validation, label utils, language sync. |
@@ -313,6 +310,8 @@ Always link to these; never duplicate their content.
 | `web/src/assets/styles/README.md` | Tailwind v4 token setup. |
 | `web/src/assets/styles/tailwind/README.md` | Tailwind config split. |
 | `web/src/assets/fonts/README.md` | Font loading conventions. |
+| `packages/check-wiring/README.md` | What `check:wiring` and `check:typegen` check; the wiring manifest. |
+| `packages/scaffold-module/README.md` | `gen:module` usage, templates, tests. |
 
 ## Branch-specific notes
 
@@ -329,7 +328,7 @@ Both `main` and `variant/document-level` ship this file. The two branches have c
 | Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
 | Layout chrome | `app/[locale]/layout.tsx` fetches the chrome bundle (`fetchSiteChrome`: nav, cookie banner, site settings, analytics, 404 copy) in parallel with the locale check. | Fetches it (`fetchSiteChrome(locale)`) after `isAppLocale(locale)`: the bundle is per language, so its cache key needs a validated locale. |
 
-Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/`, flat `queries/components/modules/<name>.ts` with the barrel, the route paths from `queries/snippets/routePath.ts` (a deleted or unpublished link target renders without a link), the derived `web/sanity/types.ts`, the wiring tooling in `packages/`, and the inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
+Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/`, flat `queries/components/modules/<name>.ts` with the barrel, the route paths from `queries/snippets/routePath.ts` (a deleted or unpublished link target renders without a link), the derived `web/sanity/types.ts`, the wiring tooling in `packages/` (only the `scaffold-module` templates follow the branch's field types), and the inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
 ### Variant-branch rules
 
@@ -349,11 +348,11 @@ Without that line, ten fixes from #182, #190 and #191 reached only `main` in 202
 
 ### Updating conventions on both branches
 
-`AGENTS.md` and `.github/copilot-instructions.md` are identical on both branches — the notes above describe both. The other mirrors are not: the root and subtree `CLAUDE.md` files and `.cursor/rules/*.mdc` carry the variant's document-level i18n rules on `variant/document-level`. Carry a change over by cherry-picking it, never by copying files from `main` — a copy silently overwrites those variant rules.
+`AGENTS.md` and `.github/copilot-instructions.md` are identical on both branches — the notes above describe both, and the Copilot file stays branch-neutral. The other mirrors are not: the root and subtree `CLAUDE.md` files and `.cursor/rules/*.mdc` carry the variant's document-level i18n rules on `variant/document-level`. Each mirror keeps its i18n-model statements on lines of their own that start with `i18n:`, so a port swaps those lines and takes the rest from `main`. Carry a change over by cherry-picking it, never by copying files from `main` — a copy silently overwrites those variant rules.
 
-1. Edit `AGENTS.md` (+ mirrors) on `main` and commit.
+1. Edit `AGENTS.md` on `main` (a mirror only when its local gotcha changes) and commit.
 2. On `variant/document-level`: `git cherry-pick -x <commit>`.
-3. Resolve conflicts in the mirrors by keeping the variant's i18n lines and taking everything else from `main`. A conflict outside the i18n lines is drift — reconcile it.
+3. Resolve conflicts in the mirrors by keeping the variant's `i18n:` lines and taking everything else from `main`. A conflict outside the i18n lines is drift — reconcile it.
 4. Re-read the notes above and fix a row if the branch contradicts it.
 5. Once both are merged, `git diff main variant/document-level -- AGENTS.md .github/copilot-instructions.md` must be empty.
 
@@ -361,7 +360,7 @@ Without that line, ten fixes from #182, #190 and #191 reached only `main` in 202
 
 Before declaring a task complete, all of the following must hold:
 
-- [ ] `pnpm typecheck` passes (web + studio).
+- [ ] `pnpm typecheck` passes (web, studio, tooling packages).
 - [ ] `pnpm format` produces no diff.
 - [ ] `pnpm generate` (after schema or query edits) produces no uncommitted diff.
 - [ ] `pnpm check:wiring` passes; for a new/renamed module all 6 wiring points land in the same commit as the schema.

@@ -13,7 +13,6 @@ import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
-// import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 
 type PageProps = {
@@ -96,11 +95,6 @@ export default async function Project({ params }: PageProps) {
 						{projectTitle ? (
 							<h2 className="content-title">{projectTitle}</h2>
 						) : null}
-						{/* Title media — kept for later; not rendered on the page yet.
-						{hasTitleMedia && titleMedia ? (
-							<ModuleMedia module={titleMedia} />
-						) : null}
-						*/}
 					</header>
 				) : null}
 				{body.length ? (

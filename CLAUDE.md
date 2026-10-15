@@ -18,3 +18,4 @@ Claude Code additionally auto-loads scoped rules from subtree `CLAUDE.md` files 
 - **YOU MUST** run `pnpm studio:generate` after schema edits, then `pnpm check:wiring`, then `pnpm typecheck`.
 - **NEVER** edit `studio/sanity.types.gen.ts`, `studio/schema.json`, or any `*.gen.*` file.
 - **NEVER** filter locale inside GROQ. Locale resolves at render time via `pickLocalizedString` / `parseLocalizedText`.
+- Fixes land on `main` first and reach `variant/document-level` by `git cherry-pick -x`; every PR names its `Variant-Port` (AGENTS.md → "Porting fixes between branches").

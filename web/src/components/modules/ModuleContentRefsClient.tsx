@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import type { ModuleContentRefListItem } from "@/sanity/types/modules/contentRefs";
+import type { ModuleContentRefListItem } from "@/sanity/types/modules";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import {
 	MediaImage,

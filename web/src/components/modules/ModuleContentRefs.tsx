@@ -1,5 +1,7 @@
-import type { ModuleContentRefsData } from "@/sanity/types/modules";
-import type { ModuleContentRefListItem } from "@/sanity/types/modules/contentRefs";
+import type {
+	ModuleContentRefListItem,
+	ModuleContentRefsData,
+} from "@/sanity/types/modules";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";

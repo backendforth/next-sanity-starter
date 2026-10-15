@@ -12,3 +12,4 @@ Top-level rules (do not duplicate — see AGENTS.md for the full context):
 - Locale-aware at render time, never inside GROQ. Always use `pickLocalizedString` / `parseLocalizedText` from `web/sanity/utils/sanityLocalizedText.ts`.
 - After schema edits: `pnpm studio:generate` → `pnpm typecheck` → `pnpm format`. Never edit `studio/sanity.types.gen.ts` or `studio/schema.json`.
 - `web/sanity/types/*` are hand-maintained; keep aligned with field changes.
+- Fixes land on `main` first and reach `variant/document-level` by `git cherry-pick -x`; every PR names its `Variant-Port` (AGENTS.md → "Porting fixes between branches").

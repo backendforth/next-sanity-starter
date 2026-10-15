@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { FOCUS_RING } from "@/src/components/navigation/navControlStyles";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
@@ -31,13 +32,13 @@ export default function ErrorBoundary({
 					<button
 						onClick={reset}
 						type="button"
-						className="inline-flex items-center justify-center rounded-md bg-color-brand px-sm py-xs text-white hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-color-brand focus-visible:ring-offset-2"
+						className={`inline-flex items-center justify-center rounded-md bg-color-brand px-sm py-xs text-color-bg hover:opacity-90 ${FOCUS_RING}`}
 					>
 						{uiLabel("retry", currentLocale)}
 					</button>
 					<a
 						href={localePath("/", currentLocale)}
-						className="inline-flex items-center justify-center rounded-md border border-color-border-subtle px-sm py-xs text-button text-color-text hover:bg-color-surface-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-color-brand focus-visible:ring-offset-2"
+						className={`inline-flex items-center justify-center rounded-md border border-color-border-subtle px-sm py-xs text-button text-color-text hover:bg-color-surface-muted ${FOCUS_RING}`}
 					>
 						{uiLabel("backHome", currentLocale)}
 					</a>

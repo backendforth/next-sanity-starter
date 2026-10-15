@@ -81,7 +81,7 @@ Reusable **`type: "object"`** types for image and Mux video live under **`object
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
 
-Fields that take an image upload (the `media.image` image, both video posters, `module.carousel` slides, the SEO / OG images and the favicon) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
+Fields that take an image upload (the `media.image` image, both video posters, the SEO / OG images and the favicon) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
 
 ## 8. Content modules (`module.*`)
 
@@ -106,7 +106,7 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 | Module | Role |
 |--------|------|
 | `module.media` | Image, Mux video, or silent loop via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) / **`videoLoopContent`** (`media.videoLoop`) depending on `type` (`image` / `video` / `loop`). |
-| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`multipleSlides`**, **`autoplay`** + **`autoplayDelayMs`**. |
+| `module.carousel` | Optional heading; **`slides`** (array of `module.media`, at least one). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`multipleSlides`**, **`autoplay`** + **`autoplayDelayMs`**. |
 | `module.contentRefs` | Optional heading; **`sourceScope`** (`all` / `pages` / `projects`); **`showProjectFilters`** (projects only); **`selection`** (`all` / `selected`). Projects support **`projectCategory`** filters + sort (A–Z / newest) on the web. |
 | `module.text` | Heading + rich text body. |
 

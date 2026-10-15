@@ -1,11 +1,8 @@
-import { imageQuery } from "../../snippets/media";
 import { moduleMediaResolvedMediaQuery } from "./media";
 
 /**
- * `module.carousel` (`objects/modules/moduleCarousel.ts`): `resolvedSlides` holds `slides`
- * (plain `image` items) when `imagesOnly` is on, otherwise `slidesMedia` (`module.media` =
- * image or video). An unset `imagesOnly` counts as on, like in the Studio, which shows `slides`
- * until it is switched off. Only the resolved list is projected; the renderer reads nothing else.
+ * `module.carousel` (`objects/modules/moduleCarousel.ts`): every slide is a `module.media`,
+ * projected to the same `resolvedMedia` as the media module.
  */
 export const moduleCarouselQuery = `_type == "module.carousel" => {
   heading,
@@ -15,16 +12,8 @@ export const moduleCarouselQuery = `_type == "module.carousel" => {
   multipleSlides,
   autoplay,
   autoplayDelayMs,
-  "resolvedSlides": select(
-    imagesOnly != false => slides[]{
-      _key,
-      _type,
-      "media": @${imageQuery}
-    },
-    slidesMedia[]{
-      _key,
-      _type,
-      "resolvedMedia": ${moduleMediaResolvedMediaQuery}
-    }
-  )
+  slides[]{
+    _key,
+    "resolvedMedia": ${moduleMediaResolvedMediaQuery}
+  }
 }`;

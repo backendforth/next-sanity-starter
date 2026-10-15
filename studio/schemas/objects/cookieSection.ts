@@ -1,5 +1,7 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
+import { plainLabel } from "../../utils/plainLabel";
+
 /** One section of the cookie preferences modal (`siteCookieBanner.preferencesModal.sections`). */
 export const cookieSection = defineType({
   name: "cookieSection",
@@ -64,7 +66,7 @@ export const cookieSection = defineType({
   preview: {
     select: { title: "title", category: "linkedCategory" },
     prepare({ title, category }) {
-      return { title: title || "Section", subtitle: category };
+      return { title: plainLabel(title, "Section"), subtitle: category };
     },
   },
 });

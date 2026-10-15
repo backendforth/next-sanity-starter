@@ -2,6 +2,7 @@ import { LinkIcon } from "@sanity/icons/Link";
 import { defineType } from "sanity";
 
 import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
+import { plainLabel } from "../../utils/plainLabel";
 import {
   LINK_REFERENCE_FILTER,
   LINK_REFERENCES,
@@ -46,8 +47,7 @@ export const link = defineType({
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
           if (t === "external" || t === "function") {
-            const text = typeof value === "string" ? value.trim() : "";
-            return text ? true : "Add a title.";
+            return plainLabel(value, "") ? true : "Add a title.";
           }
           return true;
         }),
@@ -144,8 +144,8 @@ export const link = defineType({
         subtitle = funcKey ? `→ ${funcKey}` : "→ (function)";
       }
 
-      const linkLabel = typeof title === "string" ? title.trim() : "";
-      const refLabel = typeof refTitle === "string" ? refTitle.trim() : "";
+      const linkLabel = plainLabel(title, "");
+      const refLabel = plainLabel(refTitle, "");
       const label =
         linkLabel ||
         refLabel ||

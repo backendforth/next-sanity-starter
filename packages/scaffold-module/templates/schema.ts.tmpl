@@ -1,6 +1,8 @@
 import { ComposeIcon } from "@sanity/icons/Compose";
 import { defineType } from "sanity";
 
+import { plainLabel } from "../../../utils/plainLabel";
+
 export const __MODULE_VAR__ = defineType({
   name: "__MODULE_NAME__",
   title: "__MODULE_TITLE__",
@@ -19,10 +21,7 @@ export const __MODULE_VAR__ = defineType({
     },
     prepare({ heading }) {
       return {
-        title:
-          typeof heading === "string" && heading.trim()
-            ? heading
-            : "__MODULE_TITLE__",
+        title: plainLabel(heading, "__MODULE_TITLE__"),
         subtitle: "__MODULE_TITLE__ module",
       };
     },

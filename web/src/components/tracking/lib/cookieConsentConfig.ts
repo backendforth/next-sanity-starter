@@ -225,8 +225,8 @@ export function cookieConsentTranslation(
 		cookieTable: {
 			headers: tableHeaders(locale),
 			body: (section.cookies ?? []).map((cookie) => ({
-				name: text(cookie.name),
-				domain: text(cookie.domain),
+				name: escapeHtml(cookie.name ?? ""),
+				domain: escapeHtml(cookie.domain ?? ""),
 				desc: text(cookie.description),
 			})),
 		},

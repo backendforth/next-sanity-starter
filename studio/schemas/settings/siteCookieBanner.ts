@@ -59,7 +59,8 @@ export const siteCookieBanner = defineType({
           name: "description",
           description:
             "Must name the controller and say why (GDPR Art. 13). Plain text — it is escaped before rendering; the policy link below is appended. Note any provider outside the EEA.",
-          type: "string",
+          type: "text",
+          rows: 3,
         },
         {
           title: "Privacy Policy",

@@ -13,7 +13,7 @@ export type NormalizedSlide = {
 	kind: "image" | "video" | "loop";
 	media: unknown;
 	poster?: unknown;
-	caption?: string | null;
+	caption?: string;
 	/** Full-player slides only — autoplay / controls toggles. Ignored for loops. */
 	videoSettings?: {
 		autoplay?: boolean | null;
@@ -54,7 +54,7 @@ export function CarouselSlide({
 		return (
 			<MediaImage
 				imagePayload={slide.media}
-				caption={slide.caption ?? undefined}
+				caption={slide.caption}
 				fillParent
 				objectFit="cover"
 				priority={priority}
@@ -97,7 +97,7 @@ export function CarouselSlide({
 		<MediaImage
 			imagePayload={slide.poster}
 			muxFallbackMedia={slide.media}
-			caption={slide.caption ?? undefined}
+			caption={slide.caption}
 			fillParent
 			objectFit="cover"
 			priority={priority}

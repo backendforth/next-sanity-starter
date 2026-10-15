@@ -11,6 +11,7 @@ import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
+import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 
 type PageProps = {
@@ -75,20 +76,18 @@ export default async function Project({ params }: PageProps) {
 	const body = pickLocalizedPortableTextBlocks(data.body, locale, siteLocale);
 
 	return (
-		<div className="flex flex-col flex-1 bg-color-bg">
-			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
-				{projectTitle ? <h2 className="heading-1">{projectTitle}</h2> : null}
-				{body.length ? (
-					<article className="flex flex-col">
-						<RichTextMedia
-							value={body}
-							locale={locale}
-							siteLocale={siteLocale}
-							priority
-						/>
-					</article>
-				) : null}
-			</div>
+		<div className={pageContainerClassName}>
+			{projectTitle ? <h2 className="heading-1">{projectTitle}</h2> : null}
+			{body.length ? (
+				<article className="flex flex-col">
+					<RichTextMedia
+						value={body}
+						locale={locale}
+						siteLocale={siteLocale}
+						priority
+					/>
+				</article>
+			) : null}
 		</div>
 	);
 }

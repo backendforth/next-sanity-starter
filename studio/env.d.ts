@@ -1,22 +1,6 @@
 declare module "*.css";
 
 /**
- * Vite's built-in flags. `config/sync/studioDataset.ts` reads `DEV` / `PROD` to tell the dev
- * server from a production bundle.
- */
-interface ImportMetaEnv {
-  readonly DEV: boolean;
-  readonly PROD: boolean;
-  readonly MODE: string;
-  readonly SSR: boolean;
-  readonly BASE_URL: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
-
-/**
  * The variables Studio code reads through `process.env`; Sanity inlines `SANITY_STUDIO_*` at
  * build time. The plain-Node scripts in `scripts/` read theirs untyped (all are documented in
  * `studio/.env.example`).

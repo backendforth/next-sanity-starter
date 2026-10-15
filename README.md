@@ -153,10 +153,10 @@ Full comments live in [`web/.env.example`](web/.env.example) and [`studio/.env.e
 
 ### How `@repo/sanity-dataset-resolve` picks a dataset
 
-Runs once per web build and per Studio load (the Netlify Studio pins its dataset in `studio/netlify.toml` and skips this):
+Runs once per build or dev-server start, for the web in `web/next.config.ts`, for the Studio in `studio/sanity.cli.ts`. Both inline the result, so the browser never resolves it:
 
 1. `SANITY_STUDIO_DATASET` wins.
-2. Otherwise `SANITY_STUDIO_DEPLOYMENT_TARGET` sets the order: `production` → production first; `development` / `preview` → development first; any other value (e.g. `staging`) → that dataset first. Unset: production first on a Netlify/Vercel production build and in a production Studio build, development first everywhere else.
+2. Otherwise `SANITY_STUDIO_DEPLOYMENT_TARGET` sets the order: `production` → production first; `development` / `preview` → development first; any other value (e.g. `staging`) → that dataset first. Unset: production first on a Netlify/Vercel production build, development first everywhere else (a local `next build` or `sanity build` included).
 3. The first candidate that exists wins (checked on the public API, no token). Offline it takes the first candidate, never a silent switch to production.
 
 ---
@@ -208,19 +208,40 @@ The site and the Studio are two Netlify sites from the same repository. Each ski
 ### Web on Netlify
 
 1. Import the repository as a new Netlify project. Base directory and package directory stay empty; the root [`netlify.toml`](netlify.toml) sets build command, publish directory and the Next.js plugin.
-2. Environment: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN`, `SANITY_REVALIDATE_SECRET`, `NEXT_PUBLIC_SANITY_STUDIO_URL`; optionally `NEXT_PUBLIC_SITE_URL` (or set it in `netlify.toml` → production context) and `CSP_ANALYTICS_ORIGINS`. Production deploys read `production`, deploy previews `development`.
+2. Environment: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN`, `SANITY_REVALIDATE_SECRET`, `NEXT_PUBLIC_SANITY_STUDIO_URL`; optionally `NEXT_PUBLIC_SITE_URL` (or set it in `netlify.toml` → production context) and `CSP_ANALYTICS_ORIGINS`. Production deploys read `production`, deploy previews `development`; to change that, see [Dataset per site](#dataset-per-site).
 3. Add your domain, then [the revalidate webhook](#content-freshness-and-the-revalidate-webhook).
 
 ### Studio on Netlify
 
-[`studio/netlify.toml`](studio/netlify.toml) is the whole pipeline: `sanity build`, SPA routing, `noindex`, `frame-ancestors`, and the dataset per deploy context (production → `production`, previews and branch deploys → `development`).
+[`studio/netlify.toml`](studio/netlify.toml) is the whole pipeline: `sanity build`, SPA routing, `noindex`, `frame-ancestors`. The dataset follows the deploy context like the web site's ([Dataset per site](#dataset-per-site)).
 
 1. **Site** — import the same repository as a second project. Base directory empty, **package directory `studio`**, build command and publish directory empty.
-2. **Environment** — `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL` (the Studio's URL); optionally `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` and `SANITY_AUTH_TOKEN`. A different dataset name per context: edit the toml.
+2. **Environment** — `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_PREVIEW_ORIGIN` (the production web origin), `SANITY_STUDIO_HOSTING_URL` (the Studio's URL); optionally `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`, `SANITY_AUTH_TOKEN` and `SANITY_STUDIO_DATASET` ([Dataset per site](#dataset-per-site)).
 3. **Domain** — add the Studio domain (e.g. `studio.your-domain.tld`) under Domain management.
 4. **CORS** — in sanity.io/manage → API → CORS origins, add that origin **with Allow credentials**, or login fails: `pnpm --filter studio exec sanity cors add https://studio.your-domain.tld --credentials`.
 5. **Web site** — set `NEXT_PUBLIC_SANITY_STUDIO_URL` to the Studio URL and redeploy the web app, so Presentation can embed it and click-to-edit opens it.
 6. **Register** — `pnpm studio:register` lists the URL as the project's Studio and uploads the schema (`--dry-run` to preview; uses your `sanity login`). With `SANITY_AUTH_TOKEN` (a deploy token) on the Studio site, every production deploy does it.
+
+### Dataset per site
+
+Each site picks its dataset at build, by the [rules above](#how-reposanity-dataset-resolve-picks-a-dataset): production deploys `production`, deploy previews and branch deploys `development`. To choose another, set `SANITY_STUDIO_DATASET` in that site's environment, for every deploy context, one context, or one branch. In the Netlify UI: **Site configuration → Environment variables → Add a variable → Different value for each deploy context**. Or with the [Netlify CLI](https://docs.netlify.com/cli/get-started/), per site:
+
+```bash
+# Studio: production edits `production`, previews and branch deploys `development`
+netlify env:set SANITY_STUDIO_DATASET production --context production --site <studio-site>
+netlify env:set SANITY_STUDIO_DATASET development --context deploy-preview branch-deploy --site <studio-site>
+
+# Web: the `staging` branch deploy reads a `staging` dataset
+netlify env:set SANITY_STUDIO_DATASET staging --context branch:staging --site <web-site>
+
+# What a context gets
+netlify env:get SANITY_STUDIO_DATASET --context production --site <studio-site>
+```
+
+- The name is inlined at build: redeploy the site after a change (**Deploys → Trigger deploy**).
+- Don't set the dataset in a `netlify.toml`: values there override the UI and the CLI.
+- `netlify deploy` builds on your machine and reads the variables of its `--context`, which defaults to `dev`. Pass the context you mean.
+- Keep Studio and web in step per context: Presentation previews `SANITY_STUDIO_PREVIEW_ORIGIN` (and `SANITY_STUDIO_WEB_PREVIEW_ORIGINS`), and a web site on another dataset shows other content. Each web site needs [its own revalidate webhook](#content-freshness-and-the-revalidate-webhook) for the dataset it reads.
 
 ### Studio on Sanity Hosting (alternative)
 

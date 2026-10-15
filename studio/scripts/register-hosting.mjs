@@ -14,11 +14,9 @@
  */
 
 import { spawn } from "node:child_process";
-import { join } from "node:path";
-import { loadEnvFile, studioRootFromScript } from "./loadEnvFile.mjs";
+import { fileURLToPath } from "node:url";
 
-const studioRoot = studioRootFromScript(import.meta.url);
-loadEnvFile(join(studioRoot, ".env"));
+const studioRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const onNetlify = process.env.NETLIFY === "true";
 

@@ -3,6 +3,7 @@ import { PlayIcon } from "@sanity/icons/Play";
 import { defineType, type PreviewValue } from "sanity";
 
 import { getDurationString } from "../../../utils/helpers";
+import { hasMuxAsset } from "../../../utils/validateModuleMedia";
 
 export const moduleMedia = defineType({
   title: "Media",
@@ -58,17 +59,7 @@ export const moduleMedia = defineType({
           const row = value as
             | { video?: { asset?: unknown } | null }
             | undefined;
-          const mux = row?.video;
-          const hasAsset =
-            mux != null &&
-            typeof mux === "object" &&
-            mux !== null &&
-            "asset" in mux &&
-            (mux as { asset?: unknown }).asset != null;
-          if (!hasAsset) {
-            return "Add a video.";
-          }
-          return true;
+          return hasMuxAsset(row?.video) || "Add a video.";
         }),
     },
     {
@@ -85,17 +76,7 @@ export const moduleMedia = defineType({
           const row = value as
             | { video?: { asset?: unknown } | null }
             | undefined;
-          const mux = row?.video;
-          const hasAsset =
-            mux != null &&
-            typeof mux === "object" &&
-            mux !== null &&
-            "asset" in mux &&
-            (mux as { asset?: unknown }).asset != null;
-          if (!hasAsset) {
-            return "Add a video.";
-          }
-          return true;
+          return hasMuxAsset(row?.video) || "Add a video.";
         }),
     },
   ],

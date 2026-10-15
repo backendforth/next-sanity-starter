@@ -417,13 +417,6 @@
           "type": "string"
         }
       },
-      "title": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
       "useCookieBanner": {
         "type": "objectAttribute",
         "value": {
@@ -571,13 +564,6 @@
         "value": {
           "type": "string"
         }
-      },
-      "title": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
       },
       "availableLanguages": {
         "type": "objectAttribute",
@@ -2290,13 +2276,6 @@
         },
         "optional": true
       },
-      "title": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
       "consentModal": {
         "type": "objectAttribute",
         "value": {
@@ -2633,13 +2612,6 @@
         }
       },
       "language": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
-      "title": {
         "type": "objectAttribute",
         "value": {
           "type": "string"

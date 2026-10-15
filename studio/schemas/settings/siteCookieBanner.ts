@@ -22,13 +22,6 @@ export const siteCookieBanner = defineType({
   fields: [
     languageField,
     {
-      title: "Title",
-      name: "title",
-      type: "string",
-      initialValue: "Cookie Banner",
-      hidden: true,
-    },
-    {
       title: "Consent Modal Texts",
       name: "consentModal",
       type: "object",
@@ -133,12 +126,9 @@ export const siteCookieBanner = defineType({
     },
   ],
   preview: {
-    select: { title: "title", language: "language" },
-    prepare({ title, language }) {
-      return {
-        title: title ?? "Cookie Banner",
-        subtitle: language || undefined,
-      };
+    select: { language: "language" },
+    prepare({ language }) {
+      return { title: "Cookie Banner", subtitle: language || undefined };
     },
   },
 });

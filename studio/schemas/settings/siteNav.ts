@@ -13,13 +13,6 @@ export const siteNav = defineType({
   fields: [
     languageField,
     {
-      title: "Title",
-      name: "title",
-      type: "string",
-      initialValue: "Navigation",
-      hidden: true,
-    },
-    {
       title: "Main Menu",
       name: "mainMenu",
       type: "array",
@@ -37,12 +30,9 @@ export const siteNav = defineType({
     },
   ],
   preview: {
-    select: { title: "title", language: "language" },
-    prepare({ title, language }) {
-      return {
-        title: title ?? "Navigation",
-        subtitle: language || undefined,
-      };
+    select: { language: "language" },
+    prepare({ language }) {
+      return { title: "Navigation", subtitle: language || undefined };
     },
   },
 });

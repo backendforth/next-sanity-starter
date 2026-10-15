@@ -46,9 +46,8 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * Declaring them here covers every route below — route metadata merges field by
  * field, so no page has to repeat them. There is deliberately no static
  * fallback: browsers, bookmarks and search crawlers probe `/favicon.ico`
- * regardless of the `<link>` tags, so the Next.js default icon that used to sit
- * in `public/` showed up beside or instead of the Sanity one. With the field
- * unset the site has no favicon.
+ * regardless of the `<link>` tags, so a static icon would show up beside or
+ * instead of the Sanity one. With the field unset the site has no favicon.
  */
 export function documentMetadata(
 	favicon: SiteFavicon | null | undefined,
@@ -69,11 +68,9 @@ export function documentMetadata(
  *    in `variables/colors.css` apply — OS preference is deliberately ignored.
  * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
  *
- * The lazy-image `img-loaded` class is added by `MediaImage` itself via
- * `useEffect` — managing it from this inline script raced React 19 streaming
- * hydration on cached images and produced "tree hydrated but attributes didn't
- * match" warnings. Doing it through React's render flow keeps SSR and the
- * first client paint identical.
+ * The lazy-image `img-loaded` class is not set here: `MediaImage` adds it in
+ * `useEffect`, so SSR and the first client render agree (a pre-hydration
+ * script would race React's streaming hydration on cached images).
  *
  * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
  */
@@ -97,8 +94,7 @@ type Props = {
  * The root layout sits on the dynamic `[locale]` segment because that is the only way the
  * route's language reaches the server-rendered `<html lang>`: `params` never reach a layout
  * above the segment, and reading the proxy's locale header would opt every route out of
- * static rendering. Before, `<html lang>` always carried the site default and was corrected
- * on the client after hydration.
+ * static rendering.
  *
  * The cost: `app/not-found.tsx` (a URL that matched no route, so no locale) gets no root
  * layout. It imports the stylesheets and font classes itself and must NOT render this

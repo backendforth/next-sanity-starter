@@ -6,7 +6,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 | Source | When it applies |
 |--------|-----------------|
-| **Sanity `siteLanguageSettings`** | Normal operation — `availableLanguages` (ids = URL segments and document `language` values; order = language switcher order), `defaultLanguageId` (unprefixed URLs + `<html lang>` default after hydration). |
+| **Sanity `siteLanguageSettings`** | Normal operation — `availableLanguages` (ids = URL segments and document `language` values; order = language switcher order), `defaultLanguageId` (the language of unprefixed URLs, and of documents created outside the translation menu). |
 | **Schema `initialValue`** ([`studio/schemas/settings/siteLanguageSettings.ts`](../../../studio/schemas/settings/siteLanguageSettings.ts)) | When an editor **creates** the singleton the first time — pre-fills e.g. `en` + `de` with default `en`. They can change or remove languages before publish (validation still requires ≥1 language and a valid default). |
 | **Code fallbacks** | Only when the document is **missing**, **unpublished** in a way that yields empty/invalid data, or **broken** (e.g. default id not in list). |
 
@@ -16,7 +16,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 | File | Role |
 |------|------|
-| **`fallbackSiteLocales.ts`** | Minimal **`en`** fallback when `siteLanguageSettings` is missing or invalid; also used for static bootstrap (e.g. root `<html lang>` before client sync). |
+| **`fallbackSiteLocales.ts`** | Minimal **`en`** fallback when `siteLanguageSettings` is missing or invalid; also the locale of `app/global-error.tsx`, which renders outside every layout. |
 | **`siteLocalePathUtils.ts`** | `createLanguagePathUtils({ defaultLocale, localeIds })` — `localePath`, prefixes, `isAppLocale`. `translationPathsByLocale(translations, pathUtils)` — locale → prefixed path for a document's language variants (slugs differ per language; feeds `hreflang`, the sitemap and the language switch). |
 | **`proxyLocaleFetch.ts`** | CDN fetch + short cache for **`proxy.ts`**. |
 | **`paths.ts`** | `isCurrentNavHref`, path normalization (no locale coupling). |
@@ -29,8 +29,9 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 2. **Next** — `fetchSiteLanguageSettings()` (cached) supplies **`[locale]/layout.tsx`** → **`LanguageProvider`**, **`Footer`** path utils, **`generateStaticParams`**, and **`ModulesRenderer`** (href building in `module.contentRefs`).
 3. User opens `/` or `/about` → **`proxy`** rewrites internally to `/{defaultLocale}/…` using the CDN-backed locale list.
 4. User opens `/de/about` → no rewrite; header marks locale `de`.
-5. `app/[locale]/page.tsx` (and nested routes) read `params.locale`, pass it to the `fetch*` helpers (`$locale` in GROQ), and pass **`siteLocale`** to path utils.
-6. **Language switch** — every route page renders `LocaleAlternates` with its document's language variants (`translationsQuery`, linked through `translation.metadata`). `setLocale` in `LanguageContext` sends the switch to the variant in the target language (`/about` → `/de/ueber-uns`), or to that language's home when the document has none there. A page without `LocaleAlternates` (the 404) keeps its path and swaps the locale prefix.
+5. `app/[locale]/layout.tsx` is the root layout: `DocumentShell` server-renders `<html lang={locale}>` for the route's language.
+6. `app/[locale]/page.tsx` (and nested routes) read `params.locale`, pass it to the `fetch*` helpers (`$locale` in GROQ), and pass **`siteLocale`** to path utils.
+7. **Language switch** — every route page renders `LocaleAlternates` with its document's language variants (`translationsQuery`, linked through `translation.metadata`). `setLocale` in `LanguageContext` sends the switch to the variant in the target language (`/about` → `/de/ueber-uns`), or to that language's home when the document has none there. A page without `LocaleAlternates` (the 404) keeps its path and swaps the locale prefix.
 
 ## Studio note
 

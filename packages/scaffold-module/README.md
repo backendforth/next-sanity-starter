@@ -34,4 +34,4 @@ pnpm typecheck
 
 ## Tests
 
-`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs both typegens, `check:typegen`, `check:wiring` and `tsc` for web and studio; a second test checks that a missing anchor writes nothing.
+`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs the schema extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio; a second test checks that a missing anchor writes nothing.

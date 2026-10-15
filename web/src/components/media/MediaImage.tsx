@@ -19,11 +19,8 @@ import { resolveMediaPosterUrls } from "@/src/utils/resolveMediaPoster";
 /** Sanity CDN `w=` bounds — not layout breakpoints. */
 const SANITY_IMAGE_MIN_WIDTH = 320;
 const SANITY_IMAGE_MAX_WIDTH = 2400;
-/** `srcset` candidates — mobile → 2× retina desktop. Caller caps by asset width. */
+/** `srcset` candidates — mobile → 2× retina desktop, capped by the asset width. */
 const SRCSET_WIDTHS = [480, 768, 1080, 1440, 1920, 2400] as const;
-/** Grid / card previews — smallest variants that still cover at ~⅓ container width. */
-export const PREVIEW_SRCSET_WIDTHS = [320, 480, 640, 768] as const;
-export const PREVIEW_MAX_SRC_WIDTH = 768;
 
 type MediaImageProps = {
 	imagePayload: unknown;
@@ -59,10 +56,6 @@ type MediaImageProps = {
 	 * @example "(max-width: 900px) 100vw, 50vw"
 	 */
 	sizes?: string;
-	/** Cap largest CDN `w=` request (e.g. card previews). */
-	maxSrcWidth?: number;
-	/** Override default `srcset` width steps — use with {@link maxSrcWidth}. */
-	srcsetWidths?: readonly number[];
 	/** Sanity CDN quality (default 85). Lower for small previews. */
 	quality?: number;
 };
@@ -79,14 +72,13 @@ function imageAltFromField(
 	return "";
 }
 
+/** Ladder steps below the cap, plus the cap itself: with `w` descriptors `src` is ignored. */
 function buildSrcSet(
 	image: SanityImageField,
 	maxWidth: number,
-	widths: readonly number[],
 	quality: number,
 ): string {
-	return widths
-		.filter((w) => w <= maxWidth)
+	return [...SRCSET_WIDTHS.filter((w) => w < maxWidth), maxWidth]
 		.map((w) => {
 			const url = buildFetchedImageUrl(image, {
 				width: w,
@@ -120,8 +112,6 @@ export function MediaImage({
 	objectFit = "cover",
 	priority = false,
 	sizes = "100vw",
-	maxSrcWidth: maxSrcWidthProp,
-	srcsetWidths = SRCSET_WIDTHS,
 	quality = 85,
 }: MediaImageProps) {
 	const image = resolveSanityImageFieldForUrl(imagePayload);
@@ -167,7 +157,6 @@ export function MediaImage({
 	const cropped = getCroppedImageDisplayDimensions(image);
 	/** Source image width caps the largest srcset candidate we request. */
 	const maxSrcWidth = Math.min(
-		maxSrcWidthProp ?? SANITY_IMAGE_MAX_WIDTH,
 		SANITY_IMAGE_MAX_WIDTH,
 		Math.max(cropped.width, SANITY_IMAGE_MIN_WIDTH),
 	);
@@ -179,7 +168,7 @@ export function MediaImage({
 	});
 	if (!src) return null;
 
-	const srcSet = buildSrcSet(image, maxSrcWidth, srcsetWidths, quality);
+	const srcSet = buildSrcSet(image, maxSrcWidth, quality);
 
 	const objectPosition = cssObjectPositionFromSanityImageField(image);
 	const imgStyle: CSSProperties = {

@@ -42,8 +42,9 @@ type ResolvedMediaPosterUrls = {
 	height: number;
 };
 
+/** Ladder steps below the cap, plus the cap itself: with `w` descriptors `src` is ignored. */
 function srcSetFor(cap: number, urlAt: (w: number) => string | null): string {
-	return POSTER_SRCSET_WIDTHS.filter((w) => w <= cap)
+	return [...POSTER_SRCSET_WIDTHS.filter((w) => w < cap), cap]
 		.map((w) => {
 			const url = urlAt(w);
 			return url ? `${url} ${w}w` : null;

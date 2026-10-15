@@ -452,15 +452,15 @@ function MuxVideoLoop({
 
 	if (!poster) return null;
 
-	/* Pre-measurement fallback: a literal width — `var()` is invalid inside the `sizes`
-	 * grammar, so the entry silently fell back to 100vw. 2000px mirrors
-	 * `--content-max-width` (`--breakpoint-wide`); the measured width replaces it one commit
-	 * later. */
-	const posterSizes = fillParent
-		? "100vw"
-		: typeof slotWidthPx === "number" && slotWidthPx > 0
+	/* The measured slot once it lands (a carousel slide is not 100vw). Before that, a literal
+	 * width — `var()` is invalid inside the `sizes` grammar; 2000px mirrors
+	 * `--content-max-width` (`--breakpoint-wide`). */
+	const posterSizes =
+		typeof slotWidthPx === "number" && slotWidthPx > 0
 			? `${slotWidthPx}px`
-			: "(max-width: 900px) 100vw, min(100vw, 2000px)";
+			: fillParent
+				? "100vw"
+				: "(max-width: 900px) 100vw, min(100vw, 2000px)";
 
 	return (
 		<div

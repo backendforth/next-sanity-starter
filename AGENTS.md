@@ -153,8 +153,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm check:wiring` | Compare every module wiring list with the module schemas, both ways, and the inline places with each other. CI gate. |
 | `pnpm check:typegen` | Every `defineQuery` in `web/sanity/` got a generated type (TypeGen skips queries it can't evaluate silently). Part of `pnpm generate`. |
 | `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including an end-to-end scaffold. CI gate. |
-| `pnpm update` | `pnpm up --stream -r` (interactive upgrade across workspaces). |
-| `pnpm studio:update` | Upgrade Studio dependencies only. |
+| `pnpm up -r` | pnpm built-in: update every workspace's dependencies within their ranges (`--latest` crosses them, `-i` picks interactively). `pnpm --filter studio up` does the Studio only. |
 
 ### web (run from `web/` or via `pnpm --filter web run …`)
 

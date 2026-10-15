@@ -25,10 +25,21 @@ export const linkFunctions = defineType({
       validation: (rule) => rule.required(),
     },
     {
+      /* Stored as `params`; the web reads it only as the `scroll-to` anchor (`navHref.ts`). */
       name: "params",
-      title: "Parameters",
+      title: "Anchor id",
       type: "string",
-      description: "Optional id, JSON, or query string for the handler.",
+      description:
+        "Id of the element to scroll to, e.g. contact (a leading # is optional).",
+      hidden: ({ parent }) => parent?.key !== "scroll-to",
+      validation: (rule) =>
+        rule.custom((value: string | undefined, context) => {
+          const parent = context.parent as { key?: string } | undefined;
+          if (parent?.key === "scroll-to" && !value?.trim()) {
+            return "Add the id to scroll to.";
+          }
+          return true;
+        }),
     },
   ],
 });

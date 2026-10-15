@@ -31,18 +31,17 @@ function firstNonEmpty(
 
 /**
  * Merges local page `seo` with Sanity **site settings** fallback (`settingsSeo` from GROQ).
- * Empty strings are treated as missing so fallbacks apply.
+ * Empty strings are treated as missing so fallbacks apply. The title has its own order, see
+ * `resolveSanityMetadata`.
  */
 export function mergePageAndSettingsSeo(
 	pageSeo: PageSeo,
 	settingsSeo: PageSeo,
 ): {
-	title?: string;
 	description?: string;
 	imageUrl?: string;
 } {
 	return {
-		title: firstNonEmpty(pageSeo?.title, settingsSeo?.title),
 		description: firstNonEmpty(pageSeo?.description, settingsSeo?.description),
 		imageUrl: firstNonEmpty(pageSeo?.imageUrl, settingsSeo?.imageUrl),
 	};
@@ -53,10 +52,12 @@ export type ResolveSanityMetadataInput = {
 	seo?: PageSeo;
 	/** Site-wide fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
 	settingsSeo?: PageSeo;
-	/** When meta title is not set on page or settings (e.g. localized H1 or slug). */
+	/** When the page has no meta title (e.g. localized H1 or slug). Wins over `settingsSeo.title`. */
 	titleFallback: string;
-	/** When everything else is empty (e.g. missing singleton). */
+	/** Brand: the last-resort title, and the tab-title suffix it must not repeat. */
 	siteTitleFallback?: string;
+	/** Home: the site-wide SEO title describes this page, so it wins over `titleFallback`. */
+	siteSeoTitleFirst?: boolean;
 	/** Site name for Open Graph (defaults to siteTitleFallback). */
 	siteName?: string;
 	/** Locale-agnostic path for the document (e.g. `"/"`, `"/about"`). Required for `alternates`. */
@@ -120,6 +121,7 @@ export function resolveSanityMetadata({
 	settingsSeo,
 	titleFallback,
 	siteTitleFallback = "Site",
+	siteSeoTitleFirst = false,
 	siteName,
 	path,
 	currentLocale,
@@ -127,8 +129,15 @@ export function resolveSanityMetadata({
 	translations,
 }: ResolveSanityMetadataInput): Metadata {
 	const merged = mergePageAndSettingsSeo(seo ?? null, settingsSeo ?? null);
+	/* The page's own title beats the site-wide SEO title. That one is usually the brand, which
+	 * the layout's `%s | brand` template would render as "Brand | Brand" on every page. */
+	const pageTitle = seo?.title;
+	const siteSeoTitle = settingsSeo?.title;
 	const metaTitle =
-		merged.title?.trim() || titleFallback.trim() || siteTitleFallback;
+		(siteSeoTitleFirst
+			? firstNonEmpty(pageTitle, siteSeoTitle, titleFallback)
+			: firstNonEmpty(pageTitle, titleFallback, siteSeoTitle)) ??
+		siteTitleFallback;
 	const description = merged.description?.trim() || undefined;
 	const ogImage = merged.imageUrl?.trim() || undefined;
 	const resolvedSiteName = siteName || siteTitleFallback;
@@ -140,7 +149,11 @@ export function resolveSanityMetadata({
 	);
 
 	return {
-		title: metaTitle,
+		/* A title that already is the brand skips the template, which would repeat it. */
+		title:
+			metaTitle === siteTitleFallback.trim()
+				? { absolute: metaTitle }
+				: metaTitle,
 		description,
 		...(alternates ? { alternates } : {}),
 		openGraph: {
@@ -166,7 +179,7 @@ export type MetadataFromSanityPageDataInput = {
 	data: HomeDocument | PageDocument | WorkDocument | ProjectDocument;
 	/** Active route locale id. */
 	locale: string;
-	/** Last-resort meta title (e.g. localized heading or slug) when SEO fields are empty. */
+	/** Meta title when the page has neither an SEO title nor a heading (e.g. the slug). */
 	segmentFallback: string;
 	/** Site-wide SEO fallback from `siteSettings` (via `fetchSettingsSeoFallback`). */
 	settingsSeo?: PageSeo;
@@ -176,6 +189,8 @@ export type MetadataFromSanityPageDataInput = {
 	path?: string;
 	/** `siteSettings.title` — Open Graph `siteName` and last-resort meta title; tab suffix comes from layout `title.template`. */
 	siteBrandTitle?: string | null;
+	/** Home only: the site-wide SEO title wins over the heading. */
+	siteSeoTitleFirst?: boolean;
 };
 
 /**
@@ -192,6 +207,7 @@ export function metadataFromSanityPageData({
 	siteLocale,
 	path,
 	siteBrandTitle,
+	siteSeoTitleFirst,
 }: MetadataFromSanityPageDataInput): Metadata {
 	const heading = data.title?.trim() ?? "";
 	const brand = typeof siteBrandTitle === "string" ? siteBrandTitle.trim() : "";
@@ -199,6 +215,7 @@ export function metadataFromSanityPageData({
 		seo: data.seo,
 		settingsSeo,
 		titleFallback: heading || segmentFallback,
+		siteSeoTitleFirst,
 		path,
 		currentLocale: locale,
 		siteLocale: siteLocale ?? null,

@@ -5,17 +5,23 @@ import type {
 	ModuleCarouselData,
 	ModuleMediaData,
 } from "@/sanity/types/modules";
-import { type LinkMark, resolveLinkMark } from "@/sanity/utils/linkResolver";
+import {
+	type LinkLocaleOptions,
+	type LinkMark,
+	resolveLinkMark,
+} from "@/sanity/utils/linkResolver";
 import { ModuleCarousel, ModuleMedia } from "@/src/components/modules";
 
 function LinkMarkRenderer({
 	children,
 	value,
+	localeOptions,
 }: {
 	children?: ReactNode;
 	value?: LinkMark;
+	localeOptions: LinkLocaleOptions;
 }) {
-	const resolved = resolveLinkMark(value);
+	const resolved = resolveLinkMark(value, localeOptions);
 	if (!resolved) {
 		return <>{children}</>;
 	}
@@ -29,8 +35,13 @@ function LinkMarkRenderer({
 	);
 }
 
-/** Blocks, lists, and marks shared by `richText` and `richTextMedia`. */
-export function portableTextBlockComponents(): Partial<PortableTextComponents> {
+/**
+ * Blocks, lists, and marks shared by `richText` and `richTextMedia`. Internal links point at
+ * `locale`'s version of the target; without it they stay locale-agnostic.
+ */
+export function portableTextBlockComponents(
+	localeOptions: LinkLocaleOptions = {},
+): Partial<PortableTextComponents> {
 	return {
 		block: {
 			normal: ({ children }) => <p className="text">{children}</p>,
@@ -55,7 +66,10 @@ export function portableTextBlockComponents(): Partial<PortableTextComponents> {
 			em: ({ children }) => <em className="font-mono italic">{children}</em>,
 			code: ({ children }) => <code>{children}</code>,
 			link: ({ children, value }) => (
-				<LinkMarkRenderer value={value as LinkMark}>
+				<LinkMarkRenderer
+					value={value as LinkMark}
+					localeOptions={localeOptions}
+				>
 					{children}
 				</LinkMarkRenderer>
 			),
@@ -65,12 +79,14 @@ export function portableTextBlockComponents(): Partial<PortableTextComponents> {
 
 /**
  * `richTextMedia` — blocks plus embedded `module.*` types. Document-level i18n:
- * embedded modules render with their own locale-agnostic data (no locale prop
- * threading needed since the whole document is in one locale).
+ * embedded modules hold the document's language already; `locale` only localizes links.
  */
-export function portableTextMediaComponents(): Partial<PortableTextComponents> {
+export function portableTextMediaComponents({
+	locale,
+	siteLocale,
+}: LinkLocaleOptions): Partial<PortableTextComponents> {
 	return {
-		...portableTextBlockComponents(),
+		...portableTextBlockComponents({ locale, siteLocale }),
 		types: {
 			"module.media": ({ value }) => (
 				<div className="rich-text-embed rich-text-embed-media min-w-0">

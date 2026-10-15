@@ -7,7 +7,16 @@
  * (`NavMenuLink`) and handles `route` / function actions specific to nav rows.
  */
 
+import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+
 import type { IntlStringEntry } from "./sanityLocalizedText";
+
+/** The active locale plus the config that decides whether it gets a path prefix. */
+export type LinkLocaleOptions = {
+	locale?: string;
+	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
+};
 
 export type LinkResolvedRef = {
 	_type?: string;
@@ -37,24 +46,30 @@ export type ResolvedLink =
 	| { kind: "function" }
 	| null;
 
+function refPath(ref: LinkResolvedRef | null | undefined): string | undefined {
+	if (ref?._type === "home") return "/";
+	if (ref?._type === "page" && ref.slug) return `/${ref.slug}`;
+	if (ref?._type === "work") return "/work";
+	if (ref?._type === "project" && ref.slug) return `/work/${ref.slug}`;
+	return undefined;
+}
+
 /**
  * URL for a polymorphic document reference (`home`, `page`, `work`, `project`). Returns
  * `undefined` for unknown ref shapes so callers can skip rendering the link.
  *
- * Pass `locale` to prefix the path (e.g. `/de/about`); leave it undefined
- * for callers that don't know the active locale (link stays root-relative).
+ * With `locale` and `siteLocale` the path goes through `localePath` (`/de/about`, no prefix
+ * for the default locale); without them it stays locale-agnostic.
  */
 export function resolveRefHref(
 	ref: LinkResolvedRef | null | undefined,
-	options?: { locale?: string },
+	options?: LinkLocaleOptions,
 ): string | undefined {
-	if (!ref?._type) return undefined;
-	const prefix = options?.locale ? `/${options.locale}` : "";
-	if (ref._type === "home") return prefix || "/";
-	if (ref._type === "page" && ref.slug) return `${prefix}/${ref.slug}`;
-	if (ref._type === "work") return `${prefix}/work`;
-	if (ref._type === "project" && ref.slug) return `${prefix}/work/${ref.slug}`;
-	return undefined;
+	const path = refPath(ref);
+	if (!path) return undefined;
+	const { locale, siteLocale } = options ?? {};
+	if (!locale || !siteLocale) return path;
+	return createLanguagePathUtils(siteLocale).localePath(path, locale);
 }
 
 /**
@@ -65,7 +80,7 @@ export function resolveRefHref(
  */
 export function resolveLinkMark(
 	mark: LinkMark | null | undefined,
-	options?: { locale?: string },
+	options?: LinkLocaleOptions,
 ): ResolvedLink {
 	if (mark?._type !== "link") return null;
 

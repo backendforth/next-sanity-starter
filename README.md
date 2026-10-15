@@ -35,7 +35,7 @@ This starter ships in **two parallel variants** so you can pick the internationa
 
 **Media pipeline** — Native `<img>` with deterministic Sanity CDN URLs, full responsive `srcset`/`sizes`, hotspot-aware `object-position` and zero hydration drift. Mux video via the official `<MuxPlayer />` imported `/lazy`, plus a lightweight `hls.js` background-loop player that only loads when the element enters the viewport and respects `prefers-reduced-motion`.
 
-**Hardened revalidation** — `POST /api/revalidate` does HMAC-SHA256 signature verification (Sanity signed webhooks), payload validation, a document-type allow-list, in-memory rate limiting, and is fail-closed in production.
+**Hardened revalidation** — `POST /api/revalidate` verifies Sanity's webhook signature (`parseBody` from `next-sanity/webhook`), acts only on allow-listed document types, expires the matching cache tags immediately, and is fail-closed in production.
 
 **SEO out of the box** — `sitemap.ts` with per-locale `alternates` and `x-default`, staging-aware `robots.ts`, `resolveSanityMetadata` builds canonical + `hreflang` metadata for every route.
 
@@ -103,7 +103,7 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 |------|----------|----------|---------|
 | `web/.env.local` + `studio/.env` | `SANITY_STUDIO_PROJECT_ID` | yes | Your Sanity project id |
 | `web/.env.local` | `SANITY_API_READ_TOKEN` | optional | Draft mode + server-side draft reads |
-| `web/.env.local` | `SANITY_REVALIDATE_SECRET` | **prod yes** | HMAC secret for `/api/revalidate` (fail-closed in prod) |
+| `web/.env.local` | `SANITY_REVALIDATE_SECRET` | **prod yes** | Webhook secret for `/api/revalidate` (fail-closed in prod) |
 | `web/.env.local` | `NEXT_PUBLIC_SITE_URL` | yes (prod) | Used by `sitemap.ts`, `robots.ts`, metadata base |
 | both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | optional | Switch dataset per environment (`staging`, `development`, …) |
 | both | `SANITY_STUDIO_DATASET` | optional | Hard pin a specific dataset name (skips auto-resolution) |
@@ -169,7 +169,7 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 ## Tooling
 
 - **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`; Studio uses a 2-space override, the rest of the repo is tabs.
-- **Husky** — `.husky/pre-commit` runs `pnpm run format`; `.husky/pre-push` runs `pnpm run format && pnpm run typecheck`.
+- **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
 - **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 22, `pnpm studio:generate` and `pnpm --filter web run generate` with diff guards on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
 - **Dependabot** — weekly npm updates, Sanity plugins grouped, `@types/node` major bumps explicitly ignored (typings track Node 22 LTS).
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.

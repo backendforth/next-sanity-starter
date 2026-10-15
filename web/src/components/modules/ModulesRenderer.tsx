@@ -70,7 +70,13 @@ function renderModuleChild(
 	priority: boolean,
 ) {
 	if (mod._type === "module.text") {
-		return <ModuleText module={mod as ModuleTextData} />;
+		return (
+			<ModuleText
+				module={mod as ModuleTextData}
+				locale={locale}
+				siteLocale={siteLocale}
+			/>
+		);
 	}
 	if (mod._type === "module.media") {
 		return <ModuleMedia module={mod as ModuleMediaData} priority={priority} />;

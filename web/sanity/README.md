@@ -37,32 +37,12 @@ This branch stores one document per language (`@sanity/document-internationaliza
 
 ## Image builder (`utils/sanityImageBuilder.ts`)
 
-Builds optimized CDN URLs from fetched **`image`** fields using `@sanity/image-url`, and exposes metadata helpers. Its input type `SanityImageField` (exported from the same file) is the shape `imageQuery` projects, checked at runtime by `resolveSanityImageFieldForUrl`.
+Builds CDN URLs from fetched **`image`** fields with `@sanity/image-url`, honouring crop and hotspot. Its input type `SanityImageField` (exported from the same file) is the shape `imageQuery` projects, checked at runtime by `resolveSanityImageFieldForUrl`.
 
-Common exports:
-
-- **`buildFetchedImageUrl(image, { width, height, quality, fit, auto, dpr })`**
-- **`urlForFetchedImage(image, width)`** — convenience default (format + quality)
-- **`getImageOrientation`**, **`isPortraitImage`**, **`isLandscapeImage`**
-- **`getImageAspectRatio`**, **`getImageDimensions`**
-
-Example:
-
-```ts
-import {
-  buildFetchedImageUrl,
-  getImageOrientation,
-  type SanityImageField,
-} from "@/sanity/utils/sanityImageBuilder";
-
-function HeroImage({ image }: { image: SanityImageField | null }) {
-  if (!image) return null;
-  const url =
-    buildFetchedImageUrl(image, { width: 1200, auto: "format", quality: 85 }) ?? "";
-  const orientation = getImageOrientation(image);
-  return <img src={url} alt="" data-orientation={orientation} />;
-}
-```
+- **`buildFetchedImageUrl(image, { width, height, quality, fit, auto, format, dpr })`**
+- **`urlForFetchedImage(image, width)`** — the default for content images (`auto=format`, quality)
+- **`getCroppedImageDisplayDimensions`** — pixel size of the cropped area, for `width` / `height` attributes
+- **`cssObjectPositionFromSanityImageField`** — hotspot → `object-position`
 
 Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (both from **`sanityEnv.ts`**). `next.config.ts` resolves the dataset once per build and inlines it: **`SANITY_STUDIO_DATASET`** when set, otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`) and uses the other name when the preferred dataset does not exist.
 

@@ -9,5 +9,5 @@ jobs:
   digest:
     # Org-internal: skip in template forks so they never ping backendforth's Slack.
     if: ${{ github.repository == 'backendforth/next-sanity-starter' }}
-    uses: backendforth/.github/.github/workflows/pr-slack-monthly-digest.yml@main
+    uses: backendforth/.github/.github/workflows/pr-slack-monthly-digest.yml@d14c26b47da93ba6943bee16471f2bdced345fb8 # main
     secrets: inherit

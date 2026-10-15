@@ -4,6 +4,8 @@
  * `src/utils/navHref.ts`.
  */
 
+import type { StegaBranded } from "next-sanity";
+
 import type { LinkMark } from "@/sanity/types";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
@@ -15,6 +17,19 @@ export type LinkLocaleOptions = {
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
+
+type LinkFields = LinkMark extends infer T
+	? T extends unknown
+		? Omit<T, "_key">
+		: never
+	: never;
+
+/**
+ * A `linkQuery` projection: a Portable Text `link` mark, or a single `link` field such as the
+ * cookie banner's policy link. The field has a `null` `_key` and, outside rich text, stega-branded
+ * strings.
+ */
+type LinkValue = LinkFields | StegaBranded<LinkFields>;
 
 export type ResolvedLink =
 	| {
@@ -33,7 +48,7 @@ export type ResolvedLink =
  * or `null` when the mark cannot be resolved.
  */
 export function resolveLinkMark(
-	mark: LinkMark | null | undefined,
+	mark: LinkValue | null | undefined,
 	{ locale, siteLocale }: LinkLocaleOptions,
 ): ResolvedLink {
 	if (!mark) return null;

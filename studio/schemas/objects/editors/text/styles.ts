@@ -16,8 +16,7 @@ import {
  * in that CSS file.
  *
  * **To turn off in-editor previews** (plain blocks again): delete the `component` property
- * from every object below, or replace this export with the plain array in the comment at
- * the bottom of this file.
+ * from every object below.
  */
 export const portableTextStyles = [
   {
@@ -51,14 +50,3 @@ export const portableTextStyles = [
     component: PtPreviewH4,
   },
 ];
-
-/* Plain variant (no Studio preview components) — swap for `portableTextStyles` if needed:
-export const portableTextStyles = [
-  { title: "Text (md)", value: "normal" },
-  { title: "Big text (lg)", value: "bigText" },
-  { title: "Heading 1 (3lg)", value: "h1" },
-  { title: "Heading 2 (2lg)", value: "h2" },
-  { title: "Heading 3 (lg)", value: "h3" },
-  { title: "Heading 4 (md)", value: "h4" },
-];
-*/

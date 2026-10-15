@@ -1,6 +1,6 @@
 # Studio utilities
 
-See the [Studio readme](../README.md) for a high-level feature list. Helpers used across the Studio package (env, image URLs, slug validation, etc.).
+See the [Studio readme](../README.md) for a high-level feature list. Helpers used across the Studio package (image URLs, slug validation, etc.).
 
 ## Multi-language setup
 
@@ -28,7 +28,6 @@ To **copy content from production into development** on demand (e.g. refresh you
 
 ## Other files (short)
 
-- **`env.ts`** — wraps `projectId` and the resolved **`studioDataset`** for image URLs and similar.
-- **`imageUrl.ts`** — `@sanity/image-url` builder using `getStudioEnv()`.
+- **`imageUrl.ts`** — `@sanity/image-url` builder for the project id and the resolved **`studioDataset`**.
 - **`validateSlug.ts`**, **`helpers.ts`** — validation and small helpers as used by schemas or structure.
 - **`titleSlugSource.ts`** — slug `options.source` that uses the first non-empty localized `title` (via **`firstLocalizedLabel.ts`**), so the slug's Generate button works on `internationalizedArrayString` titles.

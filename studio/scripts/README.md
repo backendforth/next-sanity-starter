@@ -160,7 +160,7 @@ pnpm exec sanity migration run rename-text-module-title --project <id> --dataset
 
 ### `unify-carousel-slides`
 
-**What it does** (`main`) — moves every carousel to one `slides` list of `module.media`, in modules and in rich text. The list the web rendered is kept: with `imagesOnly` on (or unset) each plain image in `slides` becomes an image media slide without a caption; with it off, `slidesMedia` moves to `slides`. `imagesOnly` and `slidesMedia` are unset, so the hidden list's content is dropped. Carousels already in the new shape are skipped, so a re-run is safe.
+**What it does** (both branches) — moves every carousel to one `slides` list of `module.media`, in modules and in rich text. The list the web rendered is kept: with `imagesOnly` on (or unset) each plain image in `slides` becomes an image media slide without a caption; with it off, `slidesMedia` moves to `slides`. `imagesOnly` and `slidesMedia` are unset, so the hidden list's content is dropped. Carousels already in the new shape are skipped, so a re-run is safe.
 
 **When** — merge, deploy the web and the Studio, then migrate right away. Until then a carousel in the old shape renders nothing; nothing breaks.
 

@@ -29,7 +29,7 @@ Before writing code:
 | `studio/` | Sanity Studio v6. Editorial UI + schemas. |
 | `studio/netlify.toml` | Netlify pipeline for the Studio — the default hosting, a second Netlify site with package directory `studio`. The root `netlify.toml` is the web site's. |
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
-| `packages/site-languages/` | The `siteLanguageSettings` projection, row rules and `en` fallback, shared by the web's routing and the Studio's language tabs. |
+| `packages/site-languages/` | The `siteLanguageSettings` projection, row rules and `en` fallback, shared by the web's routing and the Studio's language config. |
 | `packages/check-wiring/` | `check:wiring`, `check:typegen` and the wiring manifest (`src/manifest.mjs`) both checks and the scaffolder use. |
 | `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
@@ -264,7 +264,7 @@ URL /[locale]/[slug]
 
 1. Define in `studio/schemas/documents/` and register in `studio/schemas/index.ts`.
 2. Add a structure item under `studio/config/structure/items/` and wire into `studio/config/structure/index.ts`.
-3. Decide Presentation behaviour. A slug type goes into `SLUG_BASED_DOCUMENT_TYPES` (`/:slug`) or `PREFIXED_SLUG_DOCUMENT_TYPES` (`/work/:slug`) in `studio/config/presentation/conventions.ts`. A singleton goes into `SINGLETON_PREVIEW_ROLE` in `studio/config/singletons.ts`: its role (`root`, `none`, `custom`) fills `SITE_ROOT_DOCUMENT_TYPES` / `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` and locks delete, unpublish and duplicate. Other routes: `resolve.ts` / `locationsResolver.ts`.
+3. Decide Presentation behaviour. A slug type goes into `SLUG_BASED_DOCUMENT_TYPES` (`/:slug`) or `PREFIXED_SLUG_DOCUMENT_TYPES` (`/work/:slug`) in `studio/config/presentation/conventions.ts`. A singleton goes into `SINGLETON_PREVIEW_ROLE` in `studio/config/singletons.ts`: its role (`root`, `none`, `custom`) fills `SITE_ROOT_DOCUMENT_TYPES` / `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`; a singleton with a fixed `_id` also loses delete, unpublish and duplicate (on `variant/document-level` the per-language ones keep them). Other routes: `resolve.ts` / `locationsResolver.ts`.
 4. If internally linkable, add to `studio/schemas/constants/references.ts` (`PAGE_REFERENCES`).
 5. `pnpm generate` → typecheck → format.
 

@@ -66,6 +66,7 @@
 	font-size: var(--font-size-3lg);
 	line-height: var(--line-height-3lg);
 	max-width: var(--measure-heading-1-2);
+	text-wrap: balance;
 }
 
 /* 2lg — RT h2 (Geist Sans regular) */
@@ -74,6 +75,7 @@
 	font-size: var(--font-size-2lg);
 	line-height: var(--line-height-2lg);
 	max-width: var(--measure-heading-1-2);
+	text-wrap: balance;
 }
 
 /* lg — RT h3 (Geist Mono semibold) */
@@ -82,6 +84,7 @@
 	font-size: var(--font-size-lg);
 	line-height: var(--line-height-lg);
 	max-width: var(--measure-heading-3-big);
+	text-wrap: balance;
 }
 
 /* md — RT h4 (Geist Mono semibold) */
@@ -90,6 +93,7 @@
 	font-size: var(--font-size-md);
 	line-height: var(--line-height-md);
 	max-width: var(--measure-heading-4-text);
+	text-wrap: balance;
 }
 
 /* ─── Element defaults ──────────────────────────────────────────────────────
@@ -101,9 +105,10 @@
 		hyphens: none;
 	}
 
+	/* `pretty` for running text (inherited); the heading utilities balance their lines. */
 	html {
 		font-size: var(--font-size-root);
-		text-wrap: balance;
+		text-wrap: pretty;
 	}
 
 	p {

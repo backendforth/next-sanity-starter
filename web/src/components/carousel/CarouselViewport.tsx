@@ -25,6 +25,8 @@ type CarouselOptions = {
 type Props = {
 	slides: NormalizedSlide[];
 	options: CarouselOptions;
+	/** The page's LCP candidate: the first slide loads eagerly. */
+	priority?: boolean;
 };
 
 const THUMBNAIL_WIDTH_PX = 160;
@@ -43,7 +45,7 @@ function thumbnailUrlForSlide(slide: NormalizedSlide): string | null {
  * Embla viewport with optional autoplay, prev/next, dots, and a synced thumbnail strip.
  * Reduced-motion users get a still carousel: autoplay is suspended but interaction works.
  */
-export function CarouselViewport({ slides, options }: Props) {
+export function CarouselViewport({ slides, options, priority = false }: Props) {
 	const locale =
 		useOptionalLanguage()?.currentLocale ??
 		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
@@ -175,6 +177,7 @@ export function CarouselViewport({ slides, options }: Props) {
 								<CarouselSlide
 									slide={slide}
 									isActive={index === selectedIndex}
+									priority={priority && index === 0}
 									imageSizes={layout?.sizes}
 									respectAspectRatio={isMulti}
 								/>

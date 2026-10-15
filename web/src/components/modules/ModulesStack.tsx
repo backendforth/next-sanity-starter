@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 /** One module, already rendered on the server, keyed for reordering. */
 export type PrerenderedModule = {
 	_key: string;
+	/** Presentation click-to-edit path; Draft Mode only. */
+	sanity?: string;
 	rendered: ReactNode;
 };
 
@@ -13,8 +15,11 @@ export type PrerenderedModule = {
 export function ModulesStack({ modules }: { modules: PrerenderedModule[] }) {
 	return (
 		<div className="flex flex-col gap-lg">
+			{/* `empty:hidden`: a module with nothing to show leaves no gap. */}
 			{modules.map((m) => (
-				<div key={m._key}>{m.rendered}</div>
+				<div key={m._key} data-sanity={m.sanity} className="empty:hidden">
+					{m.rendered}
+				</div>
 			))}
 		</div>
 	);

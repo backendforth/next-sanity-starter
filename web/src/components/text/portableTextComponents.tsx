@@ -46,7 +46,11 @@ function LinkMarkRenderer({
 export function portableTextMediaComponents({
 	locale,
 	siteLocale,
-}: LinkLocaleOptions) {
+	priorityKey,
+}: LinkLocaleOptions & {
+	/** `_key` of the embed that is the page's LCP candidate. */
+	priorityKey?: string;
+}) {
 	return {
 		block: {
 			normal: ({ children }) => <p className="text">{children}</p>,
@@ -79,12 +83,18 @@ export function portableTextMediaComponents({
 		types: {
 			"module.media": ({ value }) => (
 				<div className="rich-text-embed rich-text-embed-media min-w-0">
-					<ModuleMedia module={stegaBrand(value)} variant="embed" />
+					<ModuleMedia
+						module={stegaBrand(value)}
+						priority={value._key === priorityKey}
+					/>
 				</div>
 			),
 			"module.carousel": ({ value }) => (
 				<div className="rich-text-embed w-full min-w-0">
-					<ModuleCarousel module={stegaBrand(value)} variant="embed" />
+					<ModuleCarousel
+						module={stegaBrand(value)}
+						priority={value._key === priorityKey}
+					/>
 				</div>
 			),
 		} satisfies InferStrictComponents<RichTextMediaValue>["types"],

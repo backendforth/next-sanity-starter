@@ -13,8 +13,8 @@ export type CarouselModule =
 
 type Props = {
 	module: CarouselModule;
-	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
-	variant?: "module" | "embed";
+	/** The page's LCP candidate: the first slide loads eagerly. */
+	priority?: boolean;
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -30,20 +30,19 @@ const DEFAULT_AUTOPLAY_DELAY_MS = 5000;
  * Document-level i18n: title/heading are plain strings (the whole document is
  * already in one locale).
  */
-export function ModuleCarousel({ module, variant = "module" }: Props) {
+export function ModuleCarousel({ module, priority = false }: Props) {
 	const slides = normalizeCarouselSlides(module);
 	if (slides.length === 0) return null;
 
 	const heading =
 		typeof module.heading === "string" ? module.heading.trim() : "";
-	const sectionClassName =
-		variant === "module" ? moduleSectionClassName : "flex flex-col";
 
 	return (
-		<section className={sectionClassName}>
+		<section className={moduleSectionClassName}>
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<LazyCarouselViewport
 				slides={slides}
+				priority={priority}
 				options={{
 					loop: module.loop === true,
 					showThumbnails: module.showThumbnails === true,

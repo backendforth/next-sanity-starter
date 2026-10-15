@@ -8,7 +8,7 @@ import {
 } from "@/src/components/media/LazyVideo";
 import { MediaImage } from "@/src/components/media/MediaImage";
 
-import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
+import { moduleCaptionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -17,12 +17,9 @@ type MediaModule = ModuleOf<"module.media"> | RichTextEmbedOf<"module.media">;
 
 type Props = {
 	module: MediaModule;
-	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
-	variant?: "module" | "embed";
 	/**
-	 * First module on the page — the LCP candidate. Eager-loads the image /
-	 * video poster (`fetchpriority=high`, no lazy fade-in). Set by
-	 * `ModulesRenderer` for index 0; leave unset everywhere else.
+	 * The page's LCP candidate (first module, or first rich-text embed). Eager-loads the image /
+	 * video poster (`fetchpriority=high`, no lazy fade-in).
 	 */
 	priority?: boolean;
 };
@@ -115,15 +112,6 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
  * builds per kind. Its `select` always yields an object (image is the default branch), so there
  * is no fallback to the raw `*Content` fields.
  */
-export function ModuleMedia({
-	module,
-	variant = "module",
-	priority = false,
-}: Props) {
-	const figure = renderModuleMediaFigure(module, priority);
-	if (!figure) return null;
-
-	if (variant === "embed") return figure;
-
-	return <section className={moduleSectionClassName}>{figure}</section>;
+export function ModuleMedia({ module, priority = false }: Props) {
+	return renderModuleMediaFigure(module, priority);
 }

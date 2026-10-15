@@ -72,9 +72,7 @@ export default async function Project({ params }: PageProps) {
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
 				{projectTitle ? (
 					<header className="flex flex-col gap-sm">
-						{projectTitle ? (
-							<h2 className="content-title">{projectTitle}</h2>
-						) : null}
+						<h2 className="content-title">{projectTitle}</h2>
 					</header>
 				) : null}
 				{body.length ? (
@@ -83,6 +81,7 @@ export default async function Project({ params }: PageProps) {
 							value={body}
 							locale={locale}
 							siteLocale={siteLocale}
+							priority
 						/>
 					</article>
 				) : null}

@@ -15,7 +15,7 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
 | `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
-| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) |
+| `utils/` | `sanityImageBuilder`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) |
 
 Import full queries from **`@/sanity/queries`**, utilities from their file (`@/sanity/utils/sanityImageBuilder`, …).
 
@@ -65,12 +65,6 @@ function HeroImage({ image }: { image: SanityImageField | null }) {
 ```
 
 Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (both from **`sanityEnv.ts`**). `next.config.ts` resolves the dataset once per build and inlines it: **`SANITY_STUDIO_DATASET`** when set, otherwise **`@repo/sanity-dataset-resolve`** picks dev-first vs prod-first from the deploy context (not `NODE_ENV`) and uses the other name when the preferred dataset does not exist.
-
----
-
-## Module labels (`utils/sanityModuleLabel.ts`)
-
-**`getSanityModuleLabel(moduleType)`** maps `_type` strings like `module.text` to short UI labels (e.g. placeholders or dev overlays). Import from **`@/sanity/utils`** (same barrel as localization).
 
 ---
 

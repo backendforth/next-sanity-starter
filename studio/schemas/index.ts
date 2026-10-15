@@ -22,7 +22,7 @@ import { moduleText } from "./objects/modules/moduleText";
 import { navLanguageSwitch } from "./objects/navLanguageSwitch";
 import { navThemeToggle } from "./objects/navThemeToggle";
 import { seoFallback, seoPage } from "./objects/seo/page";
-import { errorSettings } from "./settings/error";
+import { errorSettings } from "./settings/errorSettings";
 import { siteAnalyticsSettings } from "./settings/siteAnalyticsSettings";
 import { siteCookieBanner } from "./settings/siteCookieBanner";
 import { siteLanguageSettings } from "./settings/siteLanguageSettings";

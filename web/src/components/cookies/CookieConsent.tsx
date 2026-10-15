@@ -53,11 +53,24 @@ function buildConfig(
 	};
 }
 
+/**
+ * What the library was started with. `run()` initialises it once per page load and ignores
+ * later calls, so a client-side language switch (or a content edit) would keep the old texts.
+ */
+let runningConfig: string | null = null;
+
 export function CookieConsentBanner({ locale, translation }: Props) {
 	useEffect(() => {
+		const key = JSON.stringify([locale, translation]);
+		if (key === runningConfig) return;
+		// `false` keeps the consent cookie: a restart changes the texts, not the visitor's choice.
+		if (runningConfig !== null) CookieConsent.reset(false);
+		runningConfig = key;
 		registerConsentLibrary(CookieConsent);
 		CookieConsent.run(buildConfig(locale, translation))
-			.then(markConsentLibraryStarted)
+			.then(() => {
+				if (runningConfig === key) markConsentLibraryStarted();
+			})
 			.catch((err) => {
 				console.warn("[CookieConsent] run() failed:", err);
 			});

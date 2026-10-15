@@ -87,9 +87,6 @@ importers:
         specifier: ^6.5.3
         version: 6.5.3(css-to-react-native@3.2.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
-      '@sanity/client':
-        specifier: ^8.7.0
-        version: 8.7.0
       '@types/node':
         specifier: ^22.20.4
         version: 22.20.4

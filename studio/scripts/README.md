@@ -78,22 +78,6 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 ---
 
-## `migrate-seo-i18n.mjs`
-
-**What it does**
-
-Wraps plain-string `seo.title` / `seo.description` (on `seo.page` and `seo.fallback`) into one `internationalizedArrayString` / `internationalizedArrayText` entry for the site's default language (`siteLanguageSettings.defaultLanguageId`; override with `--language <id>`). Empty strings are unset; values that are already arrays are skipped, so re-running is safe. Uses the `raw` perspective, so drafts are migrated too, and writes everything in one transaction. Each patch is tied to the revision that was read: if an editor changes a document while the prompt is open, nothing is written and the script asks you to run it again. `--language` must name an id from `siteLanguageSettings.availableLanguages`.
-
-**Why**
-
-- The SEO fields were plain strings, so meta title and description could not be translated. Datasets created before the switch hold strings the Studio now flags as invalid; the web resolver still reads them until you migrate.
-
-**Run** `pnpm run migrate:seo-i18n` in `studio/`: `-- --dry-run` previews, the plain run asks before writing (`--yes` skips the prompt).
-
-Targets `SANITY_STUDIO_DATASET` from `studio/.env` (else `development`) — run it once per dataset.
-
----
-
 ## `mux-migrate-assets.mjs`
 
 **What it does**
@@ -147,6 +131,19 @@ Values already in the new shape are skipped, so a re-run is safe.
 ```bash
 pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id> --dataset development
 pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id> --dataset development --no-dry-run
+```
+
+### `localize-seo`
+
+**What it does** (`main` only) — wraps a plain-string `seo.title` / `seo.description` (`seo.page` on pages, projects, home and work; `seo.fallback` in the site settings) into one entry for the default language (`siteLanguageSettings.defaultLanguageId`; it stops if there is none). An empty string is unset. Values that are already arrays are skipped, so a re-run is safe.
+
+**When** — once per dataset that holds SEO texts from before they became translatable. Until then the Studio flags those fields as invalid, and the web still reads the string for every language.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run localize-seo --project <id> --dataset development
+pnpm exec sanity migration run localize-seo --project <id> --dataset development --no-dry-run
 ```
 
 ### `rename-text-module-title`

@@ -1,1 +1,1 @@
-pnpm run format
+pnpm exec biome check --write --staged --no-errors-on-unmatched && git update-index --again

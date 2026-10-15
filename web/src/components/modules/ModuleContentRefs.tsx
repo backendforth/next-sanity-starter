@@ -1,3 +1,5 @@
+import { stegaClean } from "next-sanity";
+
 import type {
 	ModuleContentRefListItem,
 	ModuleContentRefsData,
@@ -42,7 +44,8 @@ export function ModuleContentRefs({
 			...item,
 			href: contentRefTargetHref(item, localePath, locale),
 		}));
-	const isProjectList = module.sourceScope === "projects";
+	/* In Presentation the value carries invisible stega markers; compare the clean string. */
+	const isProjectList = stegaClean(module.sourceScope) === "projects";
 	const showCategoryFilters = module.showProjectFilters !== false;
 
 	if (items.length === 0) {

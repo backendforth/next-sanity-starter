@@ -103,7 +103,7 @@ pnpm typecheck             # web + studio
 pnpm format                # biome check --write .
 ```
 
-Pre-commit / pre-push hooks already run `format` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
+The pre-commit hook formats and re-stages the staged files; the pre-push hook runs `biome ci .` and `typecheck`. **Don't** bypass with `--no-verify`. If a hook fails, fix the underlying issue and create a **new** commit.
 
 **IMPORTANT — never edit:**
 
@@ -183,7 +183,7 @@ The starter does **not** filter locales in GROQ. Every translatable field is an 
 |---|---|
 | `pickLocalizedString(entries, locale, siteLocale)` | Single i18n string field (title, alt, label). |
 | `parseLocalizedText({ value, locale, siteLocale, as })` | Polymorphic: `as: "auto" \| "string" \| "blocks"` — handles string or Portable Text. |
-| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with embedded i18n fields (used inside RichTextMedia + modules in rich text). |
+| `resolveLocalizedPortableTextDeep(entries, locale, siteLocale)` | Portable Text with i18n fields in its blocks and link marks. Embedded `module.*` objects pass through untouched — their renderers resolve their own fields. |
 
 **Fallback chain (must-know):** exact locale → base tag (`en-US` → `en`) → `siteLocale.localeIds` in order → first non-empty entry.
 

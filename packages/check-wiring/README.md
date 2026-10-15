@@ -35,4 +35,4 @@ The repo has two long-lived branches with slightly different module layouts (see
 
 ## CI
 
-The script is wired into the format/typecheck workflow on the workspace root. Pre-push and pre-commit hooks deliberately stay narrow (`format` + `typecheck`) — wiring drift is a separate signal best handled at PR time.
+The script is wired into the format/typecheck workflow on the workspace root. Pre-push and pre-commit hooks deliberately stay narrow (Biome + `typecheck`) — wiring drift is a separate signal best handled at PR time.

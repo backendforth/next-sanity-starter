@@ -7,6 +7,7 @@ import {
 	LazyMediaVideoLoop,
 } from "@/src/components/media/LazyVideo";
 import { MediaImage } from "@/src/components/media/MediaImage";
+import { isLoopIntent } from "@/src/utils/muxPlayback";
 
 import { moduleCaptionClassName } from "./moduleStyles";
 
@@ -25,16 +26,6 @@ type Props = {
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** `autoplay && !controls` → silent loop (no MuxPlayer chrome). Mirrors Studio intent. */
-function isLoopIntent(
-	settings:
-		| { autoplay?: boolean | null; controls?: boolean | null }
-		| null
-		| undefined,
-): boolean {
-	return Boolean(settings?.autoplay) && settings?.controls === false;
-}
 
 function MediaFigure({
 	caption,

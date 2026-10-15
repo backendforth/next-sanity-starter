@@ -1,5 +1,3 @@
-"use client";
-
 import clsx from "clsx";
 import { Suspense } from "react";
 
@@ -8,6 +6,7 @@ import {
 	LazyMediaVideoLoop,
 } from "@/src/components/media/LazyVideo";
 import { MediaImage } from "@/src/components/media/MediaImage";
+import { isLoopIntent } from "@/src/utils/muxPlayback";
 
 export type NormalizedSlide = {
 	key: string;
@@ -35,20 +34,7 @@ type Props = {
 	respectAspectRatio?: boolean;
 };
 
-/** `autoplay && !controls` → silent loop (no MuxPlayer chrome). Mirrors `ModuleMedia`. */
-function isLoopIntent(settings: NormalizedSlide["videoSettings"]): boolean {
-	return Boolean(settings?.autoplay) && settings?.controls === false;
-}
-
-/**
- * The shared media components apply `min-h-[100dvh]` when `fillParent` is set (designed
- * for hero sections). Inside a fixed-aspect carousel viewport that would blow out the
- * layout, so we override it back to `0`.
- */
-const FIT_TO_PARENT = "!min-h-0";
-
 const MULTI_SLIDE_MEDIA_CLASS = clsx(
-	FIT_TO_PARENT,
 	"h-full w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover",
 	"[&_video]:h-full [&_video]:w-full [&_video]:object-cover",
 );
@@ -73,7 +59,7 @@ export function CarouselSlide({
 				objectFit="cover"
 				priority={priority}
 				sizes={imageSizes}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
+				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		);
 	}
@@ -88,7 +74,7 @@ export function CarouselSlide({
 				fillParent
 				isActive={isActive}
 				allowUnmute={slide.allowUnmute === true}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
+				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		);
 	}
@@ -102,7 +88,7 @@ export function CarouselSlide({
 				posterPriority={priority}
 				fillParent
 				isActive={isActive}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
+				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		);
 	}
@@ -116,7 +102,7 @@ export function CarouselSlide({
 			objectFit="cover"
 			priority={priority}
 			sizes={imageSizes}
-			className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
+			className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 		/>
 	);
 	if (!isActive) return poster;
@@ -132,7 +118,7 @@ export function CarouselSlide({
 				videoSettings={slide.videoSettings}
 				priority={priority}
 				fillParent
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
+				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		</Suspense>
 	);

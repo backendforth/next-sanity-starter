@@ -180,8 +180,7 @@ export function MediaImage({
 		<div
 			className={clsx(
 				"relative w-full overflow-hidden",
-				fillParent &&
-					"h-full min-h-[100dvh] w-full [&_img]:h-full [&_img]:w-full",
+				fillParent && "h-full w-full [&_img]:h-full [&_img]:w-full",
 				className,
 			)}
 			style={
@@ -247,8 +246,7 @@ function MuxThumbnailImage({
 		<div
 			className={clsx(
 				"relative w-full overflow-hidden",
-				fillParent &&
-					"h-full min-h-[100dvh] w-full [&_img]:h-full [&_img]:w-full",
+				fillParent && "h-full w-full [&_img]:h-full [&_img]:w-full",
 				className,
 			)}
 			style={

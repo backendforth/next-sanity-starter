@@ -1,13 +1,14 @@
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
+import type { NormalizedSlide } from "@/src/components/carousel/CarouselSlide";
 import { LazyCarouselViewport } from "@/src/components/carousel/LazyCarouselViewport";
-import { normalizeCarouselSlides } from "@/src/components/carousel/normalizeCarouselSlides";
+import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
 
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** A `modules[]` entry or the same module inline in rich text. */
-export type CarouselModule =
+type CarouselModule =
 	| ModuleOf<"module.carousel">
 	| RichTextEmbedOf<"module.carousel">;
 
@@ -31,7 +32,10 @@ const DEFAULT_AUTOPLAY_DELAY_MS = 5000;
  * already in one locale).
  */
 export function ModuleCarousel({ module, priority = false }: Props) {
-	const slides = normalizeCarouselSlides(module);
+	const slides = (module.slides ?? []).flatMap((slide): NormalizedSlide[] => {
+		const media = normalizeResolvedMedia(slide.resolvedMedia);
+		return media ? [{ key: slide._key, ...media }] : [];
+	});
 	if (slides.length === 0) return null;
 
 	const heading =

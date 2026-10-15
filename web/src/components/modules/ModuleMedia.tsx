@@ -1,13 +1,6 @@
-import type { ReactNode } from "react";
-
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
-import { isStegaVariant } from "@/sanity/utils/stegaVariant";
-import {
-	LazyMediaVideo,
-	LazyMediaVideoLoop,
-} from "@/src/components/media/LazyVideo";
-import { MediaImage } from "@/src/components/media/MediaImage";
-import { isLoopIntent } from "@/src/utils/muxPlayback";
+import { MediaByKind } from "@/src/components/media/MediaByKind";
+import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
 
 import { moduleCaptionClassName } from "./moduleStyles";
 
@@ -33,79 +26,6 @@ type Props = {
  */
 const MEDIA_SIZES = "min(100vw, 2000px)";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function MediaFigure({
-	caption,
-	children,
-}: {
-	caption?: string | null;
-	children: ReactNode;
-}) {
-	return (
-		<figure className="w-full min-w-0">
-			{children}
-			{caption ? (
-				<figcaption className={moduleCaptionClassName}>{caption}</figcaption>
-			) : null}
-		</figure>
-	);
-}
-
-function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
-	const rm = module.resolvedMedia;
-	if (!rm.media) return null;
-
-	if (isStegaVariant(rm, "kind", "loop")) {
-		return (
-			<MediaFigure caption={rm.caption}>
-				<LazyMediaVideoLoop
-					media={rm.media}
-					caption={rm.caption}
-					posterPayload={rm.poster}
-					allowUnmute={rm.allowUnmute === true}
-					posterPriority={priority}
-					sizes={MEDIA_SIZES}
-				/>
-			</MediaFigure>
-		);
-	}
-
-	if (isStegaVariant(rm, "kind", "video")) {
-		return (
-			<MediaFigure caption={rm.caption}>
-				{isLoopIntent(rm.videoSettings) ? (
-					<LazyMediaVideoLoop
-						media={rm.media}
-						caption={rm.caption}
-						posterPayload={rm.poster}
-						posterPriority={priority}
-						sizes={MEDIA_SIZES}
-					/>
-				) : (
-					<LazyMediaVideo
-						media={rm.media}
-						caption={rm.caption}
-						posterPayload={rm.poster}
-						videoSettings={rm.videoSettings}
-						priority={priority}
-					/>
-				)}
-			</MediaFigure>
-		);
-	}
-
-	return (
-		<MediaFigure caption={rm.caption}>
-			<MediaImage
-				imagePayload={rm.media}
-				caption={rm.caption}
-				priority={priority}
-			/>
-		</MediaFigure>
-	);
-}
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
@@ -114,5 +34,17 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
  * is no fallback to the raw `*Content` fields.
  */
 export function ModuleMedia({ module, priority = false }: Props) {
-	return renderModuleMediaFigure(module, priority);
+	const media = normalizeResolvedMedia(module.resolvedMedia);
+	if (!media) return null;
+	/* One caption for the figcaption and the client media's alt / aria-label fallbacks. */
+	return (
+		<figure className="w-full min-w-0">
+			<MediaByKind media={media} priority={priority} sizes={MEDIA_SIZES} />
+			{media.caption ? (
+				<figcaption className={moduleCaptionClassName}>
+					{media.caption}
+				</figcaption>
+			) : null}
+		</figure>
+	);
 }

@@ -17,7 +17,7 @@ This folder holds the **Sanity client**, the **fetchers**, **GROQ queries**, the
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`; `queries/index.ts` exports the full queries |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
 | `types.ts` | App-facing names derived from it: `ModuleOf<"module.x">`, `RichTextMediaValue`, `NavMenuLink`, `SiteCookieBanner`, `LinkMark`, … — stega-branded, so a literal comparison without `stegaClean` fails `tsc` |
-| `utils/` | Localization (`sanityLocalizedText`: `pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`), `sanityImageBuilder`, `dataAttr`, `isStegaVariant` (`stegaVariant.ts`), link helpers (`linkResolver`, `resolveLinkLabel`) |
+| `utils/` | Localization (`sanityLocalizedText`: `pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`, `plainText`), `sanityImageBuilder`, `dataAttr`, `isStegaVariant` (`stegaVariant.ts`), link helpers (`linkResolver`, `resolveLinkLabel`) |
 
 Import full queries from **`@/sanity/queries`**; fragments and utilities from their file (`@/sanity/queries/snippets/media`, `@/sanity/utils/sanityImageBuilder`, …). There is no `utils` barrel.
 
@@ -36,6 +36,8 @@ Sanity uses **`internationalizedArray*`** fields: arrays of `{ _key, language, v
 - **`pickLocalizedString(entries, locale?, siteLocale?)`** — string fields, trimmed; `undefined` when every entry is empty.
 - **`pickLocalizedPortableTextBlocks(entries, locale, siteLocale?)`** — rich-text bodies; the locale's block array, `[]` when empty. Embedded modules come back untouched (they resolve their own fields). Pass the blocks to **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`).
 - **`pickLocalizedValue(entries, locale?, siteLocale?)`** — any other value type.
+
+A plain string where entries are expected (a field stored before its i18n migration, or a document-level variant document in a shared dataset) counts for every locale. Plain string fields that are not i18n go through **`plainText(value)`**: trimmed, `undefined` when blank, stega markers kept.
 
 ```ts
 import {

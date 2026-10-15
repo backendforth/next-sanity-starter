@@ -6,7 +6,7 @@ import {
 	fetchSiteChrome,
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
-import { siteBrandTitle } from "@/sanity/seo/resolveSanityMetadata";
+import { siteBrand, siteBrandTitle } from "@/sanity/seo/resolveSanityMetadata";
 import { LazyCookieConsentBanner } from "@/src/components/cookies/LazyCookieConsentBanner";
 import {
 	DocumentShell,
@@ -67,8 +67,6 @@ export default async function LocaleLayout({ children, params }: Props) {
 	]);
 	const siteNav = chrome?.nav ?? null;
 	const cookieBanner = chrome?.cookieBanner ?? null;
-	/* Rendered, so it keeps its stega markers; the header brand is never empty. */
-	const siteBrand = chrome?.settings?.title?.trim() || "Site";
 	/* Clean: tracker ids and the load mode go to third-party scripts, not into the page. */
 	const analytics = stegaClean(chrome?.analytics ?? null);
 	const enabledTrackers = getEnabledTrackers(analytics);
@@ -87,7 +85,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 			>
 				{uiLabel("skipToMain", locale)}
 			</a>
-			<Header mainMenu={siteNav?.mainMenu} siteTitle={siteBrand} />
+			<Header
+				mainMenu={siteNav?.mainMenu}
+				siteTitle={siteBrand(chrome?.settings)}
+			/>
 			<main
 				id="main-content"
 				className="flex min-h-0 flex-1 flex-col"

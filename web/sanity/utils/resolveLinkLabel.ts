@@ -1,13 +1,7 @@
 /**
- * Resolve a human-readable label for a Sanity `link` object (Nav, Portable Text).
- *
- * `link.title` is now an `internationalizedArrayString` (per-locale entries). For internal
- * links we fall back to the referenced document title (also localized). External links fall
- * back to the URL, function links to the function key — both as a last resort before the
- * localized "Link" label.
- *
- * Plain `string` is accepted on both fields for forward-compat with the document-level i18n
- * variant (one document per language → `reference->title` is a plain string).
+ * Resolve a human-readable label for a Sanity `link` object (Nav, Portable Text). Internal links
+ * fall back to the referenced document's title, external links to the URL, function links to
+ * the function key — all before the localized "Link" label.
  */
 
 import {
@@ -18,35 +12,15 @@ import { uiLabel } from "@/src/i18n/uiLabels";
 import {
 	type LocalizedEntry,
 	pickLocalizedString,
+	plainText,
 } from "./sanityLocalizedText";
 
 type SiteLocaleSlice = Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 
 type LocalizableLabel =
 	| ReadonlyArray<LocalizedEntry<string>>
-	| string
 	| null
 	| undefined;
-
-function trimToUndefined(value: string | undefined): string | undefined {
-	if (!value) return undefined;
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : undefined;
-}
-
-function pickLabel(
-	value: LocalizableLabel,
-	locale: string | undefined,
-	siteLocale: SiteLocaleSlice | null | undefined,
-): string | undefined {
-	if (Array.isArray(value)) {
-		return trimToUndefined(pickLocalizedString(value, locale, siteLocale));
-	}
-	if (typeof value === "string") {
-		return trimToUndefined(value);
-	}
-	return undefined;
-}
 
 type ResolveLinkLabelInput = {
 	linkTitle?: LocalizableLabel;
@@ -72,10 +46,10 @@ export function resolveLinkLabel({
 	literalFallback,
 }: ResolveLinkLabelInput): string {
 	return (
-		pickLabel(linkTitle, locale, siteLocale) ??
-		pickLabel(referenceTitle, locale, siteLocale) ??
-		trimToUndefined(externalUrl ?? undefined) ??
-		trimToUndefined(functionKey ?? undefined) ??
+		pickLocalizedString(linkTitle, locale, siteLocale) ??
+		pickLocalizedString(referenceTitle, locale, siteLocale) ??
+		plainText(externalUrl) ??
+		plainText(functionKey) ??
 		literalFallback ??
 		uiLabel("link", locale ?? FALLBACK_SITE_LOCALE_CONFIG.defaultLocale)
 	);

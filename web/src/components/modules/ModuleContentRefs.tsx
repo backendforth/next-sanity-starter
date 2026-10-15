@@ -1,7 +1,10 @@
 import { stegaClean } from "next-sanity";
 
 import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
-import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
+import {
+	pickLocalizedString,
+	plainText,
+} from "@/sanity/utils/sanityLocalizedText";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";
@@ -49,8 +52,8 @@ export function ModuleContentRefs({
 			key: item._id,
 			href: hrefFor(item.path, locale),
 			label:
-				pickLocalizedString(item.title, locale, siteLocale) ||
-				item.slug?.trim() ||
+				pickLocalizedString(item.title, locale, siteLocale) ??
+				plainText(item.slug) ??
 				uiLabel("untitled", locale),
 			createdAt: item._createdAt,
 			/* A deleted category dereferences to `null`. */

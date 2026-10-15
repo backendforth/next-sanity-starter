@@ -4,9 +4,9 @@
  */
 
 import { spawn } from "node:child_process";
-import { studioRootFromScript } from "./loadEnvFile.mjs";
+import { fileURLToPath } from "node:url";
 
-const studioRoot = studioRootFromScript(import.meta.url);
+const studioRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const hint = `
 \x1b[36m[sanity]\x1b[0m To copy \x1b[1mproduction → development\x1b[0m dataset locally (manual, when you need it):

@@ -4,19 +4,14 @@
  * still encoded at the premium quality level (re-upload or Mux dashboard re-encode).
  * 2160p is not flagged: `media.video` encodes up to 2160p on purpose.
  *
- * Requires in studio/.env:
+ * Requires in studio/.env (the package script loads it):
  *   MUX_TOKEN_ID=
  *   MUX_TOKEN_SECRET=
  *
  * Usage:
- *   node scripts/mux-migrate-assets.mjs           # dry-run (default)
- *   node scripts/mux-migrate-assets.mjs --apply     # PUT mp4_support=none
+ *   pnpm run mux:migrate-assets              # dry-run (default)
+ *   pnpm run mux:migrate-assets -- --apply   # PUT mp4_support=none
  */
-
-import { loadEnvFile, studioRootFromScript } from "./loadEnvFile.mjs";
-
-const root = studioRootFromScript(import.meta.url);
-loadEnvFile(`${root}/.env`);
 
 // The old `SANITY_STUDIO_MUX_*` names still work here, but the Studio build inlines every
 // `SANITY_STUDIO_*` variable into its public bundle, so `sanity build` now refuses them.

@@ -5,20 +5,7 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 ## Why these exist
 
 - **Dataset sync** is **never** automatic. Copying production content into a development dataset is destructive for anything that only lived in `development`, so it must stay a **conscious, manual** step. The sync script only runs when you invoke it; the dev server only **reminds** you that the command exists.
-- **`.env` loading** is duplicated here on purpose: these scripts run in plain Node without Vite. A tiny parser loads `studio/.env` so `SANITY_STUDIO_PROJECT_ID` and dataset name overrides match what you use for `sanity dev`, without adding a `dotenv` dependency.
-
----
-
-## `loadEnvFile.mjs`
-
-**What it does**
-
-- `loadEnvFile(path)` reads a `.env` file line by line, skips empty lines and `#` comments, parses `KEY=value` (optional quotes), and sets `process.env[key]` **only if** the variable is not already set (so your shell or CI can override).
-- `studioRootFromScript(import.meta.url)` resolves the `studio/` directory from any script file in `scripts/`.
-
-**Why**
-
-- Keeps `sync-prod-to-dev.mjs` and future CLI scripts aligned with the same env vars documented in `studio/.env.example`, without pulling in extra packages.
+- **`.env` loading**: these scripts run in plain Node without Vite. Their package scripts start Node with `--env-file-if-exists=.env`, so `studio/.env` supplies `SANITY_STUDIO_PROJECT_ID`, the dataset names and the tokens `sanity dev` sees. A variable already set in the shell or CI wins over the file. Run them through `pnpm run`, not `node` directly, or `.env` is not read.
 
 ---
 
@@ -44,18 +31,17 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 **What it does (step by step)**
 
-1. Loads `studio/.env` via `loadEnvFile`.
-2. Reads **`SANITY_STUDIO_PROJECT_ID`** (required).
-3. Resolves dataset names:
+1. Reads **`SANITY_STUDIO_PROJECT_ID`** (required).
+2. Resolves dataset names:
    - Production: `SANITY_STUDIO_DATASET_PRODUCTION` or **`production`**
    - Development: `SANITY_STUDIO_DATASET_DEVELOPMENT` or **`development`**
-4. Aborts if both names are identical (avoids accidental self-overwrites).
-5. Unless **`--yes`** / **`-y`** is passed, prompts for confirmation: importing will **replace** documents in the dev dataset that share IDs with the export.
-6. Ensures **`studio/.sync-tmp/`** exists (gitignored).
-7. **Export:** runs the Sanity CLI:
+3. Aborts if both names are identical (avoids accidental self-overwrites).
+4. Unless **`--yes`** / **`-y`** is passed, prompts for confirmation: importing will **replace** documents in the dev dataset that share IDs with the export.
+5. Ensures **`studio/.sync-tmp/`** exists (gitignored).
+6. **Export:** runs the Sanity CLI:
    - `sanity datasets export <prod> <path>/prod-to-dev-export.tar.gz --project-id <id> --overwrite`
    - Produces a **gzipped tarball** (documents + assets as implemented by the CLI; see Sanity docs for edge cases such as failed asset downloads).
-8. **Import:** runs:
+7. **Import:** runs:
    - `sanity datasets import -d <dev> <same-tarball> --project-id <id> --replace`
    - **`--replace`** updates existing documents in the target dataset when IDs match the export.
 

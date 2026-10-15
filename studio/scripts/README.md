@@ -185,6 +185,19 @@ pnpm exec sanity migration run unify-carousel-slides --project <id> --dataset de
 pnpm exec sanity migration run unify-carousel-slides --project <id> --dataset development --no-dry-run
 ```
 
+### `unset-unused-fields`
+
+**What it does** (both branches) — unsets stored fields no schema declares, which the Studio lists as unknown fields: the hidden `title` of `siteNav`, `siteCookieBanner`, `siteAnalyticsSettings` and `siteLanguageSettings` (it only fed their previews, which now show a fixed title), `serverErrorTitle` / `serverErrorBody` on `errorSettings`, and `cookieFree` on Clarity and Plausible trackers (the web decides their consent by type). Missing fields are skipped, so a re-run is safe.
+
+**When** — any time after the Studio deploy. Nothing reads these fields; until then they only show as unknown fields.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run unset-unused-fields --project <id> --dataset development
+pnpm exec sanity migration run unset-unused-fields --project <id> --dataset development --no-dry-run
+```
+
 ---
 
 ## Related docs

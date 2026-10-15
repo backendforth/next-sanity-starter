@@ -136,7 +136,6 @@ export type SiteCookieBanner = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title?: string;
   consentModal?: {
     description?: InternationalizedArrayText;
     privacyPolicy?: Link;
@@ -253,7 +252,6 @@ export type SiteAnalyticsSettings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title?: string;
   useCookieBanner?: boolean;
   loadMode: "onPageLoad" | "respectCookieBanner";
   trackers?: Array<
@@ -297,7 +295,6 @@ export type SiteNav = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title?: string;
   mainMenu?: Array<
     | ({
         _key: string;
@@ -322,7 +319,6 @@ export type SiteLanguageSettings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  title?: string;
   availableLanguages: Array<{
     id: string;
     title: string;

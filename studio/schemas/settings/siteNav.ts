@@ -9,13 +9,6 @@ export const siteNav = defineType({
   icon: MenuIcon,
   fields: [
     {
-      title: "Title",
-      name: "title",
-      type: "string",
-      initialValue: "Navigation",
-      hidden: true,
-    },
-    {
       title: "Main Menu",
       name: "mainMenu",
       type: "array",
@@ -33,11 +26,8 @@ export const siteNav = defineType({
     },
   ],
   preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return {
-        title: title ?? "Navigation",
-      };
+    prepare() {
+      return { title: "Navigation" };
     },
   },
 });

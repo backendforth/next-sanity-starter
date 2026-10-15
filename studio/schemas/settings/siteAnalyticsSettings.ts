@@ -23,13 +23,6 @@ export const siteAnalyticsSettings = defineType({
   icon: ChartUpwardIcon,
   fields: [
     defineField({
-      title: "Title",
-      name: "title",
-      type: "string",
-      initialValue: "Analytics & Tracking",
-      hidden: true,
-    }),
-    defineField({
       name: "useCookieBanner",
       title: "Use cookie banner",
       description:
@@ -105,14 +98,10 @@ export const siteAnalyticsSettings = defineType({
     }),
   ],
   preview: {
-    select: {
-      title: "title",
-      useCookieBanner: "useCookieBanner",
-      loadMode: "loadMode",
-    },
-    prepare({ title, useCookieBanner, loadMode }) {
+    select: { useCookieBanner: "useCookieBanner", loadMode: "loadMode" },
+    prepare({ useCookieBanner, loadMode }) {
       return {
-        title: title ?? "Analytics & Tracking",
+        title: "Analytics & Tracking",
         subtitle:
           useCookieBanner === false
             ? "No cookie banner"

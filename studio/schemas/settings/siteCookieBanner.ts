@@ -18,13 +18,6 @@ export const siteCookieBanner = defineType({
   icon: LockIcon,
   fields: [
     {
-      title: "Title",
-      name: "title",
-      type: "string",
-      initialValue: "Cookie Banner",
-      hidden: true,
-    },
-    {
       title: "Consent Modal Texts",
       name: "consentModal",
       type: "object",
@@ -128,11 +121,8 @@ export const siteCookieBanner = defineType({
     },
   ],
   preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return {
-        title: title ?? "Cookie Banner",
-      };
+    prepare() {
+      return { title: "Cookie Banner" };
     },
   },
 });

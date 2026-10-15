@@ -29,9 +29,8 @@ type Props = {
 	isActive: boolean;
 	/** Responsive `sizes` for slide images (viewport differs in multi-slide mode). */
 	imageSizes?: string;
-	/** Multi-slide carousel: fixed row height, width from native aspect ratio. */
+	/** Multi-slide carousel: shared row height, width from native aspect ratio. */
 	respectAspectRatio?: boolean;
-	rowHeightPx?: number;
 };
 
 /** `autoplay && !controls` → silent loop (no MuxPlayer chrome). Mirrors `ModuleMedia`. */
@@ -61,13 +60,7 @@ export function CarouselSlide({
 	isActive,
 	imageSizes = "100vw",
 	respectAspectRatio = false,
-	rowHeightPx,
 }: Props) {
-	const multiSizes =
-		respectAspectRatio && rowHeightPx
-			? `${Math.ceil(rowHeightPx * 1.5)}px`
-			: imageSizes;
-
 	if (slide.kind === "image") {
 		return (
 			<MediaImage
@@ -75,7 +68,7 @@ export function CarouselSlide({
 				caption={slide.caption ?? undefined}
 				fillParent
 				objectFit="cover"
-				sizes={multiSizes}
+				sizes={imageSizes}
 				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
 			/>
 		);
@@ -115,7 +108,7 @@ export function CarouselSlide({
 			caption={slide.caption ?? undefined}
 			fillParent
 			objectFit="cover"
-			sizes={multiSizes}
+			sizes={imageSizes}
 			className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
 		/>
 	);

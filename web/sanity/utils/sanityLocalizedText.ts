@@ -90,13 +90,17 @@ type EntryValue<T extends Entries> = NonNullable<
 	NonNullable<T>[number]["value"]
 >;
 
-/** The entry for `locale`, following the fallback chain; `undefined` when no entry has content. */
+/**
+ * The entry for `locale`, following the fallback chain; `undefined` when no entry has content.
+ * So does a plain string stored before its field became i18n (until the migration has run),
+ * instead of throwing.
+ */
 export function pickLocalizedValue<T extends Entries>(
 	entries: T,
 	locale?: string,
 	siteLocale?: SiteLocaleSlice | null,
 ): EntryValue<T> | undefined {
-	if (!entries?.length) {
+	if (typeof entries === "string" || !entries?.length) {
 		return undefined;
 	}
 	const site = effectiveSiteLocale(siteLocale);

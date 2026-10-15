@@ -24,7 +24,10 @@ permissions:
 
 jobs:
   auto-merge:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    # Org-internal: template forks decide on auto-merge themselves.
+    if: >-
+      github.repository == 'backendforth/next-sanity-starter' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Fetch dependabot metadata

@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cachedPageSlugs } from "@/sanity/cachedSanityQuery";
-import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchPageBySlug,
-	fetchSettingsSeoFallback,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
@@ -15,12 +13,6 @@ import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
-
-/**
- * Next.js 16 segment config must be a numeric literal here (assigning an imported value breaks the check).
- * The literal must match `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS` — enforced via `satisfies`.
- */
-export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
 	const rows = await cachedPageSlugs();
@@ -39,11 +31,10 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
-		fetchPageBySlug(slug, locale, { stega: false }),
-		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle(locale, { stega: false }),
-		fetchSettingsSeoFallback(locale, { stega: false }),
+	const [data, siteLocale, chrome] = await Promise.all([
+		fetchPageBySlug(slug, locale),
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(locale),
 	]);
 	if (!data) {
 		return {
@@ -56,10 +47,8 @@ export async function generateMetadata({
 		data,
 		locale,
 		segmentFallback: slug,
-		settingsSeo,
+		site: chrome?.settings,
 		siteLocale,
-		path: `/${slug}`,
-		siteBrandTitle: siteBrand,
 	});
 }
 

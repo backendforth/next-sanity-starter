@@ -1,6 +1,6 @@
 # Page queries (`pages/`)
 
-**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). Site-wide SEO fallbacks are fetched separately via **`fetchSettingsSeoFallback`** (deduped per request) and passed into `metadataFromSanityPageData`.
+**End-to-end GROQ strings** for routable documents. This branch keeps one document per language, so every query selects by type and `language`: `*[_type == "home" && language == $locale][0]` or `*[_type == "page" && slug.current == $slug && language == $locale][0]`, plus field projections (title, slug, `modulesQuery`, **`pageSeoQuery`** — local `seo` only). The site-wide SEO fallback comes with the shell bundle (`fetchSiteChrome(locale).settings`) and is passed into `metadataFromSanityPageData`.
 
 Import from `@/sanity/queries`.
 
@@ -98,13 +98,13 @@ Page queries return **JSON**. Persist that in your store, not the query string.
 
 **Option A — `sanityFetch` via `fetchSanityData` (recommended for App Router):**
 
-Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Pass **`{ stega: false }`** in **`generateMetadata`** so titles/descriptions are not Stega-encoded.
+Use **`fetchHomeDocument(locale)`** / **`fetchPageBySlug(slug, locale)`** from `@/sanity/fetchSanityData` — React `cache` dedupes per request, so `generateMetadata` and the page share one fetch; **`sanityFetch`** respects Draft Mode and Stega for Presentation / Visual Editing. Metadata cleans the strings it uses (`resolveSanityMetadata`).
 
 ```ts
 import { fetchPageBySlug } from "@/sanity/fetchSanityData";
 
+// The same call in `generateMetadata` and the page — one fetch per request.
 const data = await fetchPageBySlug(slug, locale);
-const meta = await fetchPageBySlug(slug, locale, { stega: false });
 ```
 
 **Option A2 — published-only + `unstable_cache`:** the helpers in `@/sanity/cachedSanityQuery` (`cachedSitemapPages`, `cachedPageSlugs`, …) use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
@@ -115,7 +115,7 @@ const meta = await fetchPageBySlug(slug, locale, { stega: false });
 
 ## Metadata
 
-Call **`fetchSettingsSeoFallback`** alongside the route fetch (in the same `Promise.all` as `fetchHomeDocument` / `fetchPageBySlug`) and pass `data` plus the resolved `settingsSeo` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label) → site SEO title; home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A title equal to the brand skips the layout's `%s | brand` template.
+Fetch **`fetchSiteChrome(locale)`** alongside the route document (the layout already did, so it is a cache hit) and pass `data` plus `site: chrome?.settings` into **`metadataFromSanityPageData`** from `@/sanity/seo/resolveSanityMetadata` (or `@/sanity/seo`). The helper merges page-level `data.seo` with the site-wide fallback so an empty description or image falls back to **`siteSettings.seo`** in Sanity. The document's `title` is already in the route's language. The title goes page SEO title → heading → **`segmentFallback`** (the slug or a route label) → site SEO title; home passes `siteSeoTitleFirst` so the site SEO title comes before its heading. A title equal to the brand skips the layout's `%s | brand` template.
 
 ## Related
 

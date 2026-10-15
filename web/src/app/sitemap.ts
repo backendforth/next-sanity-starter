@@ -3,7 +3,7 @@ import { cachedSitemapPages } from "@/sanity/cachedSanityQuery";
 import { fetchSiteLanguageSettings } from "@/sanity/fetchSanityData";
 import { hreflangLanguages } from "@/sanity/seo/resolveSanityMetadata";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
-import { SITE_BASE_URL } from "@/src/utils/siteUrl";
+import { absoluteSiteUrl } from "@/src/utils/siteUrl";
 
 /**
  * Refresh on tag invalidation (`pages`, `site-pages`, `site-language-settings`)
@@ -21,7 +21,7 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 	const [pages, siteLocale] = await Promise.all([
 		cachedSitemapPages(),
-		fetchSiteLanguageSettings({ stega: false }),
+		fetchSiteLanguageSettings(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
@@ -32,12 +32,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 			typeof page.language === "string" && page.language.trim()
 				? page.language.trim()
 				: siteLocale.defaultLocale;
-		const pathname = pathUtils.localePath(page.path, language);
-		const url =
-			`${SITE_BASE_URL}${pathname === "/" ? "" : pathname}` || SITE_BASE_URL;
-
 		entries.push({
-			url,
+			url: absoluteSiteUrl(pathUtils.localePath(page.path, language)),
 			lastModified: page._updatedAt,
 			changeFrequency: page._type === "home" ? "daily" : "weekly",
 			priority: page._type === "home" ? 1.0 : 0.8,

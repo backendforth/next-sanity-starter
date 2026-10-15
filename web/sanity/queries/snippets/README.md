@@ -8,13 +8,13 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 
 | File | Export(s) | Role |
 |------|-----------|------|
-| `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata uses `fetchSettingsSeoFallback` (via `siteSettingsSeoFallbackQuery`) for site-wide fallback instead of an embedded join. |
-| `settings.ts` includes | `siteSettingsSeoFallbackQuery` | Standalone `siteSettings.seo` projection used once per request for route `generateMetadata` fallbacks. |
+| `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata takes the site-wide fallback from `siteChromeQuery` (`settings.seo`) instead of an embedded join. |
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
-| `link.ts` | `linkQuery` | `link` marks and nav rows, one `select` branch per type (`linkType` tells them apart): `internal` (route, slug, `resolvedReference`), `external` (url/href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
-| `settings.ts` | `siteChromeQuery`, `errorSettingsQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery`, `siteSettingsSeoFallbackQuery`, `siteAnalyticsSettingsQuery` | Lean queries for the app shell, each a `defineQuery` fetched via its `fetch*` helper in `fetchSanityData.ts`. The per-language ones select with `language == $locale`; `siteLanguageSettingsQuery` and `siteAnalyticsSettingsQuery` are global singletons (`_type` + `_id`). `siteChromeQuery` bundles nav menus, cookie banner and site title |
-| `translations.ts` | `routePathProjection`, `translationsQuery` | Route path of a document without locale prefix; `translations` = every published language variant (`page`/`project` via `translation.metadata`, `home`/`work` by type) for `hreflang` and the language switch |
-| `sitemap.ts` | `pageSlugsQuery`, `projectSlugsQuery`, `sitemapPagesQuery` | Slug + `language` rows for `[slug]` / `work/[slug]` routes (all languages); sitemap rows cover `home`, `work`, `page`, `project` with `language`, unprefixed `path`, and `_updatedAt` |
+| `link.ts` | `linkQuery` | `link` marks and nav rows, one `select` branch per type (`linkType` tells them apart): `internal` (`resolvedReference { _id, _type, title, path }`), `external` (url/href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
+| `routePath.ts` | `routePathProjection` | The site path of a routable document (`/`, `/work`, `/{slug}`, `/work/{slug}`), `null` when it has no route. Used by `linkQuery`, `contentRefs`, `translationsQuery`, the sitemap and the four page queries; the web turns it into an href with `hrefFor(path, locale)` (`siteLocalePathUtils.ts`) |
+| `settings.ts` | `siteChromeQuery`, `notFoundCopyQuery`, `siteLanguageSettingsQuery` | `siteChromeQuery` is the whole app shell of one language in one fetch (`fetchSiteChrome(locale)`): nav menus, cookie banner, site settings (title, SEO fallback, the default language's favicon) and analytics. `notFoundCopyQuery` is the 404 copy of every language (`fetchNotFoundCopy`). `siteLanguageSettingsQuery` drives routing (`fetchSiteLanguageSettings`). Per-language documents select with `language == $locale`; `siteLanguageSettings` and `siteAnalyticsSettings` are global singletons (`_type` + `_id`) |
+| `translations.ts` | `translationsQuery` | `translations` = every published language variant (`page`/`project` via `translation.metadata`, `home`/`work` by type) with its `path`, for `hreflang` and the language switch |
+| `sitemap.ts` | `pageSlugsQuery`, `projectSlugsQuery`, `sitemapPagesQuery` | Slug + `language` rows for `[slug]` / `work/[slug]` routes (all languages); sitemap rows cover `home`, `work`, `page`, `project` with `language`, unprefixed `path`, `translations` and `_updatedAt` |
 
 ## Using a snippet in a custom query (Next.js)
 
@@ -52,8 +52,8 @@ Use `imageQuery` / `videoQuery` inside object projections when you need consiste
 
 Settings are per-language documents (one `siteNav`, `siteSettings`, … per language), so the queries below take `$locale`.
 
-- **`siteChromeQuery`** — `siteNav` for `$locale` with resolved main + footer menus (falls back to a legacy `siteNav` without `language`), the cookie banner copy and the site title in one fetch (no `modules[]`).
-- **`errorSettingsQuery`** — 404 / 500 copy; deliberately no `modules[]` (no error page renders modules).
+- **`siteChromeQuery`** — `siteNav` for `$locale` with resolved main + footer menus (falls back to a legacy `siteNav` without `language`), the cookie banner copy, site settings and analytics in one fetch (no `modules[]`).
+- **`notFoundCopyQuery`** — the 404 copy of every language; deliberately no `modules[]` (no error page renders modules).
 
 Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
 

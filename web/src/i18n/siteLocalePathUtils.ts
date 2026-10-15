@@ -7,6 +7,8 @@ export type LanguagePathUtils = {
 	localeFromPathname: (pathname: string) => string;
 	pathWithoutLocalePrefix: (pathname: string) => string;
 	localePath: (pathname: string, locale: string) => string;
+	/** `localePath` for a GROQ `path` (`routePathProjection`); `null` stays `null`, i.e. no link. */
+	hrefFor: (path: string | null | undefined, locale: string) => string | null;
 };
 
 /**
@@ -52,6 +54,13 @@ export function createLanguagePathUtils(
 		return `/${locale}${normalized}`;
 	}
 
+	function hrefFor(
+		path: string | null | undefined,
+		locale: string,
+	): string | null {
+		return path ? localePath(path, locale) : null;
+	}
+
 	return {
 		defaultLocale,
 		localeIds,
@@ -59,6 +68,7 @@ export function createLanguagePathUtils(
 		localeFromPathname,
 		pathWithoutLocalePrefix,
 		localePath,
+		hrefFor,
 	};
 }
 

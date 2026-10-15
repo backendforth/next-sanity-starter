@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
+import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
-import { fetchSiteSettingsFavicon } from "@/sanity/fetchSanityData";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo";
+import type { SiteFavicon } from "@/sanity/types";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
 import { ThemeProvider } from "@/src/contexts/ThemeContext";
@@ -40,8 +41,8 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * (the root layout). Tab titles come from there (`siteSettings.title` + template).
  *
  * The icons come from `siteSettings.favicon` of the default locale on every route (the
- * favicon is the brand's, not a translation), with every size derived from that one
- * asset on the Sanity CDN (`siteFaviconIcons`).
+ * favicon is the brand's, not a translation; `siteChromeQuery` picks that document), with
+ * every size derived from that one asset on the Sanity CDN (`siteFaviconIcons`).
  * Declaring them here covers every route below — route metadata merges field by
  * field, so no page has to repeat them. There is deliberately no static
  * fallback: browsers, bookmarks and search crawlers probe `/favicon.ico`
@@ -49,13 +50,10 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * in `public/` showed up beside or instead of the Sanity one. With the field
  * unset the site has no favicon.
  */
-export async function documentMetadata(
-	defaultLocale: string,
-): Promise<Metadata> {
-	const favicon = await fetchSiteSettingsFavicon(defaultLocale, {
-		stega: false,
-	});
-	const icons = siteFaviconIcons(favicon);
+export function documentMetadata(
+	favicon: SiteFavicon | null | undefined,
+): Metadata {
+	const icons = siteFaviconIcons(stegaClean(favicon));
 	return {
 		metadataBase: new URL(SITE_BASE_URL),
 		...(icons ? { icons } : {}),
@@ -112,22 +110,19 @@ type Props = {
 export async function DocumentShell({ lang, children }: Props) {
 	const draft = await draftMode();
 	const isDraft = draft.isEnabled;
-	const hasReadToken = Boolean(process.env.SANITY_API_READ_TOKEN?.trim());
 	const hasRevalidateWebhook = Boolean(
 		process.env.SANITY_REVALIDATE_SECRET?.trim(),
 	);
 	/**
-	 * <SanityLive /> opens an SSE connection per open tab and refreshes the
-	 * `sanityFetch` cache through a server action on every publish event —
-	 * needed for Presentation / Draft Mode, wasted on anonymous visitors.
-	 * Their published-content freshness comes from `/api/revalidate` instead
-	 * (the `sanityFetch` wrappers tag their cache entries for it). Fallback:
-	 * with a read token but **no** webhook secret configured, keep Live mounted
-	 * for everyone so published edits still propagate on webhook-less setups.
-	 * (Env is read at render time — the prerender needs the secret at build.)
+	 * <SanityLive /> opens an SSE connection per open tab and refreshes the `sanityFetch` cache
+	 * through a server action on every publish event — needed for Presentation / Draft Mode.
+	 * With the revalidate webhook configured, anonymous visitors don't need it: `/api/revalidate`
+	 * expires the cache tags the `sanityFetch` wrappers attach. Without the webhook it runs for
+	 * everyone (no token needed for published content), so a deploy with neither webhook nor
+	 * read token still picks up publishes. (Env is read at render time — the prerender needs the
+	 * secret at build.)
 	 */
-	const shouldMountSanityLive =
-		isDraft || (hasReadToken && !hasRevalidateWebhook);
+	const shouldMountSanityLive = isDraft || !hasRevalidateWebhook;
 
 	return (
 		<html

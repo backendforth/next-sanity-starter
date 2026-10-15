@@ -13,20 +13,13 @@ export {
 } from "./snippets/media";
 export { pageSeoQuery } from "./snippets/seo";
 export {
-	errorSettingsQuery,
-	siteAnalyticsSettingsQuery,
+	notFoundCopyQuery,
 	siteChromeQuery,
 	siteLanguageSettingsQuery,
-	siteSettingsFaviconQuery,
-	siteSettingsSeoFallbackQuery,
-	siteSettingsTitleQuery,
 } from "./snippets/settings";
 export {
 	pageSlugsQuery,
 	projectSlugsQuery,
 	sitemapPagesQuery,
 } from "./snippets/sitemap";
-export {
-	routePathProjection,
-	translationsQuery,
-} from "./snippets/translations";
+export { translationsQuery } from "./snippets/translations";

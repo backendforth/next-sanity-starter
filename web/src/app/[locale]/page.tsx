@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchHomeDocument,
-	fetchSettingsSeoFallback,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
-import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
+import {
+	metadataFromSanityPageData,
+	siteBrandTitle,
+} from "@/sanity/seo/resolveSanityMetadata";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
 
@@ -14,14 +15,8 @@ type PageProps = {
 	params: Promise<{ locale: string }>;
 };
 
-/**
- * Next.js 16 segment config must be a numeric literal here (assigning an imported value breaks the check).
- * The literal must match `SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS` — enforced via `satisfies`.
- */
-export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
-
 export async function generateStaticParams() {
-	const siteLocale = await fetchSiteLanguageSettings({ stega: false });
+	const siteLocale = await fetchSiteLanguageSettings();
 	return siteLocale.localeIds.map((locale) => ({ locale }));
 }
 
@@ -29,15 +24,14 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { locale } = await params;
-	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
-		fetchHomeDocument(locale, { stega: false }),
-		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle(locale, { stega: false }),
-		fetchSettingsSeoFallback(locale, { stega: false }),
+	const [data, siteLocale, chrome] = await Promise.all([
+		fetchHomeDocument(locale),
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(locale),
 	]);
 	if (!data) {
 		return {
-			title: { absolute: siteBrand },
+			title: { absolute: siteBrandTitle(chrome?.settings) },
 			description: undefined,
 		};
 	}
@@ -45,11 +39,9 @@ export async function generateMetadata({
 		data,
 		locale,
 		segmentFallback: "Home",
-		settingsSeo,
+		site: chrome?.settings,
 		siteSeoTitleFirst: true,
 		siteLocale,
-		path: "/",
-		siteBrandTitle: siteBrand,
 	});
 }
 

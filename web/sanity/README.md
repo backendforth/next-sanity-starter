@@ -11,7 +11,7 @@ This folder holds the **Sanity client**, **GROQ queries**, the **names for their
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
 | `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
 | `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
-| `fetchSanityData.ts` | **`sanityFetch`** wrappers: `fetchHomeDocument`, `fetchPageBySlug`, `fetchSiteChrome` (nav + cookie banner + title for the layout, one query), `fetchErrorSettings`, … — each per-language helper takes the route `locale` and passes it as `$locale`. Use for app routes with preview/VE (pass `{ stega: false }` in `generateMetadata`) |
+| `fetchSanityData.ts` | **`sanityFetch`** wrappers with primitive arguments only, so `generateMetadata` and the page share one React `cache` entry: `fetchHomeDocument(locale)`, `fetchPageBySlug(slug, locale)`, `fetchWorkDocument(locale)`, `fetchProjectBySlug(slug, locale)`, `fetchSiteChrome(locale)` (nav, cookie banner, site settings, analytics — one query for the whole shell) and `fetchNotFoundCopy()` (404 copy of every language, for the 404 pages). Each per-language helper passes `locale` as `$locale`. A render makes two `sanityFetch` calls |
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + document title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
 | `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
@@ -28,7 +28,7 @@ Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/ut
 
 This branch stores one document per language (`@sanity/document-internationalization`). Each translatable document has a `language` field, and its content fields are plain values in that language. So:
 
-- **GROQ selects the language.** Page and settings queries take `$locale` and filter `language == $locale` (e.g. `pageBySlugQuery`, `siteSettingsTitleQuery`). The `fetch*` helpers take the route `locale` and pass it through.
+- **GROQ selects the language.** Page and settings queries take `$locale` and filter `language == $locale` (e.g. `pageBySlugQuery`, `siteChromeQuery`). The `fetch*` helpers take the route `locale` and pass it through.
 - **Components render fields directly.** `doc.title` is a `string`, `module.body` is Portable Text — no locale picking. Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`) — aligned with schema **`richTextMedia`**.
 - **No cross-language fallback.** If a document doesn't exist in the requested language, the query returns `null`: slug routes (`page`, `project`) 404, while `home` and `work` render a "no document for this locale" notice.
 

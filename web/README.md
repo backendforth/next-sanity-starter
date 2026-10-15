@@ -33,6 +33,18 @@ If the singleton is missing or lists no language ids, the web app falls back to 
 
 ---
 
+## Freshness (how published content reaches visitors)
+
+Routes are static (`generateStaticParams`) and every `sanityFetch` result is cached with cache tags from `sanity/cacheTags.ts`. What expires them depends on `SANITY_REVALIDATE_SECRET`:
+
+| | Webhook configured (secret set, Sanity webhook → `/api/revalidate`) | No webhook |
+|---|---|---|
+| On publish | `/api/revalidate` expires the matching tags; the next request renders fresh. | `<SanityLive />` runs for every visitor and revalidates the tags of each publish event while a tab is open. |
+| Time-based fallback | None — caches live until a tag expires. | 60 s: the published `unstable_cache` reads (`cachedSanityQuery.ts`) cap the ISR period of every route, so a page published while nobody had the site open is at most a minute stale. |
+| `<SanityLive />` | Draft Mode / Presentation only. | Everyone. No token needed for published content. |
+
+Routes don't export `revalidate`; the table above is the whole story.
+
 ## Build / routing (reference)
 
 From `pnpm run build` (Next.js 16): routes are labeled **Static** (○), **SSG** (● `generateStaticParams`), or **Dynamic** (ƒ). Example output:

@@ -1,6 +1,7 @@
 import { defineQuery } from "next-sanity";
 
-import { routePathProjection, translationsQuery } from "./translations";
+import { routePathProjection } from "./routePath";
+import { translationsQuery } from "./translations";
 
 /**
  * Minimal list of routable page slugs across all languages — for
@@ -43,10 +44,6 @@ export const sitemapPagesQuery = defineQuery(`*[
   _type,
   _updatedAt,
   language,
-  "slug": select(
-    _type in ["home", "work"] => null,
-    slug.current
-  ),
   "path": ${routePathProjection},
   ${translationsQuery}
 }`);

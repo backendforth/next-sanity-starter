@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cachedProjectSlugs } from "@/sanity/cachedSanityQuery";
-import type { SanityDocumentCacheRevalidateSeconds } from "@/sanity/documentCacheRevalidateSeconds";
 import {
 	fetchProjectBySlug,
-	fetchSettingsSeoFallback,
+	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
 import { LocaleAlternates } from "@/src/components/navigation/LocaleAlternates";
@@ -15,8 +13,6 @@ import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 type PageProps = {
 	params: Promise<{ locale: string; slug: string }>;
 };
-
-export const revalidate = 60 satisfies SanityDocumentCacheRevalidateSeconds;
 
 export async function generateStaticParams() {
 	const rows = await cachedProjectSlugs();
@@ -35,11 +31,10 @@ export async function generateMetadata({
 	params,
 }: PageProps): Promise<Metadata> {
 	const { slug, locale } = await params;
-	const [data, siteLocale, siteBrand, settingsSeo] = await Promise.all([
-		fetchProjectBySlug(slug, locale, { stega: false }),
-		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle(locale, { stega: false }),
-		fetchSettingsSeoFallback(locale, { stega: false }),
+	const [data, siteLocale, chrome] = await Promise.all([
+		fetchProjectBySlug(slug, locale),
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(locale),
 	]);
 	if (!data) {
 		return {
@@ -52,10 +47,8 @@ export async function generateMetadata({
 		data,
 		locale,
 		segmentFallback: slug,
-		settingsSeo,
+		site: chrome?.settings,
 		siteLocale,
-		path: `/work/${slug}`,
-		siteBrandTitle: siteBrand,
 	});
 }
 
@@ -71,8 +64,6 @@ export default async function Project({ params }: PageProps) {
 	}
 
 	const projectTitle = typeof data.title === "string" ? data.title.trim() : "";
-	const titleMedia = data.titleMedia;
-	const hasTitleMedia = Boolean(titleMedia?.resolvedMedia?.media);
 	const body = data.body ?? [];
 
 	return (
@@ -83,7 +74,7 @@ export default async function Project({ params }: PageProps) {
 				translations={data.translations}
 			/>
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{projectTitle || hasTitleMedia ? (
+				{projectTitle ? (
 					<header className="flex flex-col gap-sm">
 						{projectTitle ? (
 							<h2 className="content-title">{projectTitle}</h2>

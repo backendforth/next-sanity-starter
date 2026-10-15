@@ -1,17 +1,5 @@
-/* Base + type utilities; tokens in variables/fontsizes.css */
-html,
-body {
-	hyphens: none;
-}
-
-html {
-	font-size: var(--font-size-root);
-	text-wrap: balance;
-
-	@variant lg {
-		font-size: clamp(1rem, 1.111111vw, 1.5rem);
-	}
-}
+/* Type utilities and the element defaults built on them; tokens in variables/fontsizes.css.
+ * `globals.css` imports this file after `tailwindcss`, so the layers below sit after preflight. */
 
 /* ─── Utilities ─────────────────────────────────────────────────────────────
  * RT scale: H1–H2 + big-text → Geist Sans regular · H3–H4 → Geist Mono semibold.
@@ -128,112 +116,114 @@ html {
 	max-width: var(--measure-heading-1-2);
 }
 
-/* ─── Element defaults ────────────────────────────────────────────────────── */
+/* ─── Element defaults ──────────────────────────────────────────────────────
+ * `@layer base`: they beat preflight, and a utility on the element beats them. */
 
-h5,
-h6 {
-	@apply text font-mono;
+@layer base {
+	html,
+	body {
+		hyphens: none;
+	}
+
+	html {
+		font-size: var(--font-size-root);
+		text-wrap: balance;
+
+		@variant lg {
+			font-size: clamp(1rem, 1.111111vw, 1.5rem);
+		}
+	}
+
+	h5,
+	h6 {
+		@apply text font-mono;
+	}
+
+	p {
+		@apply text;
+	}
+
+	a {
+		@apply font-semibold no-underline hover:text-color-hover;
+	}
+
+	small {
+		@apply text-small;
+	}
+
+	blockquote {
+		@apply quote-paragraph;
+	}
+
+	figcaption {
+		@apply text-small;
+	}
+
+	button,
+	[type="button"],
+	[type="submit"],
+	[type="reset"],
+	[role="button"] {
+		@apply text-button;
+	}
+
+	blockquote p {
+		font: inherit;
+		letter-spacing: inherit;
+	}
+
+	code {
+		@apply code-inline rounded px-xs py-min;
+		color: var(--color-code-text);
+		background-color: var(--color-code-bg);
+	}
+
+	ul {
+		@apply list-disc;
+	}
+
+	ol {
+		@apply list-decimal;
+	}
+
+	/* Bold / emphasis inside body text → Geist Mono semibold (single text accent face). */
+	:is(p, li, blockquote, figcaption, small) :is(strong, b) {
+		@apply font-mono font-semibold;
+	}
+
+	:is(p, li, blockquote, figcaption, small) :is(em, i) {
+		@apply font-mono italic;
+		font-weight: inherit;
+	}
+
+	/* Inside headings, inline emphasis inherits weight + family — single weight per heading. */
+	:is(h1, h2, h3, h4, h5, h6) :is(strong, em, i, b) {
+		font-family: inherit;
+		font-weight: inherit;
+	}
 }
 
-p {
-	@apply text;
-}
+/* Rich text block spacing → typography/rich-text.css. */
 
-a {
-	@apply font-semibold no-underline hover:text-color-hover;
-}
+/* ─── Contextual rules ──────────────────────────────────────────────────────
+ * `@layer components`: above the element defaults, below utilities. Nav links and pills style
+ * themselves (`navControlStyles.ts`); only the active-link underline lives here. */
 
-small {
-	@apply text-small;
-}
+@layer components {
+	:is(header, footer) nav a[aria-current],
+	header h1 a[aria-current] {
+		text-decoration-line: underline;
+		text-decoration-color: var(--color-link-decoration);
+		text-underline-offset: 0.25rem;
+	}
 
-blockquote {
-	@apply quote-paragraph;
-}
+	.content-refs-controls ul.content-refs-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
 
-figcaption {
-	@apply text-small;
-}
-
-button,
-[type="button"],
-[type="submit"],
-[type="reset"],
-[role="button"] {
-	@apply text-button;
-}
-
-blockquote p {
-	font: inherit;
-	letter-spacing: inherit;
-}
-
-code {
-	@apply code-inline rounded px-xs py-min;
-	color: var(--color-code-text);
-	background-color: var(--color-code-bg);
-}
-
-ul {
-	@apply list-disc;
-}
-
-ol {
-	@apply list-decimal;
-}
-
-/* Bold / emphasis inside body text → Geist Mono semibold (single text accent face). */
-:is(p, li, blockquote, figcaption, small) :is(strong, b) {
-	@apply font-mono font-semibold;
-}
-
-:is(p, li, blockquote, figcaption, small) :is(em, i) {
-	@apply font-mono italic;
-	font-weight: inherit;
-}
-
-/* Inside headings, inline emphasis inherits weight + family — single weight per heading. */
-:is(h1, h2, h3, h4, h5, h6) :is(strong, em, i, b) {
-	font-family: inherit;
-	font-weight: inherit;
-}
-
-/* Rich text block spacing → typography/rich-text.css (after Tailwind in globals.css). */
-
-/* Header nav — beat global `a` / `button` element typography (semibold, text-button). */
-header nav a,
-header h1 a {
-	@apply nav-menu font-normal;
-	text-decoration-line: none;
-}
-
-footer nav a {
-	@apply nav-menu font-normal;
-	text-decoration-line: none;
-}
-
-:is(header, footer) nav a[aria-current],
-header h1 a[aria-current] {
-	text-decoration-line: underline;
-	text-decoration-color: var(--color-link-decoration);
-	text-underline-offset: 0.25rem;
-}
-
-header nav fieldset button {
-	@apply tag no-underline;
-}
-
-/* Content refs — category / sort filters (pill buttons, same as header utilities). */
-.content-refs-controls fieldset button {
-	@apply tag no-underline;
-}
-
-.content-refs-controls ul.content-refs-grid {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.content-refs-controls ul.content-refs-grid > li {
-	list-style: none;
+	.content-refs-controls ul.content-refs-grid > li {
+		list-style: none;
+	}
 }

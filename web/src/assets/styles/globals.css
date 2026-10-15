@@ -1,7 +1,7 @@
 /*
  * Import order: design tokens and fonts first, then `tailwindcss`, then
- * `tailwind/theme.css` (`@theme` extensions). All `@import` rules stay before any
- * other rules (e.g. `body { }`).
+ * `tailwind/theme.css` (`@theme` extensions), then the files whose `@layer base` rules must
+ * follow preflight. All `@import` rules stay before any other rules (e.g. `body { }`).
  *
  * Font files: `@font-face` `url(...)` paths resolve relative to the file that defines them.
  */
@@ -9,12 +9,12 @@
 @import "./typography/fonts.css";
 @import "./variables/colors.css";
 @import "./variables/breakpoints.css";
-@import "./typography/typography.css";
 @import "./tailwind/safelist.css";
 @import "./animations.css";
 
 @import "tailwindcss";
 @import "./tailwind/theme.css";
+@import "./typography/typography.css";
 @import "./typography/rich-text.css";
 @import "./components/mux-player.css";
 /* vanilla-cookieconsent CSS (base + theme overrides) is imported by
@@ -27,14 +27,16 @@
  * classic scrollbar appear/disappear — shifting the whole layout horizontally
  * on every transition (Windows/Linux; macOS overlay scrollbars are unaffected).
  */
-html {
-	scrollbar-gutter: stable;
-}
+@layer base {
+	html {
+		scrollbar-gutter: stable;
+	}
 
-body {
-	@apply font-text;
-	background: var(--color-bg);
-	color: var(--color-text);
+	body {
+		@apply font-text;
+		background: var(--color-bg);
+		color: var(--color-text);
+	}
 }
 
 /*

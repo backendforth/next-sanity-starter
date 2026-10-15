@@ -8,6 +8,12 @@ export { presentationLocationsResolver };
 const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
 
 /**
+ * The site default language. It lives in `siteLanguageSettings`, not in config, so the
+ * unprefixed routes read it inside their filter (Presentation runs it as a plain fetch).
+ */
+const DEFAULT_LANGUAGE = `*[_id == "siteLanguageSettings"][0].defaultLanguageId`;
+
+/**
  * Which document opens when the Presentation iframe navigates to a route.
  *
  * The web app serves the default locale unprefixed (`/`, `/:slug`) and other
@@ -27,16 +33,19 @@ const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
  * before the `:locale` patterns they would otherwise be swallowed by. A single
  * segment can't be told apart by shape (`/de` is a locale, `/about` a slug),
  * so one filter covers both.
- *
- * Note: the default-locale routes do not constrain `language` because we don't
- * know the default at config-load time (it lives in `siteLanguageSettings`).
  */
 export const presentationMainDocuments = defineDocuments([
-  { route: "/", type: "home" },
-  { route: "/work", type: "work" },
+  {
+    route: "/",
+    filter: `_type == "home" && language == ${DEFAULT_LANGUAGE}`,
+  },
+  {
+    route: "/work",
+    filter: `_type == "work" && language == ${DEFAULT_LANGUAGE}`,
+  },
   {
     route: "/work/:slug",
-    filter: `_type == "project" && slug.current == $slug`,
+    filter: `_type == "project" && slug.current == $slug && language == ${DEFAULT_LANGUAGE}`,
   },
   {
     route: "/:locale/work",
@@ -50,7 +59,7 @@ export const presentationMainDocuments = defineDocuments([
     route: "/:segment",
     filter:
       SLUG_BASED_DOCUMENT_TYPES.length > 0
-        ? `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment)`
+        ? `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE})`
         : `_type == "home" && language == $segment`,
   },
   ...(SLUG_BASED_DOCUMENT_TYPES.length > 0

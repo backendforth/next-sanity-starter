@@ -5,7 +5,7 @@
  *  - Default: `:root` → light tokens.
  *  - Manual dark: `:root[data-theme="dark"]` overrides the light defaults.
  * The `<ThemeToggle>` writes `data-theme="light" | "dark"` on `<html>`;
- * an inline boot script in `app/layout.tsx` applies the stored choice
+ * an inline boot script in `DocumentShell.tsx` applies the stored choice
  * before the first paint to avoid a flash.
  */
 

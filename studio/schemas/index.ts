@@ -57,8 +57,8 @@ export const schemaTypes = [
   trackerPlausible,
   siteCookieBanner,
   home,
-  page,
   work,
+  page,
   project,
   projectCategory,
 ];

@@ -14,8 +14,8 @@ export const linkQuery = `
     "route": select(
       reference->_type == "home" => "page",
       reference->_type == "page" => "slug",
-      reference->_type == "work" => "work",
       reference->_type == "project" => "project",
+      reference->_type == "work" => "work",
       "page"
     ),
     "slug": reference->slug.current,

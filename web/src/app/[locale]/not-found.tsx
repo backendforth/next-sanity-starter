@@ -1,7 +1,4 @@
-import {
-	fetchErrorSettings,
-	fetchSiteLanguageSettings,
-} from "@/sanity/fetchSanityData";
+import { fetchErrorSettingsByLocale } from "@/sanity/fetchSanityData";
 
 import { LocaleNotFoundContent } from "./LocaleNotFoundContent";
 
@@ -14,14 +11,7 @@ import { LocaleNotFoundContent } from "./LocaleNotFoundContent";
  * matching the URL.
  */
 export default async function NotFound() {
-	const siteLocale = await fetchSiteLanguageSettings();
-	const errorSettingsByLocale = Object.fromEntries(
-		await Promise.all(
-			siteLocale.localeIds.map(
-				async (locale) => [locale, await fetchErrorSettings(locale)] as const,
-			),
-		),
-	);
+	const errorSettingsByLocale = await fetchErrorSettingsByLocale();
 	return (
 		<LocaleNotFoundContent errorSettingsByLocale={errorSettingsByLocale} />
 	);

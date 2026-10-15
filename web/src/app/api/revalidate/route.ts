@@ -3,27 +3,10 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { tagsForWebhookDocument } from "@/sanity/cacheTags";
+
 const REVALIDATE_SECRET = process.env.SANITY_REVALIDATE_SECRET?.trim();
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
-
-/**
- * Allow-list of `_type` values the webhook is permitted to invalidate. Anything
- * else returns `200 { revalidated: false }` so an attacker cannot DoS Sanity by
- * forging unknown payloads.
- */
-const ALLOWED_DOCUMENT_TYPES = new Set([
-	"home",
-	"work",
-	"page",
-	"project",
-	"siteSettings",
-	"siteNav",
-	"siteCookieBanner",
-	"siteAnalyticsSettings",
-	"errorSettings",
-	"siteLanguageSettings",
-	"translation.metadata",
-] as const);
 
 type SanityWebhookPayload = {
 	_id?: string;
@@ -122,82 +105,6 @@ function verifySignature(
 	}
 }
 
-function getTagsForDocument(payload: SanityWebhookPayload): string[] {
-	const tags: string[] = [];
-	const { _type, slug, language } = payload;
-	const lang =
-		typeof language === "string" && language.trim() ? language.trim() : null;
-
-	if (_type && !ALLOWED_DOCUMENT_TYPES.has(_type as never)) {
-		return tags;
-	}
-
-	// Every route document projects its other-language variants
-	// (`translationsQuery`) for hreflang and the language switch, so a publish
-	// in one language must refresh its siblings too. `pages` / `projects`
-	// already span all languages; home and work need their `*-all` tags.
-	if (_type === "home") {
-		if (lang) tags.push(`home-${lang}`);
-		tags.push("home-all", "site-pages");
-	}
-
-	if (_type === "work") {
-		if (lang) tags.push(`work-${lang}`);
-		tags.push("work-all", "site-pages");
-	}
-
-	if (_type === "page") {
-		tags.push("pages", "site-pages");
-		if (slug?.current && lang) {
-			tags.push(`page-${slug.current}-${lang}`);
-		}
-	}
-
-	if (_type === "project") {
-		tags.push("projects", "site-pages");
-		if (slug?.current && lang) {
-			tags.push(`project-${slug.current}-${lang}`);
-		}
-	}
-
-	// Shell singletons are read via `sanityFetch`, whose cache entries carry
-	// these tags explicitly (see `web/sanity/fetchSanityData.ts`). Without them
-	// only a mounted <SanityLive /> would ever refresh the entries — and Live is
-	// draft-gated in `app/layout.tsx`, so this webhook is the published-content
-	// invalidation path. Keep the strings in sync with `SANITY_CACHE_TAGS`.
-
-	if (_type === "siteSettings") {
-		tags.push("site-settings");
-	}
-
-	if (_type === "siteNav") {
-		tags.push("site-nav");
-	}
-
-	if (_type === "siteCookieBanner") {
-		tags.push("site-cookie-banner");
-	}
-
-	if (_type === "siteAnalyticsSettings") {
-		tags.push("site-analytics-settings");
-	}
-
-	if (_type === "errorSettings") {
-		tags.push("error-settings");
-	}
-
-	if (_type === "siteLanguageSettings") {
-		tags.push("site-language-settings");
-	}
-
-	// Linking or unlinking translations in Studio only edits this document.
-	if (_type === "translation.metadata") {
-		tags.push("pages", "projects", "home-all", "work-all", "site-pages");
-	}
-
-	return tags;
-}
-
 export async function POST(request: NextRequest) {
 	if (!REVALIDATE_SECRET) {
 		if (IS_PRODUCTION) {
@@ -251,7 +158,13 @@ export async function POST(request: NextRequest) {
 		);
 	}
 
-	const tags = getTagsForDocument(parsed);
+	/* The allow-list lives in `cacheTags.ts`: an unknown `_type` yields no tags, so a forged
+	 * payload cannot force cache churn. */
+	const tags = tagsForWebhookDocument(
+		parsed._type,
+		parsed.slug?.current,
+		parsed.language?.trim() || undefined,
+	);
 	if (tags.length === 0) {
 		return NextResponse.json({
 			revalidated: false,

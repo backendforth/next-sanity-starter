@@ -13,7 +13,7 @@ Hard rules:
 - Fields are plain values in the route's language — render them directly. `web/sanity/utils/sanityLocalizedText.ts` is only used by `resolveLinkLabel` for link titles that arrive as arrays.
 - Content blocks are **modules** (see `.cursor/rules/modules.mdc`). No ad-hoc `<section>` in route files.
 - `web/sanity/types/*` are hand-maintained. Update them in the same commit as the GROQ projection.
-- Don't set `data-sanity` in module components — `ModulesRenderer` sets one on the module container, and Visual Editing depends on rendering modules through it.
+- Don't set `data-sanity` in module components — `ModulesRenderer` wraps every module with its field-level path, and Visual Editing depends on rendering modules through it.
 - Never read locale from `useRouter()`, `usePathname()`, `window.location`, or cookies inside a module — breaks SSR + Presentation iframes.
 - No hardcoded locale codes outside `web/src/i18n/`.
 

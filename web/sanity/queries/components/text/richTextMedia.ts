@@ -3,7 +3,7 @@ import { moduleCarouselInnerFields } from "../modules/carousel";
 import { moduleMediaInnerFields } from "../modules/media";
 
 /** Portable Text blocks with resolved `link` marks. */
-const blockAndLinks = `
+const blockFields = `
     ...,
     _type == "block" => {
       ...,
@@ -22,11 +22,11 @@ const blockAndLinks = `
  * The editor's `of` is `[block, module.media, module.carousel]`
  * (`objects/editors/richTextMedia.ts`), and `portableTextComponents.tsx` renders exactly
  * those, so a rich-text body never holds `module.text` or `module.contentRefs`. The
- * projection is flat: the nested `module.text` branch and the contentRefs projection were
- * unreachable query text, POSTed twice per `sanityFetch`.
+ * projection is flat: the recursive `module.text` branch and the contentRefs projection
+ * were unreachable query text, POSTed twice per `sanityFetch`.
  */
 export const richTextMediaQuery = `
-    ${blockAndLinks},
+    ${blockFields},
     _type == "module.media" => {
       ${moduleMediaInnerFields}
     },

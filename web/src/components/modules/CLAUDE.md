@@ -6,11 +6,11 @@ This folder holds the **component half** of every module. You are touching point
 
 ## YOU MUST
 
-1. Prefer `pnpm gen:module <Name>` over hand-writing — it creates the schema, component, query, and type files and patches the barrels (including `index.ts` here). It does **not** edit `ModulesRenderer.tsx`; it prints the `_type` branch to paste, and `pnpm check:wiring` fails until it is there.
+1. Prefer `pnpm gen:module <Name>` over hand-writing — it creates the module's files and patches the registries and barrels. It does not edit `ModulesRenderer.tsx`; it prints the `_type` branch for you to paste, and `pnpm check:wiring` fails until it is there.
 2. Name the file `Module<Name>.tsx` (PascalCase). The Sanity schema `name` must be `module.<name>` (dot-lowercase). 1:1 correspondence.
 3. Accept `{ module }`. Fields are plain values in the document's language — render them directly, no `pickLocalizedString`. Add `locale` / `siteLocale` props only when the module builds hrefs (as `ModuleContentRefs` does), and pass them from `renderModuleChild` in `ModulesRenderer.tsx`.
-4. Don't set `data-sanity` yourself. `ModulesRenderer` puts one `data-sanity` attribute on the module container (path `modules`, built with `dataAttr`) — Visual Editing click-to-edit depends on it, so always render through `ModulesRenderer`.
-5. Register in `ModulesRenderer.tsx` (`_type` switch in `renderModuleChild`) and the barrel `index.ts`. Heavy components use `next/dynamic` (see the `ModuleCarousel` import in `ModulesRenderer.tsx` for the pattern).
+4. Don't set `data-sanity` yourself. `ModulesRenderer` wraps every module in an element carrying its field-level `data-sanity` path (built with `dataAttr`) — Visual Editing click-to-edit depends on that wrapper, so always render through it.
+5. Register in `ModulesRenderer.tsx` (`_type` switch) and the barrel `index.ts`. Heavy components use `next/dynamic` (see `ModuleCarousel` import in `ModulesRenderer.tsx` for the pattern).
 
 ## Component shape
 
@@ -46,5 +46,5 @@ export function ModuleFoo({ module }: Props) {
 - Component without a TS type → `any` propagates through the renderer.
 - Calling `pickLocalizedString` / `parseLocalizedText` on module fields — they are plain values on this branch.
 - Reading locale via `useRouter()` / `usePathname()` → wrong locale during SSR.
-- Rendering a module outside `ModulesRenderer` → no `data-sanity` container, editor click-to-edit breaks on it.
+- Rendering a module outside `ModulesRenderer` → no `data-sanity` wrapper, editor click-to-edit breaks on it.
 - Importing from `studio/...` — illegal across packages.

@@ -50,7 +50,7 @@ The repo has two long-lived branches. They have converged on the whole structura
 - `main` — locale is purely field-level via `internationalizedArray*`. `siteSettings` is a singleton, addressed by `_id`.
 - `variant/document-level` — one document per language via `@sanity/document-internationalization`. Every translatable document type (all but the global `siteLanguageSettings` and `siteAnalyticsSettings`) has a `language` field set by the plugin (**never edit manually**), content fields are plain (no `internationalizedArray*`), and queries select the route's document with `language == $locale` and a `$locale` param. Details: "Branch-specific notes" in `AGENTS.md`.
 
-Treat any other difference between the branches as drift to be reconciled, not intended divergence. Check `git rev-parse --abbrev-ref HEAD`, and trust the branch over any description of it.
+Treat any other difference between the branches as drift to be reconciled, not intended divergence. Check `git rev-parse --abbrev-ref HEAD`, and trust the branch over any description of it. Fixes go to `main` first and reach the variant by `git cherry-pick -x`; every PR names its counterpart as `Variant-Port:` in its description.
 
 ## Definition of done
 

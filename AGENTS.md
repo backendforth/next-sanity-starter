@@ -294,7 +294,7 @@ Always link to these; never duplicate their content.
 
 ## Branch-specific notes
 
-Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: where a locale lives — in the field (`main`) or in the document (`variant`).
+Both `main` and `variant/document-level` ship this file. The two branches have converged on the whole structural surface — document types, module set, the eight wiring points, query/type layout and barrels are **identical**. Exactly one thing differs by design: where a locale lives — in the field (`main`) or in the document (`variant`). Every row below is that difference or follows from it.
 
 **Verify before you trust this table.** It has been wrong in both directions: it described a much wider divergence for months after the branches had converged, and later claimed the variant still used `internationalizedArray*` fields when it had moved to plain ones (corrected 2026-10-13). If a row here contradicts the branch you are on, the branch wins — fix the row.
 
@@ -305,6 +305,8 @@ Both `main` and `variant/document-level` ship this file. The two branches have c
 | GROQ | No locale parameter; singletons by `_id` (`*[_id == "siteSettings"][0]`). The "never filter locale in GROQ" rule applies here. | Queries select the document for the route's language and take `$locale` (`*[_type == "siteSettings" && language == $locale][0]`). Selecting by `language` is the design here, not the anti-pattern. |
 | Render-time resolution | Every translatable field through `pickLocalizedString` / `parseLocalizedText`. | Fields already hold the route's language; render them directly. `sanityLocalizedText.ts` remains for link labels that may still carry localized arrays. |
 | Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
+| Layout chrome | `app/[locale]/layout.tsx` fetches the chrome bundle (nav, cookie banner, title) in parallel with the locale check. | Fetches it after `isAppLocale(locale)`: the bundle is per language, so its cache key needs a validated locale. |
+| Dangling internal links | Point to the home page. | Render without a link (`navHref`). |
 
 Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.*` schemas, all four web renderers under `web/src/components/modules/` with the `index.ts` barrel, flat `queries/components/modules/<name>.ts` + `types/modules/<name>.ts` with barrels, and the `richTextMedia.ts` inline-module set (`module.media` + `module.carousel` on both) — is the same on both branches. Treat a difference you find there as **drift to be reconciled**, not as intended divergence.
 
@@ -314,6 +316,15 @@ Everything else — `page`/`project`/`projectCategory`/`work`, all four `module.
 - Anything reading a per-language document (`home`, `work`, `page`, `project`, `projectCategory`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) needs the `$locale` param on this branch. Porting such a query from `main` means adding the `language == $locale` filter, not copying the `_id` lookup.
 - A field that is `internationalizedArray*` on `main` is plain on this branch: drop the `pickLocalizedString` call in the port, render the value directly.
 - Web fixes authored on `main` are expected to apply here with context conflicts only. If a port looks structural, re-check against the branch before adapting — the divergence table above has been wrong in that direction before.
+
+### Porting fixes between branches
+
+Fixes land on `main` first and reach the variant by `git cherry-pick -x`, as their own PR. Every PR names its counterpart in the description — the PR template asks for it:
+
+- On a `main` PR: `Variant-Port: #<PR>`, or `Variant-Port: n/a` with the reason (main-only i18n code, a default-branch workflow).
+- On a variant PR: `Variant-Port: #<main PR>` for a port, `Variant-Port: variant-only` otherwise.
+
+Without that line, ten fixes from #182, #190 and #191 reached only `main` in 2026-10.
 
 ### Updating conventions on both branches
 
@@ -336,3 +347,4 @@ Before declaring a task complete, all of the following must hold:
 - [ ] For i18n changes: `siteLanguageSettings` singleton updated **before** `fallbackSiteLocales.ts`, never the reverse-only.
 - [ ] No edits to `*.gen.*` files.
 - [ ] No `--no-verify` commits, no `coalesce(...language==...)` GROQ, no hardcoded locale literals outside `web/src/i18n/`.
+- [ ] The PR description names its `Variant-Port` (see "Porting fixes between branches").

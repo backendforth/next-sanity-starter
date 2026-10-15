@@ -21,3 +21,4 @@ Claude Code additionally auto-loads scoped rules from subtree `CLAUDE.md` files 
 - **NEVER** edit `studio/sanity.types.gen.ts`, `studio/schema.json`, or any `*.gen.*` file.
 - Select per-language documents in GROQ with `language == $locale`; their fields are plain and render directly. **NEVER** add `internationalizedArray*` fields or `pickLocalizedString` calls for content on this branch.
 - **NEVER** edit the plugin-managed `language` field on documents.
+- Fixes land on `main` first and reach `variant/document-level` by `git cherry-pick -x`; every PR names its `Variant-Port` (AGENTS.md → "Porting fixes between branches").

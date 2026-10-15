@@ -4,21 +4,24 @@ import {
 	navControlGroupClass,
 	navUtilityButtonClass,
 } from "@/src/components/navigation/navControlStyles";
+import { useLanguage } from "@/src/contexts/LanguageContext";
 import type { Theme } from "@/src/contexts/ThemeContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
+import { type UiLabelKey, uiLabel } from "@/src/i18n/uiLabels";
 import { cn } from "@/src/utils/cn";
 
-const OPTIONS: { value: Theme; label: string }[] = [
-	{ value: "light", label: "Light" },
-	{ value: "dark", label: "Dark" },
+const OPTIONS: { value: Theme; label: UiLabelKey }[] = [
+	{ value: "light", label: "themeLight" },
+	{ value: "dark", label: "themeDark" },
 ];
 
 export function ThemeToggle() {
 	const { theme, setTheme } = useTheme();
+	const { currentLocale } = useLanguage();
 
 	return (
 		<fieldset
-			aria-label="Color scheme"
+			aria-label={uiLabel("colorScheme", currentLocale)}
 			className={cn(navControlGroupClass, "m-0 min-w-0 border-0 p-0")}
 		>
 			{OPTIONS.map((option) => {
@@ -31,7 +34,7 @@ export function ThemeToggle() {
 						aria-pressed={selected}
 						onClick={() => setTheme(option.value)}
 					>
-						{option.label}
+						{uiLabel(option.label, currentLocale)}
 					</button>
 				);
 			})}

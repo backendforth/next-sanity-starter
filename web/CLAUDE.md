@@ -20,7 +20,7 @@ Canonical guardrails: @../AGENTS.md. This file only adds web-specific gotchas â€
 
 - `web/sanity/types/*` are **hand-maintained**. After schema or GROQ projection changes, update the type in the same commit. `pnpm check:wiring` catches missing files; field renames slip through silently.
 - **NEVER** import from `studio/sanity.types.gen.ts` â€” wrong direction, breaks the build.
-- Don't set `data-sanity` in module components. `ModulesRenderer` puts one attribute on the module container (path `modules`, built with `dataAttr`); Visual Editing click-to-edit depends on rendering modules through it.
+- Don't set `data-sanity` in module components. `ModulesRenderer` wraps every module in an element with its field-level path (built with `dataAttr`); Visual Editing click-to-edit depends on rendering modules through it.
 
 ## Anti-patterns specific to web
 

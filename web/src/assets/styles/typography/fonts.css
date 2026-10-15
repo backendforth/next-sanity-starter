@@ -1,5 +1,5 @@
 /*
- * Font stacks — families are loaded via `next/font/google` in `app/layout.tsx`
+ * Font stacks — families are loaded via `next/font/google` in `DocumentShell.tsx`
  * (`Geist` → `--font-family-sans`, `Geist_Mono` → `--font-family-mono` on `<html>`).
  * No @font-face rules here.
  */

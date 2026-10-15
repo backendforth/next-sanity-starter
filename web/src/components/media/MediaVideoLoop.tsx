@@ -54,8 +54,8 @@ type MediaVideoLoopProps = {
 	fillParent?: boolean;
 	className?: string;
 	/**
-	 * External pause/play control. When false the loop pauses even if on-screen.
-	 * Typical use: carousel slides that are not active.
+	 * External pause/play control. When false the loop stays paused, even on screen; it shows
+	 * its poster until it first plays. Typical use: carousel slides that are not active.
 	 */
 	isActive?: boolean;
 	/** For above-the-fold loops — sets `priority` / `fetchpriority=high` on the poster. */
@@ -126,9 +126,9 @@ function MuxVideoLoop({
 	const [shouldAttachHls, setShouldAttachHls] = useState(false);
 	const reducedMotion = usePrefersReducedMotion();
 	/**
-	 * Audio toggle state. Always starts `true` (muted) — browser autoplay policy. Flipped
-	 * by the overlay control rendered when `allowUnmute === true`. The click counts as the
-	 * required user gesture, so the post-toggle `tryPlay()` is allowed to produce sound.
+	 * Audio toggle icon state. Always starts `true` (muted) — browser autoplay policy. The
+	 * overlay control (`allowUnmute`) writes `el.muted` itself; the click counts as the required
+	 * user gesture, so the `tryPlay()` after unmuting is allowed to produce sound.
 	 */
 	const [muted, setMuted] = useState(true);
 
@@ -271,9 +271,10 @@ function MuxVideoLoop({
 	const attachHls = shouldAttachHls && (measurementsReady || attachFallback);
 	useMuxHlsSource(videoRef, attachHls ? playbackId : null, hlsSrc);
 
+	/* Every play path goes through here: only an active loop plays. */
 	const tryPlay = useCallback(() => {
 		const el = videoRef.current;
-		if (!el) return;
+		if (!el || !isActiveRef.current) return;
 		/* Never call play() before the element has a source AND at least
 		 * loaded its metadata. The promise rejects with NotAllowedError
 		 * otherwise — Safari interprets each such rejection as an autoplay-
@@ -286,34 +287,27 @@ function MuxVideoLoop({
 		 * guard makes sure we never poison the score before that fires. */
 		if (!el.currentSrc && !el.src) return;
 		if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
-		const p = el.play();
-		if (p !== undefined) {
-			p.catch(() => {
-				/* autoplay policies / paused for off-screen */
-			});
-		}
+		void el.play().catch(() => {
+			/* autoplay policies / paused for off-screen */
+		});
 	}, []);
 
-	/**
-	 * Keep the DOM `<video>.muted` property aligned with React state. The JSX `muted`
-	 * attribute alone is only read on mount; React doesn't re-apply it on re-render, so we
-	 * write directly to the element when the state flips.
-	 */
-	useEffect(() => {
+	/* Plays without a gesture: not under reduced motion. */
+	const playIfAllowed = useCallback(() => {
+		if (!reducedMotion) tryPlay();
+	}, [reducedMotion, tryPlay]);
+
+	/* React applies the JSX `muted` only on mount, so the toggle writes the element itself. */
+	const onToggleMute = useCallback(() => {
 		const el = videoRef.current;
 		if (!el) return;
-		el.muted = muted;
-	}, [muted]);
-
-	const onToggleMute = useCallback(() => {
-		setMuted(!muted);
+		const nextMuted = !el.muted;
+		el.muted = nextMuted;
+		setMuted(nextMuted);
 		/* Unmuting counts as a user gesture — safe to start playback even under reduced
-		 * motion or while the element was paused (e.g. just scrolled into view). Kept outside
-		 * the state updater: updaters must stay pure (StrictMode calls them twice). */
-		if (muted) {
-			queueMicrotask(() => tryPlay());
-		}
-	}, [muted, tryPlay]);
+		 * motion or while the element was paused (e.g. just scrolled into view). */
+		if (!nextMuted) tryPlay();
+	}, [tryPlay]);
 
 	/* Poster fade gated on the first PAINTED frame, not on `loadeddata` /
 	 * `playing`: both events can fire before the element has composited a
@@ -349,33 +343,11 @@ function MuxVideoLoop({
 		};
 	}, []);
 
-	const tryPlayIfActive = useCallback(() => {
-		if (reducedMotion) return;
-		tryPlay();
-	}, [tryPlay, reducedMotion]);
-
+	/* A loop that is not loaded yet starts from its `loadedmetadata` / `canplay` handlers. */
 	useEffect(() => {
-		const el = videoRef.current;
-		if (!el) return;
-		if (!isActive) {
-			el.pause();
-			return;
-		}
-		if (reducedMotion) return;
-
-		const play = () => {
-			/* Same Safari-engagement guard as `tryPlay`. The `canplay` listener
-			 * below catches the case where this fires before src is ready. */
-			if (!el.currentSrc && !el.src) return;
-			if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
-			void el.play().catch(() => {});
-		};
-		play();
-		if (el.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
-			el.addEventListener("canplay", play, { once: true });
-			return () => el.removeEventListener("canplay", play);
-		}
-	}, [isActive, reducedMotion]);
+		if (isActive) playIfAllowed();
+		else videoRef.current?.pause();
+	}, [isActive, playIfAllowed]);
 
 	useEffect(() => {
 		const root = containerRef.current;
@@ -391,7 +363,7 @@ function MuxVideoLoop({
 						pauseTimer = undefined;
 					}
 					setShouldAttachHls(true);
-					if (isActive && !reducedMotion) tryPlay();
+					playIfAllowed();
 				} else {
 					const el = videoRef.current;
 					pauseTimer = window.setTimeout(() => el?.pause(), 100);
@@ -404,7 +376,7 @@ function MuxVideoLoop({
 			io.disconnect();
 			if (pauseTimer !== undefined) window.clearTimeout(pauseTimer);
 		};
-	}, [isActive, tryPlay, containerRef, reducedMotion]);
+	}, [playIfAllowed, containerRef]);
 
 	/* Safari autoplay rescue: Low Power Mode (iOS/macOS) and the per-site "Never Auto-Play"
 	 * setting deny even muted `playsinline` autoplay — iOS then draws a struck-through play
@@ -418,8 +390,7 @@ function MuxVideoLoop({
 		let removed = false;
 		const onGesture = () => {
 			if (!el.paused) return;
-			/* Inactive loops (carousel slides) and off-screen loops stay paused on purpose. */
-			if (!isActiveRef.current) return;
+			/* Off-screen loops stay paused on purpose; `tryPlay` skips inactive ones. */
 			const r = el.getBoundingClientRect();
 			if (
 				r.width === 0 ||
@@ -430,10 +401,7 @@ function MuxVideoLoop({
 			) {
 				return;
 			}
-			/* Same engagement guard as `tryPlay`. */
-			if (!el.currentSrc && !el.src) return;
-			if (el.readyState < HTMLMediaElement.HAVE_METADATA) return;
-			void el.play().catch(() => {});
+			tryPlay();
 		};
 		const remove = () => {
 			if (removed) return;
@@ -448,7 +416,7 @@ function MuxVideoLoop({
 		document.addEventListener("touchend", onGesture);
 		document.addEventListener("keydown", onGesture);
 		return remove;
-	}, [reducedMotion]);
+	}, [reducedMotion, tryPlay]);
 
 	if (!poster) return null;
 
@@ -496,7 +464,7 @@ function MuxVideoLoop({
 				)}
 				muted
 				playsInline
-				autoPlay={!reducedMotion}
+				autoPlay={isActive && !reducedMotion}
 				loop
 				preload={reducedMotion ? "none" : "metadata"}
 				disablePictureInPicture
@@ -505,8 +473,8 @@ function MuxVideoLoop({
 				/* Native HLS (iPhone) reaches a playable state at `loadedmetadata`
 				 * — attempting there keeps the attempt inside the autoplay window
 				 * instead of waiting for `canplay`. */
-				onLoadedMetadata={tryPlayIfActive}
-				onCanPlay={tryPlayIfActive}
+				onLoadedMetadata={playIfAllowed}
+				onCanPlay={playIfAllowed}
 				onPlaying={() => {
 					disarmStallTimer();
 					hidePosterWhenReady();

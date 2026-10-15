@@ -10,7 +10,7 @@
 [![Biome](https://img.shields.io/badge/Biome-2-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
 [![License: ISC](https://img.shields.io/badge/license-ISC-green)](LICENSE)
 
-It stays slim on purpose: no unused features, production-grade defaults, and a clear path from `git clone` to first published page. Documentation lives next to the code that needs it — strip the per-folder READMEs with `pnpm strip-readmes` once you're ready to ship.
+It stays slim on purpose: no unused features, production-grade defaults, and a clear path from `git clone` to first published page. Documentation lives next to the code that needs it.
 
 ---
 
@@ -58,7 +58,6 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Web** | `web/` | Next.js 16 App Router app — i18n routing, GROQ data fetching, Portable Text, Mux, sitemap/robots, cache-tag revalidation |
 | **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
-| **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
 | **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and wires it, the `ModulesRenderer.tsx` `case` included |
 | **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` and `check:typegen` — module wiring and query typing (CI gates) |
 
@@ -163,7 +162,6 @@ All from the repo root.
 | `pnpm format` | Biome `--write` (repo-wide) |
 | `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
 | `pnpm update` | `pnpm up -r` for the whole repo |
-| `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
 
 Per-package: `pnpm --filter <web|studio> run <script>`.
 

@@ -18,7 +18,7 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 | `modules/text.ts` | `moduleTextQuery` | `module.text` (i18n title + body using `richTextMediaQuery`) |
 | `modules/media.ts` | `moduleMediaQuery` | `module.media` |
 | `modules/carousel.ts` | `moduleCarouselQuery` | `module.carousel` |
-| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, `selection`, resolved `references`) |
+| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, resolved `references`: every routable target of the scope, newest first, or the editor's picks in order) |
 
 ## Usage
 

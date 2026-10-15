@@ -22,9 +22,7 @@ export default function ErrorBoundary({
 	return (
 		<div className="flex flex-col flex-1 bg-color-bg">
 			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
-				<h2 className="content-title">
-					{uiLabel("errorTitle", currentLocale)}
-				</h2>
+				<h2 className="heading-1">{uiLabel("errorTitle", currentLocale)}</h2>
 				<p className="text-color-text-muted">
 					{uiLabel("errorBody", currentLocale)}
 				</p>

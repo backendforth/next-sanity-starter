@@ -50,7 +50,6 @@ type MediaVideoLoopProps = {
 	posterPayload?: unknown;
 	/** Full-bleed in parent (no fixed aspect ratio) — e.g. hero background. */
 	fillParent?: boolean;
-	className?: string;
 	/**
 	 * External pause/play control. When false the loop stays paused, even on screen; it shows
 	 * its poster until it first plays. Typical use: carousel slides that are not active.
@@ -108,7 +107,6 @@ function MuxVideoLoop({
 	caption,
 	posterPayload,
 	fillParent = false,
-	className,
 	isActive = true,
 	posterPriority = false,
 	sizes = "100vw",
@@ -425,33 +423,23 @@ function MuxVideoLoop({
 			ref={containerRef}
 			className={clsx(
 				"relative w-full overflow-hidden",
-				fillParent &&
-					"h-full w-full [&_video]:min-h-full [&_video]:min-w-full [&_video]:object-cover",
+				fillParent && "h-full",
 				/* Skip layout + paint + style cost while off-screen. The element
 				 * keeps its size (we have explicit dimensions / aspect-ratio) so
 				 * scroll position stays stable. Above-the-fold heros are visible
 				 * at mount → no effect there; below-the-fold body loops get the
 				 * full benefit. */
 				"[content-visibility:auto]",
-				className,
 			)}
 			style={fillParent ? undefined : { aspectRatio: aspectCss }}
 		>
 			<video
 				ref={videoRef}
 				{...knownDims}
-				className={clsx(
-					/* `object-center` is the CSS default but explicit so the
-					 * `[&_video]:object-cover` overrides further up the cascade
-					 * don't accidentally introduce a top-left anchor. The video
-					 * always crops from both opposite edges equally — the middle
-					 * of the frame stays put when the viewport resizes.
-					 *
-					 * No CSS filters on the video (contrast/saturate/sharpen): a
-					 * filter on the video alone shifts it against its own poster,
-					 * and perceptual polish belongs in the graded master export. */
-					"absolute inset-0 z-0 h-full w-full object-cover object-center",
-				)}
+				/* No CSS filters on the video (contrast/saturate/sharpen): a filter on the video
+				 * alone shifts it against its own poster, and perceptual polish belongs in the
+				 * graded master export. */
+				className="absolute inset-0 z-0 h-full w-full object-cover"
 				muted
 				playsInline
 				autoPlay={isActive && !reducedMotion}
@@ -484,7 +472,7 @@ function MuxVideoLoop({
 				fetchPriority={posterPriority ? "high" : "auto"}
 				decoding={posterPriority ? "sync" : "async"}
 				className={clsx(
-					"pointer-events-none absolute inset-0 z-10 h-full w-full object-cover object-center",
+					"pointer-events-none absolute inset-0 z-10 h-full w-full object-cover",
 					/* Hiding fades over 700 ms; showing is instant, so a cold fallback
 					 * covers a frameless element at once instead of fading in over
 					 * black. CSS takes the transition from the state being entered,

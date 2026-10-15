@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { Suspense } from "react";
 
 import {
@@ -30,14 +29,7 @@ type Props = {
 	priority?: boolean;
 	/** Responsive `sizes` for slide images (viewport differs in multi-slide mode). */
 	imageSizes?: string;
-	/** Multi-slide carousel: shared row height, width from native aspect ratio. */
-	respectAspectRatio?: boolean;
 };
-
-const MULTI_SLIDE_MEDIA_CLASS = clsx(
-	"h-full w-full [&_img]:h-full [&_img]:w-full [&_img]:object-cover",
-	"[&_video]:h-full [&_video]:w-full [&_video]:object-cover",
-);
 
 /**
  * Renders a single carousel slide. Inactive full-player videos render the poster only,
@@ -48,7 +40,6 @@ export function CarouselSlide({
 	isActive,
 	priority = false,
 	imageSizes = "100vw",
-	respectAspectRatio = false,
 }: Props) {
 	if (slide.kind === "image") {
 		return (
@@ -59,7 +50,6 @@ export function CarouselSlide({
 				objectFit="cover"
 				priority={priority}
 				sizes={imageSizes}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		);
 	}
@@ -75,7 +65,6 @@ export function CarouselSlide({
 				fillParent
 				isActive={isActive}
 				allowUnmute={slide.allowUnmute === true}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		);
 	}
@@ -90,7 +79,6 @@ export function CarouselSlide({
 				sizes={imageSizes}
 				fillParent
 				isActive={isActive}
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		);
 	}
@@ -104,7 +92,6 @@ export function CarouselSlide({
 			objectFit="cover"
 			priority={priority}
 			sizes={imageSizes}
-			className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 		/>
 	);
 	if (!isActive) return poster;
@@ -120,7 +107,6 @@ export function CarouselSlide({
 				videoSettings={slide.videoSettings}
 				priority={priority}
 				fillParent
-				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : undefined}
 			/>
 		</Suspense>
 	);

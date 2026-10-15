@@ -82,7 +82,7 @@ A module can also be insertable inside rich text (`richTextMedia`). That is a ch
 
 ## Sanity data types (TypeGen) and stega
 
-- **Queries.** Fragments are plain `const` template strings; every full query goes through `defineQuery(...)`. No function calls anywhere in a query: TypeGen skips what it can't evaluate statically, and `pnpm generate` fails on it (`check:typegen`). Filter singletons by type as well, `*[_type == "siteSettings" && _id == "siteSettings"][0]` — an `_id` alone gives TypeGen no document type to narrow to.
+- **Queries.** Fragments are plain `const` template strings; every full query goes through `defineQuery(...)`. No function calls anywhere in a query: TypeGen skips what it can't evaluate statically, and `pnpm generate` fails on it (`check:typegen`). A singleton read by `_id` filters by type as well, `*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]` — an `_id` alone gives TypeGen no document type to narrow to.
 - **Types.** `web/sanity/types.ts` derives app-facing names from `web/sanity/sanity.types.gen.ts` (`ModuleOf<"module.text">`, `RichTextMediaValue`, `SiteCookieBanner`, …). Fetchers return what `sanityFetch` returns; no `as` on Sanity data. One deliberate exception: the media helpers (`sanityImageBuilder.ts`, `src/utils/muxImage.ts`) take `unknown` and check the shape at runtime, because they read several projections (image fields, posters, Mux fallbacks).
 - **Stega.** In Presentation `sanityFetch` appends invisible markers to strings, and the types say so (`StegaString`). Compare such a value to a literal through `stegaClean(value)`, or narrow a union with `isStegaVariant(obj, "kind", "loop")` (`web/sanity/utils/stegaVariant.ts`). Never `stegaClean` a whole rendered document: the markers are what click-to-edit reads. Values that leave the page unrendered — metadata strings, analytics ids — are cleaned where they are used (`metadataFromSanityPageData`, the layout's `stegaClean(chrome.analytics)`).
 
@@ -224,7 +224,7 @@ URL /[locale]/[slug]
 | Project full i18n arrays in GROQ. | `coalesce(field[language=="en"].value, …)` — breaks fallback chain. |
 | Read fields via `pickLocalizedString` / `pickLocalizedPortableTextBlocks` in components. | Index arrays directly (`title[0].value`, `title.find(t => t.language === locale)`). |
 | Add a new language **only** by editing the `siteLanguageSettings` singleton in Studio. | Hardcode `"en"` / `"de"` outside `web/src/i18n/`. |
-| Pass `{ locale, siteLocale }` as props through every render boundary. | Read locale from `useRouter()` inside a module — breaks SSR + Visual Editing. |
+| Pass `{ locale, siteLocale }` as props through every render boundary. | Read the locale from `useRouter()`, `usePathname()`, `window.location` or cookies inside a module — breaks SSR and the Presentation iframe. |
 | Mark translatable schema fields with `internationalizedArray*`. | Use a plain `string` or `array` field for translatable content. |
 | Extend `sanityLocalizedText.ts` if a new resolver is genuinely needed. | Write a parallel ad-hoc resolver inside a component. |
 
@@ -282,7 +282,7 @@ See `studio/config/README.md` and `studio/config/structure/README.md` for detail
 
 1. Studio → **Site Language Settings** singleton → append `{ id: "<code>", title: "<Native Name>" }` to `availableLanguages`. Position controls fallback priority. Optionally update `defaultLanguageId`.
 2. `web/src/i18n/fallbackSiteLocales.ts` → extend `FALLBACK_SITE_LOCALE_CONFIG.localeIds` and `languages` in the same order (offline fallback only).
-3. Studio language tabs appear automatically via `studio/config/sync/internationalizedArrayLanguages.ts`. No schema, query, or component change is required. If you think one is required — stop, that is an anti-pattern.
+3. The Studio picks the language up on its own — `studio/config/sync/internationalizedArrayLanguages.ts` on `main`, `studio/config/sync/supportedLanguages.ts` on `variant/document-level`. No schema, query, or component change is required. If you think one is required — stop, that is an anti-pattern.
 
 See `web/src/i18n/README.md`.
 
@@ -292,7 +292,7 @@ Always link to these; never duplicate their content.
 
 | README | Covers |
 |---|---|
-| `README.md` (root) | Project overview, monorepo layout. |
+| `README.md` (root) | Project overview, monorepo layout, env, dataset resolution. |
 | `studio/README.md` | Studio architecture, schema/structure wiring. |
 | `studio/schemas/README.md` | Adding schema types; module details beyond the wiring checklist. |
 | `studio/config/README.md` | Structure + Presentation wiring. |
@@ -323,7 +323,7 @@ Both `main` and `variant/document-level` ship this file. The two branches have c
 | Where the locale lives | In the field. One document per page; translatable fields are `internationalizedArray*` (`[{ _key, language, value }]`). | In the document. One document per language; every translatable document type (`TRANSLATABLE_SCHEMA_TYPES` in `studio/sanity.config.ts`: `page`, `project`, `projectCategory`, `work`, `home`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) has a `language` string field (`readOnly`, `hidden`, `initialValue: "en"`) set by the plugin — **never edit it manually**. Content fields are plain (`string`, `richText`, `richTextMedia`). |
 | Studio plugin | `sanity-plugin-internationalized-array`, languages from `studio/config/sync/internationalizedArrayLanguages.ts`. | `@sanity/document-internationalization`, languages from `studio/config/sync/supportedLanguages.ts`; translations are linked through `translation.metadata` documents. |
 | GROQ | No locale parameter; singletons by type and `_id` (`*[_type == "siteSettings" && _id == "siteSettings"][0]`). The "never filter locale in GROQ" rule applies here. | Queries select the document for the route's language and take `$locale` (`*[_type == "siteSettings" && language == $locale][0]`). Selecting by `language` is the design here, not the anti-pattern. |
-| Render-time resolution | Every translatable field through `pickLocalizedString` / `pickLocalizedPortableTextBlocks`. | Fields already hold the route's language; render them directly. `sanityLocalizedText.ts` remains for link labels that may still carry localized arrays. |
+| Render-time resolution | Every translatable field through `sanityLocalizedText.ts` (`pickLocalizedString` / `pickLocalizedPortableTextBlocks` / `pickLocalizedValue`). | Fields already hold the route's language; render them directly. |
 | Shared singletons | `siteLanguageSettings` (both branches) and `siteAnalyticsSettings` are global singletons addressed by `_id`. | Same. |
 | Layout chrome | `app/[locale]/layout.tsx` fetches the chrome bundle (`fetchSiteChrome`: nav, cookie banner, site settings, analytics, 404 copy) in parallel with the locale check. | Fetches it (`fetchSiteChrome(locale)`) after `isAppLocale(locale)`: the bundle is per language, so its cache key needs a validated locale. |
 

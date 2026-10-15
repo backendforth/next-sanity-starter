@@ -20,6 +20,9 @@ const prefixedTypeList = typeList(PREFIXED_SLUG_DOCUMENT_TYPES);
  */
 const DEFAULT_LANGUAGE = `*[_id == "siteLanguageSettings"][0].defaultLanguageId`;
 
+/** The site's language ids, which the web serves as `/:locale`. */
+const LANGUAGE_IDS = `*[_id == "siteLanguageSettings"][0].availableLanguages[].id`;
+
 /**
  * Which document opens when the Presentation iframe navigates to a route.
  *
@@ -40,7 +43,8 @@ const DEFAULT_LANGUAGE = `*[_id == "siteLanguageSettings"][0].defaultLanguageId`
  * stops at the first hit), so order matters: the literal `work` routes come
  * before the `:locale` patterns they would otherwise be swallowed by. A single
  * segment can't be told apart by shape (`/de` is a locale, `/about` a slug),
- * so one filter covers both.
+ * so one filter covers both; a language id is never a page (the web serves the
+ * locale's home there too).
  */
 export const presentationMainDocuments = defineDocuments([
   {
@@ -67,7 +71,7 @@ export const presentationMainDocuments = defineDocuments([
     route: "/:segment",
     filter:
       SLUG_BASED_DOCUMENT_TYPES.length > 0
-        ? `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE})`
+        ? `(_type == "home" && language == $segment) || (_type in [${slugTypeList}] && slug.current == $segment && language == ${DEFAULT_LANGUAGE} && !($segment in ${LANGUAGE_IDS}))`
         : `_type == "home" && language == $segment`,
   },
   ...(SLUG_BASED_DOCUMENT_TYPES.length > 0

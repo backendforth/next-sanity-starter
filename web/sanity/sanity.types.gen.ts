@@ -291,11 +291,18 @@ export type NavLanguageSwitch = {
   blockKind?: string;
 };
 
+export type WorkReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "work";
+};
+
 export type Link = {
   _type: "link";
   type: "internal" | "external" | "function";
   title?: string;
-  reference?: HomeReference | PageReference;
+  reference?: HomeReference | PageReference | WorkReference | ProjectReference;
   url?: string;
   blank?: boolean;
   func?: LinkFunctions;
@@ -347,13 +354,6 @@ export type InternationalizedArrayReference = Array<
     _key: string;
   } & InternationalizedArrayReferenceValue
 >;
-
-export type WorkReference = {
-  _ref: string;
-  _type: "reference";
-  _weak?: boolean;
-  [internalGroqTypeReferenceTo]?: "work";
-};
 
 export type ProjectCategoryReference = {
   _ref: string;
@@ -871,13 +871,13 @@ export type AllSanitySchemaTypes =
   | MediaImage
   | NavThemeToggle
   | NavLanguageSwitch
+  | WorkReference
   | Link
   | SeoFallback
   | SeoPage
   | LinkFunctions
   | TranslationMetadata
   | InternationalizedArrayReference
-  | WorkReference
   | ProjectCategoryReference
   | ErrorSettingsReference
   | SiteNavReference
@@ -1183,7 +1183,11 @@ export type HomeQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url?: string;
                     blank?: boolean;
                     func?: LinkFunctions;
@@ -1192,6 +1196,10 @@ export type HomeQueryResult = {
                       | {
                           title: string;
                           path: "/";
+                        }
+                      | {
+                          title: string;
+                          path: "/work";
                         }
                       | {
                           title: string;
@@ -1204,7 +1212,11 @@ export type HomeQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url?: string;
                     blank?: boolean;
                     func: {
@@ -1217,7 +1229,11 @@ export type HomeQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url: string | null;
                     blank: boolean | null;
                     func?: LinkFunctions;
@@ -1724,7 +1740,11 @@ export type PageBySlugQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url?: string;
                     blank?: boolean;
                     func?: LinkFunctions;
@@ -1733,6 +1753,10 @@ export type PageBySlugQueryResult = {
                       | {
                           title: string;
                           path: "/";
+                        }
+                      | {
+                          title: string;
+                          path: "/work";
                         }
                       | {
                           title: string;
@@ -1745,7 +1769,11 @@ export type PageBySlugQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url?: string;
                     blank?: boolean;
                     func: {
@@ -1758,7 +1786,11 @@ export type PageBySlugQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url: string | null;
                     blank: boolean | null;
                     func?: LinkFunctions;
@@ -2018,7 +2050,11 @@ export type ProjectBySlugQueryResult = {
               _type: "link";
               type: "external" | "function" | "internal";
               title: string | null;
-              reference?: HomeReference | PageReference;
+              reference?:
+                | HomeReference
+                | PageReference
+                | ProjectReference
+                | WorkReference;
               url?: string;
               blank?: boolean;
               func?: LinkFunctions;
@@ -2027,6 +2063,10 @@ export type ProjectBySlugQueryResult = {
                 | {
                     title: string;
                     path: "/";
+                  }
+                | {
+                    title: string;
+                    path: "/work";
                   }
                 | {
                     title: string;
@@ -2039,7 +2079,11 @@ export type ProjectBySlugQueryResult = {
               _type: "link";
               type: "external" | "function" | "internal";
               title: string | null;
-              reference?: HomeReference | PageReference;
+              reference?:
+                | HomeReference
+                | PageReference
+                | ProjectReference
+                | WorkReference;
               url?: string;
               blank?: boolean;
               func: {
@@ -2052,7 +2096,11 @@ export type ProjectBySlugQueryResult = {
               _type: "link";
               type: "external" | "function" | "internal";
               title: string | null;
-              reference?: HomeReference | PageReference;
+              reference?:
+                | HomeReference
+                | PageReference
+                | ProjectReference
+                | WorkReference;
               url: string | null;
               blank: boolean | null;
               func?: LinkFunctions;
@@ -2551,7 +2599,11 @@ export type WorkQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url?: string;
                     blank?: boolean;
                     func?: LinkFunctions;
@@ -2560,6 +2612,10 @@ export type WorkQueryResult = {
                       | {
                           title: string;
                           path: "/";
+                        }
+                      | {
+                          title: string;
+                          path: "/work";
                         }
                       | {
                           title: string;
@@ -2572,7 +2628,11 @@ export type WorkQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url?: string;
                     blank?: boolean;
                     func: {
@@ -2585,7 +2645,11 @@ export type WorkQueryResult = {
                     _type: "link";
                     type: "external" | "function" | "internal";
                     title: string | null;
-                    reference?: HomeReference | PageReference;
+                    reference?:
+                      | HomeReference
+                      | PageReference
+                      | ProjectReference
+                      | WorkReference;
                     url: string | null;
                     blank: boolean | null;
                     func?: LinkFunctions;
@@ -2872,6 +2936,10 @@ export type SiteChromeQueryResult = {
               }
             | {
                 title: string;
+                path: "/work";
+              }
+            | {
+                title: string;
                 path: string;
               }
             | null;
@@ -2915,6 +2983,10 @@ export type SiteChromeQueryResult = {
               }
             | {
                 title: string;
+                path: "/work";
+              }
+            | {
+                title: string;
                 path: string;
               }
             | null;
@@ -2952,6 +3024,10 @@ export type SiteChromeQueryResult = {
               | {
                   title: string;
                   path: "/";
+                }
+              | {
+                  title: string;
+                  path: "/work";
                 }
               | {
                   title: string;
@@ -3089,7 +3165,8 @@ export type SiteChromeQueryResult = {
             _type: "link";
             type: "external" | "function" | "internal";
             title: string | null;
-            reference?: HomeReference | PageReference;
+            reference?:
+              HomeReference | PageReference | ProjectReference | WorkReference;
             url?: string;
             blank?: boolean;
             func?: LinkFunctions;
@@ -3098,6 +3175,10 @@ export type SiteChromeQueryResult = {
               | {
                   title: string;
                   path: "/";
+                }
+              | {
+                  title: string;
+                  path: "/work";
                 }
               | {
                   title: string;
@@ -3110,7 +3191,8 @@ export type SiteChromeQueryResult = {
             _type: "link";
             type: "external" | "function" | "internal";
             title: string | null;
-            reference?: HomeReference | PageReference;
+            reference?:
+              HomeReference | PageReference | ProjectReference | WorkReference;
             url?: string;
             blank?: boolean;
             func: {
@@ -3123,7 +3205,8 @@ export type SiteChromeQueryResult = {
             _type: "link";
             type: "external" | "function" | "internal";
             title: string | null;
-            reference?: HomeReference | PageReference;
+            reference?:
+              HomeReference | PageReference | ProjectReference | WorkReference;
             url: string | null;
             blank: boolean | null;
             func?: LinkFunctions;

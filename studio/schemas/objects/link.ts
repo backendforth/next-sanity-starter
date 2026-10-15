@@ -2,9 +2,9 @@ import { LinkIcon } from "@sanity/icons/Link";
 import { defineType } from "sanity";
 
 import {
+  LINK_REFERENCE_FILTER,
+  LINK_REFERENCES,
   NEWEST_FIRST_SUGGESTIONS,
-  PAGE_REFERENCE_FILTER,
-  PAGE_REFERENCES,
   sameLanguageReferenceFilter,
 } from "../constants/references";
 
@@ -55,10 +55,10 @@ export const link = defineType({
       name: "reference",
       type: "reference",
       weak: true,
-      to: [...PAGE_REFERENCES],
+      to: [...LINK_REFERENCES],
       options: {
         ...NEWEST_FIRST_SUGGESTIONS,
-        filter: sameLanguageReferenceFilter(PAGE_REFERENCE_FILTER),
+        filter: sameLanguageReferenceFilter(LINK_REFERENCE_FILTER),
       },
       hidden: ({ parent }) => parent?.type !== "internal",
       validation: (rule) =>

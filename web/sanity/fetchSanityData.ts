@@ -19,28 +19,7 @@ import {
 	siteSettingsTitleQuery,
 	workQuery,
 } from "./queries";
-import type { SiteSettingsTitleQueryResult } from "./sanity.types.gen";
-import type { ErrorSettingsDocument } from "./types/errorSettings";
-import type { SanityImageField } from "./types/modules";
-import type { SiteNavMenusDocument } from "./types/nav";
-import type {
-	HomeDocument,
-	PageDocument,
-	PageSeo,
-	ProjectDocument,
-	WorkDocument,
-} from "./types/pages";
-import type { SiteAnalyticsSettingsDocument } from "./types/siteAnalyticsSettings";
-import type { SiteCookieBannerDocument } from "./types/siteCookieBanner";
-import type { SiteLanguageSettingsDocument } from "./types/siteLanguageSettings";
-
-export type {
-	HomeDocument,
-	PageDocument,
-	PageSeo,
-	ProjectDocument,
-	WorkDocument,
-};
+import type { ErrorSettings, PageSeo, SiteFavicon } from "./types";
 
 type LiveFetchOptions = {
 	stega?: boolean;
@@ -71,7 +50,7 @@ export const fetchHomeDocument = cache(
 			params: { locale },
 			...options,
 		});
-		return data as HomeDocument | null;
+		return data;
 	},
 );
 
@@ -88,7 +67,7 @@ export const fetchPageBySlug = cache(
 			],
 			...options,
 		});
-		return data as PageDocument | null;
+		return data;
 	},
 );
 
@@ -106,7 +85,7 @@ export const fetchWorkDocument = cache(
 			params: { locale },
 			...options,
 		});
-		return data as WorkDocument | null;
+		return data;
 	},
 );
 
@@ -123,7 +102,7 @@ export const fetchProjectBySlug = cache(
 			],
 			...options,
 		});
-		return data as ProjectDocument | null;
+		return data;
 	},
 );
 
@@ -140,9 +119,7 @@ export const fetchSiteSettingsTitle = cache(
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		const row = data as SiteSettingsTitleQueryResult;
-		const t = typeof row?.title === "string" ? row.title.trim() : "";
-		return t || "Site";
+		return data?.title?.trim() || "Site";
 	},
 );
 
@@ -159,12 +136,9 @@ export const fetchSettingsSeoFallback = cache(
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		return data as PageSeo;
+		return data;
 	},
 );
-
-/** Result of `siteSettingsFaviconQuery` — typegen cannot evaluate that query (interpolation). */
-export type SiteFaviconData = { favicon?: SanityImageField | null } | null;
 
 /**
  * `siteSettings.favicon` for root metadata icons (per-locale document). The
@@ -176,7 +150,7 @@ export const fetchSiteSettingsFavicon = cache(
 	async (
 		locale: string,
 		options?: LiveFetchOptions,
-	): Promise<SanityImageField | null> => {
+	): Promise<SiteFavicon | null> => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: siteSettingsFaviconQuery,
@@ -184,19 +158,9 @@ export const fetchSiteSettingsFavicon = cache(
 			tags: [SANITY_CACHE_TAGS.siteSettings],
 			...options,
 		});
-		return (data as SiteFaviconData)?.favicon ?? null;
+		return data?.favicon ?? null;
 	},
 );
-
-/** `siteChromeQuery` result — what `app/[locale]/layout.tsx` renders around every page. */
-export type SiteChromeData = {
-	/** `siteNav` main/footer menus with resolved links; no embedded modules. */
-	nav: SiteNavMenusDocument | null;
-	/** Cookie banner copy for the app shell — no embedded modules. */
-	cookieBanner: SiteCookieBannerDocument | null;
-	/** `siteSettings.title`, the header brand. */
-	title: string | null;
-} | null;
 
 /**
  * App-shell chrome (nav, cookie banner, site title) of one language in one `sanityFetch`
@@ -205,10 +169,7 @@ export type SiteChromeData = {
  * `stega: false`.
  */
 export const fetchSiteChrome = cache(
-	async (
-		locale: string,
-		options?: LiveFetchOptions,
-	): Promise<SiteChromeData> => {
+	async (locale: string, options?: LiveFetchOptions) => {
 		if (!isSanityConfigured) return null;
 		const { data } = await sanityFetch({
 			query: siteChromeQuery,
@@ -222,23 +183,22 @@ export const fetchSiteChrome = cache(
 			],
 			...options,
 		});
-		return data as SiteChromeData;
+		return data;
 	},
 );
 
 /** Analytics & tracking providers — document id `siteAnalyticsSettings`. */
 export const fetchSiteAnalyticsSettings = cache(
-	async (
-		options?: LiveFetchOptions,
-	): Promise<SiteAnalyticsSettingsDocument | null> => {
+	async (options?: Omit<LiveFetchOptions, "stega">) => {
 		if (!isSanityConfigured) return null;
+		/* Literal `stega: false` keeps the clean types: tracker ids go to third-party scripts. */
 		const { data } = await sanityFetch({
 			query: siteAnalyticsSettingsQuery,
 			tags: [SANITY_CACHE_TAGS.siteAnalyticsSettings],
-			stega: false,
 			...options,
+			stega: false,
 		});
-		return data as SiteAnalyticsSettingsDocument | null;
+		return data;
 	},
 );
 
@@ -288,9 +248,9 @@ export const fetchSiteLanguageSettings = cache(
 		if (!useDrafts) {
 			return cachedSiteLanguageSettingsPublished();
 		}
-		const data = await draftClientForSiteLanguageSettings(
-			token,
-		).fetch<SiteLanguageSettingsDocument | null>(siteLanguageSettingsQuery);
+		const data = await draftClientForSiteLanguageSettings(token).fetch(
+			siteLanguageSettingsQuery,
+		);
 		return normalizeSiteLocaleConfig(data);
 	},
 );
@@ -306,7 +266,7 @@ export const fetchErrorSettings = cache(
 			params: { locale },
 			...options,
 		});
-		return data as ErrorSettingsDocument | null;
+		return data;
 	},
 );
 
@@ -316,7 +276,7 @@ export const fetchErrorSettings = cache(
  * make the `[locale]` segment dynamic.
  */
 export const fetchErrorSettingsByLocale = cache(
-	async (): Promise<Record<string, ErrorSettingsDocument | null>> => {
+	async (): Promise<Record<string, ErrorSettings | null>> => {
 		const siteLocale = await fetchSiteLanguageSettings();
 		return Object.fromEntries(
 			await Promise.all(

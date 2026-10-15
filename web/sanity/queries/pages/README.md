@@ -107,7 +107,7 @@ const data = await fetchPageBySlug(slug, locale);
 const meta = await fetchPageBySlug(slug, locale, { stega: false });
 ```
 
-**Option A2 — published-only + `unstable_cache`:** **`cachedSanityQuery`** / **`cachedPageDocumentBySlug`** in `@/sanity/cachedSanityQuery` use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
+**Option A2 — published-only + `unstable_cache`:** the helpers in `@/sanity/cachedSanityQuery` (`cachedSitemapPages`, `cachedPageSlugs`, …) use **`client.fetch`** + tags — fine for tooling that must not use draft perspective; not for Presentation/VE routes.
 
 **Option B — Zustand (client):** fetch via `/api/...` or Server Action, then `set({ page: data })`.
 

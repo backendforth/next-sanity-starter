@@ -2,8 +2,9 @@ import { mediaQuery } from "../../snippets/media";
 import { moduleMediaInnerFields, moduleMediaResolvedMediaQuery } from "./media";
 
 /**
- * `module.carousel` (`objects/modules/moduleCarousel.ts`):
- * `imagesOnly` → `slides` (plain `image` items); otherwise `slidesMedia` (`module.media` = image or video).
+ * `module.carousel` (`objects/modules/moduleCarousel.ts`): `imagesOnly` → `slides` (plain
+ * `image` items); otherwise `slidesMedia` (`module.media` = image or video). An unset
+ * `imagesOnly` counts as on, like in the Studio, which shows `slides` until it is switched off.
  */
 export const moduleCarouselInnerFields = `
   heading,
@@ -25,7 +26,7 @@ export const moduleCarouselInnerFields = `
     ${moduleMediaInnerFields}
   },
   "resolvedSlides": select(
-    imagesOnly == true => slides[]{
+    imagesOnly != false => slides[]{
       _key,
       _type,
       "media": ${mediaQuery}

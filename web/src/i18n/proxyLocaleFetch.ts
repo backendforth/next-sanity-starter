@@ -3,7 +3,7 @@ import { resolveStudioDatasetAsync } from "@repo/sanity-dataset-resolve";
 import { normalizeSiteLocaleConfig } from "@/sanity/normalizeSiteLocaleConfig";
 import { siteLanguageSettingsQuery } from "@/sanity/queries";
 import { getSanityStudioProjectId } from "@/sanity/resolveStudioDataset";
-import type { SiteLanguageSettingsDocument } from "@/sanity/types/siteLanguageSettings";
+import type { SiteLanguageSettingsQueryResult } from "@/sanity/sanity.types.gen";
 
 import type { SiteLocaleConfig } from "./fallbackSiteLocales";
 
@@ -49,14 +49,10 @@ async function querySiteLanguageSettings(
 		headers: drafts && token ? { Authorization: `Bearer ${token}` } : undefined,
 	});
 	if (!res.ok) return null;
-	const json: unknown = await res.json();
-	const result =
-		json && typeof json === "object" && "result" in json
-			? (json as { result: unknown }).result
-			: null;
-	return normalizeSiteLocaleConfig(
-		result as SiteLanguageSettingsDocument | null,
-	);
+	/* A raw HTTP query — the proxy runs without the Sanity client — so the result is typed by
+	 * hand here; `normalizeSiteLocaleConfig` still checks every field it reads. */
+	const json: { result?: SiteLanguageSettingsQueryResult } = await res.json();
+	return normalizeSiteLocaleConfig(json?.result ?? null);
 }
 
 /**

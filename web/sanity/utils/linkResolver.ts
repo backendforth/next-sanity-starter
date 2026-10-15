@@ -7,10 +7,11 @@
  * (`NavMenuLink`) and handles `route` / function actions specific to nav rows.
  */
 
+import type { LinkMark } from "@/sanity/types";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
-import type { IntlStringEntry } from "./sanityLocalizedText";
+import { isStegaVariant } from "./stegaVariant";
 
 /** The active locale plus the config that decides whether it gets a path prefix. */
 export type LinkLocaleOptions = {
@@ -18,22 +19,10 @@ export type LinkLocaleOptions = {
 	siteLocale?: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale"> | null;
 };
 
+/** The part of a resolved reference that decides its route. */
 export type LinkResolvedRef = {
 	_type?: string;
 	slug?: string | null;
-	title?: IntlStringEntry[] | string | null;
-};
-
-/** Portable Text `link` mark — aligned with GROQ `linkQuery` / `studio/schemas/objects/link.ts`. */
-export type LinkMark = {
-	_type?: string;
-	type?: "internal" | "external" | "function" | string;
-	title?: IntlStringEntry[] | string | null;
-	url?: string | null;
-	href?: string | null;
-	blank?: boolean | null;
-	resolvedReference?: LinkResolvedRef | null;
-	func?: { key?: string; params?: string | null } | null;
 };
 
 export type ResolvedLink =
@@ -82,9 +71,10 @@ export function resolveLinkMark(
 	mark: LinkMark | null | undefined,
 	options?: LinkLocaleOptions,
 ): ResolvedLink {
-	if (mark?._type !== "link") return null;
+	if (!mark) return null;
 
-	if (mark.type === "external" && mark.url) {
+	if (isStegaVariant(mark, "linkType", "linkExternal")) {
+		if (!mark.url) return null;
 		const blank = mark.blank !== false;
 		return {
 			kind: "anchor",
@@ -94,12 +84,12 @@ export function resolveLinkMark(
 		};
 	}
 
-	if (mark.type === "internal") {
+	if (isStegaVariant(mark, "linkType", "linkInternal")) {
 		const href = resolveRefHref(mark.resolvedReference, options);
-		if (href) return { kind: "anchor", href };
+		return href ? { kind: "anchor", href } : null;
 	}
 
-	if (mark.type === "function") {
+	if (isStegaVariant(mark, "linkType", "linkFunction")) {
 		return { kind: "function" };
 	}
 

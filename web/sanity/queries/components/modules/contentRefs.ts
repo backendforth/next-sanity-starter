@@ -1,13 +1,8 @@
-import {
-	type ContentRefSourceScope,
-	contentRefTypesGroqLiteral,
-} from "@/sanity/constants/contentRefs";
 import { imageQuery } from "../../snippets/media";
 
 /**
- * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`).
- * Document-level i18n: every reference is filtered to the active locale and
- * resolved documents project the plain `title` / `slug` of that locale only.
+ * One list entry: a page, the home singleton or a project, with its card preview. Document-level
+ * i18n: every target is a document of the active locale, so `title` / `slug` are plain values.
  */
 const contentRefTargetProjection = `
   _id,
@@ -33,28 +28,33 @@ const contentRefTargetProjection = `
   }
 `;
 
-function allReferencesProjection(sourceScope: ContentRefSourceScope) {
-	const types = contentRefTypesGroqLiteral(sourceScope);
-	return `*[_type in ${types} && language == $locale && (
-    _type == "home" ||
-    (_type == "page" && defined(slug.current)) ||
-    (_type == "project" && defined(slug.current) && defined(titleMedia.type))
-  )] | order(_updatedAt desc) {
-    ${contentRefTargetProjection}
-  }`;
-}
-
+/**
+ * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`). `selection == "all"` lists every
+ * routable target of `sourceScope` in `$locale` (`^` is the module inside the subquery):
+ * `pages` = home and pages, `projects` = projects with a title medium, `all` = both — the same
+ * sets as `contentRefTypesForScope` in `studio/schemas/constants/references.ts`. Otherwise the
+ * editor's picks, in their order.
+ */
 export const moduleContentRefsInnerFields = `
   heading,
   sourceScope,
   showProjectFilters,
   selection,
   "references": select(
-    selection == "all" => select(
-      sourceScope == "pages" => ${allReferencesProjection("pages")},
-      sourceScope == "projects" => ${allReferencesProjection("projects")},
-      ${allReferencesProjection("all")}
-    ),
+    selection == "all" => *[
+      language == $locale && (
+        (
+          ^.sourceScope != "projects" &&
+          (_type == "home" || (_type == "page" && defined(slug.current)))
+        ) ||
+        (
+          ^.sourceScope != "pages" &&
+          _type == "project" && defined(slug.current) && defined(titleMedia.type)
+        )
+      )
+    ] | order(_updatedAt desc) {
+      ${contentRefTargetProjection}
+    },
     references[]->{
       ${contentRefTargetProjection}
     }

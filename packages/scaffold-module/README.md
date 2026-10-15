@@ -1,59 +1,45 @@
 # @repo/scaffold-module
 
-Scaffolds a new content module across the **8 wiring points** of the module pattern documented in [`/AGENTS.md`](../../AGENTS.md).
+Scaffolds a new content module and wires it at every point of the module pattern in [`/AGENTS.md`](../../AGENTS.md).
 
 ## Usage
 
 From the repo root:
 
 ```bash
-pnpm gen:module <PascalCaseName>          # apply the scaffold
-pnpm gen:module <PascalCaseName> --dry-run  # preview without writing
-pnpm gen:module <PascalCaseName> --inline   # also register as an inline Portable Text block
+pnpm gen:module <PascalCaseName>            # scaffold and wire
+pnpm gen:module <PascalCaseName> --dry-run  # list the changes, write nothing
+pnpm gen:module <PascalCaseName> --inline   # also make it insertable in rich text
 ```
 
-The name must be PascalCase (`Hero`, `Quote`, `VideoStrip`). Lowercase derivations are computed automatically.
+The name must be PascalCase (`Hero`, `Quote`, `VideoStrip`).
 
 ## What it does
 
-Creates four new files:
+Creates three files from `templates/`:
 
-| File | Wiring point |
+| File | |
 |---|---|
-| `studio/schemas/objects/modules/module<Name>.ts` | 1 |
-| `web/src/components/modules/Module<Name>.tsx` | 5 |
-| `web/sanity/queries/components/modules/<name>.ts` | 7 |
-| `web/sanity/types/modules/<name>.ts` | 8 |
+| `studio/schemas/objects/modules/module<Name>.ts` | schema with an i18n `title` |
+| `web/src/components/modules/Module<Name>.tsx` | component typed `module: ModuleOf<"module.<id>">` |
+| `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` projection |
 
-Patches five existing files (using exact-string anchors near the existing module entries):
+Adds the module to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the same slots `pnpm check:wiring` reads): `schemas/index.ts`, `moduleTypes`, the components barrel, a `case` in `ModulesRenderer`, `modulesQuery`. With `--inline` also the three inline places: the Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. Inline is opt-in — use it only for a module that belongs inside text.
 
-| File | Wiring point |
-|---|---|
-| `studio/schemas/index.ts` (import + `schemaTypes`) | 2 |
-| `studio/schemas/fields/modulesArrayField.ts` (`moduleTypes`) | 4 |
-| `web/src/components/modules/index.ts` (barrel) | 6 |
-| `web/sanity/queries/components/modules/index.ts` (barrel + `modulesQuery`) | 7 |
-| `web/sanity/types/modules/index.ts` (barrel + `ContentModule` union) | 8 |
-
-Optionally patches `studio/schemas/objects/editors/richTextMedia.ts` (wiring point 3) when `--inline` is passed. Off by default — only enable for modules that genuinely make sense inside Portable Text.
-
-## What it does NOT do
-
-`web/src/components/modules/ModulesRenderer.tsx` is **not** auto-edited because its dispatch logic is bespoke. The script prints the exact snippet to paste in. Until the `_type` branch is there the module renders as `UnknownModule` (nothing in production), and `pnpm check:wiring` fails.
+Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written; a failed write rolls back what was written. Touched files are formatted with Biome.
 
 ## After running
 
 ```bash
-pnpm studio:generate     # regenerate schema.json + sanity.types.gen.ts
-pnpm check:wiring        # verify all 8 points, incl. the ModulesRenderer branch
+pnpm generate        # schema + TypeGen — the component's ModuleOf<…> gets its fields
+pnpm check:wiring
 pnpm typecheck
-pnpm format
 ```
 
 ## Templates
 
-Templates live in `templates/`. They use `__MODULE_NAME__`, `__MODULE_TITLE__`, `__MODULE_VAR__`, `__MODULE_QUERY_VAR__`, `__MODULE_DATA_TYPE__`, `__MODULE_COMPONENT__`, and `__MODULE_FILE_BASE__` placeholders.
+`templates/*.tmpl` use `__MODULE_NAME__` (`module.hero`), `__MODULE_TITLE__` (`Hero`), `__MODULE_VAR__` (`moduleHero`), `__MODULE_QUERY_VAR__` (`moduleHeroQuery`) and `__MODULE_COMPONENT__` (`ModuleHero`).
 
-## Failure modes
+## Tests
 
-If the anchor strings in the existing files have changed (e.g. a previous refactor reordered imports), the script aborts with an error pointing at the missing anchor. Fix the anchors or re-author the script's `patch()` calls — partial inserts are rejected to avoid corrupted barrels.
+`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs both typegens, `check:typegen`, `check:wiring` and `tsc` for web and studio; a second test checks that a missing anchor writes nothing.

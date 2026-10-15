@@ -1,6 +1,6 @@
 export { dataAttr } from "./dataAttr";
 export {
-	type LinkMark,
+	type LinkLocaleOptions,
 	type LinkResolvedRef,
 	type ResolvedLink,
 	resolveLinkMark,
@@ -12,12 +12,10 @@ export {
 } from "./resolveLinkLabel";
 export * from "./sanityImageBuilder";
 export {
-	type IntlRichTextEntry,
-	type IntlStringEntry,
-	type IntlTextEntry,
-	parseLocalizedText,
+	type LocalizedEntry,
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
-	resolveLocalizedPortableTextDeep,
+	pickLocalizedValue,
 } from "./sanityLocalizedText";
 export * from "./sanityModuleLabel";
+export { isStegaVariant } from "./stegaVariant";

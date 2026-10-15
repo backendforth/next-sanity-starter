@@ -22,7 +22,11 @@ importers:
 
   packages/sanity-dataset-resolve: {}
 
-  packages/scaffold-module: {}
+  packages/scaffold-module:
+    dependencies:
+      '@repo/check-wiring':
+        specifier: workspace:*
+        version: link:../check-wiring
 
   packages/strip-readmes: {}
 

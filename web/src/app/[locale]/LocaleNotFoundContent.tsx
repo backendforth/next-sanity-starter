@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { ErrorSettingsDocument } from "@/sanity/types/errorSettings";
+import type { ErrorSettings } from "@/sanity/types";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 import { useLanguage } from "@/src/contexts/LanguageContext";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
 	/** `errorSettings` per locale id — one document per language. */
-	errorSettingsByLocale: Readonly<Record<string, ErrorSettingsDocument | null>>;
+	errorSettingsByLocale: Readonly<Record<string, ErrorSettings | null>>;
 };
 
 export function LocaleNotFoundContent({ errorSettingsByLocale }: Props) {

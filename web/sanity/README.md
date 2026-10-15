@@ -1,6 +1,6 @@
 # `web/sanity` — data layer for Sanity + Next.js
 
-This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** for fetched module shapes, and **utilities** (images, links, labels). It is designed so pages and components can stay thin: fetch at the route, map types, render.
+This folder holds the **Sanity client**, **GROQ queries**, the **names for their generated types**, and **utilities** (images, links, labels). It is designed so pages and components can stay thin: fetch at the route, map types, render.
 
 ## Contents
 
@@ -10,13 +10,13 @@ This folder holds the **Sanity client**, **GROQ queries**, **TypeScript types** 
 | `live.ts` | `defineLive` → **`sanityFetch`**, **`SanityLive`** — required for Presentation, Draft Mode, and Visual Editing (Stega) |
 | `sanityEnv.ts` | Resolved **`projectId`** and **`dataset`** (async fallback when `development` / `production` is missing) |
 | `resolveStudioDataset.ts` | Re-exports `resolveStudioDatasetAsync` from **`@repo/sanity-dataset-resolve`**; `getSanityStudioProjectId` for Next |
-| `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only; tags/time revalidation + React `cache` helpers (`cachedHomeDocument`, `cachedPageDocumentBySlug`). Not for routes that need Presentation / Draft Mode |
+| `cachedSanityQuery.ts` | **`client.fetch` + `unstable_cache`** — published-only reads without a request scope: sitemap, `generateStaticParams` slug lists, published language settings. Not for routes that need Presentation / Draft Mode |
 | `fetchSanityData.ts` | **`sanityFetch`** wrappers: `fetchHomeDocument`, `fetchPageBySlug`, `fetchSiteChrome` (nav + cookie banner + title for the layout, one query), `fetchErrorSettings`, … — each per-language helper takes the route `locale` and passes it as `$locale`. Use for app routes with preview/VE (pass `{ stega: false }` in `generateMetadata`) |
 | `seo/` | `resolveSanityMetadata`, `metadataFromSanityPageData` — route metadata from merged SEO + document title |
 | `queries/` | GROQ: `snippets/`, `components/` (`text/`, `modules/`), `pages/`, plus `queries/index.ts` barrel |
-| `types/pages.ts` | `HomeDocument`, `PageDocument`, `PageSeo` — import in **`app/**/page.tsx`** next to route fetches (barrel: `types/index.ts`) |
-| `types/modules/` | TS types for `module.*` payloads (and shared image types) |
-| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) — see barrel `utils/index.ts` |
+| `sanity.types.gen.ts` | TypeGen output for every `defineQuery` (`pnpm generate`). Never edit |
+| `types.ts` | App-facing names derived from it: `HomeDocument`, `PageDocument`, `ModuleOf<"module.x">`, `RichTextMediaValue`, `SiteNav`, `LinkMark`, `StegaAware`, … |
+| `utils/` | `sanityImageBuilder`, `getSanityModuleLabel`, `dataAttr`, `isStegaVariant`, link helpers (`linkResolver`, `resolveLinkLabel`), and the array resolver `sanityLocalizedText` (see below) — see barrel `utils/index.ts` |
 
 Import queries from **`@/sanity/queries`**. Import utilities from **`@/sanity/utils`** (barrel) or **`@/sanity/utils/sanityImageBuilder`** etc.
 
@@ -32,13 +32,13 @@ This branch stores one document per language (`@sanity/document-internationaliza
 - **Components render fields directly.** `doc.title` is a `string`, `module.body` is Portable Text — no locale picking. Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`) — aligned with schema **`richTextMedia`**.
 - **No cross-language fallback.** If a document doesn't exist in the requested language, the query returns `null`: slug routes (`page`, `project`) 404, while `home` and `work` render a "no document for this locale" notice.
 
-`utils/sanityLocalizedText.ts` (`parseLocalizedText`, `pickLocalizedString`, …) resolves `internationalizedArray*` values (`[{ _key, language, value }]`), `main`'s storage format. On this branch only **`resolveLinkLabel`** calls it, so link titles that arrive as arrays still resolve; new code should not need it.
+`utils/sanityLocalizedText.ts` (`pickLocalizedString`, `pickLocalizedPortableTextBlocks`, `pickLocalizedValue`) resolves `internationalizedArray*` values (`[{ _key, language, value }]`), `main`'s storage format. On this branch only **`resolveLinkLabel`** calls it, so link titles that arrive as arrays still resolve; new code should not need it.
 
 ---
 
 ## Image builder (`utils/sanityImageBuilder.ts`)
 
-Builds optimized CDN URLs from fetched **`image`** fields (`SanityImageField` from `@/sanity/types/modules`) using `@sanity/image-url`, and exposes metadata helpers.
+Builds optimized CDN URLs from fetched **`image`** fields using `@sanity/image-url`, and exposes metadata helpers. Its input type `SanityImageField` (exported from the same file) is the shape `imageQuery` projects, checked at runtime by `resolveSanityImageFieldForUrl`.
 
 Common exports:
 
@@ -50,8 +50,11 @@ Common exports:
 Example:
 
 ```ts
-import { buildFetchedImageUrl, getImageOrientation } from "@/sanity/utils";
-import type { SanityImageField } from "@/sanity/types/modules";
+import {
+  buildFetchedImageUrl,
+  getImageOrientation,
+  type SanityImageField,
+} from "@/sanity/utils";
 
 function HeroImage({ image }: { image: SanityImageField | null }) {
   if (!image) return null;
@@ -75,7 +78,7 @@ Env: image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (f
 ## Queries
 
 - **Overview** — GROQ basics, folder layout, Sanity Vision examples (home, pages, nav, settings). See `queries/README.md`.
-- **Snippets** — reusable GROQ string pieces (`linkQuery`, `pageSeoQuery`, `siteSettingsSeoFallbackQuery`, `siteNavMenusQuery`, …). See `queries/snippets/README.md`.
+- **Snippets** — reusable GROQ string pieces (`linkQuery`, `pageSeoQuery`, `mediaQuery`, …). See `queries/snippets/README.md`.
 - **Components** — `modulesQuery`, `richTextMediaQuery`, per-module projections. See `queries/components/README.md`.
 - **Pages** — `homeQuery`, `pageBySlugQuery`. See `queries/pages/README.md`.
 - **Sitemap / slugs** — `pageSlugsQuery`, `sitemapPagesQuery` in `queries/snippets/sitemap.ts`.

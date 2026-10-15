@@ -152,7 +152,9 @@ All from the repo root.
 | `pnpm studio:build` | Build the Studio (`studio/dist`) |
 | `pnpm studio:register` | Register the Netlify-hosted Studio URL with Sanity and upload the schema (`--dry-run` to preview) |
 | `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`) — the alternative to Netlify |
-| `pnpm studio:generate` | Schema extract + GROQ typegen |
+| `pnpm generate` | Schema extract, Studio + web typegen, `check:typegen` (`studio:generate` is an alias) |
+| `pnpm check:wiring` | Module wiring check (`gen:module` scaffolds a wired module) |
+| `pnpm test:tooling` | Tests for the wiring check and the scaffolder |
 | `pnpm studio:sync-prod-to-dev` | Clone `production` → `development` dataset |
 | `pnpm lint` | Biome check (repo-wide) |
 | `pnpm format` | Biome `--write` (repo-wide) |
@@ -170,7 +172,7 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 
 - **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`; Studio uses a 2-space override, the rest of the repo is tabs.
 - **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
-- **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 22, `pnpm studio:generate` and `pnpm --filter web run generate` with diff guards on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
+- **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 22, `check:wiring` and `test:tooling`, `pnpm generate` with a diff guard on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
 - **Dependabot** — weekly npm updates, Sanity plugins grouped, `@types/node` major bumps explicitly ignored (typings track Node 22 LTS).
 - **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
 - **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, and editor caches under `.cursor/` are ignored; the committed `.cursor/rules/` folder (Cursor IDE rules) is explicitly re-included. See root `.gitignore`.

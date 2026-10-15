@@ -11,8 +11,8 @@ Exports are re-exported from `@/sanity/queries` (see `queries/index.ts`).
 | `seo.ts` | `pageSeoQuery` | **`pageSeoQuery`** — `seo { … }` projection for any document with a local `seo` field (home, `page`, `siteSettings`). Route metadata uses `fetchSettingsSeoFallback` (via `siteSettingsSeoFallbackQuery`) for site-wide fallback instead of an embedded join. |
 | `settings.ts` includes | `siteSettingsSeoFallbackQuery` | Standalone `siteSettings.seo` projection used once per request for route `generateMetadata` fallbacks. |
 | `media.ts` | `imageQuery`, `videoQuery`, `mediaQuery`, `mediaQuerySpread` | Image / Mux shapes; `mediaQuery` for keyed values, `mediaQuerySpread` inside `image{ … }` / `video{ … }` (GROQ requires spread there) |
-| `link.ts` | `linkQuery` | Portable Text `link` marks: `internal` (route, slug, `resolvedReference`), `external` (href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
-| `settings.ts` | `siteNavMenusQuery`, `navMenusQuery`, `errorSettingsQuery`, `siteCookieBannerLayoutQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery` | Lean projections for the app shell (each fetched via its `fetch*` helper in `fetchSanityData.ts`). All select the document with `language == $locale`, except `siteLanguageSettingsQuery` (global singleton, by `_id`) |
+| `link.ts` | `linkQuery` | `link` marks and nav rows, one `select` branch per type (`linkType` tells them apart): `internal` (route, slug, `resolvedReference`), `external` (url/href, blank), `function` (`func.key` / `func.params` per `linkFunctions`) |
+| `settings.ts` | `siteChromeQuery`, `errorSettingsQuery`, `siteLanguageSettingsQuery`, `siteSettingsTitleQuery`, `siteSettingsFaviconQuery`, `siteSettingsSeoFallbackQuery`, `siteAnalyticsSettingsQuery` | Lean queries for the app shell, each a `defineQuery` fetched via its `fetch*` helper in `fetchSanityData.ts`. The per-language ones select with `language == $locale`; `siteLanguageSettingsQuery` and `siteAnalyticsSettingsQuery` are global singletons (`_type` + `_id`). `siteChromeQuery` bundles nav menus, cookie banner and site title |
 | `translations.ts` | `routePathProjection`, `translationsQuery` | Route path of a document without locale prefix; `translations` = every published language variant (`page`/`project` via `translation.metadata`, `home`/`work` by type) for `hreflang` and the language switch |
 | `sitemap.ts` | `pageSlugsQuery`, `projectSlugsQuery`, `sitemapPagesQuery` | Slug + `language` rows for `[slug]` / `work/[slug]` routes (all languages); sitemap rows cover `home`, `work`, `page`, `project` with `language`, unprefixed `path`, and `_updatedAt` |
 
@@ -22,6 +22,7 @@ Import the snippet and **interpolate** it into your own GROQ string (same patter
 
 ```ts
 // app/example/example-query.ts
+import { defineQuery } from "next-sanity";
 import { linkQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
@@ -33,36 +34,37 @@ const myPortableTextField = `body[]{
   }
 }`;
 
-export const myQuery = `*[_type == "article" && slug.current == $slug && language == $locale][0]{
+export const myQuery = defineQuery(`*[_type == "article" && slug.current == $slug && language == $locale][0]{
   _id,
   title,
   ${myPortableTextField}
-}`;
+}`);
 
-// Server Component or route handler — `locale` comes from the route params
+// Server Component or route handler — `locale` comes from the route params; `doc` is typed by `pnpm generate`
 const doc = await client.fetch(myQuery, { slug: "hello", locale });
 ```
+
+Fragments are plain `const` template strings and the full query goes through `defineQuery`; a function call anywhere in the chain keeps TypeGen from typing the query (`pnpm generate` fails on it).
 
 Use `imageQuery` / `videoQuery` inside object projections when you need consistent asset metadata (dimensions, playback ids, Studio poster frame).
 
 ## Settings documents
 
-Settings are per-language documents (one `siteNav`, `siteSettings`, … per language), so the full queries below take `$locale` (`navMenusQuery` is a fragment).
+Settings are per-language documents (one `siteNav`, `siteSettings`, … per language), so the queries below take `$locale`.
 
-- **`siteNavMenusQuery`** — `siteNav` document for `$locale` with resolved main + footer menus (no `modules[]`). Falls back to a legacy `siteNav` without `language`.
-- **`navMenusQuery`** — only the `mainMenu` / `footerMenu` projections (embed in a larger query if needed).
+- **`siteChromeQuery`** — `siteNav` for `$locale` with resolved main + footer menus (falls back to a legacy `siteNav` without `language`), the cookie banner copy and the site title in one fetch (no `modules[]`).
 - **`errorSettingsQuery`** — 404 / 500 copy; deliberately no `modules[]` (no error page renders modules).
 
-Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from `navMenusQuery` + the lean projections instead if you need a custom shape.
+Settings queries stay **field-scoped on purpose**: every embedded `modulesQuery` costs ~77 KB of GROQ text per query (POSTed on each fetch — see `components/README.md`). Earlier full-document variants (`siteSettingsQuery`, `siteNavQuery`, `siteCookieBannerQuery`, `settingsBundleQuery`) were removed for exactly that reason — compose from the fragments in `settings.ts` and `linkQuery` instead if you need a custom shape.
 
 Example:
 
 ```ts
-import { navMenusQuery } from "@/sanity/queries";
+import { siteChromeQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
-const shellNavQuery = `*[_type == "siteNav" && language == $locale][0]{ _id, title, ${navMenusQuery} }`;
-const nav = await client.fetch(shellNavQuery, { locale });
+const chrome = await client.fetch(siteChromeQuery, { locale });
+const footerLinks = chrome.nav?.footerMenu ?? [];
 ```
 
 ## Using snippets with a client-side store
@@ -76,7 +78,7 @@ Example pattern with a small API route that wraps a snippet-based query:
 
 ```ts
 // app/api/site-shell/[locale]/route.ts
-import { siteNavMenusQuery } from "@/sanity/queries";
+import { siteChromeQuery } from "@/sanity/queries";
 import { client } from "@/sanity/client";
 
 export async function GET(
@@ -84,7 +86,7 @@ export async function GET(
   { params }: { params: Promise<{ locale: string }> },
 ) {
   const { locale } = await params;
-  const data = await client.fetch(siteNavMenusQuery, { locale });
+  const data = await client.fetch(siteChromeQuery, { locale });
   return Response.json(data);
 }
 ```

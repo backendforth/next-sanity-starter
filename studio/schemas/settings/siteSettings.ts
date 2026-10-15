@@ -6,7 +6,7 @@ import { onePerLanguage } from "../../utils/onePerLanguage";
 import { IMAGE_COLOR_PROFILE_HINT } from "../constants/media";
 import { languageField } from "../fields/languageField";
 
-/** Global site settings. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
+/** Site settings, one document per language. Web Preview is disabled in Presentation (see `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` in `config/presentation/conventions.ts`). */
 export const siteSettings = defineType({
   name: "siteSettings",
   title: "Settings",
@@ -43,7 +43,7 @@ export const siteSettings = defineType({
          from this one asset (`siteFaviconIcons`), so squaring a wide logo down
          to the part that still reads at 32 px happens in this UI. */
       options: { hotspot: true },
-      description: `Browser tab icon. Square PNG, at least 512×512. The 32 px, 180 px and 192 px icons are generated from this file, so crop it down to the signet — a full wordmark is unreadable in a tab. ${IMAGE_COLOR_PROFILE_HINT}`,
+      description: `Browser tab icon for every language: only the default language's Settings are read, so set it there. Square PNG, at least 512×512. The 32 px, 180 px and 192 px icons are generated from this file, so crop it down to the signet — a full wordmark is unreadable in a tab. ${IMAGE_COLOR_PROFILE_HINT}`,
     },
     {
       title: "SEO",

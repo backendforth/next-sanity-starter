@@ -43,7 +43,7 @@ This branch keeps **one document per language** (`@sanity/document-international
 | `errorSettings` | 404 copy |
 | `siteCookieBanner` | Cookie banner copy |
 
-Pattern: `*[_type == "siteNav" && language == $locale][0]`. The cookie banner and the favicon fall back to the default language's document (see `siteChromeQuery`).
+Pattern: `*[_type == "siteNav" && language == $locale][0]`. The cookie banner falls back to the default language's document, and the favicon always comes from it (see `siteChromeQuery`).
 
 Two global singletons are read by `_id`: **`siteLanguageSettings`** (site languages: routing and the Studio's document languages) and **`siteAnalyticsSettings`** (cookie banner switch, load mode, tracking providers).
 

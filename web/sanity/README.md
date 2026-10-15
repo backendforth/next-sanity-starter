@@ -36,7 +36,7 @@ This branch stores one document per language (`@sanity/document-internationaliza
 
 - **GROQ selects the language.** Page and settings queries take `$locale` and filter `language == $locale` (e.g. `pageBySlugQuery`, `siteChromeQuery`). The `fetch*` helpers take the route `locale` and pass it through.
 - **Components render fields directly.** `doc.title` is a `string`, `module.body` is Portable Text — no locale picking. Pass blocks into **`RichTextMedia`** (`src/components/text/RichTextMedia.tsx`).
-- **No cross-language fallback.** If a document doesn't exist in the requested language, the query returns `null`: slug routes (`page`, `project`) 404, while `home` and `work` render a "no document for this locale" notice. The cookie banner and the favicon are the exceptions: they fall back to the default language's document (`siteChromeQuery`).
+- **No cross-language fallback.** If a document doesn't exist in the requested language, the query returns `null`: slug routes (`page`, `project`) 404, while `home` and `work` render a "no document for this locale" notice. The cookie banner and the favicon are the exceptions: the banner falls back to the default language's document, and the favicon always comes from it (`siteChromeQuery`).
 
 Plain string fields go through **`plainText(value)`** (`utils/sanityLocalizedText.ts`): trimmed, `undefined` when blank, stega markers kept.
 

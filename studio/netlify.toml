@@ -11,6 +11,7 @@
 # Set in Site configuration → Environment variables. `SANITY_STUDIO_*` values are inlined
 # into the Studio bundle at BUILD time, so a change needs a redeploy.
 #   SANITY_STUDIO_PROJECT_ID      — required
+#   SANITY_STUDIO_DATASET         — optional, per deploy context (see below)
 #   SANITY_STUDIO_PREVIEW_ORIGIN  — the web app's origin, opened by Presentation
 #   SANITY_STUDIO_HOSTING_URL     — this Studio's own URL (custom domain)
 #   SANITY_AUTH_TOKEN             — optional: registers the URL and uploads the schema
@@ -31,19 +32,10 @@
   # site's rule, `[ … ]` guard included.
   ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./packages/site-languages ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
 
-# Dataset per deploy context, as the web site picks it: production deploys edit
-# `production`, previews and branch deploys `development`. The hosted bundle can't see
-# Netlify's `CONTEXT`, so the name is inlined at build, and the Studio skips its dataset
-# probe at load. Values here override the Netlify UI: another dataset name means editing
-# these lines.
-[context.production.environment]
-  SANITY_STUDIO_DATASET = "production"
-
-[context.deploy-preview.environment]
-  SANITY_STUDIO_DATASET = "development"
-
-[context.branch-deploy.environment]
-  SANITY_STUDIO_DATASET = "development"
+# No dataset here, on purpose: values in this file override the Netlify UI and CLI. The build
+# picks it like the web site's (`sanity.cli.ts`): production deploys edit `production`, previews
+# and branch deploys `development`. Another one per deploy context, or per branch, goes into
+# this site's environment as `SANITY_STUDIO_DATASET` (root `README.md` → "Dataset per site").
 
 # The Studio is a single-page app: every route (`/structure/…`, `/presentation/…`)
 # is served by `index.html`. Not forced, so files in `dist/` still win.

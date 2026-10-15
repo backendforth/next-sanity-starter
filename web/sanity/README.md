@@ -62,7 +62,7 @@ Builds CDN URLs from fetched **`image`** fields with `@sanity/image-url`, honour
 - **`getCroppedImageDisplayDimensions`** — pixel size of the cropped area, for `width` / `height` attributes
 - **`cssObjectPositionFromSanityImageField`** — hotspot → `object-position`
 
-Image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (both from **`sanityEnv.ts`**). How the dataset is picked: [root README](../../README.md#how-reposanity-dataset-resolve-picks-a-dataset).
+Image URLs use the same **`projectId`** and **`dataset`** as `client.ts` (both from **`sanityEnv.ts`**). How the dataset is picked: [root README](../../README.md#datasets).
 
 ---
 

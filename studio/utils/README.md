@@ -12,7 +12,7 @@ See the [Studio readme](../README.md) for a high-level feature list. Helpers use
 
 ## Datasets
 
-**`config/sync/studioDataset.ts`** picks the Studio's dataset with **`@repo/sanity-dataset-resolve`** — `development` for local work and previews, `production` for a host's production build, unless **`SANITY_STUDIO_DATASET`** pins one. The full rules: [root README](../../README.md#how-reposanity-dataset-resolve-picks-a-dataset).
+**`config/sync/studioDataset.ts`** picks the Studio's dataset with **`@repo/sanity-dataset-resolve`** — `development` for local work and previews, `production` for a host's production build, unless **`SANITY_STUDIO_DATASET`** pins one. The full rules: [root README](../../README.md#datasets).
 
 To refresh `development` from `production`: `pnpm studio:sync-prod-to-dev` ([`scripts/README.md`](../scripts/README.md)).
 

@@ -6,11 +6,9 @@
 # Build runs from the repository root so pnpm can resolve workspace packages.
 # In the Netlify UI, keep the base directory at the repo root unless you mirror this layout elsewhere.
 #
-# Set in Site settings → Environment variables (Build + Runtime as needed):
-#   SANITY_STUDIO_PROJECT_ID       — required for Next ↔ Sanity
-#   SANITY_STUDIO_DATASET          — optional if you pin a dataset
-#   NEXT_PUBLIC_SANITY_STUDIO_URL  — the Studio's hosting URL (CSP `frame-ancestors`, edit links)
-# Full list: `web/.env.example`
+# Environment variables (Site configuration → Environment variables): `web/.env.example`
+# describes each one. Those marked BUILD are inlined at build time, so a change needs a
+# redeploy.
 #
 # Publish directory (why not `dist/`?):
 # - Next.js writes its build output to `.next/` (not `dist/` like Vite or a static export `out/`).

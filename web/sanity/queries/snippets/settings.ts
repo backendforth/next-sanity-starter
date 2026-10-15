@@ -52,6 +52,7 @@ const siteCookieBannerQuery = `coalesce(
   *[_type == "siteCookieBanner" && language == ${defaultLanguage}][0]
 ){
   _id,
+  language,
   useCookieBanner,
   consentModal {
     description,

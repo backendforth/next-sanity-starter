@@ -233,7 +233,13 @@ export function cookieConsentTranslation(
 	}));
 
 	const description = text(consent?.description, "consentDescription");
-	const policyLink = privacyPolicyHtml(consent?.privacyPolicy, options);
+	/* A locale without its own banner gets the default language's (`siteCookieBannerQuery`), whose
+	 * policy page is in that language: prefix the link with the document's language, not the
+	 * route's, or `/privacy` becomes a `/de/privacy` that may not exist. */
+	const policyLink = privacyPolicyHtml(consent?.privacyPolicy, {
+		...options,
+		locale: stegaClean(doc.language) || locale,
+	});
 
 	return {
 		consentModal: {

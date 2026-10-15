@@ -6,8 +6,9 @@
  * document title. External links fall back to the URL, function links to the function key —
  * both as a last resort before the localized "Link" label.
  *
- * Localized entry arrays are still accepted on both fields and resolved with `pickLocalizedString`,
- * so the code matches `main`, where `link.title` is an `internationalizedArrayString`.
+ * Localized entry arrays are still accepted on both fields and resolved with `pickLocalizedString`:
+ * a dataset shared with `main` holds main-shaped documents (e.g. a `home` whose title is an
+ * `internationalizedArrayString`), and a link on this branch can point at one.
  */
 
 import {

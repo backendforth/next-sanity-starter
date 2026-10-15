@@ -52,12 +52,16 @@ export function ModuleContentRefs({
 		.map((item) => ({
 			key: item._id,
 			href: hrefFor(item.path, locale),
+			/* `typeof`: a main-shaped target in a shared dataset carries a localized array. */
 			label:
-				item.title?.trim() || item.slug?.trim() || uiLabel("untitled", locale),
+				(typeof item.title === "string" && item.title.trim()) ||
+				item.slug?.trim() ||
+				uiLabel("untitled", locale),
 			createdAt: item._createdAt,
 			/* A deleted category dereferences to `null`. */
 			categories: (item.categories ?? []).flatMap((category) => {
-				const label = category?.title?.trim();
+				const label =
+					typeof category?.title === "string" ? category.title.trim() : "";
 				return category && label ? [{ id: category._id, label }] : [];
 			}),
 			previewImage: item.previewImage,

@@ -7,9 +7,8 @@ export const imageQuery = `{
   "alt": asset->altText,
   "asset": asset->{
     _id,
-    url,
     metadata{
-      dimensions{ width, height, aspectRatio }
+      dimensions{ width, height }
     }
   }
 }`;

@@ -20,8 +20,8 @@ It is **imported twice**: in **`tokens.css`** (before sizes / font sizes) and in
 | Folder / file | Role |
 |---------------|------|
 | `variables/colors.css` | `--color-*`; dark tokens under `:root[data-theme="dark"]`, set by the theme toggle (OS preference is ignored) |
-| `variables/sizes.css` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
-| `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`); tiers via `theme(--breakpoint-*)` |
+| `variables/sizes.css` | layout + `--space-*`, `--content-max-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
+| `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`) and the `html` size (`--font-size-root`); tiers via `theme(--breakpoint-*)` |
 | `variables/typography-variable-fonts.css` | optional variable-font axes (`--font-variation-settings-*`, `--font-feature-settings-*`) — import manually if needed |
 | `tailwind/theme.css` | `theme.extend` equivalent (`@theme`); font stacks in `@theme inline` (Geist / Geist Mono from `next/font/google` in `components/layout/DocumentShell.tsx`); **screens** from `breakpoints.css` `@theme` |
 

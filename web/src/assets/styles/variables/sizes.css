@@ -4,13 +4,6 @@
 	/* `max-w-container`: full width of parent up to this cap — only ever steps up with viewport (`w-full max-w-container mx-auto`). */
 	--content-max-width: theme(--breakpoint-wide);
 	--container-spacing: rem(24);
-	/* Optional: symmetric side inset when content is narrower than `--content-max-width`. Needs `--content-min-width` again. Uncomment + wire `theme.css` `--spacing-container-gutter` when needed.
-	--content-min-width: calc(var(--content-max-width) * theme(--content-inner-ratio));
-	--container-gutter: calc(
-		(var(--content-max-width) - var(--content-min-width)) /
-		2
-	);
-	*/
 
 	--space-min: rem(2);
 	--space-xs: rem(8);
@@ -19,9 +12,6 @@
 	--space-lg: rem(40);
 	--space-xl: rem(48);
 	--space-max: rem(80);
-	--space-extra: rem(192);
-
-	--radius-md: 0.375rem;
 
 	/* Rich text + headline measure (line-length caps in `ch`) */
 	--measure-heading-1-2: 50ch;
@@ -36,13 +26,9 @@
 	:root {
 		--container-spacing: rem(32);
 
-		--space-min: rem(2);
-		--space-xs: rem(8);
-		--space-sm: rem(16);
 		--space-md: rem(28);
 		--space-lg: rem(44);
 		--space-xl: rem(56);
 		--space-max: rem(84);
-		--space-extra: rem(172);
 	}
 }

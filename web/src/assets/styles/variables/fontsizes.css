@@ -7,8 +7,8 @@
 	--font-size-lg: rem(16);
 	--font-size-2lg: rem(24);
 	--font-size-3lg: rem(28);
-	--font-size-xl: rem(48);
 
+	/* `html` font size: from `lg` it scales with the viewport, and every `rem` with it. */
 	--font-size-root: 16px;
 
 	--line-height-xs: rem(12.5);
@@ -20,20 +20,14 @@
 	--line-height-big-text: rem(27);
 	--line-height-2lg: rem(32.4);
 	--line-height-3lg: rem(37.8);
-	--line-height-xl: rem(68.85);
 }
 
 @media (width >= theme(--breakpoint-lg)) {
 	:root {
-		--font-size-xs: rem(10);
 		--font-size-sm: rem(12);
-		--font-size-md: rem(12);
-		--font-size-lg: rem(16);
-		--font-size-2lg: rem(24);
 		--font-size-3lg: rem(32);
-		--font-size-xl: rem(48);
 
-		--font-size-root: 16px;
+		--font-size-root: clamp(1rem, 1.111111vw, 1.5rem);
 
 		--line-height-xs: rem(12);
 		--line-height-sm: rem(16);
@@ -43,6 +37,5 @@
 		--line-height-big-text: rem(23);
 		--line-height-2lg: rem(28);
 		--line-height-3lg: rem(44);
-		--line-height-xl: rem(52);
 	}
 }

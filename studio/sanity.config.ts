@@ -1,5 +1,4 @@
 import { codeInput } from "@sanity/code-input";
-import { dashboardTool, projectInfoWidget } from "@sanity/dashboard";
 import { documentInternationalization } from "@sanity/document-internationalization";
 import { visionTool } from "@sanity/vision";
 import { defineConfig } from "sanity";
@@ -7,17 +6,18 @@ import { presentationTool } from "sanity/presentation";
 import { structureTool } from "sanity/structure";
 import { media } from "sanity-plugin-media";
 import { muxInput } from "sanity-plugin-mux-input";
-import { netlifyTool } from "sanity-plugin-netlify";
 
 import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
 
-import { initialValueTemplates } from "./config/initialValueTemplates";
 import {
   presentationLocationsResolver,
   presentationMainDocuments,
 } from "./config/presentation/resolve";
-import { filterSingletonDocumentActions } from "./config/singletons";
+import {
+  filterSingletonDocumentActions,
+  isSingletonTemplate,
+} from "./config/singletons";
 import { structure } from "./config/structure";
 import { studioDataset } from "./config/sync/studioDataset";
 import { supportedLanguagesFromClient } from "./config/sync/supportedLanguages";
@@ -66,9 +66,6 @@ export default defineConfig({
   dataset,
   releases: { enabled: isDev },
   plugins: [
-    dashboardTool({
-      widgets: [projectInfoWidget()],
-    }),
     structureTool({ structure }),
     presentationTool({
       title: "Web Preview",
@@ -102,7 +99,6 @@ export default defineConfig({
       // No download/embed flows — HLS-only playback on the site.
       mp4_support: "none",
     }),
-    netlifyTool(),
     documentInternationalization({
       /** Loaded once per Studio session from `siteLanguageSettings`. */
       supportedLanguages: supportedLanguagesFromClient,
@@ -116,6 +112,9 @@ export default defineConfig({
   document: {
     actions: (prev, { schemaType }) =>
       filterSingletonDocumentActions(prev, schemaType),
+    newDocumentOptions: (prev, { creationContext }) =>
+      creationContext.type === "global"
+        ? prev.filter((item) => !isSingletonTemplate(item.templateId))
+        : prev,
   },
-  initialValueTemplates,
 });

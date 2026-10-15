@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 declare module "*.css";
 
 /**
@@ -26,9 +24,6 @@ interface ImportMetaEnv {
   readonly SANITY_STUDIO_PREVIEW_ORIGIN?: string;
   readonly SANITY_STUDIO_WEB_PREVIEW_ORIGINS?: string;
   readonly SANITY_STUDIO_HOSTING_URL?: string;
-  readonly SANITY_STUDIO_NETLIFY_BUILD_HOOK?: string;
-  readonly SANITY_STUDIO_NETLIFY_SITE_ID?: string;
-  readonly SANITY_STUDIO_NETLIFY_BRANCH_NAME?: string;
 }
 
 interface ImportMeta {

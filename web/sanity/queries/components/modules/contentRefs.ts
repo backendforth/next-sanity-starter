@@ -28,9 +28,9 @@ const contentRefTargetProjection = `
 /**
  * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`). `selection == "all"` lists every
  * routable target of `sourceScope` in `$locale` (`^` is the module inside the subquery):
- * `pages` = home and pages, `projects` = projects with a title medium, `all` = both — the same
- * sets as `contentRefTypesForScope` in `studio/schemas/constants/references.ts`. Otherwise the
- * editor's picks, in their order.
+ * `pages` = home and pages, `projects` = projects with a title medium, `all` = both — the sets
+ * the Studio's picker offers (`contentRefReferenceFilter` in
+ * `studio/schemas/constants/references.ts`). Otherwise the editor's picks, in their order.
  */
 export const moduleContentRefsInnerFields = `
   heading,

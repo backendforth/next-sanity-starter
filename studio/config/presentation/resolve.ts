@@ -1,11 +1,18 @@
 import { defineDocuments } from "sanity/presentation";
 
-import { SLUG_BASED_DOCUMENT_TYPES } from "./conventions";
+import {
+  PREFIXED_SLUG_DOCUMENT_TYPES,
+  PROJECT_URL_PREFIX,
+  SLUG_BASED_DOCUMENT_TYPES,
+} from "./conventions";
 import { presentationLocationsResolver } from "./locationsResolver";
 
 export { presentationLocationsResolver };
 
-const slugTypeList = SLUG_BASED_DOCUMENT_TYPES.map((t) => `"${t}"`).join(",");
+const typeList = (types: readonly string[]) =>
+  types.map((t) => `"${t}"`).join(",");
+const slugTypeList = typeList(SLUG_BASED_DOCUMENT_TYPES);
+const prefixedTypeList = typeList(PREFIXED_SLUG_DOCUMENT_TYPES);
 
 /**
  * The site default language. It lives in `siteLanguageSettings`, not in config, so the
@@ -28,7 +35,8 @@ const DEFAULT_LANGUAGE = `*[_id == "siteLanguageSettings"][0].defaultLanguageId`
  * - `/:segment`           → `home` in that language, or a default-locale slugged doc
  * - `/:locale/:slug`      → slugged doc filtered by `language`
  *
- * Presentation takes the FIRST resolver whose route matches (`useMainDocument`
+ * `/work` is `PROJECT_URL_PREFIX`, the prefixed types `PREFIXED_SLUG_DOCUMENT_TYPES`
+ * (`conventions.ts`). Presentation takes the FIRST resolver whose route matches (`useMainDocument`
  * stops at the first hit), so order matters: the literal `work` routes come
  * before the `:locale` patterns they would otherwise be swallowed by. A single
  * segment can't be told apart by shape (`/de` is a locale, `/about` a slug),
@@ -40,20 +48,20 @@ export const presentationMainDocuments = defineDocuments([
     filter: `_type == "home" && language == ${DEFAULT_LANGUAGE}`,
   },
   {
-    route: "/work",
+    route: PROJECT_URL_PREFIX,
     filter: `_type == "work" && language == ${DEFAULT_LANGUAGE}`,
   },
   {
-    route: "/work/:slug",
-    filter: `_type == "project" && slug.current == $slug && language == ${DEFAULT_LANGUAGE}`,
+    route: `${PROJECT_URL_PREFIX}/:slug`,
+    filter: `_type in [${prefixedTypeList}] && slug.current == $slug && language == ${DEFAULT_LANGUAGE}`,
   },
   {
-    route: "/:locale/work",
+    route: `/:locale${PROJECT_URL_PREFIX}`,
     filter: `_type == "work" && language == $locale`,
   },
   {
-    route: "/:locale/work/:slug",
-    filter: `_type == "project" && slug.current == $slug && language == $locale`,
+    route: `/:locale${PROJECT_URL_PREFIX}/:slug`,
+    filter: `_type in [${prefixedTypeList}] && slug.current == $slug && language == $locale`,
   },
   {
     route: "/:segment",

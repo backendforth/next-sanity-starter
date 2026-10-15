@@ -1,5 +1,6 @@
 import { TagIcon } from "@sanity/icons/Tag";
 import { defineType } from "sanity";
+import { languageField } from "../fields/languageField";
 
 export const projectCategory = defineType({
   name: "projectCategory",
@@ -7,13 +8,7 @@ export const projectCategory = defineType({
   type: "document",
   icon: TagIcon,
   fields: [
-    {
-      name: "language",
-      type: "string",
-      readOnly: true,
-      hidden: true,
-      initialValue: "en",
-    },
+    languageField,
     {
       name: "title",
       title: "Title",

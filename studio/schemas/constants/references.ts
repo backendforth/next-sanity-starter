@@ -43,32 +43,6 @@ export const CONTENT_REF_SELECTION_MODES = ["all", "selected"] as const;
 export type ContentRefSelectionMode =
   (typeof CONTENT_REF_SELECTION_MODES)[number];
 
-/** Document `_type` values included for a content-refs `sourceScope`. */
-export function contentRefTypesForScope(
-  scope: ContentRefSourceScope = "all",
-): string[] {
-  switch (scope) {
-    case "pages":
-      return ["home", "page"];
-    case "projects":
-      return ["project"];
-    default:
-      return ["home", "page", "project"];
-  }
-}
-
-/** Reference picker `to` types for `module.contentRefs`. */
-export function contentRefReferenceTo(scope: ContentRefSourceScope = "all") {
-  switch (scope) {
-    case "pages":
-      return [...PAGE_REFERENCES];
-    case "projects":
-      return [...PROJECT_REFERENCES];
-    default:
-      return [...PAGE_REFERENCES, ...PROJECT_REFERENCES];
-  }
-}
-
 /** GROQ filter for content-refs reference pickers. */
 export function contentRefReferenceFilter(
   scope: ContentRefSourceScope = "all",

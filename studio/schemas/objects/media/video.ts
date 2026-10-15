@@ -1,7 +1,7 @@
 import { PlayIcon } from "@sanity/icons/Play";
 import { defineType } from "sanity";
 
-import { MediaVideoPreview } from "../../../components/previews/MediaVideoPreview";
+import { MediaFieldPreview } from "../../../components/previews/MediaFieldPreview";
 import { getDurationString } from "../../../utils/helpers";
 import { IMAGE_COLOR_PROFILE_HINT } from "../../constants/media";
 
@@ -57,7 +57,7 @@ export const mediaVideo = defineType({
     },
   ],
   components: {
-    preview: MediaVideoPreview,
+    preview: MediaFieldPreview,
   },
   preview: {
     select: {

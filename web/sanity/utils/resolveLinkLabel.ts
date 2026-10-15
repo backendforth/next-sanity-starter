@@ -15,30 +15,44 @@ import {
 	pickLocalizedString,
 	plainText,
 } from "./sanityLocalizedText";
+import { isStegaVariant } from "./stegaVariant";
 
-/**
- * Order: the link's title → what it points at (an internal target's title, the URL, the function
- * key) → `literalFallback` → the UI "Link" label.
- */
+/** A title: a plain string, or localized entries on a main-shaped target. */
+function pickTitle(
+	value: ReadonlyArray<LocalizedEntry<string>> | string | null | undefined,
+	{ locale, siteLocale }: LinkLocaleOptions,
+): string | undefined {
+	return typeof value === "string"
+		? plainText(value)
+		: pickLocalizedString(value, locale, siteLocale);
+}
+
+/** What a link points at, as a label: the internal target's title, the URL or the function key. */
+function targetLabel(
+	link: LinkValue,
+	options: LinkLocaleOptions,
+): string | undefined {
+	if (isStegaVariant(link, "linkType", "linkInternal")) {
+		return pickTitle(link.resolvedReference?.title, options);
+	}
+	if (isStegaVariant(link, "linkType", "linkExternal")) {
+		return plainText(link.url);
+	}
+	if (isStegaVariant(link, "linkType", "linkFunction")) {
+		return plainText(link.func?.key);
+	}
+	return undefined;
+}
+
+/** Order: the link's title → {@link targetLabel} → `literalFallback` → the UI "Link" label. */
 export function resolveLinkLabel(
 	link: LinkValue | null | undefined,
-	{ locale, siteLocale }: LinkLocaleOptions,
+	options: LinkLocaleOptions,
 	literalFallback?: string,
 ): string {
-	const pick = (
-		value: ReadonlyArray<LocalizedEntry<string>> | string | null | undefined,
-	) =>
-		typeof value === "string"
-			? plainText(value)
-			: pickLocalizedString(value, locale, siteLocale);
 	return (
-		pick(link?.title) ??
-		(link && "resolvedReference" in link
-			? pick(link.resolvedReference?.title)
-			: undefined) ??
-		(link && "url" in link ? plainText(link.url) : undefined) ??
-		(link && "func" in link ? plainText(link.func?.key) : undefined) ??
+		(link && (pickTitle(link.title, options) ?? targetLabel(link, options))) ??
 		literalFallback ??
-		uiLabel("link", locale)
+		uiLabel("link", options.locale)
 	);
 }

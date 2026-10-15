@@ -6,7 +6,7 @@
 
 import { type StegaBranded, stegaClean } from "next-sanity";
 
-import type { LinkMark } from "@/sanity/types";
+import type { SiteChromeQueryResult } from "@/sanity/sanity.types.gen";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 
@@ -19,7 +19,10 @@ export type LinkLocaleOptions = {
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 };
 
-type LinkFields = LinkMark extends infer T
+/** The `linkQuery` projection, typed from a footer row (a rich-text mark adds the raw fields). */
+type LinkFields = NonNullable<
+	NonNullable<SiteChromeQueryResult["nav"]>["footerMenu"]
+>[number] extends infer T
 	? T extends unknown
 		? Omit<T, "_key">
 		: never
@@ -27,8 +30,7 @@ type LinkFields = LinkMark extends infer T
 
 /**
  * A `linkQuery` projection: a Portable Text `link` mark, a nav row, or a single `link` field such
- * as the cookie banner's policy link. The field has a `null` `_key` and, outside rich text,
- * stega-branded strings.
+ * as the cookie banner's policy link (its `_key` is `null`); stega-branded outside rich text.
  */
 export type LinkValue = LinkFields | StegaBranded<LinkFields>;
 

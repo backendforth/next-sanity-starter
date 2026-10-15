@@ -3,14 +3,22 @@ import { stegaClean } from "next-sanity";
 import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 import { LazyModuleContentRefsClient } from "./LazyModuleContentRefsClient";
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-/** A list entry with its locale-aware href, resolved on the server. */
-export type ContentRefListItem = ContentRefTarget & { href: string | null };
+/** A list entry with its href and labels resolved for the route's locale on the server. */
+export type ContentRefListItem = {
+	key: string;
+	href: string | null;
+	label: string;
+	createdAt: string;
+	categories: { id: string; label: string }[];
+	previewImage: ContentRefTarget["previewImage"];
+};
 
 type Props = {
 	module: ModuleOf<"module.contentRefs">;
@@ -42,8 +50,17 @@ export function ModuleContentRefs({
 	const items: ContentRefListItem[] = (module.references ?? [])
 		.filter((item) => item != null)
 		.map((item) => ({
-			...item,
+			key: item._id,
 			href: hrefFor(item.path, locale),
+			label:
+				item.title?.trim() || item.slug?.trim() || uiLabel("untitled", locale),
+			createdAt: item._createdAt,
+			/* A deleted category dereferences to `null`. */
+			categories: (item.categories ?? []).flatMap((category) => {
+				const label = category?.title?.trim();
+				return category && label ? [{ id: category._id, label }] : [];
+			}),
+			previewImage: item.previewImage,
 		}));
 	/* In Presentation the value carries invisible stega markers; compare the clean string. */
 	const isProjectList = stegaClean(module.sourceScope) === "projects";

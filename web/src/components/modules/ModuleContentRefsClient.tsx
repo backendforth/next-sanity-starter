@@ -14,12 +14,10 @@ import type { ContentRefListItem } from "./ModuleContentRefs";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type SortMode = "newest" | "az";
+/** `null`: the order the module delivers (the editor's picks, or newest first for "all"). */
+type SortMode = "newest" | "az" | null;
 
-type CategoryOption = {
-	id: string;
-	label: string;
-};
+type CategoryOption = ContentRefListItem["categories"][number];
 
 type Props = {
 	locale: string;
@@ -32,53 +30,35 @@ type Props = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function targetTitle(target: ContentRefListItem): string {
-	const title = typeof target?.title === "string" ? target.title.trim() : "";
-	if (title) return title;
-	const slug = target?.slug?.trim();
-	if (slug) return slug;
-	return "Untitled";
-}
-
-function sortKey(target: ContentRefListItem, locale: string): string {
-	return targetTitle(target).toLocaleLowerCase(locale);
-}
-
-function createdAtMs(target: ContentRefListItem): number {
-	const raw = target?._createdAt;
-	if (!raw) return 0;
-	const ms = Date.parse(raw);
-	return Number.isNaN(ms) ? 0 : ms;
-}
-
 function collectCategoryOptions(
 	items: ContentRefListItem[],
 	locale: string,
 ): CategoryOption[] {
-	const byId = new Map<string, string>();
-	for (const item of items) {
-		for (const cat of item?.categories ?? []) {
-			const id = cat?._id;
-			if (!id || byId.has(id)) continue;
-			const label = typeof cat?.title === "string" ? cat.title.trim() : "";
-			if (label) byId.set(id, label);
-		}
+	const byId = new Map<string, CategoryOption>();
+	for (const category of items.flatMap((item) => item.categories)) {
+		if (!byId.has(category.id)) byId.set(category.id, category);
 	}
-	return [...byId.entries()]
-		.map(([id, label]) => ({ id, label }))
-		.sort((a, b) => a.label.localeCompare(b.label, locale));
+	return [...byId.values()].sort((a, b) =>
+		a.label.localeCompare(b.label, locale),
+	);
 }
 
-function itemMatchesCategory(
-	item: ContentRefListItem,
-	categoryId: string | null,
-): boolean {
-	if (!categoryId) return true;
-	return (item?.categories ?? []).some((cat) => cat?._id === categoryId);
+function sortItems(
+	items: ContentRefListItem[],
+	sort: SortMode,
+	locale: string,
+): ContentRefListItem[] {
+	if (sort === "az") {
+		return [...items].sort((a, b) => a.label.localeCompare(b.label, locale));
+	}
+	if (sort === "newest") {
+		return [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+	}
+	return items;
 }
 
 function ContentRefCardTitle({ label }: { label: string }) {
-	return <h4 className="heading-4 mt-xs mb-xs">{label}</h4>;
+	return <h3 className="heading-4 mt-xs mb-xs">{label}</h3>;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -91,7 +71,7 @@ export function ModuleContentRefsClient({
 	priority = false,
 }: Props) {
 	const [categoryId, setCategoryId] = useState<string | null>(null);
-	const [sort, setSort] = useState<SortMode>("newest");
+	const [sort, setSort] = useState<SortMode>(null);
 
 	const categoryOptions = useMemo(
 		() =>
@@ -101,20 +81,19 @@ export function ModuleContentRefsClient({
 		[isProjectList, showCategoryFilters, items, locale],
 	);
 
-	const visibleItems = useMemo(() => {
-		const filtered = items.filter((item) =>
-			itemMatchesCategory(item, categoryId),
-		);
-		const sorted = [...filtered];
-		if (sort === "az") {
-			sorted.sort((a, b) =>
-				sortKey(a, locale).localeCompare(sortKey(b, locale), locale),
-			);
-		} else {
-			sorted.sort((a, b) => createdAtMs(b) - createdAtMs(a));
-		}
-		return sorted;
-	}, [items, categoryId, sort, locale]);
+	const visibleItems = useMemo(
+		() =>
+			sortItems(
+				categoryId
+					? items.filter((item) =>
+							item.categories.some((category) => category.id === categoryId),
+						)
+					: items,
+				sort,
+				locale,
+			),
+		[items, categoryId, sort, locale],
+	);
 
 	const showFilters =
 		isProjectList && showCategoryFilters && categoryOptions.length > 0;
@@ -185,10 +164,7 @@ export function ModuleContentRefsClient({
 			) : (
 				<ul className="content-refs-grid grid list-none gap-xs p-0 sm:grid-cols-2 lg:grid-cols-3">
 					{visibleItems.map((item, index) => {
-						const href = item.href;
-						const label = targetTitle(item);
-						const key = item?._id ?? `${item?._type}-${item?.slug ?? label}`;
-						const previewImage = item?.previewImage ?? null;
+						const { key, href, label, previewImage } = item;
 						const cardMedia = previewImage ? (
 							<div className="relative aspect-4/3 overflow-hidden bg-color-surface-muted">
 								<MediaImage

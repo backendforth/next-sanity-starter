@@ -27,15 +27,14 @@ const contentRefTargetProjection = `
 /**
  * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`). `selection == "all"` lists every
  * routable target of `sourceScope` in `$locale` (`^` is the module inside the subquery):
- * `pages` = home and pages, `projects` = projects, `all` = both — the sets
- * the Studio's picker offers (`contentRefReferenceFilter` in
- * `studio/schemas/constants/references.ts`). Otherwise the editor's picks, in their order.
+ * `pages` = home and pages, `projects` = projects, `all` = both — the sets the Studio's picker
+ * offers (`contentRefReferenceFilter` in `studio/schemas/constants/references.ts`), newest first.
+ * Otherwise the editor's picks, in their order. The visitor's sort controls start from this.
  */
 export const moduleContentRefsInnerFields = `
   heading,
   sourceScope,
   showProjectFilters,
-  selection,
   "references": select(
     selection == "all" => *[
       language == $locale && (
@@ -48,7 +47,7 @@ export const moduleContentRefsInnerFields = `
           _type == "project" && defined(slug.current)
         )
       )
-    ] | order(_updatedAt desc) {
+    ] | order(_createdAt desc) {
       ${contentRefTargetProjection}
     },
     references[]->{

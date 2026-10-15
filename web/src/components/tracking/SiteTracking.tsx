@@ -107,7 +107,7 @@ export function SiteTracking({ analytics }: Props) {
 		// No one-shot guard here: the effect owns the consent subscription, so an
 		// early return on re-run would drop it for good (Strict Mode remounts, or
 		// any `analytics` change) and consent would never reach the loaders again.
-		// `consentLoaded` is what keeps loads idempotent.
+		// `loadedMap` is what keeps loads idempotent.
 		if (showBanner) {
 			syncConsent(hasConsent("analytics"));
 			return subscribeAnalyticsConsent(syncConsent);

@@ -15,7 +15,7 @@
 		"//generate": "Studio schema extract, then the web query types (TypeGen) and a check that every web query got a type. Run after every schema or query edit.",
 		"generate": "pnpm --filter studio run generate && pnpm --filter web run generate && pnpm run check:typegen",
 		"prepare": "husky",
-		"//dev": "Starts both web (3000) and studio (3333) in parallel — comment out one filter or use `web:dev`/`studio:dev` to run only one.",
+		"//dev": "Starts web (3000) and studio (3333) in parallel; `web:dev` / `studio:dev` start one.",
 		"dev": "pnpm --stream -r run dev",
 		"web:dev": "pnpm --filter web run dev",
 		"studio:dev": "pnpm --filter studio run dev",

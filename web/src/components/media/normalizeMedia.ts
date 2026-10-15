@@ -1,5 +1,6 @@
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
 import { isStegaVariant } from "@/sanity/utils/stegaVariant";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 import type { NormalizedMedia } from "./MediaByKind";
 
@@ -12,10 +13,11 @@ type ResolvedMedia = (
 /**
  * `resolvedMedia` → what {@link MediaByKind} renders, or `null` without media. The kind is read
  * clean (it may carry stega markers in Presentation), a video that autoplays without controls
- * becomes a loop (no player chrome).
+ * becomes a loop (no player chrome), and the sound toggle's labels resolve to `locale`.
  */
 export function normalizeResolvedMedia(
 	resolved: ResolvedMedia,
+	locale: string,
 ): NormalizedMedia | null {
 	if (!resolved.media) return null;
 	const caption = resolved.caption ?? undefined;
@@ -26,7 +28,13 @@ export function normalizeResolvedMedia(
 			media: resolved.media,
 			poster: resolved.poster ?? undefined,
 			caption,
-			allowUnmute: resolved.allowUnmute === true,
+			soundLabels:
+				resolved.allowUnmute === true
+					? {
+							soundOn: uiLabel("soundOn", locale),
+							soundOff: uiLabel("soundOff", locale),
+						}
+					: undefined,
 		};
 	}
 	if (isStegaVariant(resolved, "kind", "video")) {

@@ -1,5 +1,6 @@
 import { LazyMediaVideo, LazyMediaVideoLoop } from "./LazyVideo";
 import { MediaImage } from "./MediaImage";
+import type { SoundToggleLabels } from "./MediaVideoLoop";
 
 /** One `module.media` (or carousel slide) ready to render: see `normalizeResolvedMedia`. */
 export type NormalizedMedia = {
@@ -16,8 +17,8 @@ export type NormalizedMedia = {
 		autoplay?: boolean | null;
 		controls?: boolean | null;
 	} | null;
-	/** `loop` only: show the sound toggle. */
-	allowUnmute?: boolean;
+	/** `loop` only: the sound toggle's labels, set when the loop allows unmuting. */
+	soundLabels?: SoundToggleLabels;
 };
 
 type Props = {
@@ -46,7 +47,7 @@ export function MediaByKind({
 				media={media.media}
 				caption={media.caption}
 				posterPayload={media.poster}
-				allowUnmute={media.allowUnmute}
+				soundLabels={media.soundLabels}
 				priority={priority}
 				sizes={sizes}
 				fillParent={fillParent}

@@ -70,9 +70,11 @@ function renderModuleChild(
 				/>
 			);
 		case "module.media":
-			return <ModuleMedia module={mod} priority={priority} />;
+			return <ModuleMedia module={mod} locale={locale} priority={priority} />;
 		case "module.carousel":
-			return <ModuleCarousel module={mod} priority={priority} />;
+			return (
+				<ModuleCarousel module={mod} locale={locale} priority={priority} />
+			);
 		case "module.contentRefs":
 			return (
 				<ModuleContentRefs

@@ -43,8 +43,8 @@ function LinkMarkRenderer({
 
 /**
  * Components for a `richTextMedia` body: blocks, lists, link marks and the inline modules.
- * Document-level i18n: embedded modules hold the document's language already; `locale` only
- * points internal links at that language's URLs. The `types` map is checked strictly: `tsc` fails when an inline module type
+ * Document-level i18n: embedded modules hold the document's language already; `locale` points
+ * internal links at that language's URLs and picks the embeds' UI labels. The `types` map is checked strictly: `tsc` fails when an inline module type
  * the query returns has no handler here, or a handler names a type it never returns. Handlers
  * get `value` typed clean-or-branded; `stegaBrand` (identity) types it as fetched, branded.
  */
@@ -86,6 +86,7 @@ export function portableTextMediaComponents({
 				<div className="rich-text-embed rich-text-embed-media min-w-0">
 					<ModuleMedia
 						module={stegaBrand(value)}
+						locale={locale}
 						priority={value._key === priorityKey}
 					/>
 				</div>
@@ -94,6 +95,7 @@ export function portableTextMediaComponents({
 				<div className="rich-text-embed w-full min-w-0">
 					<ModuleCarousel
 						module={stegaBrand(value)}
+						locale={locale}
 						priority={value._key === priorityKey}
 					/>
 				</div>

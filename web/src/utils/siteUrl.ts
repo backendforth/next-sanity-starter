@@ -79,3 +79,8 @@ function resolveSiteBaseUrl(): string {
 }
 
 export const SITE_BASE_URL = resolveSiteBaseUrl();
+
+/** Absolute URL for a locale-prefixed pathname; the site root carries no trailing slash. */
+export function absoluteSiteUrl(pathname: string): string {
+	return pathname === "/" ? SITE_BASE_URL : `${SITE_BASE_URL}${pathname}`;
+}

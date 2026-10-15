@@ -12,7 +12,6 @@ import {
 } from "@/src/i18n/fallbackSiteLocales";
 import { SANITY_CACHE_TAGS } from "./cacheTags";
 import { client, isSanityConfigured } from "./client";
-import { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
 import { normalizeSiteLocaleConfig } from "./normalizeSiteLocaleConfig";
 import {
 	pageSlugsQuery,
@@ -26,7 +25,15 @@ import type {
 	SitemapPagesQueryResult,
 } from "./sanity.types.gen";
 
-export { SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS } from "./documentCacheRevalidateSeconds";
+/**
+ * How long these published reads stay cached. With the revalidate webhook configured
+ * (`SANITY_REVALIDATE_SECRET`) they live until `/api/revalidate` expires their tags; without it
+ * they fall back to 60 s. The window also caps the ISR period of every route that reads through
+ * here (all of them, via the language settings): on a webhook-less deploy that is what refreshes
+ * a page published while no visitor had `<SanityLive />` listening.
+ */
+const SANITY_DOCUMENT_CACHE_REVALIDATE_SECONDS: number | false =
+	process.env.SANITY_REVALIDATE_SECRET?.trim() ? false : 60;
 
 // ── Sitemap snapshot ────────────────────────────────────────────────────────
 

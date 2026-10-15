@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { stegaClean } from "next-sanity";
 
 import {
-	fetchSiteAnalyticsSettings,
 	fetchSiteChrome,
 	fetchSiteLanguageSettings,
-	fetchSiteSettingsTitle,
 } from "@/sanity/fetchSanityData";
+import { siteBrandTitle } from "@/sanity/seo";
 import { LazyCookieConsentBanner } from "@/src/components/cookies/LazyCookieConsentBanner";
 import {
 	DocumentShell,
@@ -15,7 +15,7 @@ import {
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
-import { SiteTrackingShell } from "@/src/components/tracking/SiteTrackingShell";
+import { SiteTracking } from "@/src/components/tracking/SiteTracking";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { skipLinkLabel } from "@/src/i18n/skipLinkLabel";
@@ -36,18 +36,17 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale: raw } = await params;
-	const [siteLocale, siteTitle, documentMeta] = await Promise.all([
-		fetchSiteLanguageSettings({ stega: false }),
-		fetchSiteSettingsTitle({ stega: false }),
-		documentMetadata(),
+	const [siteLocale, chrome] = await Promise.all([
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(),
 	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	if (!pathUtils.isAppLocale(raw)) {
 		notFound();
 	}
-	const suffix = siteTitle.trim() || "Site";
+	const suffix = siteBrandTitle(chrome?.settings);
 	return {
-		...documentMeta,
+		...documentMetadata(chrome?.settings?.favicon),
 		title: {
 			default: suffix,
 			template: `%s | ${suffix}`,
@@ -57,19 +56,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
-	// Parallelize: locale config (for validation + LanguageProvider), the chrome
-	// bundle (nav, cookie banner, title in one query) and analytics are
-	// independent. The fetches when `raw` ends up invalid are wasted effort but
-	// the path is rare (404s only); the common case saves a roundtrip.
-	const [siteLocale, chrome, analytics] = await Promise.all([
+	// Parallelize: locale config (for validation + LanguageProvider) and the chrome bundle
+	// (nav, cookie banner, settings, analytics, 404 copy in one query) are independent. The
+	// fetch when `raw` ends up invalid is wasted effort but the path is rare (404s only); the
+	// common case saves a roundtrip.
+	const [siteLocale, chrome] = await Promise.all([
 		fetchSiteLanguageSettings(),
 		fetchSiteChrome(),
-		fetchSiteAnalyticsSettings(),
 	]);
 	const siteNav = chrome?.nav ?? null;
 	const cookieBanner = chrome?.cookieBanner ?? null;
-	/* Same fallback as `fetchSiteSettingsTitle`: the header brand is never empty. */
-	const siteBrand = chrome?.title?.trim() || "Site";
+	/* Rendered, so it keeps its stega markers; the header brand is never empty. */
+	const siteBrand = chrome?.settings?.title?.trim() || "Site";
+	/* Clean: tracker ids and the load mode go to third-party scripts, not into the page. */
+	const analytics = stegaClean(chrome?.analytics ?? null);
 	const enabledTrackers = getEnabledTrackers(analytics);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 
@@ -110,7 +110,9 @@ export default async function LocaleLayout({ children, params }: Props) {
 					trackers={enabledTrackers}
 				/>
 			) : null}
-			<SiteTrackingShell />
+			{enabledTrackers.length > 0 ? (
+				<SiteTracking config={{ analytics, cookieBanner }} />
+			) : null}
 		</LanguageProvider>
 	);
 

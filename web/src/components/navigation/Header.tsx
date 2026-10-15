@@ -125,16 +125,16 @@ function MobileMenuButton({
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Header({ mainMenu, siteTitle }: Props) {
-	const { currentLocale, localePath, siteLocale } = useLanguage();
+	const { currentLocale, localePath, hrefFor, siteLocale } = useLanguage();
 
 	const entries = resolveMainMenuEntries(
 		mainMenu,
 		currentLocale,
-		{ localePath },
+		{ hrefFor },
 		siteLocale,
 	);
 	const homeHref = localePath("/", currentLocale);
-	/** From `siteSettings.title` via `fetchSiteSettingsTitle` (not `siteNav.title`). */
+	/** `siteSettings.title` from `fetchSiteChrome` (not `siteNav.title`). */
 	const trimmedTitle = typeof siteTitle === "string" ? siteTitle.trim() : "";
 	const brandLabel = trimmedTitle.length > 0 ? trimmedTitle : "Site";
 

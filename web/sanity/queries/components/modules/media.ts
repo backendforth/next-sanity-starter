@@ -1,7 +1,7 @@
 import { imageQuery, mediaQuerySpread } from "../../snippets/media";
 
 /**
- * `resolvedMedia` for `module.media` — same logic as the projection; for carousel, `resolvedSlides`.
+ * `resolvedMedia` for `module.media`, and per slide in the carousel's `resolvedSlides`.
  *
  * Three kinds: `image`, `video` (full MuxPlayer with controls), `loop` (silent native
  * `<video>` background loop with optional unmute toggle).
@@ -31,26 +31,11 @@ export const moduleMediaResolvedMediaQuery = `
 `;
 
 /**
- * `module.media` (`objects/modules/moduleMedia.ts`) — image/video/loop via `mediaQuery` on each asset field.
+ * `module.media` (`objects/modules/moduleMedia.ts`): only the resolved shape. The raw
+ * `imageContent` / `videoContent` / `videoLoopContent` objects are not projected, the renderer
+ * reads `resolvedMedia` alone.
  */
 export const moduleMediaInnerFields = `
-  type,
-  imageContent{
-    caption,
-    "media": image{ ${mediaQuerySpread} }
-  },
-  videoContent{
-    caption,
-    videoSettings,
-    "media": video{ ${mediaQuerySpread} },
-    "poster": poster${imageQuery}
-  },
-  videoLoopContent{
-    caption,
-    allowUnmute,
-    "media": video{ ${mediaQuerySpread} },
-    "poster": poster${imageQuery}
-  },
   "resolvedMedia": ${moduleMediaResolvedMediaQuery}
 `;
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import type { ErrorSettings } from "@/sanity/types";
+import type { NotFoundCopy } from "@/sanity/types";
 import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
@@ -13,19 +13,20 @@ import { useLanguage } from "@/src/contexts/LanguageContext";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
 type Props = {
-	errorSettings: ErrorSettings | null;
+	/** `errorSettings`' 404 title and body (`fetchSiteChrome().notFound`). */
+	copy: NotFoundCopy | null;
 };
 
-export function LocaleNotFoundContent({ errorSettings }: Props) {
+export function LocaleNotFoundContent({ copy }: Props) {
 	const pathname = usePathname() ?? "/";
 	const { localeFromPathname, siteLocale, localePath } = useLanguage();
 	const locale = localeFromPathname(pathname);
 
 	const title =
-		pickLocalizedString(errorSettings?.notFoundTitle, locale, siteLocale) ??
+		pickLocalizedString(copy?.notFoundTitle, locale, siteLocale) ??
 		uiLabel("notFoundTitle", locale);
 	const body = pickLocalizedPortableTextBlocks(
-		errorSettings?.notFoundBody,
+		copy?.notFoundBody,
 		locale,
 		siteLocale,
 	);

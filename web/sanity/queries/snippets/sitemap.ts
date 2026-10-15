@@ -1,5 +1,7 @@
 import { defineQuery } from "next-sanity";
 
+import { routePathProjection } from "./routePath";
+
 /**
  * Minimal list of routable pages — for `generateStaticParams` and simple slug lists.
  * (Home lives at `/`, not under `[slug]`, so it is not included here.)
@@ -33,14 +35,5 @@ export const sitemapPagesQuery = defineQuery(`*[
   _id,
   _type,
   _updatedAt,
-  "slug": select(
-    _type in ["home", "work"] => null,
-    slug.current
-  ),
-  "path": select(
-    _type == "home" => "/",
-    _type == "work" => "/work",
-    _type == "project" => "/work/" + slug.current,
-    "/" + slug.current
-  )
+  "path": ${routePathProjection}
 }`);

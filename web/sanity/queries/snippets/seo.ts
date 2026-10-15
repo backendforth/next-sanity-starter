@@ -1,7 +1,7 @@
 /**
  * Document field `seo` only (`seo.page` / `seo.fallback`) — embed in page-level queries.
- * Site-wide SEO fallback for routes is fetched once via **`siteSettingsSeoFallbackQuery`**
- * and passed into `metadataFromSanityPageData` (not embedded in per-page queries).
+ * The site-wide SEO fallback comes with `siteChromeQuery` (`settings.seo`) and is passed into
+ * `metadataFromSanityPageData` (not embedded in per-page queries).
  *
  * `title` / `description` are `internationalizedArray*` and project as full
  * arrays — `resolveSanityMetadata` picks the locale.

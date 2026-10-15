@@ -106,7 +106,7 @@ Run by `sanity migration`, which reads an export of the dataset (drafts included
 **What it does** (`variant/document-level` only), on every language's `siteCookieBanner`
 
 - Turns the `sections` JSON into `cookieSection` objects (`cookieTable.body` rows become `cookies[]`). The untouched default JSON is unset; JSON that does not parse to an array is left alone and reported.
-- Turns an absolute `privacyPolicyUrl` (with `privacyPolicyLabel` as its title) into an external `privacyPolicy` link. A relative path cannot become a page reference, so it is dropped and reported: pick the page in the Studio.
+- Turns an absolute `privacyPolicyUrl` into an external `privacyPolicy` link. Its title is a custom `privacyPolicyLabel`, else the web's default label in the document's language (the `link` type requires a title). A relative path cannot become a page reference, so it is dropped and reported: pick the page in the Studio.
 - Unsets texts still equal to the old English `initialValue`, so each language's document gets the web's default from `cookieBannerLabels.ts` in its own language.
 
 Values already in the new shape are skipped, so a re-run is safe.

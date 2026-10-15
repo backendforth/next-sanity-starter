@@ -44,6 +44,18 @@ const OLD_INITIAL_TEXTS: Record<
 
 const OLD_PRIVACY_LABEL = "Privacy policy";
 
+/**
+ * `cookieBannerLabels.ts` → `privacyPolicy`; the web cannot be imported from here. A migrated
+ * external link needs a title (the `link` type requires one), so without a custom label it gets
+ * the default in the document's language.
+ */
+const POLICY_LABELS: Record<string, string> = {
+  en: "Privacy policy",
+  de: "Datenschutzerklärung",
+  fr: "Politique de confidentialité",
+  nl: "Privacybeleid",
+};
+
 /** The old `sections` `initialValue`, parsed. */
 const OLD_DEFAULT_SECTIONS = [
   {
@@ -176,7 +188,10 @@ function migrateCookieBanner(
               type: "external",
               url,
               blank: true,
-              title: label && label !== OLD_PRIVACY_LABEL ? label : undefined,
+              title:
+                label && label !== OLD_PRIVACY_LABEL
+                  ? label
+                  : (POLICY_LABELS[String(doc.language)] ?? OLD_PRIVACY_LABEL),
             }),
           ),
         );

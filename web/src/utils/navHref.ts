@@ -1,7 +1,8 @@
 /**
  * Nav rows from `siteNav`, resolved on the server for the route's locale: hrefs and the
  * cookie-preferences action from `resolveLinkMark` (the rich-text resolver), labels from
- * `resolveLinkLabel`. A link without a target drops its row.
+ * `resolveLinkLabel`. A link without a target drops its row, and so does a cookie-preferences
+ * link while the banner is off.
  */
 
 import type { MainMenuItem, NavMenuLink } from "@/sanity/types";
@@ -33,6 +34,8 @@ export type MainMenuEntry =
 	| { kind: "languageSwitch"; id: string }
 	| { kind: "themeToggle"; id: string };
 
+type NavOptions = LinkLocaleOptions & { cookieBannerEnabled: boolean };
+
 /** `_key`, or the position for an item without one, under the menu's prefix. */
 function rowId(item: { _key?: string | null }, index: number, prefix: string) {
 	return `${prefix}-${item._key || index}`;
@@ -41,28 +44,32 @@ function rowId(item: { _key?: string | null }, index: number, prefix: string) {
 function navRow(
 	link: NavMenuLink,
 	id: string,
-	options: LinkLocaleOptions,
+	options: NavOptions,
 ): ResolvedNavRow | null {
 	const resolved = resolveLinkMark(link, options);
-	if (!resolved) return null;
-	const label = resolveLinkLabel(link, options);
-	if (resolved.kind === "cookie-preferences") {
-		return { id, label, kind: "button", action: "open-cookie-preferences" };
+	if (
+		!resolved ||
+		(resolved.kind === "cookie-preferences" && !options.cookieBannerEnabled)
+	) {
+		return null;
 	}
-	return {
-		id,
-		label,
-		kind: "link",
-		href: resolved.href,
-		external: !resolved.internal,
-		blank: resolved.target === "_blank",
-	};
+	const label = resolveLinkLabel(link, options);
+	return resolved.kind === "anchor"
+		? {
+				id,
+				label,
+				kind: "link",
+				href: resolved.href,
+				external: !resolved.internal,
+				blank: resolved.target === "_blank",
+			}
+		: { id, label, kind: "button", action: "open-cookie-preferences" };
 }
 
 /** The main menu in Studio order: link rows, the language switch and the theme toggle. */
 export function resolveMainMenuEntries(
 	mainMenu: MainMenuItem[] | null | undefined,
-	options: LinkLocaleOptions,
+	options: NavOptions,
 ): MainMenuEntry[] {
 	return (mainMenu ?? []).flatMap<MainMenuEntry>((item, index) => {
 		const id = rowId(item, index, "nav");
@@ -78,7 +85,7 @@ export function resolveMainMenuEntries(
 
 export function resolveFooterMenuRows(
 	footerMenu: NavMenuLink[] | null | undefined,
-	options: LinkLocaleOptions,
+	options: NavOptions,
 ): ResolvedNavRow[] {
 	return (footerMenu ?? []).flatMap(
 		(link, index) => navRow(link, rowId(link, index, "footer"), options) ?? [],

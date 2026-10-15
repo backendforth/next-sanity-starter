@@ -20,7 +20,7 @@ Preview is provided by the **`presentationTool`** in `sanity.config.ts`:
 - **`previewUrl.initial`** — base URL of the Next.js app (from `SANITY_STUDIO_PREVIEW_ORIGIN`, default `http://localhost:3000`).
 - **`previewMode.enable` / `disable`** — paths that toggle Draft Mode on the frontend (`/api/draft-mode/enable` and `/api/draft-mode/disable` must exist on the site).
 - **`resolve.locations`** — `presentationLocationsResolver` in `config/presentation/locationsResolver.ts` maps documents to iframe URLs (which path opens when you use “Web Preview”).
-- **`resolve.mainDocuments`** — `presentationMainDocuments` in `config/presentation/resolve.ts` tells Presentation which document type matches which route (e.g. home at `/`, pages at `/:slug`).
+- **`resolve.mainDocuments`** — `presentationMainDocuments` in `config/presentation/resolve.ts` tells Presentation which document type matches which route (e.g. home at `/`, pages at `/:slug`), with or without a `/:locale` prefix.
 
 Shared rules live in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `PREFIXED_SLUG_DOCUMENT_TYPES`, …). `SITE_ROOT_DOCUMENT_TYPES` and `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` are derived from the singleton roles in **`config/singletons.ts`** (`root` / `none`), so a settings singleton that should offer no Web Preview link is declared there. When you add a **new routable page type** with a slug, extend **`SLUG_BASED_DOCUMENT_TYPES`**, **`PAGE_REFERENCES`** (in `schemas/constants/references.ts`), and usually **structure** + **locations** if the URL pattern is non-standard.
 

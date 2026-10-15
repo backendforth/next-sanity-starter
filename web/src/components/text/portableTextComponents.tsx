@@ -14,6 +14,7 @@ import {
 import { CookiePreferencesButton } from "@/src/components/cookies/CookiePreferencesButton";
 import { ModuleCarousel } from "@/src/components/modules/ModuleCarousel";
 import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
+import { IfCookieBanner } from "@/src/contexts/CookieBannerContext";
 
 function LinkMarkRenderer({
 	children,
@@ -29,7 +30,12 @@ function LinkMarkRenderer({
 		return <>{children}</>;
 	}
 	if (resolved.kind === "cookie-preferences") {
-		return <CookiePreferencesButton>{children}</CookiePreferencesButton>;
+		/* Without the banner there is no modal to open: the text stays plain. */
+		return (
+			<IfCookieBanner fallback={children}>
+				<CookiePreferencesButton>{children}</CookiePreferencesButton>
+			</IfCookieBanner>
+		);
 	}
 	if (resolved.internal) {
 		return <Link href={resolved.href}>{children}</Link>;

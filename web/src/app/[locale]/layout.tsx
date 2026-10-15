@@ -17,6 +17,7 @@ import { Header } from "@/src/components/navigation/Header";
 import { LazySiteTracking } from "@/src/components/tracking/LazySiteTracking";
 import { cookieConsentTranslation } from "@/src/components/tracking/lib/cookieConsentConfig";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
+import { CookieBannerProvider } from "@/src/contexts/CookieBannerContext";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";
@@ -74,9 +75,12 @@ export default async function LocaleLayout({ children, params }: Props) {
 	const chrome = await fetchSiteChrome(locale);
 	const siteNav = chrome?.nav ?? null;
 	const cookieBanner = chrome?.cookieBanner ?? null;
+	/* The banner, the cookie-preferences links (nav, rich text) and tracking follow this switch. */
+	const cookieBannerEnabled = cookieBanner?.useCookieBanner === true;
 	/* Clean: tracker ids and the load mode go to third-party scripts, not into the page. */
 	const analytics = stegaClean(chrome?.analytics ?? null);
 	const enabledTrackers = getEnabledTrackers(analytics);
+	const navOptions = { ...linkOptions, cookieBannerEnabled };
 
 	const site = (
 		<LanguageProvider locale={locale} siteLocaleConfig={siteLocale}>
@@ -88,7 +92,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 			</a>
 			<Header
 				locale={locale}
-				entries={resolveMainMenuEntries(siteNav?.mainMenu, linkOptions)}
+				entries={resolveMainMenuEntries(siteNav?.mainMenu, navOptions)}
 				homeHref={pathUtils.localePath("/", locale)}
 				siteTitle={siteBrand(chrome?.settings)}
 			/>
@@ -97,16 +101,19 @@ export default async function LocaleLayout({ children, params }: Props) {
 				className="flex min-h-0 flex-1 flex-col"
 				tabIndex={-1}
 			>
-				{children}
+				{/* Rich-text cookie-preferences links read the switch here. */}
+				<CookieBannerProvider enabled={cookieBannerEnabled}>
+					{children}
+				</CookieBannerProvider>
 			</main>
 			<Footer
 				locale={locale}
-				rows={resolveFooterMenuRows(siteNav?.footerMenu, linkOptions)}
+				rows={resolveFooterMenuRows(siteNav?.footerMenu, navOptions)}
 			/>
 			{/* Only when the Studio toggle is on: the lazy chunk (JS + CSS) is
 			 * otherwise never requested. A toggle flip reaches the page through
 			 * the `siteCookieBanner` cache tag, without a deploy. */}
-			{cookieBanner?.useCookieBanner ? (
+			{cookieBanner && cookieBannerEnabled ? (
 				<LazyCookieConsentBanner
 					locale={locale}
 					translation={cookieConsentTranslation(
@@ -120,9 +127,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 				<LazySiteTracking
 					config={{
 						analytics,
-						cookieBanner: cookieBanner && {
-							useCookieBanner: cookieBanner.useCookieBanner,
-						},
+						cookieBanner: { useCookieBanner: cookieBannerEnabled },
 					}}
 				/>
 			) : null}

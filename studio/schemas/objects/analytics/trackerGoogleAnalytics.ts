@@ -54,10 +54,10 @@ export const trackerGoogleAnalytics = defineType({
     defineField({
       name: "cookieBannerDescription",
       title: "Cookie banner description",
+      description:
+        "Shown in every language. Empty = the default text in the visitor's language.",
       type: "text",
       rows: 2,
-      initialValue:
-        "Helps us understand how visitors use the site via Google Analytics.",
     }),
   ],
   preview: {

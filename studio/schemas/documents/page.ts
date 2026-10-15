@@ -4,7 +4,7 @@ import { TextIcon } from "@sanity/icons/Text";
 import { defineType } from "sanity";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import { titleSlugSource } from "../../utils/titleSlugSource";
-import { validateSlug } from "../../utils/validateSlug";
+import { validatePageSlug } from "../../utils/validateSlug";
 import { modulesArrayField } from "../fields/modulesArrayField";
 
 export const page = defineType({
@@ -42,7 +42,7 @@ export const page = defineType({
         maxLength: 96,
         source: titleSlugSource,
       },
-      validation: validateSlug,
+      validation: validatePageSlug,
       group: "editorial",
     },
     modulesArrayField({ group: "editorial" }),

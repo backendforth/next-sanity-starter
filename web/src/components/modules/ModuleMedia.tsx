@@ -25,6 +25,14 @@ type Props = {
 	priority?: boolean;
 };
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+/**
+ * `sizes` for media in the page column, capped at `--content-max-width` (`--breakpoint-wide`);
+ * `var()` is invalid in the `sizes` grammar, so the 2000px is a literal.
+ */
+const MEDIA_SIZES = "min(100vw, 2000px)";
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function MediaFigure({
@@ -57,6 +65,7 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 					posterPayload={rm.poster}
 					allowUnmute={rm.allowUnmute === true}
 					posterPriority={priority}
+					sizes={MEDIA_SIZES}
 				/>
 			</MediaFigure>
 		);
@@ -71,6 +80,7 @@ function renderModuleMediaFigure(module: MediaModule, priority: boolean) {
 						caption={rm.caption}
 						posterPayload={rm.poster}
 						posterPriority={priority}
+						sizes={MEDIA_SIZES}
 					/>
 				) : (
 					<LazyMediaVideo

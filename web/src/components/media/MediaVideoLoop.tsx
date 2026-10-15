@@ -9,7 +9,7 @@
  *   downloaded for off-screen loops.
  * - Poster fades out once the first frame is actually painted (no hard cut, no black flash).
  * - Respects `prefers-reduced-motion`: skips autoplay and leaves the poster in place.
- * - Poster WebP `srcset`/`sizes` track the container width (retina-aware).
+ * - Poster `srcset` with the caller's `sizes`, one URL from server HTML to hydration.
  * - Prefers AV1 → HEVC → H.264 HLS renditions when the manifest and browser support them.
  */
 
@@ -60,6 +60,8 @@ type MediaVideoLoopProps = {
 	isActive?: boolean;
 	/** For above-the-fold loops — sets `priority` / `fetchpriority=high` on the poster. */
 	posterPriority?: boolean;
+	/** `sizes` for the poster `srcset`: the width the loop occupies. Defaults to `"100vw"`. */
+	sizes?: string;
 	/**
 	 * When true, render a small overlay button (bottom-right) that lets the visitor toggle
 	 * audio on/off. The loop starts muted regardless — browser autoplay policies forbid
@@ -105,6 +107,7 @@ function MuxVideoLoop({
 	className,
 	isActive = true,
 	posterPriority = false,
+	sizes = "100vw",
 	allowUnmute = false,
 }: MediaVideoLoopProps & { playbackId: string }) {
 	const locale =
@@ -162,8 +165,10 @@ function MuxVideoLoop({
 		? undefined
 		: { width: videoWidthPx, height: videoHeightPx };
 
+	/* Not sized to the slot, like `MediaVideo`: measuring after mount changed the URL and the
+	 * eager hero poster downloaded twice. `srcset` + `sizes` pick the variant instead. */
 	const thumbWidthPx = muxThumbnailRequestWidthPx({
-		containerWidthPx: slotWidthPx,
+		containerWidthPx: undefined,
 		assetMaxWidthPx: knownDims?.width,
 	});
 
@@ -419,16 +424,6 @@ function MuxVideoLoop({
 
 	if (!poster) return null;
 
-	/* The measured slot once it lands (a carousel slide is not 100vw). Before that, a literal
-	 * width — `var()` is invalid inside the `sizes` grammar; 2000px mirrors
-	 * `--content-max-width` (`--breakpoint-wide`). */
-	const posterSizes =
-		typeof slotWidthPx === "number" && slotWidthPx > 0
-			? `${slotWidthPx}px`
-			: fillParent
-				? "100vw"
-				: "(max-width: 900px) 100vw, min(100vw, 2000px)";
-
 	return (
 		<div
 			ref={containerRef}
@@ -485,7 +480,7 @@ function MuxVideoLoop({
 			<img
 				src={poster.src}
 				srcSet={poster.srcSet}
-				sizes={poster.srcSet ? posterSizes : undefined}
+				sizes={poster.srcSet ? sizes : undefined}
 				alt={caption || ""}
 				width={knownDims?.width}
 				height={knownDims?.height}

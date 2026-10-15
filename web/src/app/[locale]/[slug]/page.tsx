@@ -36,12 +36,8 @@ export async function generateMetadata({
 		fetchSiteLanguageSettings(),
 		fetchSiteChrome(locale),
 	]);
-	if (!data) {
-		return {
-			title: "Not found",
-			description: undefined,
-		};
-	}
+	/* The page 404s; Next then takes the tab title from `not-found.tsx`, not from here. */
+	if (!data) return {};
 
 	return metadataFromSanityPageData({
 		data,

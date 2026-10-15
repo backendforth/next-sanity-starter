@@ -1,8 +1,4 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
-/** Same tab title as an unknown `[slug]`. */
-export const metadata: Metadata = { title: "Not found" };
 
 /**
  * Deeper paths under a valid locale that match no route (`/de/a/b/c`, `/de/work/a/b`). Without

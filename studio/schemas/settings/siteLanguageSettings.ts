@@ -73,8 +73,7 @@ export const siteLanguageSettings = defineType({
       name: "defaultLanguageId",
       title: "Default language",
       type: "string",
-      description:
-        "Used for unprefixed URLs (e.g. /about) and as the primary default in Studio.",
+      description: "Used for unprefixed URLs (e.g. /about).",
       validation: (rule) =>
         rule.required().custom((value, context) => {
           const parent = context.parent as

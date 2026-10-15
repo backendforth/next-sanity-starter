@@ -7,7 +7,7 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "pnpm --workspace-root exec biome check web",
-		"format": "pnpm --workspace-root exec biome format --write web",
+		"format": "pnpm --workspace-root exec biome check --write web",
 		"typecheck": "tsc --noEmit",
 		"generate": "sanity typegen generate"
 	},

@@ -1,34 +1,15 @@
 ---
-description: Module pattern — 6-point wiring, inline opt-in. Applies when editing modules anywhere.
+description: Module pattern — schema, component and query of a content module.
 globs:
   - studio/schemas/objects/modules/**
   - web/src/components/modules/**
   - web/sanity/queries/components/modules/**
 ---
 
-A **module** is a paired Sanity object (`module.<id>`) plus a React component (`Module<Name>.tsx`). `pnpm gen:module <Name>` scaffolds one and wires all **6 points**; `pnpm check:wiring` compares them exactly:
+The wiring checklist (six points, inline opt-in) is in `AGENTS.md` §"The module pattern". Prefer `pnpm gen:module <Name>`; `pnpm check:wiring` compares every list.
 
-1. `studio/schemas/objects/modules/module<Name>.ts` — `defineType`, `name: "module.<id>"`, fields, `preview`, optional `icon`.
-2. `studio/schemas/index.ts` — import + add to `schemaTypes`.
-3. `studio/schemas/fields/modulesArrayField.ts` — append `{ type: "module.<id>" }` to `moduleTypes`.
-4. `web/src/components/modules/Module<Name>.tsx` — `module: ModuleOf<"module.<id>">`, accepts `{ module, locale, siteLocale }`. No `data-sanity` in the component — `ModulesRenderer` wraps every module with it.
-5. `web/src/components/modules/ModulesRenderer.tsx` — `case "module.<id>":` in `renderModuleChild()` (the `never` fallback makes a missing case a `tsc` error).
-6. `web/sanity/queries/components/modules/<name>.ts` — `module<Name>Query` projection, full i18n arrays, listed in `modulesQuery`.
-
-Then `pnpm generate` and commit the generated files. Inline use in rich text is **opt-in** and takes three more places, all or none (`--inline` does it): Studio `richTextMedia.ts` `of`, `richTextMediaQuery`, the `types` map in `portableTextComponents.tsx`.
-
-DO:
-
-- Ship the module in a single commit with its generated types.
-- Reuse `media.image`, `media.video`, `media.videoLoop` from `studio/schemas/objects/media/`.
-- Project i18n fields as full `{ _key, _type, language, value }` arrays.
-- Read i18n via `pickLocalizedString` / `pickLocalizedPortableTextBlocks`.
-
-DON'T:
-
-- Land schema without component (or vice versa).
-- Write a TS type for the module by hand — it is `ModuleOf<"module.<id>">`.
-- Register an inline module in only some of the three inline places.
-- Index i18n arrays directly (`title[0].value`).
-- `coalesce(field[language==$locale].value, ...)` in GROQ.
-- Hand-edit `*.gen.ts` or `studio/schema.json`.
+- i18n: module fields are `internationalizedArray*`; the projection returns the full arrays and the component resolves them with `pickLocalizedString` / `pickLocalizedPortableTextBlocks`.
+- File `module<Name>.ts`, `export const module<Name>` and `name: "module.<id>"` must match — `check:wiring` finds a module only by all three.
+- Give every module schema a `preview`, or Studio lists each instance as "Untitled".
+- Renaming `module.<id>` once content exists needs a data migration.
+- Module components are server components. An interactive part goes behind a lazy client boundary like `web/src/components/media/LazyVideo.tsx` or `…/carousel/LazyCarouselViewport.tsx`, or it lands in every route's first-load JS.

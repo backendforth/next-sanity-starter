@@ -1,4 +1,4 @@
-const SKIP_TO_MAIN: Record<string, string> = {
+const SKIP_TO_MAIN: Record<string, string> & { en: string } = {
 	de: "Zum Hauptinhalt springen",
 	en: "Skip to main content",
 	fr: "Aller au contenu principal",

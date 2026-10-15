@@ -1,0 +1,4 @@
+{
+	"extends": "../check-wiring/tsconfig.json",
+	"include": ["bin", "test"]
+}

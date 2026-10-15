@@ -13,7 +13,7 @@
     "register": "node scripts/register-hosting.mjs",
     "generate": "sanity schema extract --enforce-required-fields --force && sanity typegen generate",
     "lint": "pnpm --workspace-root exec biome check studio",
-    "format": "pnpm --workspace-root exec biome format --write studio",
+    "format": "pnpm --workspace-root exec biome check --write studio",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -10,7 +10,7 @@
 [![Biome](https://img.shields.io/badge/Biome-2-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
 [![License: ISC](https://img.shields.io/badge/license-ISC-green)](LICENSE)
 
-It stays slim on purpose: no unused features, production-grade defaults, and a clear path from `git clone` to first published page. Documentation lives next to the code that needs it — strip the per-folder READMEs with `pnpm strip-readmes` once you're ready to ship.
+It stays slim on purpose: no unused features, production-grade defaults, and a clear path from `git clone` to first published page. Documentation lives next to the code that needs it.
 
 ---
 
@@ -58,7 +58,6 @@ Managed with **pnpm workspaces** (`pnpm-workspace.yaml`: `web`, `studio`, `packa
 | **Web** | `web/` | Next.js 16 App Router app — i18n routing, GROQ data fetching, Portable Text, Mux, sitemap/robots, cache-tag revalidation |
 | **Studio** | `studio/` | Sanity Studio v6 — schema, plugins, Presentation, dev/prod dataset sync |
 | **`@repo/sanity-dataset-resolve`** | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolution used by both web and Studio |
-| **`@repo/strip-readmes`** | `packages/strip-readmes/` | Bulk-clean nested READMEs when you ship your fork (the root README is preserved) |
 | **`@repo/scaffold-module`** | `packages/scaffold-module/` | `pnpm gen:module <Name>` — scaffolds a new content module and wires it, the `ModulesRenderer.tsx` `case` included |
 | **`@repo/check-wiring`** | `packages/check-wiring/` | `pnpm check:wiring` and `check:typegen` — module wiring and query typing (CI gates) |
 
@@ -111,7 +110,7 @@ Variables you actually care about — full comments live in [`web/.env.example`]
 | `studio/.env` | `SANITY_STUDIO_HOSTING_URL` | yes (Netlify Studio) | The Studio's own URL — registered with Sanity by `pnpm studio:register` |
 | `web/.env.local` | `NEXT_PUBLIC_SANITY_STUDIO_URL` | yes (prod) | Studio URL for CSP `frame-ancestors` and click-to-edit links — same value as `SANITY_STUDIO_HOSTING_URL` |
 | Netlify Studio site | `SANITY_AUTH_TOKEN` | optional | Deploy token; production deploys then register the Studio URL and upload the schema |
-| `studio/.env` | `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` | optional | Mux API token for `pnpm mux:migrate-assets` only (the Mux plugin stores its own credentials) |
+| `studio/.env` | `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` | optional | Mux API token for the one-off `pnpm --filter studio run mux:migrate-assets` (the Mux plugin stores its own credentials) |
 
 **Every `SANITY_STUDIO_*` variable is public**: the Studio build inlines all of them into its JS bundle. Never give a token or secret that prefix — `sanity build` / `sanity deploy` refuse to run with one set.
 
@@ -141,31 +140,9 @@ The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)
 
 ---
 
-## Scripts reference
+## Scripts
 
-All from the repo root.
-
-| Script | What it does |
-|--------|--------------|
-| `pnpm dev` | Run `web` + `studio` in parallel |
-| `pnpm web:dev` | Web only (`next dev`) |
-| `pnpm studio:dev` | Studio only |
-| `pnpm build` | Build all workspaces |
-| `pnpm studio:build` | Build the Studio (`studio/dist`) |
-| `pnpm studio:register` | Register the Netlify-hosted Studio URL with Sanity and upload the schema (`--dry-run` to preview) |
-| `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`) — the alternative to Netlify |
-| `pnpm generate` | Schema extract, Studio + web typegen, `check:typegen` (`studio:generate` is an alias) |
-| `pnpm gen:module <Name>` | Scaffold a content module and wire it, the `ModulesRenderer.tsx` `case` included. PascalCase name; `--inline` also registers it inside rich text, `--dry-run` previews |
-| `pnpm check:wiring` | Check the module wiring against the module schemas, both ways, and the inline places with each other. Runs in CI |
-| `pnpm test:tooling` | Tests for the wiring check and the scaffolder |
-| `pnpm studio:sync-prod-to-dev` | Clone `production` → `development` dataset |
-| `pnpm lint` | Biome check (repo-wide) |
-| `pnpm format` | Biome `--write` (repo-wide) |
-| `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
-| `pnpm update` | `pnpm up -r` for the whole repo |
-| `pnpm strip-readmes` | Remove nested per-folder READMEs when shipping your fork (root `README.md` is preserved). Pair with `:dry-run` to preview. |
-
-Per-package: `pnpm --filter <web|studio> run <script>`.
+Every root, `web` and `studio` script is described once, in [`AGENTS.md`](AGENTS.md) → "CLI command reference". Run a package's own script with `pnpm --filter <web|studio> run <script>`.
 
 ---
 
@@ -173,9 +150,9 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 
 - **Biome** — root [`biome.json`](biome.json) is the single source of truth. `web/` and `studio/` call Biome via `pnpm --workspace-root exec biome …`; Studio uses a 2-space override, the rest of the repo is tabs.
 - **Husky** — `.husky/pre-commit` formats the staged files (`biome check --write --staged`) and re-stages them, and refuses a file that also has unstaged changes; `.husky/pre-push` runs `biome ci .` (read-only, fails on any finding) and `pnpm run typecheck`.
-- **GitHub Actions** — `.github/workflows/ci.yml` runs `pnpm run format` (Biome `check --write`) + a `git diff --exit-code` guard + `pnpm run typecheck` on Node 22, `check:wiring` and `test:tooling`, `pnpm generate` with a diff guard on the committed typegen artifacts, plus `next build` and `sanity build` smokes.
-- **Dependabot** — weekly npm updates, Sanity plugins grouped, `@types/node` major bumps explicitly ignored (typings track Node 22 LTS).
-- **TypeScript** — strict, ES2022 target. Root `pnpm typecheck` walks every workspace package's own `typecheck` script.
+- **GitHub Actions** — `.github/workflows/ci.yml` runs four parallel jobs on Node 22: `biome ci` (format, lint, imports) + `pnpm typecheck` + `check:wiring` + `test:tooling`; `pnpm generate` with a diff guard on the committed typegen artifacts; `next build` with the first-load JS budget (`.github/bundle-budget.json`); `sanity build`. Every action is pinned to a commit SHA.
+- **Dependabot** — monthly on `main` and `variant/document-level` (`.github/dependabot.yml`): npm in two groups — minor + patch auto-merges after CI, majors wait for review, `@types/node` and `typescript` majors are ignored — and all GitHub Actions in one group per branch.
+- **TypeScript** — strict, ES2022 target; `web` and `studio` add `noUncheckedIndexedAccess`, `noImplicitOverride` and `noFallthroughCasesInSwitch`. Root `pnpm typecheck` walks every workspace package's own `typecheck` script (the apps and the two tooling packages).
 - **Commit hygiene** — `.DS_Store`, `*.tsbuildinfo`, `coverage/`, and editor caches under `.cursor/` are ignored; the committed `.cursor/rules/` folder (Cursor IDE rules) is explicitly re-included. See root `.gitignore`.
 - **Agent guardrails** — AI coding assistants (Claude Code, Cursor, Windsurf, Copilot) read [`AGENTS.md`](AGENTS.md) at the repo root. Sub-paths get auto-loaded `CLAUDE.md` files and `.cursor/rules/*.mdc` rules with file-glob scoping. Update `AGENTS.md` first; the others defer to it.
 
@@ -185,11 +162,9 @@ Per-package: `pnpm --filter <web|studio> run <script>`.
 
 ### Netlify (web)
 
-`netlify.toml` ships with:
+`netlify.toml` sets the build command, the Next.js plugin and a path-based `build.ignore`: a push that changed nothing the web app builds from since the last built commit (`web/`, its shared package, the workspace manifests) skips the build.
 
-- A **dataset-aware** `build.ignore` — commits that only touch `studio/` don't rebuild the web app.
-- **Security headers** — CSP (with `frame-ancestors` allowing `sanity.studio` for Presentation), HSTS preload, `Permissions-Policy`, `Referrer-Policy`, `X-Content-Type-Options`.
-- Long-lived cache for `/_next/static/*`.
+Security headers (CSP, HSTS, …) are not in `netlify.toml`: they come from `headers()` in `web/next.config.ts`, because Netlify's `[[headers]]` rules never reach the HTML the Next.js function renders. Caching of `/_next/static/*` comes from the Next.js adapter (`@netlify/plugin-nextjs`).
 
 Set on the host: `SANITY_STUDIO_PROJECT_ID`, `SANITY_API_READ_TOKEN` (optional), `SANITY_REVALIDATE_SECRET` (required in prod), `NEXT_PUBLIC_SITE_URL`, `SANITY_STUDIO_DEPLOYMENT_TARGET` (only if you want to point at a non-production dataset).
 
@@ -213,7 +188,7 @@ Everything is standard Next.js + Sanity — mirror the env vars and you're done.
 
 ## Going deeper
 
-- [`web/README.md`](web/README.md) — app-level details, module conventions.
+- [`web/README.md`](web/README.md) — languages, content freshness, local dev.
 - [`web/sanity/README.md`](web/sanity/README.md) — GROQ layer, client config, dataset resolution.
 - [`web/src/i18n/README.md`](web/src/i18n/README.md) — localisation flow end-to-end.
 - [`studio/README.md`](studio/README.md) — Studio customisation, plugins, schema patterns.
@@ -223,7 +198,7 @@ Everything is standard Next.js + Sanity — mirror the env vars and you're done.
 
 ## Requirements
 
-- **Node.js** LTS — 20 minimum, 22 recommended (CI tests both).
+- **Node.js** 22.12 or newer (`engines` in the root `package.json`); CI runs Node 22.
 - **pnpm** 10 (pinned in root `package.json` `packageManager`).
 - **Sanity project** with a **project id**.
 - **(optional)** Mux API tokens for video uploads.

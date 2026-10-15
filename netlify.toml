@@ -10,7 +10,6 @@
 #   SANITY_STUDIO_PROJECT_ID       — required for Next ↔ Sanity
 #   SANITY_STUDIO_DATASET          — optional if you pin a dataset
 #   NEXT_PUBLIC_SANITY_STUDIO_URL  — the Studio's hosting URL (CSP `frame-ancestors`, edit links)
-#   NEXT_PUBLIC_SANITY_*           — optional client fallbacks
 # Full list: `web/.env.example`
 #
 # Publish directory (why not `dist/`?):
@@ -55,57 +54,14 @@
 # [context.production.environment]
 #   NEXT_PUBLIC_SITE_URL = "https://your-domain.tld"
 
-# ── Security headers ─────────────────────────────────────────────────────────
+# ── Response headers ─────────────────────────────────────────────────────────
 #
-# CSP, HSTS, Referrer-Policy and Permissions-Policy are emitted by Next itself,
-# from `headers()` in `web/next.config.ts`. `[[headers]]` rules here only reach
-# files Netlify serves straight from its CDN, never the SSR/ISR HTML from the
-# Next.js function, so a policy declared here never governed the document.
-# Self-hosted analytics hosts go into the `CSP_ANALYTICS_ORIGINS` build env var.
-
-# ── CDN Edge Cache ────────────────────────────────────────────────────────────
-#
-# Two-header pattern for Netlify's edge network:
-#   Cache-Control          → browser: never cache HTML (always fresh from CDN)
-#   Netlify-CDN-Cache-Control → Netlify edge: cache 1 year, SWR 1 day
-#
-# @netlify/plugin-nextjs coordinates this with Next.js ISR automatically:
-# when revalidateTag() fires in a webhook, Netlify purges the matching
-# Netlify-Cache-Tag entries at the edge — so editors see changes immediately.
-#
-# Result: first request hits the Serverless Function, every subsequent request
-# is served from the nearest edge node in <20 ms.
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-    Netlify-CDN-Cache-Control = "public, s-maxage=31536000, stale-while-revalidate=86400"
-
-# Hashed static assets — content-addressed, safe to cache forever at both layers
-[[headers]]
-  for = "/_next/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-    Netlify-CDN-Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "*.woff2"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-    Netlify-CDN-Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/sitemap.xml"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-    Netlify-CDN-Cache-Control = "public, s-maxage=3600, stale-while-revalidate=600"
-
-# App Router Route Handlers — never cache, override the /* rule above
-[[headers]]
-  for = "/api/*"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Netlify-CDN-Cache-Control = "no-store"
+# No `[[headers]]` here: they never reach the SSR/ISR responses of the Next.js
+# function, and the only files served straight from the CDN, `/_next/static/*`,
+# are already marked immutable by `@netlify/plugin-nextjs`. Security headers come
+# from `headers()` in `web/next.config.ts` (self-hosted analytics hosts: the
+# `CSP_ANALYTICS_ORIGINS` build env var); edge caching and tag purges on
+# `revalidateTag()` come from the runtime, per route.
 
 # Minimal redirects
 [[redirects]]

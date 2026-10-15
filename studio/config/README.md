@@ -22,7 +22,7 @@ Preview is provided by the **`presentationTool`** in `sanity.config.ts`:
 - **`resolve.locations`** — `presentationLocationsResolver` in `config/presentation/locationsResolver.ts` maps documents to iframe URLs (which path opens when you use “Web Preview”).
 - **`resolve.mainDocuments`** — `presentationMainDocuments` in `config/presentation/resolve.ts` tells Presentation which document type matches which route (e.g. home at `/`, pages at `/:slug`).
 
-Shared rules live in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `SITE_ROOT_DOCUMENT_TYPES`, `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`, etc.). Settings documents that should not offer Web Preview links are listed in **`DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW`**. When you add a **new routable page type** with a slug, extend **`SLUG_BASED_DOCUMENT_TYPES`**, **`PAGE_REFERENCES`** (in `schemas/constants/references.ts`), and usually **structure** + **locations** if the URL pattern is non-standard.
+Shared rules live in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_TYPES`, `PREFIXED_SLUG_DOCUMENT_TYPES`, …). `SITE_ROOT_DOCUMENT_TYPES` and `DOCUMENT_TYPES_WITHOUT_WEB_PREVIEW` are derived from the singleton roles in **`config/singletons.ts`** (`root` / `none`), so a settings singleton that should offer no Web Preview link is declared there. When you add a **new routable page type** with a slug, extend **`SLUG_BASED_DOCUMENT_TYPES`**, **`PAGE_REFERENCES`** (in `schemas/constants/references.ts`), and usually **structure** + **locations** if the URL pattern is non-standard.
 
 ## Checklist: new schema or singleton
 
@@ -32,7 +32,7 @@ Shared rules live in `config/presentation/conventions.ts` (`SLUG_BASED_DOCUMENT_
 | 2 | Register the type in **`schemas/index.ts`**. |
 | 3 | Add a **structure** item (or list) under `config/structure/` and include it in **`config/structure/index.ts`**. |
 | 4 | If the doc is linked internally, extend **`PAGE_REFERENCES`** (and link field definitions if needed). |
-| 5 | If it should preview on a specific URL, update **`config/presentation/conventions.ts`**, **`resolve.ts`** (`presentationMainDocuments`), and **`locationsResolver.ts`** as needed. |
+| 5 | If it should preview on a specific URL, update **`config/presentation/conventions.ts`**, **`resolve.ts`** (`presentationMainDocuments`), and **`locationsResolver.ts`** as needed. A singleton instead takes its role in **`config/singletons.ts`**. |
 
 Nothing in this repo auto-registers new types in the sidebar or in Presentation; those steps are intentional so URLs and UX stay explicit.
 

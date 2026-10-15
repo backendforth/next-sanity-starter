@@ -83,20 +83,12 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons). Every module.
 2. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`). **Opt-in**: only modules that belong inside text (today `module.media` and `module.carousel`).
 
-### Adding a new module (checklist)
+### Adding a new module
 
-> **Prefer the scaffolder.** Run `pnpm gen:module <PascalName>` from the repo root (`--inline` for a rich-text module): it creates the studio + web files and wires every point, the `ModulesRenderer.tsx` `case` included, or writes nothing if an anchor is missing. See `packages/scaffold-module/README.md`. The steps below describe the Studio half of what it does.
+`pnpm gen:module <PascalName>` (`--inline` for a rich-text module) creates the files and wires every point, or writes nothing if an anchor is missing. By hand, follow the wiring checklist in [`AGENTS.md`](../../AGENTS.md) → "The module pattern". Two Studio details the checklist leaves out:
 
-1. **Define the object** — create `schemas/objects/modules/module<Name>.ts` with `export const module<Name> = defineType(…)` (`pnpm check:wiring` only finds modules named this way):
-   - **`name`:** `module.<id>` (stable string; used in GROQ and the `of` arrays).
-   - **`type: "object"`** — fields, `preview`, optional `icon`, etc.
-2. **Register the type** — export it and add it to **`schemas/index.ts`** → `schemaTypes` (keep module types together with other `module.*` entries).
-3. **Document-level `modules` arrays** — append `{ type: "module.<id>" }` to **`moduleTypes`** in **`fields/modulesArrayField.ts`**.
-4. **Inline (opt-in)** — append `{ type: "module.<id>" }` to the **`of`** array in **`objects/editors/richTextMedia.ts`**, and on the web side to `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`. All three or none.
-
-After any module change, run `pnpm generate` and `pnpm check:wiring` from the repo root; the check covers the 6 wiring points (AGENTS.md) and the inline places.
-
-You do **not** need a Desk structure item for a module (modules are not documents). The frontend should render each `_type` (e.g. `module.text`) in page templates and in any Portable Text serializer that handles custom block types.
+- The file `objects/modules/module<Name>.ts` exports `module<Name>` (`defineType`) with `name: "module.<id>"`. `pnpm check:wiring` finds a module only when file, export and name match.
+- A module needs no Desk structure item: it is an object, not a document.
 
 ### Inline is a choice per module
 
@@ -140,5 +132,5 @@ If you need “New document” templates with presets, add them through `schema.
 | Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
 | Languages | `config/sync/internationalizedArrayLanguages.ts`, `sanity.config.ts` (plugin) |
 | Slug rules | `validation: validateSlug` on slug fields |
-| New **module** | `pnpm gen:module <Name>`, or by hand: `objects/modules/module<Name>.ts`, `index.ts`, `fields/modulesArrayField.ts` (`moduleTypes`); `objects/editors/richTextMedia.ts` only for an inline module |
+| New **module** | `pnpm gen:module <Name>`; by hand, the wiring checklist in `AGENTS.md` |
 | New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |

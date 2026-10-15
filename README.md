@@ -140,30 +140,9 @@ The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)
 
 ---
 
-## Scripts reference
+## Scripts
 
-All from the repo root.
-
-| Script | What it does |
-|--------|--------------|
-| `pnpm dev` | Run `web` + `studio` in parallel |
-| `pnpm web:dev` | Web only (`next dev`) |
-| `pnpm studio:dev` | Studio only |
-| `pnpm build` | Build all workspaces |
-| `pnpm studio:build` | Build the Studio (`studio/dist`) |
-| `pnpm studio:register` | Register the Netlify-hosted Studio URL with Sanity and upload the schema (`--dry-run` to preview) |
-| `pnpm studio:deploy` | Deploy the Studio to Sanity Hosting (`*.sanity.studio`) — the alternative to Netlify |
-| `pnpm generate` | Schema extract, Studio + web typegen, `check:typegen` (`studio:generate` is an alias) |
-| `pnpm gen:module <Name>` | Scaffold a content module and wire it, the `ModulesRenderer.tsx` `case` included. PascalCase name; `--inline` also registers it inside rich text, `--dry-run` previews |
-| `pnpm check:wiring` | Check the module wiring against the module schemas, both ways, and the inline places with each other. Runs in CI |
-| `pnpm test:tooling` | Tests for the wiring check and the scaffolder |
-| `pnpm studio:sync-prod-to-dev` | Clone `production` → `development` dataset |
-| `pnpm lint` | Biome check (repo-wide) |
-| `pnpm format` | Biome `--write` (repo-wide) |
-| `pnpm typecheck` | Recursive `tsc --noEmit` across workspaces |
-| `pnpm update` | `pnpm up -r` for the whole repo |
-
-Per-package: `pnpm --filter <web|studio> run <script>`.
+Every root, `web` and `studio` script is described once, in [`AGENTS.md`](AGENTS.md) → "CLI command reference". Run a package's own script with `pnpm --filter <web|studio> run <script>`.
 
 ---
 

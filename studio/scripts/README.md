@@ -70,13 +70,7 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 - Authenticated CLI: typically **`sanity login`** on your machine, or a token the CLI can use (see Sanity’s docs for non-interactive use).
 - **`SANITY_STUDIO_PROJECT_ID`** in `studio/.env`.
 
-**Commands**
-
-| Where | Command |
-|-------|---------|
-| `studio/` | `pnpm run sync:prod-to-dev` |
-| Repo root | `pnpm studio:sync-prod-to-dev` |
-| Skip prompt | `pnpm run sync:prod-to-dev -- --yes` |
+**Run** `pnpm studio:sync-prod-to-dev` (`pnpm run sync:prod-to-dev -- --yes` in `studio/` skips the prompt).
 
 **Artifacts**
 
@@ -94,12 +88,7 @@ Wraps plain-string `seo.title` / `seo.description` (on `seo.page` and `seo.fallb
 
 - The SEO fields were plain strings, so meta title and description could not be translated. Datasets created before the switch hold strings the Studio now flags as invalid; the web resolver still reads them until you migrate.
 
-**Commands**
-
-| Where | Command |
-|-------|---------|
-| `studio/` | `pnpm run migrate:seo-i18n -- --dry-run` (preview) |
-| `studio/` | `pnpm run migrate:seo-i18n` (asks before writing; `--yes` skips the prompt) |
+**Run** `pnpm run migrate:seo-i18n` in `studio/`: `-- --dry-run` previews, the plain run asks before writing (`--yes` skips the prompt).
 
 Targets `SANITY_STUDIO_DATASET` from `studio/.env` (else `development`) — run it once per dataset.
 
@@ -120,13 +109,7 @@ Runs `sanity deploy --external --url <SANITY_STUDIO_HOSTING_URL> --yes`: registe
 - **Netlify** — after `sanity build` (`studio/netlify.toml`). Production deploys with `SANITY_AUTH_TOKEN` set register; other contexts and token-less sites log the reason and exit 0. An unset `SANITY_STUDIO_HOSTING_URL` falls back to Netlify's `URL` (the site's primary domain).
 - **Locally** — on demand, with your `sanity login` session.
 
-**Commands**
-
-| Where | Command |
-|-------|---------|
-| repo root | `pnpm studio:register --dry-run` (preview) |
-| repo root | `pnpm studio:register` |
-| `studio/` | `pnpm run register` |
+**Run** `pnpm studio:register` (`--dry-run` previews).
 
 ---
 

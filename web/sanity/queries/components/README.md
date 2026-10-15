@@ -25,9 +25,6 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 - **Ready-made page queries:** `queries/pages/` — `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery` embed `modulesQuery`.
 - **Snippets:** `queries/snippets/` — `linkQuery`, `pageSeoQuery`, settings, …
 
-## Adding a new module in Studio
+## Adding a module
 
-1. Add a new `module.*` schema in Studio.
-2. Add `modules/<name>.ts` and register it in `modules/index.ts`.
-3. If the module is **inline** (opt-in), add `${module<Name>Query}` to `richTextMediaQuery` in `text/richTextMedia.ts` — together with the Studio's `richTextMedia.ts` `of` and the `types` map in `portableTextComponents.tsx`.
-4. `pnpm generate` — the module's type is `ModuleOf<"module.<id>">` in `web/sanity/types.ts`; nothing to write by hand.
+`pnpm gen:module <Name>` writes `modules/<name>.ts` and lists it in `modulesQuery` (with `--inline`, in `richTextMediaQuery` too). By hand, follow the wiring checklist in [`AGENTS.md`](../../../../AGENTS.md) → "The module pattern". The module's type is `ModuleOf<"module.<id>">` after `pnpm generate`; nothing to write by hand.

@@ -1184,19 +1184,11 @@ export type HomeQueryResult = {
                           }
                         | {
                             title: InternationalizedArrayString;
-                            path: string;
-                          }
-                        | {
-                            _id: string;
-                            _type: "project";
-                            title: InternationalizedArrayString;
-                            path: string;
-                          }
-                        | {
-                            _id: string;
-                            _type: "work";
-                            title: InternationalizedArrayString;
                             path: "/work";
+                          }
+                        | {
+                            title: InternationalizedArrayString;
+                            path: string;
                           }
                         | null;
                     }
@@ -1729,19 +1721,11 @@ export type PageBySlugQueryResult = {
                           }
                         | {
                             title: InternationalizedArrayString;
-                            path: string;
-                          }
-                        | {
-                            _id: string;
-                            _type: "project";
-                            title: InternationalizedArrayString;
-                            path: string;
-                          }
-                        | {
-                            _id: string;
-                            _type: "work";
-                            title: InternationalizedArrayString;
                             path: "/work";
+                          }
+                        | {
+                            title: InternationalizedArrayString;
+                            path: string;
                           }
                         | null;
                     }
@@ -2033,19 +2017,11 @@ export type ProjectBySlugQueryResult = {
                     }
                   | {
                       title: InternationalizedArrayString;
-                      path: string;
-                    }
-                  | {
-                      _id: string;
-                      _type: "project";
-                      title: InternationalizedArrayString;
-                      path: string;
-                    }
-                  | {
-                      _id: string;
-                      _type: "work";
-                      title: InternationalizedArrayString;
                       path: "/work";
+                    }
+                  | {
+                      title: InternationalizedArrayString;
+                      path: string;
                     }
                   | null;
               }
@@ -2576,19 +2552,11 @@ export type WorkQueryResult = {
                           }
                         | {
                             title: InternationalizedArrayString;
-                            path: string;
-                          }
-                        | {
-                            _id: string;
-                            _type: "project";
-                            title: InternationalizedArrayString;
-                            path: string;
-                          }
-                        | {
-                            _id: string;
-                            _type: "work";
-                            title: InternationalizedArrayString;
                             path: "/work";
+                          }
+                        | {
+                            title: InternationalizedArrayString;
+                            path: string;
                           }
                         | null;
                     }
@@ -2881,19 +2849,11 @@ export type SiteChromeQueryResult = {
               }
             | {
                 title: InternationalizedArrayString;
-                path: string;
-              }
-            | {
-                _id: string;
-                _type: "project";
-                title: InternationalizedArrayString;
-                path: string;
-              }
-            | {
-                _id: string;
-                _type: "work";
-                title: InternationalizedArrayString;
                 path: "/work";
+              }
+            | {
+                title: InternationalizedArrayString;
+                path: string;
               }
             | null;
         }
@@ -2936,19 +2896,11 @@ export type SiteChromeQueryResult = {
               }
             | {
                 title: InternationalizedArrayString;
-                path: string;
-              }
-            | {
-                _id: string;
-                _type: "project";
-                title: InternationalizedArrayString;
-                path: string;
-              }
-            | {
-                _id: string;
-                _type: "work";
-                title: InternationalizedArrayString;
                 path: "/work";
+              }
+            | {
+                title: InternationalizedArrayString;
+                path: string;
               }
             | null;
         }
@@ -2987,19 +2939,11 @@ export type SiteChromeQueryResult = {
                 }
               | {
                   title: InternationalizedArrayString;
-                  path: string;
-                }
-              | {
-                  _id: string;
-                  _type: "project";
-                  title: InternationalizedArrayString;
-                  path: string;
-                }
-              | {
-                  _id: string;
-                  _type: "work";
-                  title: InternationalizedArrayString;
                   path: "/work";
+                }
+              | {
+                  title: InternationalizedArrayString;
+                  path: string;
                 }
               | null;
           }
@@ -3153,19 +3097,11 @@ export type SiteChromeQueryResult = {
                   }
                 | {
                     title: InternationalizedArrayString;
-                    path: string;
-                  }
-                | {
-                    _id: string;
-                    _type: "project";
-                    title: InternationalizedArrayString;
-                    path: string;
-                  }
-                | {
-                    _id: string;
-                    _type: "work";
-                    title: InternationalizedArrayString;
                     path: "/work";
+                  }
+                | {
+                    title: InternationalizedArrayString;
+                    path: string;
                   }
                 | null;
             }

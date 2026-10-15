@@ -119,7 +119,6 @@ export const link = defineType({
       slug: "reference.slug.current",
       url: "url",
       funcKey: "func.key",
-      funcParams: "func.params",
     },
     prepare(selection) {
       const {
@@ -130,7 +129,6 @@ export const link = defineType({
         slug,
         url,
         funcKey,
-        funcParams,
       } = selection;
 
       let subtitle = "";
@@ -151,9 +149,7 @@ export const link = defineType({
       } else if (type === "external" && url) {
         subtitle = `→ ${url}`;
       } else if (type === "function") {
-        subtitle = funcKey
-          ? `→ ${funcKey}${funcParams ? ` (${funcParams})` : ""}`
-          : "→ (function)";
+        subtitle = funcKey ? `→ ${funcKey}` : "→ (function)";
       }
 
       const linkLabel = firstLocalizedLabel(titleEntries, "");

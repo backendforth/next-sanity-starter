@@ -3204,22 +3204,11 @@
             "of": [
               {
                 "type": "string",
-                "value": "scroll-to"
-              },
-              {
-                "type": "string",
                 "value": "open-cookie-preferences"
               }
             ]
           },
           "optional": false
-        },
-        "params": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string"
-          },
-          "optional": true
         }
       }
     }

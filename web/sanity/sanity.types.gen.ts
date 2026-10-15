@@ -429,7 +429,7 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: string;
-    privacyPolicy: Link;
+    privacyPolicy?: Link;
     acceptAllBtn?: string;
     acceptNecessaryBtn?: string;
     showPreferencesBtn?: string;
@@ -3895,7 +3895,8 @@ export type SiteChromeQueryResult = {
                   path: string;
                 }
               | null;
-          };
+          }
+        | null;
       acceptAllBtn: string | null;
       acceptNecessaryBtn: string | null;
       showPreferencesBtn: string | null;

@@ -67,14 +67,18 @@ export const siteCookieBanner = defineType({
           description:
             "Linked after the description: visitors must be able to read what they are agreeing to before they agree. A page link gets the visitor's language prefix. The link title is the label.",
           type: "link",
-          validation: (rule) => [
-            rule
-              .required()
-              .error("Without this the banner has no policy link."),
-            rule.custom((value: { type?: string } | undefined) =>
-              value?.type === "function" ? "Link to a page or a URL." : true,
-            ),
-          ],
+          /* Required only while the banner is on: a starter that keeps it off must still publish. */
+          validation: (rule) =>
+            rule.custom((value: { type?: string } | undefined, context) => {
+              if (!value) {
+                return context.document?.useCookieBanner === true
+                  ? "Without this the banner has no policy link."
+                  : true;
+              }
+              return value.type === "function"
+                ? "Link to a page or a URL."
+                : true;
+            }),
         },
         {
           title: "Accept All Button",

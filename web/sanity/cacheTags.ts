@@ -76,15 +76,10 @@ const WEBHOOK_TAG_MAP: Record<string, readonly string[]> = {
 	siteAnalyticsSettings: [SANITY_CACHE_TAGS.siteAnalyticsSettings],
 	errorSettings: [SANITY_CACHE_TAGS.errorSettings],
 	siteLanguageSettings: [SANITY_CACHE_TAGS.siteLanguageSettings],
-	/* Linking or unlinking a translation changes every route's sibling list (`translationsQuery`:
-	 * hreflang, the language switch) and the sitemap's alternates. */
-	"translation.metadata": [
-		SANITY_CACHE_TAGS.pages,
-		SANITY_CACHE_TAGS.projects,
-		SANITY_CACHE_TAGS.home,
-		SANITY_CACHE_TAGS.work,
-		SANITY_CACHE_TAGS.sitemap,
-	],
+	/* Linking or unlinking a page or project translation changes its sibling list
+	 * (`translationsQuery`: hreflang, the language switch) and the sitemap's alternates. `home`
+	 * and `work` find their siblings by type, not through this document. */
+	"translation.metadata": [...EMBEDDED_CONTENT_TAGS, SANITY_CACHE_TAGS.sitemap],
 	/* Asset documents hold fields the queries read (image alt text; Mux poster frame, playback
 	 * ID, track size). Every content read carries `pages` or `projects`, the shell included. */
 	"sanity.imageAsset": EMBEDDED_CONTENT_TAGS,

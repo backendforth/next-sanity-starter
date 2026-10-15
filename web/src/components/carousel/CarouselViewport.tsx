@@ -77,8 +77,10 @@ export function CarouselViewport({
 			: null;
 	}
 
+	const isMulti = options.multipleSlides;
 	const [emblaRef, emblaApi] = useEmblaCarousel(
-		{ loop: options.loop, align: "start" },
+		/* A slide counts as in view (and plays) once half of it shows. */
+		{ loop: options.loop, align: "start", inViewThreshold: 0.5 },
 		autoplayPlugin.current ? [autoplayPlugin.current] : [],
 	);
 	const [thumbsRef, thumbsApi] = useEmblaCarousel({
@@ -86,29 +88,46 @@ export function CarouselViewport({
 		dragFree: true,
 	});
 
-	const [selectedIndex, setSelectedIndex] = useState(0);
+	/* `align: "start"`, one slide per step: snap k starts at slide k, and the trailing slides that
+	 * fit beside the last snap share it. Until Embla measures, every slide is its own snap. */
+	const [selectedSnap, setSelectedSnap] = useState(0);
+	const [snapCount, setSnapCount] = useState(slides.length);
+	const [slidesInView, setSlidesInView] = useState<number[]>([0]);
 	const [canScrollPrev, setCanScrollPrev] = useState(false);
 	const [canScrollNext, setCanScrollNext] = useState(false);
 
 	const onSelect = useCallback(() => {
 		if (!emblaApi) return;
-		const idx = emblaApi.selectedScrollSnap();
-		setSelectedIndex(idx);
+		const snap = emblaApi.selectedScrollSnap();
+		setSelectedSnap(snap);
+		setSnapCount(emblaApi.scrollSnapList().length);
 		setCanScrollPrev(emblaApi.canScrollPrev());
 		setCanScrollNext(emblaApi.canScrollNext());
-		thumbsApi?.scrollTo(idx);
+		thumbsApi?.scrollTo(snap);
 	}, [emblaApi, thumbsApi]);
+
+	const onSlidesInView = useCallback(() => {
+		if (emblaApi) setSlidesInView(emblaApi.slidesInView());
+	}, [emblaApi]);
 
 	useEffect(() => {
 		if (!emblaApi) return;
 		onSelect();
+		onSlidesInView();
 		emblaApi.on("select", onSelect);
 		emblaApi.on("reInit", onSelect);
+		emblaApi.on("slidesInView", onSlidesInView);
 		return () => {
 			emblaApi.off("select", onSelect);
 			emblaApi.off("reInit", onSelect);
+			emblaApi.off("slidesInView", onSlidesInView);
 		};
-	}, [emblaApi, onSelect]);
+	}, [emblaApi, onSelect, onSlidesInView]);
+
+	/* One slide at a time: the selected one is active. Several side by side: every slide in view
+	 * is — a loop plays, a video shows its player — so none waits for a selection it can't get. */
+	const isSlideActive = (index: number) =>
+		isMulti ? slidesInView.includes(index) : index === selectedSnap;
 
 	/* Suspend autoplay under reduced motion and resume it only when the preference flips back,
 	 * not on every effect run — a `stopOnInteraction` stop must survive unrelated re-renders. */
@@ -127,9 +146,9 @@ export function CarouselViewport({
 
 	const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
 	const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-	const scrollTo = useCallback(
-		(index: number) => emblaApi?.scrollTo(index),
-		[emblaApi],
+	const scrollToSlide = useCallback(
+		(index: number) => emblaApi?.scrollTo(Math.min(index, snapCount - 1)),
+		[emblaApi, snapCount],
 	);
 
 	const thumbnails = useMemo(
@@ -140,13 +159,13 @@ export function CarouselViewport({
 		[slides, options.showThumbnails],
 	);
 
-	const isMulti = options.multipleSlides;
 	const multiLayout = useMemo(
 		() => (isMulti ? multiSlideLayout(slides) : null),
 		[isMulti, slides],
 	);
 
-	const showNavigation = slides.length > 1;
+	/* Nothing to navigate when every slide fits at once. */
+	const showNavigation = snapCount > 1;
 
 	return (
 		<div className="flex flex-col gap-sm">
@@ -176,7 +195,7 @@ export function CarouselViewport({
 							>
 								<CarouselSlide
 									slide={slide}
-									isActive={index === selectedIndex}
+									isActive={isSlideActive(index)}
 									priority={priority && index === 0}
 									imageSizes={layout?.sizes}
 								/>
@@ -236,12 +255,12 @@ export function CarouselViewport({
 			{options.showNavDots && showNavigation ? (
 				<div className="flex items-center justify-center gap-xs">
 					{slides.map((slide, index) => {
-						const isActive = index === selectedIndex;
+						const isActive = isSlideActive(index);
 						return (
 							<button
 								key={`dot-${slide.key}`}
 								type="button"
-								onClick={() => scrollTo(index)}
+								onClick={() => scrollToSlide(index)}
 								aria-label={labels.goToSlide[index]}
 								aria-current={isActive ? "true" : undefined}
 								className={clsx(
@@ -256,17 +275,17 @@ export function CarouselViewport({
 				</div>
 			) : null}
 
-			{thumbnails ? (
+			{thumbnails && showNavigation ? (
 				<div ref={thumbsRef} className="overflow-hidden">
 					<div className="flex gap-xs">
 						{slides.map((slide, index) => {
 							const url = thumbnails[index];
-							const isActive = index === selectedIndex;
+							const isActive = isSlideActive(index);
 							return (
 								<button
 									key={`thumb-${slide.key}`}
 									type="button"
-									onClick={() => scrollTo(index)}
+									onClick={() => scrollToSlide(index)}
 									aria-label={labels.showSlide[index]}
 									aria-current={isActive ? "true" : undefined}
 									className={clsx(

@@ -195,7 +195,7 @@ The filter mirrors `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/c
 Both live under **Settings** in the Studio:
 
 - **Analytics & Tracking** — the trackers (GA4, Microsoft Clarity, PostHog, Plausible, Matomo), the loading mode and **Use cookie banner**. With the banner on and "Respect cookie banner", cookie-based trackers wait for consent and cookie-free ones load immediately. With the banner off, nothing asks for consent: only do that when no tracker needs it.
-- **Cookie Banner** — one per language: the banner and preferences copy, consent sections and the privacy link. A language without its own banner shows the default language's. Empty fields fall back to defaults in the visitor's language.
+- **Cookie Banner** — one per language: the banner and preferences copy, consent sections and the privacy link. A language without its own banner shows the default language's. Empty fields fall back to defaults in the banner's language.
 
 Any menu or rich-text link can use the `open-cookie-preferences` function; it only renders while the banner is on. Origins of self-hosted trackers go into `CSP_ANALYTICS_ORIGINS`.
 

@@ -193,16 +193,21 @@ function privacyPolicyHtml(
 }
 
 /**
- * The banner for one route, built on the server: every text resolved for `options.locale`,
- * escaped, with the defaults filled in and the tracker rows appended. Without a banner document
- * every text is a default. The client banner gets only this.
+ * The banner for one route, built on the server: every text escaped, with the defaults filled
+ * in and the tracker rows appended. Without a banner document every text is a default. The
+ * client banner gets only this.
+ *
+ * One language per banner: the document's. A locale without its own banner gets the default
+ * language's (`siteCookieBannerQuery`), so its default texts, table headers and policy link
+ * follow that document too instead of mixing in the route's language. The policy link's page
+ * prefix follows it as well, or `/privacy` becomes a `/de/privacy` that may not exist.
  */
 export function cookieConsentTranslation(
 	doc: SiteCookieBanner | null,
 	trackers: AnalyticsTracker[],
 	options: LinkLocaleOptions,
 ): Translation {
-	const { locale } = options;
+	const locale = stegaClean(doc?.language) || options.locale;
 	/* How the branch stores a banner text: plain here. */
 	const read = plainText;
 	const text = (
@@ -231,12 +236,9 @@ export function cookieConsentTranslation(
 	}));
 
 	const description = text(consent?.description, "consentDescription");
-	/* A locale without its own banner gets the default language's (`siteCookieBannerQuery`), whose
-	 * policy page is in that language: prefix the link with the document's language, not the
-	 * route's, or `/privacy` becomes a `/de/privacy` that may not exist. */
 	const policyLink = privacyPolicyHtml(consent?.privacyPolicy, {
 		...options,
-		locale: stegaClean(doc?.language) || locale,
+		locale,
 	});
 
 	return {

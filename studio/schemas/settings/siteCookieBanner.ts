@@ -5,7 +5,7 @@ import { defineType } from "sanity";
 import { onePerLanguage } from "../../utils/onePerLanguage";
 import { languageField } from "../fields/languageField";
 
-/** An empty text is not hidden: the web shows its default text in the visitor's language. */
+/** An empty text is not hidden: the web shows its default text in this banner's language. */
 const EMPTY_TEXT_HINT = "Empty texts show the default text.";
 
 /**
@@ -40,7 +40,7 @@ export const siteCookieBanner = defineType({
           title: "Privacy Policy",
           name: "privacyPolicy",
           description:
-            "Linked after the description: visitors must be able to read what they are agreeing to before they agree, so set it whenever the banner is on (Analytics & Tracking). A page link gets the visitor's language prefix. The link title is the label.",
+            "Linked after the description: visitors must be able to read what they are agreeing to before they agree, so set it whenever the banner is on (Analytics & Tracking). A page link gets this banner's language prefix. The link title is the label.",
           type: "link",
           validation: (rule) => [
             rule.custom(

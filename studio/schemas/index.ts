@@ -1,7 +1,6 @@
 import { page } from "./documents/page";
 import { project } from "./documents/project";
 import { projectCategory } from "./documents/projectCategory";
-import { work } from "./documents/work";
 import { trackerGoogleAnalytics } from "./objects/analytics/trackerGoogleAnalytics";
 import { trackerMatomo } from "./objects/analytics/trackerMatomo";
 import { trackerMicrosoftClarity } from "./objects/analytics/trackerMicrosoftClarity";
@@ -21,14 +20,16 @@ import { moduleMedia } from "./objects/modules/moduleMedia";
 import { moduleText } from "./objects/modules/moduleText";
 import { navLanguageSwitch } from "./objects/navLanguageSwitch";
 import { navThemeToggle } from "./objects/navThemeToggle";
-import { seoFallback, seoPage } from "./objects/seo/page";
-import { errorSettings } from "./settings/error";
+import { seoFallback } from "./objects/seo/fallback";
+import { seoPage } from "./objects/seo/page";
+import { errorSettings } from "./settings/errorSettings";
 import { siteAnalyticsSettings } from "./settings/siteAnalyticsSettings";
 import { siteCookieBanner } from "./settings/siteCookieBanner";
 import { siteLanguageSettings } from "./settings/siteLanguageSettings";
 import { siteNav } from "./settings/siteNav";
 import { siteSettings } from "./settings/siteSettings";
 import { home } from "./singletons/home";
+import { work } from "./singletons/work";
 
 export const schemaTypes = [
   linkFunctions,

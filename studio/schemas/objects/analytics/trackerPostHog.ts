@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { CONTROLLER_CHECKLIST, COOKIE_FREE_NOTE } from "./complianceNotes";
+import { requiredWhenEnabled } from "./requiredWhenEnabled";
 
 export const trackerPostHog = defineType({
   name: "trackerPostHog",
@@ -19,13 +20,7 @@ export const trackerPostHog = defineType({
       name: "apiKey",
       title: "Project API key",
       type: "string",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "API key is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("API key")),
     }),
     defineField({
       name: "apiHost",
@@ -34,13 +29,7 @@ export const trackerPostHog = defineType({
         "Ingest host. Keep on the EU cloud (https://eu.i.posthog.com) or self-hosted; us.i.posthog.com is a US transfer. Self-hosted: add the origin to the CSP_ANALYTICS_ORIGINS build variable of the web app.",
       type: "url",
       initialValue: "https://eu.i.posthog.com",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "API host is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("API host")),
     }),
     defineField({
       name: "cookieFree",
@@ -58,9 +47,10 @@ export const trackerPostHog = defineType({
     defineField({
       name: "cookieBannerDescription",
       title: "Cookie banner description",
+      description:
+        "Shown in every language. Empty = the default text in the visitor's language.",
       type: "text",
       rows: 2,
-      initialValue: "Product analytics and feature flags via PostHog.",
     }),
   ],
   preview: {

@@ -1,5 +1,6 @@
 /**
- * Routable document types for internal links. Extend when adding new page types.
+ * Page-like routable document types: content-refs "pages" scope and internal links. Extend when
+ * adding new page types.
  */
 export const PAGE_REFERENCES = [{ type: "home" }, { type: "page" }] as const;
 
@@ -11,6 +12,15 @@ export const PROJECT_REFERENCES = [{ type: "project" }] as const;
 
 export const PROJECT_REFERENCE_FILTER =
   '_type == "project" && defined(slug.current)';
+
+/** Everything an internal link can open: the pages, the Work landing and its projects. */
+export const LINK_REFERENCES = [
+  ...PAGE_REFERENCES,
+  { type: "work" },
+  ...PROJECT_REFERENCES,
+] as const;
+
+export const LINK_REFERENCE_FILTER = `${PAGE_REFERENCE_FILTER} || _type == "work" || (${PROJECT_REFERENCE_FILTER})`;
 
 export const CONTENT_REF_SOURCE_SCOPES = ["all", "pages", "projects"] as const;
 export type ContentRefSourceScope = (typeof CONTENT_REF_SOURCE_SCOPES)[number];

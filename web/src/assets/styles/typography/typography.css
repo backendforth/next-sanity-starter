@@ -1,35 +1,9 @@
-/* Base + type utilities; tokens in variables/fontsizes.css */
-html,
-body {
-	hyphens: none;
-}
-
-html {
-	font-size: var(--font-size-root);
-	text-wrap: balance;
-
-	@variant lg {
-		font-size: clamp(1rem, 1.111111vw, 1.5rem);
-	}
-}
+/* Type utilities and the element defaults built on them; tokens in variables/fontsizes.css.
+ * `globals.css` imports this file after `tailwindcss`, so the layers below sit after preflight. */
 
 /* ─── Utilities ─────────────────────────────────────────────────────────────
  * RT scale: H1–H2 + big-text → Geist Sans regular · H3–H4 → Geist Mono semibold.
  */
-
-/* md — main menu links + site title (Geist Sans regular) */
-@utility nav-menu {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-md);
-	line-height: var(--line-height-md);
-}
-
-/* xs — language switch, theme toggle (Geist Sans regular) */
-@utility nav-label {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-xs);
-	line-height: var(--line-height-xs);
-}
 
 /* xs — tags (mono semibold) */
 @utility tag {
@@ -56,7 +30,7 @@ html {
 	word-break: normal;
 }
 
-/* md — body text */
+/* md — body text, main menu links + site title */
 @utility text {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-md);
@@ -70,35 +44,29 @@ html {
 	line-height: var(--line-height-md);
 }
 
-/* lg — quotes (body face, not headings) */
-@utility quote-paragraph {
-	@apply font-normal font-text italic;
-	font-size: var(--font-size-lg);
-	line-height: var(--line-height-lg);
-}
-
-/* lg — big text (Geist Sans regular) */
+/* lg — big text (Geist Sans regular), rich text only */
 @utility big-text {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-lg);
-	line-height: var(--line-height-lg);
+	line-height: var(--line-height-big-text);
 	max-width: var(--measure-heading-3-big);
 }
 
-/* ─── Headings (RT + module titles) ─────────────────────────────────────────
- * 3lg heading-1 — RT “Heading 1” (same scale as content-title / page-title)
+/* ─── Headings (RT + page / module titles) ──────────────────────────────────
+ * 3lg heading-1 — RT “Heading 1”, page and module titles
  * 2lg heading-2 — RT “Heading 2”
  * lg  heading-3 — RT “Heading 3” (Geist Mono semibold)
  * md  heading-4 — RT “Heading 4” (Geist Mono semibold)
  * md  text       — body
  */
 
-/* 3lg — RT h1 / module title (Geist Sans regular) */
+/* 3lg — RT h1, page and module titles (Geist Sans regular) */
 @utility heading-1 {
 	@apply font-normal font-text not-italic;
 	font-size: var(--font-size-3lg);
 	line-height: var(--line-height-3lg);
 	max-width: var(--measure-heading-1-2);
+	text-wrap: balance;
 }
 
 /* 2lg — RT h2 (Geist Sans regular) */
@@ -107,6 +75,7 @@ html {
 	font-size: var(--font-size-2lg);
 	line-height: var(--line-height-2lg);
 	max-width: var(--measure-heading-1-2);
+	text-wrap: balance;
 }
 
 /* lg — RT h3 (Geist Mono semibold) */
@@ -115,6 +84,7 @@ html {
 	font-size: var(--font-size-lg);
 	line-height: var(--line-height-lg);
 	max-width: var(--measure-heading-3-big);
+	text-wrap: balance;
 }
 
 /* md — RT h4 (Geist Mono semibold) */
@@ -123,145 +93,66 @@ html {
 	font-size: var(--font-size-md);
 	line-height: var(--line-height-md);
 	max-width: var(--measure-heading-4-text);
+	text-wrap: balance;
 }
 
-/* ─── CMS field titles (h2 outside rich text — always 3lg, Geist Sans regular) ─ */
+/* ─── Element defaults ──────────────────────────────────────────────────────
+ * `@layer base`: they beat preflight, and a utility on the element beats them. */
 
-@utility content-title {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-3lg);
-	line-height: var(--line-height-3lg);
-	margin-bottom: var(--space-md);
-	max-width: var(--measure-heading-1-2);
+@layer base {
+	html,
+	body {
+		hyphens: none;
+	}
+
+	/* `pretty` for running text (inherited); the heading utilities balance their lines. */
+	html {
+		font-size: var(--font-size-root);
+		text-wrap: pretty;
+	}
+
+	p {
+		@apply text;
+	}
+
+	a {
+		@apply font-semibold no-underline hover:text-color-hover;
+	}
+
+	figcaption {
+		@apply text-small;
+	}
+
+	button,
+	[type="button"],
+	[type="submit"],
+	[type="reset"],
+	[role="button"] {
+		@apply text-button;
+	}
+
+	code {
+		@apply code-inline rounded-4xl px-xs py-min;
+		color: var(--color-code-text);
+		background-color: var(--color-code-bg);
+	}
+
+	/* Bold / emphasis inside body text → Geist Mono semibold (single text accent face). */
+	:is(p, li, figcaption) :is(strong, b) {
+		@apply font-mono font-semibold;
+	}
+
+	:is(p, li, figcaption) :is(em, i) {
+		@apply font-mono italic;
+		font-weight: inherit;
+	}
+
+	/* Inside headings, inline emphasis inherits weight + family — single weight per heading. */
+	:is(h1, h2, h3, h4) :is(strong, em, i, b) {
+		font-family: inherit;
+		font-weight: inherit;
+	}
 }
 
-@utility page-title {
-	@apply font-normal font-text not-italic;
-	font-size: var(--font-size-3lg);
-	line-height: var(--line-height-3lg);
-	margin-bottom: var(--space-md);
-	max-width: var(--measure-heading-1-2);
-}
-
-/* Legacy aliases (prefer semantic names above) */
-@utility paragraph {
-	@apply text;
-}
-
-@utility paragraph-small {
-	@apply text-small;
-}
-
-@utility extra-large {
-	@apply page-title;
-}
-
-/* ─── Element defaults ────────────────────────────────────────────────────── */
-
-h5,
-h6 {
-	@apply text font-mono;
-}
-
-p {
-	@apply text;
-}
-
-a {
-	@apply font-semibold no-underline hover:text-color-hover;
-}
-
-small {
-	@apply text-small;
-}
-
-blockquote {
-	@apply quote-paragraph;
-}
-
-figcaption {
-	@apply text-small;
-}
-
-button,
-[type="button"],
-[type="submit"],
-[type="reset"],
-[role="button"] {
-	@apply text-button;
-}
-
-blockquote p {
-	font: inherit;
-	letter-spacing: inherit;
-}
-
-code {
-	@apply code-inline rounded px-xs py-min;
-	color: var(--color-code-text);
-	background-color: var(--color-code-bg);
-}
-
-ul {
-	@apply list-disc;
-}
-
-ol {
-	@apply list-decimal;
-}
-
-/* Bold / emphasis inside body text → Geist Mono semibold (single text accent face). */
-:is(p, li, blockquote, figcaption, small) :is(strong, b) {
-	@apply font-mono font-semibold;
-}
-
-:is(p, li, blockquote, figcaption, small) :is(em, i) {
-	@apply font-mono italic;
-	font-weight: inherit;
-}
-
-/* Inside headings, inline emphasis inherits weight + family — single weight per heading. */
-:is(h1, h2, h3, h4, h5, h6) :is(strong, em, i, b) {
-	font-family: inherit;
-	font-weight: inherit;
-}
-
-/* Rich text block spacing → typography/rich-text.css (after Tailwind in globals.css). */
-
-/* Header nav — beat global `a` / `button` element typography (semibold, text-button). */
-header nav a,
-header h1 a {
-	@apply nav-menu font-normal;
-	text-decoration-line: none;
-}
-
-footer nav a {
-	@apply nav-menu font-normal;
-	text-decoration-line: none;
-}
-
-:is(header, footer) nav a[aria-current],
-header h1 a[aria-current] {
-	text-decoration-line: underline;
-	text-decoration-color: var(--color-link-decoration);
-	text-underline-offset: 0.25rem;
-}
-
-header nav [role="group"] button {
-	@apply tag no-underline;
-}
-
-/* Content refs — category / sort filters (pill buttons, same as header utilities). */
-.content-refs-controls [role="group"] button {
-	@apply tag no-underline;
-}
-
-.content-refs-controls ul.content-refs-grid {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.content-refs-controls ul.content-refs-grid > li {
-	list-style: none;
-}
+/* Rich text block spacing → typography/rich-text.css. Nav links and pills style themselves
+ * (`components/navigation/navControlStyles.ts`). */

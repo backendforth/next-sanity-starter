@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { CONTROLLER_CHECKLIST } from "./complianceNotes";
+import { requiredWhenEnabled } from "./requiredWhenEnabled";
 
 export const trackerMicrosoftClarity = defineType({
   name: "trackerMicrosoftClarity",
@@ -22,22 +23,7 @@ export const trackerMicrosoftClarity = defineType({
       title: "Project ID",
       description: "Clarity project ID from the Clarity dashboard.",
       type: "string",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Project ID is required when enabled.";
-          return true;
-        }),
-    }),
-    defineField({
-      name: "cookieFree",
-      title: "Cookie-free mode",
-      description:
-        "Not available — Clarity always uses cookies, so it never loads before consent.",
-      type: "boolean",
-      initialValue: false,
-      readOnly: true,
+      validation: (rule) => rule.custom(requiredWhenEnabled("Project ID")),
     }),
     defineField({
       name: "cookieBannerLabel",
@@ -48,10 +34,10 @@ export const trackerMicrosoftClarity = defineType({
     defineField({
       name: "cookieBannerDescription",
       title: "Cookie banner description",
+      description:
+        "Shown in every language. Empty = the default text in the visitor's language.",
       type: "text",
       rows: 2,
-      initialValue:
-        "Session recordings and heatmaps to improve usability (Microsoft Clarity).",
     }),
   ],
   preview: {

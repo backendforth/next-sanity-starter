@@ -30,10 +30,10 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      # Formatting, lint and import order in one read-only pass (same as the
-      # pre-push hook); findings are annotated on the PR. `pnpm format` fixes
-      # them locally.
-      - run: pnpm exec biome ci --reporter=github .
+      # Formatting, lint and import order in one read-only pass (`pnpm lint`,
+      # as in the pre-push hook); findings are annotated on the PR. `pnpm
+      # format` fixes them locally.
+      - run: pnpm run lint --reporter=github
       - run: pnpm run typecheck
       # Wiring drift between a module's schema, component, query and the lists
       # that register them is a silent bug class — `pnpm gen:module` wires them
@@ -58,10 +58,10 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
-      # Studio schema extract + typegen, web query typegen, then `check:typegen`
+      # Studio schema extract, web query typegen, then `check:typegen`
       # (every `defineQuery` got a type). `sanity schema extract` loads
       # sanity.config.ts, which throws without a project id; nothing here calls
-      # the Sanity API, so a placeholder is enough — same as the build jobs.
+      # the Sanity API, so a placeholder is enough.
       - run: pnpm run generate
         env:
           SANITY_STUDIO_PROJECT_ID: ci-placeholder

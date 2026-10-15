@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { CONTROLLER_CHECKLIST } from "./complianceNotes";
+import { requiredWhenEnabled } from "./requiredWhenEnabled";
 
 export const trackerGoogleAnalytics = defineType({
   name: "trackerGoogleAnalytics",
@@ -21,15 +22,13 @@ export const trackerGoogleAnalytics = defineType({
       description: "GA4 measurement ID (e.g. G-XXXXXXXXXX).",
       type: "string",
       validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Measurement ID is required when enabled.";
-          if (!/^G-[A-Z0-9]+$/i.test(value.trim())) {
-            return "Use a valid GA4 measurement ID (G-XXXXXXXXXX).";
-          }
-          return true;
-        }),
+        rule.custom(
+          requiredWhenEnabled("Measurement ID", (value) =>
+            /^G-[A-Z0-9]+$/i.test(value)
+              ? true
+              : "Use a valid GA4 measurement ID (G-XXXXXXXXXX).",
+          ),
+        ),
     }),
     defineField({
       name: "cookieFree",
@@ -54,10 +53,10 @@ export const trackerGoogleAnalytics = defineType({
     defineField({
       name: "cookieBannerDescription",
       title: "Cookie banner description",
+      description:
+        "Shown in every language. Empty = the default text in the visitor's language.",
       type: "text",
       rows: 2,
-      initialValue:
-        "Helps us understand how visitors use the site via Google Analytics.",
     }),
   ],
   preview: {

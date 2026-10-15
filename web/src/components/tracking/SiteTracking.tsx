@@ -3,7 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 
-import type { AnalyticsTracker } from "@/sanity/types";
+import type { AnalyticsTracker, SiteAnalyticsSettings } from "@/sanity/types";
 import {
 	hasConsent,
 	subscribeAnalyticsConsent,
@@ -12,7 +12,6 @@ import { loadTrackers } from "@/src/components/tracking/lib/loadTrackers";
 import {
 	bannerGatesLoading,
 	getEnabledTrackers,
-	type TrackingConfig,
 	trackerLoadSignature,
 	trackerRequiresConsent,
 } from "@/src/components/tracking/lib/trackingConfig";
@@ -23,25 +22,22 @@ import {
 } from "@/src/components/tracking/lib/trackingRuntime";
 
 type Props = {
-	config: TrackingConfig;
+	analytics: SiteAnalyticsSettings | null;
+	cookieBannerEnabled: boolean;
 };
 
 function trackersForConsent(
 	trackers: AnalyticsTracker[],
-	config: TrackingConfig,
+	bannerGates: boolean,
 	analyticsAccepted: boolean,
 ): AnalyticsTracker[] {
-	return trackers.filter((tracker) => {
-		const needsConsent = trackerRequiresConsent(
-			tracker,
-			config.analytics?.loadMode,
-			config.cookieBanner,
-		);
-		return !needsConsent || analyticsAccepted;
-	});
+	return trackers.filter(
+		(tracker) =>
+			analyticsAccepted || !trackerRequiresConsent(tracker, bannerGates),
+	);
 }
 
-export function SiteTracking({ config }: Props) {
+export function SiteTracking({ analytics, cookieBannerEnabled }: Props) {
 	/* Seeded from the runtime registry: after a remount (a locale switch re-renders the
 	 * layout) trackers from the previous render are still running, and reconciling
 	 * against an empty map would leave them collecting when the new config needs
@@ -50,16 +46,17 @@ export function SiteTracking({ config }: Props) {
 	if (loaded.current === null) loaded.current = new Map(loadedTrackerEntries());
 	const loadedMap = loaded.current;
 
-	const trackers = useMemo(
-		() => getEnabledTrackers(config.analytics),
-		[config.analytics],
-	);
+	const trackers = useMemo(() => getEnabledTrackers(analytics), [analytics]);
 
-	const showBanner = bannerGatesLoading(config);
+	const showBanner = bannerGatesLoading(cookieBannerEnabled, analytics);
 
 	useEffect(() => {
 		const syncConsent = (analyticsAccepted: boolean) => {
-			const allowed = trackersForConsent(trackers, config, analyticsAccepted);
+			const allowed = trackersForConsent(
+				trackers,
+				showBanner,
+				analyticsAccepted,
+			);
 			const allowedByKey = new Map(
 				allowed.map((tracker) => [tracker._key, tracker]),
 			);
@@ -110,15 +107,15 @@ export function SiteTracking({ config }: Props) {
 
 		// No one-shot guard here: the effect owns the consent subscription, so an
 		// early return on re-run would drop it for good (Strict Mode remounts, or
-		// any `config` change) and consent would never reach the loaders again.
-		// `consentLoaded` is what keeps loads idempotent.
+		// any config change) and consent would never reach the loaders again.
+		// `loadedMap` is what keeps loads idempotent.
 		if (showBanner) {
 			syncConsent(hasConsent("analytics"));
 			return subscribeAnalyticsConsent(syncConsent);
 		}
 
 		syncConsent(true);
-	}, [config, showBanner, trackers, loadedMap]);
+	}, [showBanner, trackers, loadedMap]);
 
 	return (
 		<Suspense fallback={null}>

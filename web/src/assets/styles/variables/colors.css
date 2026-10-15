@@ -25,25 +25,19 @@
 
 	--color-link: #3b82f6;
 	--color-hover: rgb(0, 132, 255);
-	--color-blue-pressed: #1e40af;
-	--color-active: var(--color-blue-pressed);
+	--color-active: #1e40af;
 
 	--color-bg: #ffffff;
 	--color-surface-muted: #e4e4e7;
 	--color-border-subtle: #e4e4e7;
 
 	--color-link-decoration: var(--color-grey);
-	--color-link-decoration-hover: #71717a;
 
 	--color-error: #dc2626;
-	--color-success: #16a34a;
 	--color-danger: #b91c1c;
 
 	--color-code-bg: #e4e4e7;
 	--color-code-text: var(--color-error);
-
-	--background: var(--color-bg);
-	--foreground: var(--color-text);
 }
 
 /* Dark tokens — applied only when the toggle sets `data-theme="dark"`. */
@@ -61,23 +55,16 @@
 
 	--color-link: #60a5fa;
 	--color-hover: #93c5fd;
-	--color-blue-pressed: #3b82f6;
-	--color-active: var(--color-blue-pressed);
+	--color-active: #3b82f6;
 
 	--color-bg: #0a0a0a;
 	--color-surface-muted: #171717;
 	--color-border-subtle: #27272a;
 
 	--color-link-decoration: #71717a;
-	--color-link-decoration-hover: #a1a1aa;
 
 	--color-error: #f87171;
-	--color-success: #4ade80;
 	--color-danger: #fca5a5;
 
 	--color-code-bg: #27272a;
-	--color-code-text: var(--color-error);
-
-	--background: var(--color-bg);
-	--foreground: var(--color-text);
 }

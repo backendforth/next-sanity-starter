@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
 	type InferComponents,
 	type InferStrictComponents,
@@ -10,8 +11,10 @@ import {
 	type LinkLocaleOptions,
 	resolveLinkMark,
 } from "@/sanity/utils/linkResolver";
+import { CookiePreferencesButton } from "@/src/components/cookies/CookiePreferencesButton";
 import { ModuleCarousel } from "@/src/components/modules/ModuleCarousel";
 import { ModuleMedia } from "@/src/components/modules/ModuleMedia";
+import { IfCookieBanner } from "@/src/contexts/CookieBannerContext";
 
 function LinkMarkRenderer({
 	children,
@@ -26,8 +29,16 @@ function LinkMarkRenderer({
 	if (!resolved) {
 		return <>{children}</>;
 	}
-	if (resolved.kind === "function") {
-		return <span className="cursor-default text-color-link">{children}</span>;
+	if (resolved.kind === "cookie-preferences") {
+		/* Without the banner there is no modal to open: the text stays plain. */
+		return (
+			<IfCookieBanner fallback={children}>
+				<CookiePreferencesButton>{children}</CookiePreferencesButton>
+			</IfCookieBanner>
+		);
+	}
+	if (resolved.internal) {
+		return <Link href={resolved.href}>{children}</Link>;
 	}
 	return (
 		<a href={resolved.href} target={resolved.target} rel={resolved.rel}>
@@ -45,10 +56,14 @@ function LinkMarkRenderer({
 export function portableTextMediaComponents({
 	locale,
 	siteLocale,
-}: LinkLocaleOptions) {
+	priorityKey,
+}: LinkLocaleOptions & {
+	/** `_key` of the embed that is the page's LCP candidate. */
+	priorityKey?: string;
+}) {
 	return {
 		block: {
-			normal: ({ children }) => <p className="text">{children}</p>,
+			normal: ({ children }) => <p>{children}</p>,
 			bigText: ({ children }) => <p className="big-text">{children}</p>,
 			h1: ({ children }) => <h2 className="heading-1">{children}</h2>,
 			h2: ({ children }) => <h2 className="heading-2">{children}</h2>,
@@ -63,12 +78,8 @@ export function portableTextMediaComponents({
 			bullet: ({ children }) => <li>{children}</li>,
 			number: ({ children }) => <li>{children}</li>,
 		},
+		/* `strong`, `em` and `code` use the default elements; `typography.css` styles them. */
 		marks: {
-			strong: ({ children }) => (
-				<strong className="font-mono">{children}</strong>
-			),
-			em: ({ children }) => <em className="font-mono italic">{children}</em>,
-			code: ({ children }) => <code>{children}</code>,
 			link: ({ children, value }) => (
 				<LinkMarkRenderer value={value} localeOptions={{ locale, siteLocale }}>
 					{children}
@@ -82,7 +93,7 @@ export function portableTextMediaComponents({
 						module={stegaBrand(value)}
 						locale={locale}
 						siteLocale={siteLocale}
-						variant="embed"
+						priority={value._key === priorityKey}
 					/>
 				</div>
 			),
@@ -92,7 +103,7 @@ export function portableTextMediaComponents({
 						module={stegaBrand(value)}
 						locale={locale}
 						siteLocale={siteLocale}
-						variant="embed"
+						priority={value._key === priorityKey}
 					/>
 				</div>
 			),

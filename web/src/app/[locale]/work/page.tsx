@@ -5,6 +5,7 @@ import {
 	fetchWorkDocument,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
+import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 
 type PageProps = {
@@ -45,33 +46,27 @@ export default async function Work({ params }: PageProps) {
 
 	if (!data) {
 		return (
-			<div className="flex flex-col flex-1 bg-color-bg">
-				<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-md px-md py-max sm:px-container">
-					<p>
-						Work singleton is not in the dataset yet. Create it in Sanity Studio
-						(document id <code>work</code>
-						).
-					</p>
-				</div>
+			<div className={pageContainerClassName}>
+				<p>
+					Work singleton is not in the dataset yet. Create it in Sanity Studio
+					(document id <code>work</code>
+					).
+				</p>
 			</div>
 		);
 	}
 
 	return (
-		<div className="flex flex-col flex-1 bg-color-bg">
-			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{data.modules?.length ? (
-					<section className="flex flex-col gap-sm">
-						<ModulesRenderer
-							modules={data.modules}
-							locale={locale}
-							siteLocale={siteLocale}
-							documentId={data._id}
-							documentType="work"
-						/>
-					</section>
-				) : null}
-			</div>
+		<div className={pageContainerClassName}>
+			{data.modules?.length ? (
+				<ModulesRenderer
+					modules={data.modules}
+					locale={locale}
+					siteLocale={siteLocale}
+					documentId={data._id}
+					documentType="work"
+				/>
+			) : null}
 		</div>
 	);
 }

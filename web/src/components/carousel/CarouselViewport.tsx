@@ -5,16 +5,11 @@ import Autoplay from "embla-carousel-autoplay";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useOptionalLanguage } from "@/src/contexts/LanguageContext";
-import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
-import { uiLabel } from "@/src/i18n/uiLabels";
-import { resolveMediaPosterUrl } from "@/src/utils/resolveMediaPoster";
+import { resolveMediaImageSource } from "@/src/utils/mediaImageSource";
+import { usePrefersReducedMotion } from "@/src/utils/usePrefersReducedMotion";
 
 import { CarouselSlide, type NormalizedSlide } from "./CarouselSlide";
-import {
-	slideWidthAtRowHeightPx,
-	useMultiSlideRowHeight,
-} from "./carouselMultiSlideLayout";
+import { multiSlideLayout } from "./carouselMultiSlideLayout";
 
 type CarouselOptions = {
 	loop: boolean;
@@ -25,9 +20,20 @@ type CarouselOptions = {
 	autoplayDelayMs: number;
 };
 
+/** Control `aria-label`s, resolved to the page locale on the server; one per slide for the lists. */
+type CarouselLabels = {
+	prev: string;
+	next: string;
+	goToSlide: string[];
+	showSlide: string[];
+};
+
 type Props = {
 	slides: NormalizedSlide[];
 	options: CarouselOptions;
+	labels: CarouselLabels;
+	/** The page's LCP candidate: the first slide loads eagerly. */
+	priority?: boolean;
 };
 
 const THUMBNAIL_WIDTH_PX = 160;
@@ -35,31 +41,26 @@ const THUMBNAIL_WIDTH_PX = 160;
 /** Image slides use the image; video and loop slides their poster, else the Mux thumbnail. */
 function thumbnailUrlForSlide(slide: NormalizedSlide): string | null {
 	const isImage = slide.kind === "image";
-	return resolveMediaPosterUrl({
-		posterPayload: isImage ? slide.media : slide.poster,
-		muxMedia: isImage ? undefined : slide.media,
-		thumbWidthPx: THUMBNAIL_WIDTH_PX,
-	});
+	return (
+		resolveMediaImageSource({
+			image: isImage ? slide.media : slide.poster,
+			muxMedia: isImage ? undefined : slide.media,
+			maxWidthPx: THUMBNAIL_WIDTH_PX,
+		})?.src ?? null
+	);
 }
 
 /**
  * Embla viewport with optional autoplay, prev/next, dots, and a synced thumbnail strip.
  * Reduced-motion users get a still carousel: autoplay is suspended but interaction works.
  */
-export function CarouselViewport({ slides, options }: Props) {
-	const locale =
-		useOptionalLanguage()?.currentLocale ??
-		FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
-	const [reducedMotion, setReducedMotion] = useState(false);
-
-	useEffect(() => {
-		if (typeof window === "undefined" || !window.matchMedia) return;
-		const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const sync = () => setReducedMotion(mq.matches);
-		sync();
-		mq.addEventListener("change", sync);
-		return () => mq.removeEventListener("change", sync);
-	}, []);
+export function CarouselViewport({
+	slides,
+	options,
+	labels,
+	priority = false,
+}: Props) {
+	const reducedMotion = usePrefersReducedMotion();
 
 	/* Lazy init: `useRef(Autoplay(...))` evaluates its argument on every render, which built
 	 * and discarded a fresh plugin each time. */
@@ -76,47 +77,59 @@ export function CarouselViewport({ slides, options }: Props) {
 			: null;
 	}
 
+	const isMulti = options.multipleSlides;
 	const [emblaRef, emblaApi] = useEmblaCarousel(
-		{ loop: options.loop, align: "start" },
+		/* A slide counts as in view once about half of it shows (browsers differ at the edge). */
+		{ loop: options.loop, align: "start", inViewThreshold: 0.5 },
 		autoplayPlugin.current ? [autoplayPlugin.current] : [],
-	);
-	const viewportRef = useRef<HTMLDivElement | null>(null);
-
-	const setViewportRef = useCallback(
-		(node: HTMLDivElement | null) => {
-			viewportRef.current = node;
-			emblaRef(node);
-		},
-		[emblaRef],
 	);
 	const [thumbsRef, thumbsApi] = useEmblaCarousel({
 		containScroll: "keepSnaps",
 		dragFree: true,
 	});
 
-	const [selectedIndex, setSelectedIndex] = useState(0);
+	/* `align: "start"`, one slide per step: snap k starts at slide k, and the trailing slides that
+	 * fit beside the last snap share it. Until Embla measures, every slide is its own snap. */
+	const [selectedSnap, setSelectedSnap] = useState(0);
+	const [snapCount, setSnapCount] = useState(slides.length);
+	const [slidesInView, setSlidesInView] = useState<number[]>([0]);
 	const [canScrollPrev, setCanScrollPrev] = useState(false);
 	const [canScrollNext, setCanScrollNext] = useState(false);
 
 	const onSelect = useCallback(() => {
 		if (!emblaApi) return;
-		const idx = emblaApi.selectedScrollSnap();
-		setSelectedIndex(idx);
+		const snap = emblaApi.selectedScrollSnap();
+		setSelectedSnap(snap);
+		setSnapCount(emblaApi.scrollSnapList().length);
 		setCanScrollPrev(emblaApi.canScrollPrev());
 		setCanScrollNext(emblaApi.canScrollNext());
-		thumbsApi?.scrollTo(idx);
+		thumbsApi?.scrollTo(snap);
 	}, [emblaApi, thumbsApi]);
+
+	const onSlidesInView = useCallback(() => {
+		if (emblaApi) setSlidesInView(emblaApi.slidesInView());
+	}, [emblaApi]);
 
 	useEffect(() => {
 		if (!emblaApi) return;
 		onSelect();
+		onSlidesInView();
 		emblaApi.on("select", onSelect);
 		emblaApi.on("reInit", onSelect);
+		emblaApi.on("slidesInView", onSlidesInView);
 		return () => {
 			emblaApi.off("select", onSelect);
 			emblaApi.off("reInit", onSelect);
+			emblaApi.off("slidesInView", onSlidesInView);
 		};
-	}, [emblaApi, onSelect]);
+	}, [emblaApi, onSelect, onSlidesInView]);
+
+	/* One slide at a time: the selected one is active. Several side by side: every slide in view
+	 * is — a loop plays, a video shows its player — so none waits for a selection it can't get.
+	 * The selected snap's first slide counts too: a slide wider than half the viewport is never
+	 * half in view, but scrolled to it sits at the start. */
+	const isSlideActive = (index: number) =>
+		index === selectedSnap || (isMulti && slidesInView.includes(index));
 
 	/* Suspend autoplay under reduced motion and resume it only when the preference flips back,
 	 * not on every effect run — a `stopOnInteraction` stop must survive unrelated re-renders. */
@@ -135,9 +148,9 @@ export function CarouselViewport({ slides, options }: Props) {
 
 	const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
 	const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-	const scrollTo = useCallback(
-		(index: number) => emblaApi?.scrollTo(index),
-		[emblaApi],
+	const scrollToSlide = useCallback(
+		(index: number) => emblaApi?.scrollTo(Math.min(index, snapCount - 1)),
+		[emblaApi, snapCount],
 	);
 
 	const thumbnails = useMemo(
@@ -148,62 +161,45 @@ export function CarouselViewport({ slides, options }: Props) {
 		[slides, options.showThumbnails],
 	);
 
-	const isMulti = options.multipleSlides;
-	const multiSlideRowHeight = useMultiSlideRowHeight(
-		isMulti,
-		slides,
-		viewportRef,
+	const multiLayout = useMemo(
+		() => (isMulti ? multiSlideLayout(slides) : null),
+		[isMulti, slides],
 	);
 
-	useEffect(() => {
-		if (!emblaApi || !isMulti || !multiSlideRowHeight) return;
-		emblaApi.reInit();
-	}, [emblaApi, isMulti, multiSlideRowHeight]);
-
-	if (slides.length === 0) return null;
-
-	const imageSizes = isMulti ? "(max-width: 768px) 50vw, 33vw" : "100vw";
-	const showNavigation = slides.length > 1;
+	/* Nothing to navigate when every slide fits at once. */
+	const showNavigation = snapCount > 1;
 
 	return (
 		<div className="flex flex-col gap-sm">
 			<div
-				ref={setViewportRef}
+				ref={emblaRef}
 				className={clsx(
 					"overflow-hidden",
-					isMulti ? undefined : "rounded-md bg-black",
+					isMulti ? "@container" : "rounded-md bg-black",
 				)}
 			>
-				<div className={clsx("flex", isMulti && "gap-md")}>
+				<div
+					className={clsx(
+						"flex",
+						isMulti && "gap-md [--slides:2] md:[--slides:3]",
+					)}
+				>
 					{slides.map((slide, index) => {
-						const slideWidthPx =
-							isMulti && multiSlideRowHeight
-								? slideWidthAtRowHeightPx(slide, multiSlideRowHeight)
-								: undefined;
-
+						const layout = multiLayout?.[index];
 						return (
 							<div
 								key={slide.key}
 								className={clsx(
-									"relative shrink-0 grow-0",
-									isMulti ? "min-h-0" : "min-w-0 aspect-video basis-full",
+									"relative min-w-0 shrink-0 grow-0",
+									!layout && "aspect-video basis-full",
 								)}
-								style={
-									isMulti && multiSlideRowHeight && slideWidthPx
-										? {
-												height: multiSlideRowHeight,
-												width: slideWidthPx,
-												flexBasis: slideWidthPx,
-											}
-										: undefined
-								}
+								style={layout?.style}
 							>
 								<CarouselSlide
 									slide={slide}
-									isActive={index === selectedIndex}
-									imageSizes={imageSizes}
-									respectAspectRatio={isMulti}
-									rowHeightPx={multiSlideRowHeight}
+									isActive={isSlideActive(index)}
+									priority={priority && index === 0}
+									imageSizes={layout?.sizes}
 								/>
 							</div>
 						);
@@ -217,7 +213,7 @@ export function CarouselViewport({ slides, options }: Props) {
 						type="button"
 						onClick={scrollPrev}
 						disabled={!options.loop && !canScrollPrev}
-						aria-label={uiLabel("carouselPrev", locale)}
+						aria-label={labels.prev}
 						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
 					>
 						<svg
@@ -238,7 +234,7 @@ export function CarouselViewport({ slides, options }: Props) {
 						type="button"
 						onClick={scrollNext}
 						disabled={!options.loop && !canScrollNext}
-						aria-label={uiLabel("carouselNext", locale)}
+						aria-label={labels.next}
 						className="grid h-9 w-9 place-items-center rounded-sm bg-color-surface-muted text-color-text transition hover:bg-color-brand hover:text-color-bg disabled:cursor-not-allowed disabled:opacity-30"
 					>
 						<svg
@@ -261,13 +257,13 @@ export function CarouselViewport({ slides, options }: Props) {
 			{options.showNavDots && showNavigation ? (
 				<div className="flex items-center justify-center gap-xs">
 					{slides.map((slide, index) => {
-						const isActive = index === selectedIndex;
+						const isActive = isSlideActive(index);
 						return (
 							<button
 								key={`dot-${slide.key}`}
 								type="button"
-								onClick={() => scrollTo(index)}
-								aria-label={uiLabel("carouselGoTo", locale, { n: index + 1 })}
+								onClick={() => scrollToSlide(index)}
+								aria-label={labels.goToSlide[index]}
 								aria-current={isActive ? "true" : undefined}
 								className={clsx(
 									"h-2 w-2 rounded-full transition",
@@ -281,21 +277,21 @@ export function CarouselViewport({ slides, options }: Props) {
 				</div>
 			) : null}
 
-			{options.showThumbnails && thumbnails ? (
+			{thumbnails && showNavigation ? (
 				<div ref={thumbsRef} className="overflow-hidden">
 					<div className="flex gap-xs">
 						{slides.map((slide, index) => {
 							const url = thumbnails[index];
-							const isActive = index === selectedIndex;
+							const isActive = isSlideActive(index);
 							return (
 								<button
 									key={`thumb-${slide.key}`}
 									type="button"
-									onClick={() => scrollTo(index)}
-									aria-label={uiLabel("carouselShow", locale, { n: index + 1 })}
+									onClick={() => scrollToSlide(index)}
+									aria-label={labels.showSlide[index]}
 									aria-current={isActive ? "true" : undefined}
 									className={clsx(
-										"relative aspect-video w-24 shrink-0 overflow-hidden rounded border transition",
+										"relative aspect-video w-24 shrink-0 overflow-hidden rounded-4xl border transition",
 										isActive
 											? "border-color-text"
 											: "border-color-border-subtle opacity-60 hover:opacity-100",

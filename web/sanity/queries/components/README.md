@@ -1,12 +1,12 @@
 # Query components (`queries/components/`)
 
-GROQ building blocks for **page modules** and **Portable Text** (rich text with embedded modules). Everything is re-exported from **`@/sanity/queries`**.
+GROQ building blocks for **page modules** and **Portable Text** (rich text with embedded modules). They are fragments: import them from their file; the full queries embed them.
 
 ## `text/`
 
 | File | Export | Purpose |
 |------|--------|---------|
-| `text/richTextMedia.ts` | `richTextMediaQuery` | Projection for `internationalizedArrayRichTextMedia` / schema `richTextMedia`: blocks, links, embedded `module.media` and `module.carousel` (the editor's whole `of` set). Flat, no recursion. |
+| `text/richTextMedia.ts` | `richTextMediaQuery`, `internationalizedRichTextMediaBodyQuery`, `blockFields` | `richTextMediaQuery` projects a `richTextMedia` value: blocks with resolved links, plus the inline modules `module.media` and `module.carousel` (the editor's whole `of` set). Flat, no recursion. `internationalizedRichTextMediaBodyQuery` wraps it for an i18n `body` field; `blockFields` is the blocks-only part. |
 
 ## `modules/`
 
@@ -15,14 +15,14 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 | File | Export | Content |
 |------|--------|---------|
 | `modules/index.ts` | `modulesQuery` | Full `modules[]{ ... }` |
-| `modules/text.ts` | `moduleTextQuery` | `module.text` (i18n title + body using `richTextMediaQuery`) |
+| `modules/text.ts` | `moduleTextQuery` | `module.text` (i18n heading + body using `richTextMediaQuery`) |
 | `modules/media.ts` | `moduleMediaQuery` | `module.media` |
 | `modules/carousel.ts` | `moduleCarouselQuery` | `module.carousel` |
-| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, `selection`, resolved `references`) |
+| `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, resolved `references`: every routable target of the scope, newest first, or the editor's picks in order) |
 
 ## Usage
 
-- **Ready-made page queries:** `queries/pages/` — `homeQuery`, `workQuery`, `pageBySlugQuery`, `projectBySlugQuery` embed `modulesQuery`.
+- **Ready-made page queries:** `queries/pages/` — `homeQuery`, `workQuery` and `pageBySlugQuery` embed `modulesQuery`; `projectBySlugQuery` embeds `internationalizedRichTextMediaBodyQuery`.
 - **Snippets:** `queries/snippets/` — `linkQuery`, `pageSeoQuery`, settings, …
 
 ## Adding a module

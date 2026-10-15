@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import { COOKIE_FREE_NOTE } from "./complianceNotes";
+import { requiredWhenEnabled } from "./requiredWhenEnabled";
 
 export const trackerMatomo = defineType({
   name: "trackerMatomo",
@@ -20,25 +21,13 @@ export const trackerMatomo = defineType({
       description:
         "Base URL of your Matomo instance (e.g. https://analytics.example.com/). Add its origin to the CSP_ANALYTICS_ORIGINS build variable of the web app, or the browser blocks it.",
       type: "url",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Matomo URL is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("Matomo URL")),
     }),
     defineField({
       name: "siteId",
       title: "Site ID",
       type: "string",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { enabled?: boolean };
-          if (!parent?.enabled) return true;
-          if (!value?.trim()) return "Site ID is required when enabled.";
-          return true;
-        }),
+      validation: (rule) => rule.custom(requiredWhenEnabled("Site ID")),
     }),
     defineField({
       name: "cookieFree",
@@ -56,10 +45,10 @@ export const trackerMatomo = defineType({
     defineField({
       name: "cookieBannerDescription",
       title: "Cookie banner description",
+      description:
+        "Shown in every language. Empty = the default text in the visitor's language.",
       type: "text",
       rows: 2,
-      initialValue:
-        "Privacy-friendly analytics via your self-hosted Matomo instance.",
     }),
   ],
   preview: {

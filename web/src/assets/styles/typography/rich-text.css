@@ -1,99 +1,85 @@
 /*
- * Portable Text spacing + layout — imported after `tailwindcss` in globals.css
- * so heading margins win over preflight (`h1–h6 { margin: 0 }`).
+ * Portable Text spacing + layout (`components/text/RichTextMedia.tsx`). `@layer components`:
+ * above preflight and the element defaults, below the type utilities the block renderers set
+ * (`big-text`, `heading-*`).
  */
 
-.rich-text > p {
-	@apply text;
-	line-height: var(--line-height-body);
-	margin-bottom: var(--space-sm);
-	max-width: var(--measure-heading-4-text);
-}
+@layer components {
+	.rich-text > p {
+		line-height: var(--line-height-body);
+		margin-bottom: var(--space-sm);
+		max-width: var(--measure-heading-4-text);
+	}
 
-.rich-text a {
-	@apply underline decoration-color-link-decoration hover:text-color-hover;
-}
+	.rich-text > .heading-1,
+	.rich-text > .heading-2 {
+		margin-top: var(--space-xl);
+		margin-bottom: var(--space-md);
+	}
 
-.rich-text > p:last-child {
-	margin-bottom: 0;
-}
+	.rich-text > .heading-3 {
+		margin-top: var(--space-lg);
+		margin-bottom: var(--space-sm);
+	}
 
-.rich-text > p.big-text {
-	@apply big-text;
-	line-height: var(--line-height-big-text);
-}
+	.rich-text > .heading-4 {
+		margin-top: var(--space-md);
+		margin-bottom: var(--space-sm);
+	}
 
-.rich-text > blockquote {
-	@apply quote-paragraph;
-	margin-bottom: var(--space-sm);
-	max-width: var(--measure-heading-4-text);
-}
+	.rich-text > :is(ul, ol) {
+		@apply text;
+		line-height: var(--line-height-body);
+		margin-bottom: var(--space-md);
+		padding-left: calc(var(--space-sm) + var(--space-xs));
+		max-width: var(--measure-heading-4-text);
+	}
 
-.rich-text > blockquote:last-child {
-	margin-bottom: 0;
-}
+	/* Markers only here: preflight leaves every other list bare. */
+	.rich-text ul {
+		list-style-type: disc;
+	}
 
-.rich-text > h2.heading-1 {
-	margin-top: var(--space-xl);
-	margin-bottom: var(--space-md);
-}
+	.rich-text ol {
+		list-style-type: decimal;
+	}
 
-.rich-text > h2.heading-1:first-child {
-	margin-top: 0;
-}
+	.rich-text li + li {
+		margin-top: var(--space-min);
+	}
 
-.rich-text > h2.heading-2 {
-	margin-top: var(--space-xl);
-	margin-bottom: var(--space-md);
-}
+	/* Nested list levels (Portable Text `level`): indent like the top level. */
+	.rich-text li > :is(ul, ol) {
+		margin-top: var(--space-min);
+		padding-left: calc(var(--space-sm) + var(--space-xs));
+	}
 
-.rich-text > h2.heading-2:first-child {
-	margin-top: 0;
-}
+	.rich-text a,
+	.rich-text .rich-text-link {
+		@apply underline decoration-color-link-decoration;
+	}
 
-.rich-text > h3.heading-3 {
-	margin-top: var(--space-lg);
-	margin-bottom: var(--space-sm);
-}
+	/* `CookiePreferencesButton` reads as the text around it; anchors take the hover colour from base `a`. */
+	.rich-text .rich-text-link {
+		@apply hover:text-color-hover;
+		font: inherit;
+	}
 
-.rich-text > h3.heading-3:first-child {
-	margin-top: 0;
-}
+	.rich-text .rich-text-embed {
+		margin-block: calc(var(--space-sm) + var(--space-xs));
+	}
 
-.rich-text > h4.heading-4 {
-	margin-top: var(--space-md);
-	margin-bottom: var(--space-sm);
-}
+	.rich-text .rich-text-embed-media {
+		width: 100%;
+		max-width: var(--rich-text-media-max-width);
+	}
 
-.rich-text > h4.heading-4:first-child {
-	margin-top: 0;
-}
+	/* Last in the layer: no outer margin on the first and last block, whatever its type. */
+	.rich-text > :first-child {
+		margin-top: 0;
+	}
 
-.rich-text code {
-	@apply code-inline rounded px-xs py-min;
-	color: var(--color-code-text);
-	background-color: var(--color-code-bg);
-}
-
-.rich-text > ul,
-.rich-text > ol {
-	@apply text;
-	line-height: var(--line-height-body);
-	margin-bottom: var(--space-md);
-	padding-left: calc(var(--space-sm) + var(--space-xs));
-	max-width: var(--measure-heading-4-text);
-}
-
-.rich-text > ul > li + li,
-.rich-text > ol > li + li {
-	margin-top: var(--space-min);
-}
-
-.rich-text .rich-text-embed {
-	margin-block: calc(var(--space-sm) + var(--space-xs));
-}
-
-.rich-text .rich-text-embed-media {
-	width: 100%;
-	max-width: var(--rich-text-media-max-width);
+	.rich-text > :last-child {
+		margin-bottom: 0;
+	}
 }

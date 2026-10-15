@@ -33,7 +33,7 @@ const injectedScripts = new Map<string, HTMLScriptElement[]>();
  */
 const SELF_OPT_OUT_PREFIX = "analytics-self-opt-out:";
 
-export function markSelfOptedOut(key: string): void {
+function markSelfOptedOut(key: string): void {
 	try {
 		window.localStorage.setItem(`${SELF_OPT_OUT_PREFIX}${key}`, "1");
 	} catch {
@@ -97,7 +97,7 @@ export function registerLoadedTracker(tracker: AnalyticsTracker): void {
 	loadedTrackers.set(tracker._key, { tracker });
 }
 
-export function unregisterLoadedTracker(key: string): void {
+function unregisterLoadedTracker(key: string): void {
 	loadedTrackers.delete(key);
 	removeInjectedScripts(key);
 	// Invalidates any load still in flight for this key.

@@ -6,14 +6,12 @@
 #   Package directory:  studio   ← Netlify then reads this file instead of the root one
 #   Build command / publish directory: leave empty, they are set below
 # Then add the Studio's domain under Domain management, and the same origin to the Sanity
-# project's CORS origins **with credentials** (`studio/README.md` → "Deploying the Studio").
+# project's CORS origins **with credentials** (root `README.md` → "Studio on Netlify").
 #
 # Set in Site configuration → Environment variables. `SANITY_STUDIO_*` values are inlined
 # into the Studio bundle at BUILD time, so a change needs a redeploy.
 #   SANITY_STUDIO_PROJECT_ID      — required
-#   SANITY_STUDIO_DATASET         — set per deploy context (Production: `production`,
-#                                   Deploy Previews + Branch deploys: `development`).
-#                                   Unset, the Studio probes for its dataset on every load.
+#   SANITY_STUDIO_DATASET         — optional, per deploy context (see below)
 #   SANITY_STUDIO_PREVIEW_ORIGIN  — the web app's origin, opened by Presentation
 #   SANITY_STUDIO_HOSTING_URL     — this Studio's own URL (custom domain)
 #   SANITY_AUTH_TOKEN             — optional: registers the URL and uploads the schema
@@ -30,23 +28,14 @@
   command = "pnpm --filter studio run build && pnpm --filter studio run register"
   publish = "studio/dist"
   # Skip the build when nothing since the last built commit touched the Studio (this file
-  # included), its shared package or the workspace manifests — the mirror of the web
+  # included), its shared packages or the workspace manifests — the mirror of the web
   # site's rule, `[ … ]` guard included.
-  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
+  ignore = '[ "$CACHED_COMMIT_REF" != "$COMMIT_REF" ] && git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- ./studio ./packages/sanity-dataset-resolve ./packages/site-languages ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json'
 
-# Dataset order per deploy context (`@repo/sanity-dataset-resolve`), matching the web
-# site: production deploys prefer `production`, previews prefer `development`. The
-# hosted bundle can't see Netlify's `CONTEXT`, so the target has to be inlined here.
-# `SANITY_STUDIO_DATASET`, set per context in the Netlify UI, overrides the target and
-# spares the Studio its dataset probe at load.
-[context.production.environment]
-  SANITY_STUDIO_DEPLOYMENT_TARGET = "production"
-
-[context.deploy-preview.environment]
-  SANITY_STUDIO_DEPLOYMENT_TARGET = "preview"
-
-[context.branch-deploy.environment]
-  SANITY_STUDIO_DEPLOYMENT_TARGET = "preview"
+# No dataset here, on purpose: values in this file override the Netlify UI and CLI. The build
+# picks it like the web site's (`sanity.cli.ts`): production deploys edit `production`, previews
+# and branch deploys `development`. Another one per deploy context, or per branch, goes into
+# this site's environment as `SANITY_STUDIO_DATASET` (root `README.md` → "Dataset per site").
 
 # The Studio is a single-page app: every route (`/structure/…`, `/presentation/…`)
 # is served by `index.html`. Not forced, so files in `dist/` still win.

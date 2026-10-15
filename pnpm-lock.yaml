@@ -42,6 +42,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
+  packages/site-languages: {}
+
   studio:
     dependencies:
       '@fontsource-variable/geist':
@@ -53,6 +55,9 @@ importers:
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
+      '@repo/site-languages':
+        specifier: workspace:*
+        version: link:../packages/site-languages
       '@sanity/icons':
         specifier: ^5.2.2
         version: 5.2.3(react@19.3.0)
@@ -87,9 +92,6 @@ importers:
         specifier: ^6.5.3
         version: 6.5.3(css-to-react-native@3.2.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
-      '@sanity/client':
-        specifier: ^8.7.0
-        version: 8.7.0
       '@types/node':
         specifier: ^22.20.4
         version: 22.20.4
@@ -105,15 +107,15 @@ importers:
       '@mux/mux-player-react':
         specifier: ^3.13.4
         version: 3.13.4(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@portabletext/react':
-        specifier: ^8.0.1
-        version: 8.0.1(react@19.3.0)
       '@portabletext/types':
         specifier: ^4.0.2
         version: 4.0.2
       '@repo/sanity-dataset-resolve':
         specifier: workspace:*
         version: link:../packages/sanity-dataset-resolve
+      '@repo/site-languages':
+        specifier: workspace:*
+        version: link:../packages/site-languages
       '@sanity/client':
         specifier: ^8.7.0
         version: 8.7.0

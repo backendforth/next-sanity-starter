@@ -4,7 +4,6 @@ export type LanguagePathUtils = {
 	defaultLocale: string;
 	localeIds: readonly string[];
 	isAppLocale: (value: string) => boolean;
-	localeFromPathname: (pathname: string) => string;
 	pathWithoutLocalePrefix: (pathname: string) => string;
 	localePath: (pathname: string, locale: string) => string;
 	/** `localePath` for a GROQ `path` (`routePathProjection`); `null` stays `null`, i.e. no link. */
@@ -22,14 +21,6 @@ export function createLanguagePathUtils(
 
 	function isAppLocale(value: string): boolean {
 		return set.has(value);
-	}
-
-	function localeFromPathname(pathname: string): string {
-		const first = pathname.split("/").filter(Boolean)[0];
-		if (first && isAppLocale(first) && first !== defaultLocale) {
-			return first;
-		}
-		return defaultLocale;
 	}
 
 	function pathWithoutLocalePrefix(pathname: string): string {
@@ -65,7 +56,6 @@ export function createLanguagePathUtils(
 		defaultLocale,
 		localeIds,
 		isAppLocale,
-		localeFromPathname,
 		pathWithoutLocalePrefix,
 		localePath,
 		hrefFor,

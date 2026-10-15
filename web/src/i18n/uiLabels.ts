@@ -1,11 +1,13 @@
 /**
- * Fixed UI copy that is not authored in Sanity: landmark and control `aria-label`s, the error
- * boundary, the 404 fallback (when `errorSettings` has no text), and the content-refs controls.
- * Same shape as `skipLinkLabel.ts`; add a locale here when you add one in `siteLanguageSettings`.
- * Unknown locales fall back to English.
+ * Fixed UI copy that is not authored in Sanity: the skip link, landmark and control
+ * `aria-label`s, the error boundaries, the 404 fallback (when `errorSettings` has no text), the
+ * content-refs controls and label fallbacks. Add a locale here when you add one in
+ * `siteLanguageSettings`. A regional locale uses its base language (`de-CH` → `de`); unknown
+ * locales fall back to English.
  */
 
 type UiLabels = {
+	skipToMain: string;
 	mainNav: string;
 	footer: string;
 	language: string;
@@ -34,12 +36,22 @@ type UiLabels = {
 	sortNewest: string;
 	sortAz: string;
 	noItems: string;
+	/** Card label when a page or project has neither title nor slug. */
+	untitled: string;
+	/** Link label when a link has no title and nothing to derive one from. */
+	link: string;
 };
 
 export type UiLabelKey = keyof UiLabels;
 
+/** `de-CH` → `de`: a regional locale without its own labels uses its language's. */
+export function baseLanguage(locale: string): string {
+	return locale.split("-")[0] ?? locale;
+}
+
 const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 	de: {
+		skipToMain: "Zum Hauptinhalt springen",
 		mainNav: "Hauptnavigation",
 		footer: "Fußzeile",
 		language: "Sprache",
@@ -67,8 +79,11 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Neueste",
 		sortAz: "A–Z",
 		noItems: "Keine Einträge vorhanden.",
+		untitled: "Ohne Titel",
+		link: "Link",
 	},
 	en: {
+		skipToMain: "Skip to main content",
 		mainNav: "Main",
 		footer: "Footer",
 		language: "Language",
@@ -96,8 +111,11 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Newest",
 		sortAz: "A–Z",
 		noItems: "No items to show.",
+		untitled: "Untitled",
+		link: "Link",
 	},
 	fr: {
+		skipToMain: "Aller au contenu principal",
 		mainNav: "Navigation principale",
 		footer: "Pied de page",
 		language: "Langue",
@@ -124,8 +142,11 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Plus récents",
 		sortAz: "A–Z",
 		noItems: "Aucun élément à afficher.",
+		untitled: "Sans titre",
+		link: "Lien",
 	},
 	nl: {
+		skipToMain: "Ga naar hoofdinhoud",
 		mainNav: "Hoofdnavigatie",
 		footer: "Voettekst",
 		language: "Taal",
@@ -152,6 +173,8 @@ const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 		sortNewest: "Nieuwste",
 		sortAz: "A–Z",
 		noItems: "Geen items om te tonen.",
+		untitled: "Zonder titel",
+		link: "Link",
 	},
 };
 
@@ -161,7 +184,9 @@ export function uiLabel(
 	locale: string,
 	vars?: Record<string, string | number>,
 ): string {
-	const text = (LABELS[locale] ?? LABELS.en)[key];
+	const text = (LABELS[locale] ?? LABELS[baseLanguage(locale)] ?? LABELS.en)[
+		key
+	];
 	if (!vars) return text;
 	return text.replace(/\{(\w+)\}/g, (match, name: string) =>
 		name in vars ? String(vars[name]) : match,

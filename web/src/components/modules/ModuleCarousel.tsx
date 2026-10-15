@@ -1,15 +1,17 @@
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
 import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
+import type { NormalizedSlide } from "@/src/components/carousel/CarouselSlide";
 import { LazyCarouselViewport } from "@/src/components/carousel/LazyCarouselViewport";
-import { normalizeCarouselSlides } from "@/src/components/carousel/normalizeCarouselSlides";
+import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
 
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** A `modules[]` entry or the same module inline in rich text. */
-export type CarouselModule =
+type CarouselModule =
 	| ModuleOf<"module.carousel">
 	| RichTextEmbedOf<"module.carousel">;
 
@@ -17,8 +19,8 @@ type Props = {
 	module: CarouselModule;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
-	variant?: "module" | "embed";
+	/** The page's LCP candidate: the first slide loads eagerly. */
+	priority?: boolean;
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -36,20 +38,37 @@ export function ModuleCarousel({
 	module,
 	locale,
 	siteLocale,
-	variant = "module",
+	priority = false,
 }: Props) {
-	const slides = normalizeCarouselSlides(module, locale, siteLocale);
+	/* Captions resolve to `locale` here, so the client slides get plain strings. */
+	const slides = (module.slides ?? []).flatMap((slide): NormalizedSlide[] => {
+		const media = normalizeResolvedMedia(
+			slide.resolvedMedia,
+			locale,
+			siteLocale,
+		);
+		return media ? [{ key: slide._key, ...media }] : [];
+	});
 	if (slides.length === 0) return null;
 
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
-	const sectionClassName =
-		variant === "module" ? moduleSectionClassName : "flex flex-col";
 
 	return (
-		<section className={sectionClassName}>
+		<section className={moduleSectionClassName}>
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<LazyCarouselViewport
 				slides={slides}
+				labels={{
+					prev: uiLabel("carouselPrev", locale),
+					next: uiLabel("carouselNext", locale),
+					goToSlide: slides.map((_, i) =>
+						uiLabel("carouselGoTo", locale, { n: i + 1 }),
+					),
+					showSlide: slides.map((_, i) =>
+						uiLabel("carouselShow", locale, { n: i + 1 }),
+					),
+				}}
+				priority={priority}
 				options={{
 					loop: module.loop === true,
 					showThumbnails: module.showThumbnails === true,

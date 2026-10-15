@@ -11,6 +11,7 @@ import {
 	pickLocalizedPortableTextBlocks,
 	pickLocalizedString,
 } from "@/sanity/utils/sanityLocalizedText";
+import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { RichTextMedia } from "@/src/components/text/RichTextMedia";
 
 type PageProps = {
@@ -22,8 +23,7 @@ export async function generateStaticParams() {
 		cachedProjectSlugs(),
 		fetchSiteLanguageSettings(),
 	]);
-	const list = rows ?? [];
-	const slugs = list
+	const slugs = rows
 		.map((row) => row.slug)
 		.filter(
 			(s: string | undefined): s is string =>
@@ -75,25 +75,18 @@ export default async function Project({ params }: PageProps) {
 	const body = pickLocalizedPortableTextBlocks(data.body, locale, siteLocale);
 
 	return (
-		<div className="flex flex-col flex-1 bg-color-bg">
-			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{projectTitle ? (
-					<header className="flex flex-col gap-sm">
-						{projectTitle ? (
-							<h2 className="content-title">{projectTitle}</h2>
-						) : null}
-					</header>
-				) : null}
-				{body.length ? (
-					<article className="flex flex-col">
-						<RichTextMedia
-							value={body}
-							locale={locale}
-							siteLocale={siteLocale}
-						/>
-					</article>
-				) : null}
-			</div>
+		<div className={pageContainerClassName}>
+			{projectTitle ? <h2 className="heading-1">{projectTitle}</h2> : null}
+			{body.length ? (
+				<article className="flex flex-col">
+					<RichTextMedia
+						value={body}
+						locale={locale}
+						siteLocale={siteLocale}
+						priority
+					/>
+				</article>
+			) : null}
 		</div>
 	);
 }

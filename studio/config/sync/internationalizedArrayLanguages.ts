@@ -1,77 +1,43 @@
+import {
+  FALLBACK_SITE_LANGUAGES,
+  normalizeSiteLanguages,
+  SITE_LANGUAGES_PROJECTION,
+  type SiteLanguage,
+  type SiteLanguagesDocument,
+} from "@repo/site-languages";
 import type { SanityClient } from "sanity";
 
 /**
  * Draft-first so a language added in Studio drives the `internationalizedArray*`
  * fields immediately, before the `siteLanguageSettings` singleton is published.
- * Reading only the published doc meant a freshly added language had no tab until
- * publish. The fetch forces the `raw` perspective: the client the plugin hands in
- * may default to `published`, which hides the `drafts.` id before GROQ runs.
- * Same projection as `web/sanity/queries/snippets/settings.ts` / locale codegen.
+ * The fetch forces the `raw` perspective: the client the plugin hands in may
+ * default to `published`, which hides the `drafts.` id before GROQ runs.
  */
-export const siteLanguageSettingsInternationalizedQuery = `coalesce(
+const SITE_LANGUAGES_QUERY = `coalesce(
   *[_id == "drafts.siteLanguageSettings"][0],
   *[_id == "siteLanguageSettings"][0]
-){availableLanguages[]{id,title},defaultLanguageId}`;
-
-type SiteLanguageSettingsDoc = {
-  availableLanguages?: Array<{ id?: string; title?: string }> | null;
-  defaultLanguageId?: string | null;
-} | null;
-
-/**
- * Minimal fallback when `siteLanguageSettings` is missing or has no usable language rows.
- * **Keep in sync** with `FALLBACK_SITE_LOCALE_CONFIG` in `web/src/i18n/fallbackSiteLocales.ts`.
- */
-const FALLBACK_LANGUAGES = [{ id: "en", title: "English" }] as const;
-
-/**
- * Same row rules as `normalizeSiteLocaleConfig` in `web/sanity/` — keep in sync.
- * Only the id is required; anything short of an empty list keeps the editor's
- * languages instead of collapsing the Studio to the `en` fallback.
- */
-function normalizeFromDoc(doc: SiteLanguageSettingsDoc): Array<{
-  id: string;
-  title: string;
-}> {
-  const rows = Array.isArray(doc?.availableLanguages)
-    ? doc.availableLanguages
-    : [];
-  const normalized = rows
-    .map((row) => {
-      const id = typeof row?.id === "string" ? row.id.trim() : "";
-      const title = typeof row?.title === "string" ? row.title.trim() : "";
-      /* A row without a Label falls back to its id rather than dropping the language. */
-      return { id, title: title || id };
-    })
-    /* First occurrence wins: the schema doesn't enforce unique ids, and drafts are unvalidated. */
-    .filter(
-      (row, index, all) =>
-        row.id.length > 0 && all.findIndex((r) => r.id === row.id) === index,
-    );
-
-  /* `defaultLanguageId` is deliberately not checked: it only drives web routing
-   * (`normalizeSiteLocaleConfig` degrades a stale one to the first language), and
-   * a mismatch must not hide every configured language in the Studio. */
-  return normalized.length > 0 ? normalized : [...FALLBACK_LANGUAGES];
-}
+)${SITE_LANGUAGES_PROJECTION}`;
 
 /**
  * Languages for `sanity-plugin-internationalized-array`, loaded on each Studio session
  * from the `siteLanguageSettings` singleton (draft preferred over published, see the
- * query above). Falls back to the minimal `en` list when the fetch fails, so Studio still boots.
+ * query above), with the row rules the web uses (`@repo/site-languages`). Falls back to
+ * the minimal list when the singleton is missing or has no usable rows, or when the fetch
+ * fails (Studio still boots). `defaultLanguageId` only drives web routing, so a stale one
+ * never hides a configured language here.
  */
 export async function internationalizedArrayLanguagesFromClient(
   client: SanityClient,
-): Promise<Array<{ id: string; title: string }>> {
+): Promise<SiteLanguage[]> {
   try {
-    const doc = await client.fetch<SiteLanguageSettingsDoc>(
-      siteLanguageSettingsInternationalizedQuery,
+    const doc = await client.fetch<SiteLanguagesDocument>(
+      SITE_LANGUAGES_QUERY,
       {},
       { perspective: "raw" },
     );
-    return normalizeFromDoc(doc);
+    return normalizeSiteLanguages(doc);
   } catch (err) {
     console.error("[internationalizedArrayLanguages] fetch failed:", err);
-    return [...FALLBACK_LANGUAGES];
+    return [...FALLBACK_SITE_LANGUAGES];
   }
 }

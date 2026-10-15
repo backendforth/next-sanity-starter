@@ -13,24 +13,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-	/* Default `rounded` — former `borderRadius.DEFAULT` */
-	--radius: 2rem;
-
-	/* `border` / `border-DEFAULT` and `border-0` */
-	--border-width-DEFAULT: 0.0625rem;
-	--border-width-0: 0;
-
-	/* Semantic font stacks (see `typography/fonts.css`; Geist via `layout.tsx`) */
-	--font-sans: var(--font-family-sans), ui-sans-serif, system-ui, sans-serif;
-	--font-text: var(--font-family-text), ui-sans-serif, system-ui, sans-serif;
-	--font-headline: var(--font-family-headline), ui-monospace, monospace;
-	--font-mono: var(--font-family-mono), ui-monospace, monospace;
-
-	/* Primitives — same keys as former `theme.extend.colors`. `white`/`black`/`grey` sit in the
+	/* Colours — same keys as former `theme.extend.colors`. `white`/`black`/`grey` sit in the
 	 * `@theme reference` block below because their token names collide with Tailwind's. */
-	--color-current: currentColor;
-	--color-transparent: transparent;
-
 	--color-color-brand: var(--color-brand);
 	--color-color-accent: var(--color-accent);
 
@@ -39,7 +23,6 @@
 	--color-color-heading: var(--color-heading);
 	--color-color-link: var(--color-link);
 	--color-color-link-decoration: var(--color-link-decoration);
-	--color-color-link-decoration-hover: var(--color-link-decoration-hover);
 	--color-color-hover: var(--color-hover);
 	--color-color-active: var(--color-active);
 
@@ -50,15 +33,7 @@
 	--color-color-code-text: var(--color-code-text);
 
 	--color-color-error: var(--color-error);
-	--color-color-success: var(--color-success);
 	--color-color-danger: var(--color-danger);
-
-	/* Aspect ratios — class names `aspect-4/3`, `aspect-3/4`, `aspect-2/1` */
-	--aspect-4\/3: 4 / 3;
-	--aspect-3\/4: 3 / 4;
-	--aspect-2\/1: 2 / 1;
-
-	--brightness-70: 0.7;
 
 	--max-width-container: var(--content-max-width);
 
@@ -70,11 +45,18 @@
 	--spacing-lg: var(--space-lg);
 	--spacing-xl: var(--space-xl);
 	--spacing-max: var(--space-max);
-	--spacing-extra: var(--space-extra);
 	--spacing-container: var(--container-spacing);
-	/* See `variables/sizes.css` `--container-gutter` — enable together for `p-container-gutter` / `gap-container-gutter` utilities.
-	--spacing-container-gutter: var(--container-gutter);
-	*/
+}
+
+/*
+ * Font stacks. `--font-family-sans` / `--font-family-mono` come from the `next/font` class
+ * (`components/layout/documentFonts.ts`), which `app/not-found.tsx` puts on a `<div>`, not on
+ * `<html>`. `inline` writes the stack into each utility, so the variables resolve on the element
+ * that uses `font-text` / `font-mono` instead of once on `:root`.
+ */
+@theme inline {
+	--font-text: var(--font-family-sans), ui-sans-serif, system-ui, sans-serif;
+	--font-mono: var(--font-family-mono), ui-monospace, monospace;
 }
 
 /*

@@ -1,18 +1,4 @@
-import type {
-	AnalyticsTracker,
-	SiteAnalyticsSettings,
-	SiteCookieBanner,
-} from "@/sanity/types";
-
-export type AnalyticsLoadMode = NonNullable<SiteAnalyticsSettings["loadMode"]>;
-
-/** All the tracking gate reads of the banner document — the client gets nothing else of it. */
-export type CookieBannerToggle = Pick<SiteCookieBanner, "useCookieBanner">;
-
-export type TrackingConfig = {
-	analytics: SiteAnalyticsSettings | null;
-	cookieBanner: CookieBannerToggle | null;
-};
+import type { AnalyticsTracker, SiteAnalyticsSettings } from "@/sanity/types";
 
 export type { AnalyticsTracker };
 
@@ -31,7 +17,7 @@ function isAbsoluteHttpUrl(value: string | null | undefined): boolean {
 	}
 }
 
-export function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
+function isTrackerEnabled(tracker: AnalyticsTracker): boolean {
 	if (tracker.enabled === false) return false;
 
 	switch (tracker._type) {
@@ -60,54 +46,43 @@ export function getEnabledTrackers(
 	return (analytics?.trackers ?? []).filter(isTrackerEnabled);
 }
 
-export function isCookieBannerActive(
-	cookieBanner: CookieBannerToggle | null,
-): boolean {
-	return cookieBanner?.useCookieBanner === true;
-}
-
-export function shouldRespectCookieBanner(
-	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: CookieBannerToggle | null,
-): boolean {
-	if (loadMode === "onPageLoad") return false;
-	return isCookieBannerActive(cookieBanner);
-}
-
 /**
- * Providers that never qualify as cookie-free, whatever the document says.
- *
- * Clarity has no cookie-free mode, and its Studio field is `readOnly` — but
- * that is a UI affordance, not a data invariant. An imported or API-written
- * document carrying `cookieFree: true` would otherwise load Clarity before
- * consent, which is exactly the case that must never happen.
+ * Cookie-free trackers may load without analytics consent when the banner is active. Plausible
+ * always is and Clarity never is, by type: only GA, Matomo and PostHog have the setting (and the
+ * query projects `cookieFree` for them alone), so a stray value on another type is never read.
  */
-const NEVER_COOKIE_FREE: ReadonlySet<AnalyticsTracker["_type"]> = new Set([
-	"trackerMicrosoftClarity",
-]);
-
-/** Cookie-free trackers may load without analytics consent when the banner is active. */
 export function isCookieFreeTracker(tracker: AnalyticsTracker): boolean {
-	if (NEVER_COOKIE_FREE.has(tracker._type)) return false;
-	if (tracker._type === "trackerPlausible") return true;
-	return tracker.cookieFree === true;
+	switch (tracker._type) {
+		case "trackerPlausible":
+			return true;
+		case "trackerMicrosoftClarity":
+			return false;
+		default:
+			return tracker.cookieFree === true;
+	}
 }
 
 /**
- * Whether the banner gates loading for this document.
- *
- * Derived from `shouldRespectCookieBanner` rather than an equality check on
- * `loadMode`, so a document missing that field (legacy or API-written) still
- * waits for consent instead of failing open.
+ * Whether the cookie banner is on. Only an explicit `false` turns it off, so a document without
+ * the field (unmigrated or API-written) shows the banner and gates trackers instead of failing
+ * open. No analytics document means no trackers, and no banner.
  */
-export function bannerGatesLoading(config: {
-	analytics: SiteAnalyticsSettings | null;
-	cookieBanner: CookieBannerToggle | null;
-}): boolean {
-	return shouldRespectCookieBanner(
-		config.analytics?.loadMode,
-		config.cookieBanner,
-	);
+export function isCookieBannerEnabled(
+	analytics: SiteAnalyticsSettings | null,
+): boolean {
+	return analytics !== null && analytics.useCookieBanner !== false;
+}
+
+/**
+ * Whether the banner gates loading: it is on (`isCookieBannerEnabled`, resolved once by the
+ * layout) and `loadMode` does not opt out. Compared with the opt-out value for the same reason:
+ * a document missing `loadMode` still waits for consent.
+ */
+export function bannerGatesLoading(
+	cookieBannerEnabled: boolean,
+	analytics: SiteAnalyticsSettings | null,
+): boolean {
+	return cookieBannerEnabled && analytics?.loadMode !== "onPageLoad";
 }
 
 /**
@@ -135,11 +110,10 @@ export function trackerLoadSignature(tracker: AnalyticsTracker): string {
 	}
 }
 
+/** `bannerGates` is `bannerGatesLoading(…)` for the current document. */
 export function trackerRequiresConsent(
 	tracker: AnalyticsTracker,
-	loadMode: AnalyticsLoadMode | null | undefined,
-	cookieBanner: CookieBannerToggle | null,
+	bannerGates: boolean,
 ): boolean {
-	if (!shouldRespectCookieBanner(loadMode, cookieBanner)) return false;
-	return !isCookieFreeTracker(tracker);
+	return bannerGates && !isCookieFreeTracker(tracker);
 }

@@ -1,16 +1,9 @@
-import type { ReactNode } from "react";
-
 import type { ModuleOf, RichTextEmbedOf } from "@/sanity/types";
-import { pickLocalizedString } from "@/sanity/utils/sanityLocalizedText";
-import { isStegaVariant } from "@/sanity/utils/stegaVariant";
-import {
-	LazyMediaVideo,
-	LazyMediaVideoLoop,
-} from "@/src/components/media/LazyVideo";
-import { MediaImage } from "@/src/components/media/MediaImage";
+import { MediaByKind } from "@/src/components/media/MediaByKind";
+import { normalizeResolvedMedia } from "@/src/components/media/normalizeMedia";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
-import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
+import { moduleCaptionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,100 +14,20 @@ type Props = {
 	module: MediaModule;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
-	variant?: "module" | "embed";
 	/**
-	 * First module on the page — the LCP candidate. Eager-loads the image /
-	 * video poster (`fetchpriority=high`, no lazy fade-in). Set by
-	 * `ModulesRenderer` for index 0; leave unset everywhere else.
+	 * The page's LCP candidate (first module, or first rich-text embed). Eager-loads the image /
+	 * video poster (`fetchpriority=high`, no lazy fade-in).
 	 */
 	priority?: boolean;
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Constants ───────────────────────────────────────────────────────────────
 
-/** `autoplay && !controls` → silent loop (no MuxPlayer chrome). Mirrors Studio intent. */
-function isLoopIntent(
-	settings:
-		| { autoplay?: boolean | null; controls?: boolean | null }
-		| null
-		| undefined,
-): boolean {
-	return Boolean(settings?.autoplay) && settings?.controls === false;
-}
-
-function MediaFigure({
-	caption,
-	children,
-}: {
-	caption: string | undefined;
-	children: ReactNode;
-}) {
-	return (
-		<figure className="w-full min-w-0">
-			{children}
-			{caption ? (
-				<figcaption className={moduleCaptionClassName}>{caption}</figcaption>
-			) : null}
-		</figure>
-	);
-}
-
-function renderModuleMediaFigure(
-	module: MediaModule,
-	caption: string | undefined,
-	priority: boolean,
-) {
-	const rm = module.resolvedMedia;
-	if (!rm.media) return null;
-
-	if (isStegaVariant(rm, "kind", "loop")) {
-		return (
-			<MediaFigure caption={caption}>
-				<LazyMediaVideoLoop
-					media={rm.media}
-					caption={caption}
-					posterPayload={rm.poster}
-					allowUnmute={rm.allowUnmute === true}
-					posterPriority={priority}
-				/>
-			</MediaFigure>
-		);
-	}
-
-	if (isStegaVariant(rm, "kind", "video")) {
-		return (
-			<MediaFigure caption={caption}>
-				{isLoopIntent(rm.videoSettings) ? (
-					<LazyMediaVideoLoop
-						media={rm.media}
-						caption={caption}
-						posterPayload={rm.poster}
-						posterPriority={priority}
-					/>
-				) : (
-					<LazyMediaVideo
-						media={rm.media}
-						caption={caption}
-						posterPayload={rm.poster}
-						videoSettings={rm.videoSettings}
-						priority={priority}
-					/>
-				)}
-			</MediaFigure>
-		);
-	}
-
-	return (
-		<MediaFigure caption={caption}>
-			<MediaImage
-				imagePayload={rm.media}
-				caption={caption}
-				priority={priority}
-			/>
-		</MediaFigure>
-	);
-}
+/**
+ * `sizes` for media in the page column, capped at `--content-max-width` (`--breakpoint-wide`);
+ * `var()` is invalid in the `sizes` grammar, so the 2000px is a literal.
+ */
+const MEDIA_SIZES = "min(100vw, 2000px)";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -127,19 +40,23 @@ export function ModuleMedia({
 	module,
 	locale,
 	siteLocale,
-	variant = "module",
 	priority = false,
 }: Props) {
-	/* One string for the figcaption and the client media's alt / aria-label fallbacks. */
-	const caption = pickLocalizedString(
-		module.resolvedMedia.caption,
+	const media = normalizeResolvedMedia(
+		module.resolvedMedia,
 		locale,
 		siteLocale,
 	);
-	const figure = renderModuleMediaFigure(module, caption, priority);
-	if (!figure) return null;
-
-	if (variant === "embed") return figure;
-
-	return <section className={moduleSectionClassName}>{figure}</section>;
+	if (!media) return null;
+	/* One caption for the figcaption and the client media's alt / aria-label fallbacks. */
+	return (
+		<figure className="w-full min-w-0">
+			<MediaByKind media={media} priority={priority} sizes={MEDIA_SIZES} />
+			{media.caption ? (
+				<figcaption className={moduleCaptionClassName}>
+					{media.caption}
+				</figcaption>
+			) : null}
+		</figure>
+	);
 }

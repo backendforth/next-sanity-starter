@@ -26,11 +26,11 @@ export const schemaTypes = [
 
 Order can matter for UI in rare cases; keep related types together. Anything omitted here is **invisible** to Studio and APIs.
 
-After schema changes, regenerate and commit the typegen artifacts (Studio schema and types, and the web query types that follow from them):
+After schema changes, regenerate and commit the extracted schema and the web query types that follow from it:
 
 ```bash
 pnpm generate
-git add studio/schema.json studio/sanity.types.gen.ts web/sanity/sanity.types.gen.ts
+git add studio/schema.json web/sanity/sanity.types.gen.ts
 ```
 
 CI fails if `pnpm generate` produces a diff. The web app has no hand-written Sanity types: `web/sanity/types.ts` derives them from the generated file.
@@ -48,7 +48,7 @@ See **`config/structure/README.md`** for patterns.
 
 If the type is **routable** in the Next.js app:
 
-- Add the type name to **`PAGE_REFERENCES`** in `schemas/constants/references.ts` if it should appear in internal links.
+- Add the type name to **`PAGE_REFERENCES`** in `schemas/constants/references.ts` if it should appear in internal links and content-ref lists (`LINK_REFERENCES` includes it).
 - Extend **`SLUG_BASED_DOCUMENT_TYPES`** in `config/presentation/conventions.ts` if the URL is `/:slug` from `slug.current`, or **`PREFIXED_SLUG_DOCUMENT_TYPES`** if it sits under `PROJECT_URL_PREFIX` (`/work/:slug`).
 - Update **`config/presentation/resolve.ts`** (`presentationMainDocuments`) if you need a route other than `/` or `/:slug`.
 - Adjust **`config/presentation/locationsResolver.ts`** (or `staticLocationsForType`) for custom paths or error pages.
@@ -61,7 +61,7 @@ If the document uses `internationalizedArray*` field types, ensure those string 
 
 ## 6. Slugs
 
-For any field that maps to a URL segment, reuse **`validateSlug`** from `utils/validateSlug.ts` on the slug field’s **`validation`**, as in `schemas/documents/page.ts`.
+For any field that maps to a URL segment, set a validator from `utils/validateSlug.ts` as the slug field’s **`validation`**: **`validatePageSlug`** for a type served at the site root (`/:slug`, as in `schemas/documents/page.ts`) — it also rejects the web's own routes and the language ids — or **`validateSlug`** for one under a prefix (`/work/:slug`, as in `schemas/documents/project.ts`).
 
 Give the slug a **Generate** button with `options.source: titleSlugSource` (`utils/titleSlugSource.ts`). Titles are `internationalizedArrayString`, so a plain `source: "title"` would not resolve to a string; the helper takes the first non-empty localized title.
 
@@ -71,16 +71,17 @@ Reusable **`type: "object"`** types for image and Mux video live under **`object
 
 - **`media.image`** — image (hotspot) and optional caption (`internationalizedArrayString`).
 - **`media.video`** — **`mux.video`**, optional poster image, player settings (autoplay, controls), optional caption (`internationalizedArrayString`).
+- **`media.videoLoop`** — silent background loop: **`mux.video`**, optional poster image, **`allowUnmute`**, optional caption (`internationalizedArrayString`).
 
 They are composed by **`module.media`** and can be embedded elsewhere without duplicating field definitions.
 
-Fields that take an image upload (the `media.image` image, both video posters, `module.carousel` slides, the SEO / OG images and the favicon) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
+Fields that take an image upload (the `media.image` image, both video posters, the SEO / OG images and the favicon) show **`IMAGE_COLOR_PROFILE_HINT`** from `schemas/constants/media.ts` as their description. Reuse it on new image fields.
 
 ## 8. Content modules (`module.*`)
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
-1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on pages and singletons). Every module.
+1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on `page`, `home` and `work`). Every module.
 2. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`). **Opt-in**: only modules that belong inside text (today `module.media` and `module.carousel`).
 
 ### Adding a new module
@@ -99,15 +100,13 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 | Module | Role |
 |--------|------|
 | `module.media` | Image, Mux video, or silent loop via nested **`imageContent`** (`media.image`) / **`videoContent`** (`media.video`) / **`videoLoopContent`** (`media.videoLoop`) depending on `type` (`image` / `video` / `loop`). |
-| `module.carousel` | Optional heading; **`imagesOnly`** (default `true`) uses **`slides`** (images only); when `false`, use **`slidesMedia`** (array of `module.media`). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`autoplay`** + **`autoplayDelayMs`**. |
+| `module.carousel` | Optional heading; **`slides`** (array of `module.media`, at least one). Behavior fieldset: **`loop`**, **`showThumbnails`**, **`showNavDots`**, **`multipleSlides`**, **`autoplay`** + **`autoplayDelayMs`**. |
 | `module.contentRefs` | Optional heading; **`sourceScope`** (`all` / `pages` / `projects`); **`showProjectFilters`** (projects only); **`selection`** (`all` / `selected`). Projects support **`projectCategory`** filters + sort (A–Z / newest) on the web. |
-| `module.text` | Title + rich text body. |
-
-**Breaking change (JSON / GROQ):** Legacy `module.media` stored `image`, `video`, `videoSettings`, and `caption` at the root. Current data nests these under **`imageContent`** and **`videoContent`** (caption lives on the nested `media.image` / `media.video` objects). Update queries and front-end mapping accordingly, or migrate old documents.
+| `module.text` | Heading + rich text body. |
 
 ### Internal page references
 
-`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`). Internal **`link`** marks still use **`PAGE_REFERENCES`** only. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`).
+`module.contentRefs` uses **`PAGE_REFERENCES`** and **`PROJECT_REFERENCES`** in **`schemas/constants/references.ts`** (`contentRefReferenceFilter`). Internal **`link`**s use **`LINK_REFERENCES`**: those two plus the **`work`** singleton. Routable types: **`page`**, **`project`** (slug), **`home`** and **`work`** (singletons). See section 4 for Presentation paths (`/work`, `/work/{slug}`).
 
 Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SUGGESTIONS`** (same file) into the field’s `options`, next to any `filter`. Do the same on new reference fields.
 
@@ -115,22 +114,12 @@ Reference pickers list their suggestions newest first: spread **`NEWEST_FIRST_SU
 
 Video fields use types provided by **`sanity-plugin-mux-input`** (e.g. `mux.video`). The plugin is already registered in **`sanity.config.ts`**; your object schema only references the field `type`. **`module.media`** and **`media.video`** use **`mux.video`** for all video.
 
-The encoding ceiling is set per field: `options: { max_resolution_tier }` on a `mux.video` field overrides the plugin default and is both the preset and the maximum in the upload dialog. **`media.video`** encodes up to **2160p**, **`media.videoLoop`** up to **1440p**. To raise loops to 4K, change only the `videoLoop.ts` value to `"2160p"`; existing assets keep their ladder until re-encoded. No progressive MP4 (`mp4_support: "none"`).
+The encoding ceiling per field, the plugin default and the playback ceiling: [`AGENTS.md`](../../AGENTS.md) → "Mux video resolution".
 
 ## 10. Initial value templates (optional)
 
 If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of every create menu — the global “Create” menu and the “Create new” button of reference inputs — by `document.newDocumentOptions` (`isSingletonTemplate` in `config/singletons.ts`); only structure items, which open them by fixed id, keep their templates. The filter knows the default template ids (= schema type) only, so don't add templates for a singleton type.
 
-## Checklist summary
+## Checklist
 
-| Step | File / area |
-|------|----------------|
-| Define type | New file under `schemas/...` |
-| Register schema | `schemas/index.ts` → `schemaTypes` |
-| Sidebar | `config/structure/items/...` + `config/structure/index.ts` |
-| Internal links | `schemas/constants/references.ts` |
-| Preview routes | `config/presentation/conventions.ts`, `resolve.ts`, `locationsResolver.ts` |
-| Languages | `config/sync/internationalizedArrayLanguages.ts`, `sanity.config.ts` (plugin) |
-| Slug rules | `validation: validateSlug` on slug fields |
-| New **module** | `pnpm gen:module <Name>`; by hand, the wiring checklist in `AGENTS.md` |
-| New **`media.*` object** | `objects/media/`, register in `index.ts` **before** types that embed it (e.g. `module.media`) |
+A new document type: [`AGENTS.md`](../../AGENTS.md) → Cookbook → "Add a document type (page-like)". A new module: `pnpm gen:module <Name>` (section 8).

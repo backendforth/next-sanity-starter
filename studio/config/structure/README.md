@@ -1,6 +1,6 @@
 # Desk structure
 
-The **Structure API** controls the left-hand navigation in Sanity Studio. The root resolver is **`index.ts`**: it returns a `StructureResolver` that builds a list titled “Content”, nests **Work** (singleton + projects) and **Settings** in their own groups.
+The **Structure API** controls the left-hand navigation in Sanity Studio. The root resolver is **`index.ts`**: it returns a `StructureResolver` that builds a list titled “Content”, nests **Work** (the `work` singleton, projects and project categories) and **Settings** in their own groups.
 
 ## How items are wired
 

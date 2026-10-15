@@ -3,19 +3,19 @@
  * Exports the production dataset to a local tarball, then imports it into the
  * development dataset (replacing documents with the same IDs).
  *
- * Requires: `sanity login` (or SANITY_AUTH_TOKEN) and SANITY_STUDIO_PROJECT_ID in .env
+ * Requires: `sanity login` (or SANITY_AUTH_TOKEN) and SANITY_STUDIO_PROJECT_ID in .env, which
+ * the package script loads (`node --env-file-if-exists`).
  *
  * Usage: pnpm run sync:prod-to-dev [--yes]
  */
 
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { loadEnvFile, studioRootFromScript } from "./loadEnvFile.mjs";
+import { fileURLToPath } from "node:url";
 
-const studioRoot = studioRootFromScript(import.meta.url);
-const envPath = `${studioRoot}/.env`;
-loadEnvFile(envPath);
+const studioRoot = fileURLToPath(new URL("..", import.meta.url));
 
 const args = process.argv.slice(2);
 const skipConfirm = args.includes("--yes") || args.includes("-y");
@@ -40,8 +40,8 @@ if (prodDataset === devDataset) {
   process.exit(1);
 }
 
-const syncDir = `${studioRoot}/.sync-tmp`;
-const exportPath = `${syncDir}/prod-to-dev-export.tar.gz`;
+const syncDir = join(studioRoot, ".sync-tmp");
+const exportPath = join(syncDir, "prod-to-dev-export.tar.gz");
 
 function run(cmd, opts = {}) {
   execSync(cmd, {

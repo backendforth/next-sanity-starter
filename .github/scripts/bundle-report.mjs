@@ -10,8 +10,8 @@
  * `$GITHUB_STEP_SUMMARY` when set (the `build (web)` job), to stdout otherwise.
  *
  * Budget gate: `.github/bundle-budget.json` maps routes to a ceiling in KB gzip. A route over
- * its ceiling fails the run (exit 1) after the table is written; a route without one only
- * shows `—`.
+ * its ceiling fails the run (exit 1) after the table is written, and so does a budget for a
+ * route the build doesn't have; a route without one only shows `—`.
  */
 
 import { appendFileSync, readFileSync } from "node:fs";
@@ -86,4 +86,14 @@ for (const row of overBudget) {
 		`✗ ${row.route}: ${kb(row.gzip)} gzip exceeds its ${row.budget} KB budget (.github/bundle-budget.json).`,
 	);
 }
-if (overBudget.length > 0) process.exit(1);
+/* A budget for a route the build no longer has would pass forever. */
+const builtRoutes = new Set(rows.map((row) => row.route));
+const orphanBudgets = Object.keys(budgets).filter(
+	(route) => !builtRoutes.has(route),
+);
+for (const route of orphanBudgets) {
+	console.error(
+		`✗ ${route}: has a budget in .github/bundle-budget.json but no route in the build.`,
+	);
+}
+if (overBudget.length > 0 || orphanBudgets.length > 0) process.exit(1);

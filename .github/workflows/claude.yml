@@ -1,5 +1,10 @@
 name: Claude
 
+# `@claude` in issues and in PR conversation comments works on every PR: those
+# events run this file from the default branch. In inline review comments and
+# reviews it works on PRs against `main` only: those events run the workflow from
+# the PR's merge ref, and `variant/document-level` doesn't carry this file.
+
 on:
   issue_comment:
     types: [created]

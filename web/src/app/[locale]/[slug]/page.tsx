@@ -7,6 +7,7 @@ import {
 	fetchSiteLanguageSettings,
 } from "@/sanity/fetchSanityData";
 import { metadataFromSanityPageData } from "@/sanity/seo/resolveSanityMetadata";
+import { pageContainerClassName } from "@/src/components/layout/containerStyles";
 import { ModulesRenderer } from "@/src/components/modules/ModulesRenderer";
 
 type PageProps = {
@@ -18,8 +19,7 @@ export async function generateStaticParams() {
 		cachedPageSlugs(),
 		fetchSiteLanguageSettings(),
 	]);
-	const list = rows ?? [];
-	const slugs = list
+	const slugs = rows
 		.map((row) => row.slug)
 		.filter(
 			(s: string | undefined): s is string =>
@@ -68,20 +68,16 @@ export default async function Page({ params }: PageProps) {
 	}
 
 	return (
-		<div className="flex flex-col flex-1 bg-color-bg">
-			<div className="mx-auto flex w-full max-w-container flex-1 flex-col gap-lg px-md py-max sm:px-container">
-				{data.modules?.length ? (
-					<section className="flex flex-col gap-sm">
-						<ModulesRenderer
-							modules={data.modules}
-							locale={locale}
-							siteLocale={siteLocale}
-							documentId={data._id}
-							documentType="page"
-						/>
-					</section>
-				) : null}
-			</div>
+		<div className={pageContainerClassName}>
+			{data.modules?.length ? (
+				<ModulesRenderer
+					modules={data.modules}
+					locale={locale}
+					siteLocale={siteLocale}
+					documentId={data._id}
+					documentType="page"
+				/>
+			) : null}
 		</div>
 	);
 }

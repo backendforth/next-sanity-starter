@@ -4,7 +4,6 @@ import { routePathProjection } from "../../snippets/routePath";
 /** One list entry: a page, the home singleton or a project, with its card preview. */
 const contentRefTargetProjection = `
   _id,
-  _type,
   _createdAt,
   title,
   "slug": slug.current,
@@ -25,33 +24,26 @@ const contentRefTargetProjection = `
  * `module.contentRefs` (`objects/modules/moduleContentRefs.ts`). `selection == "all"` lists every
  * routable target of `sourceScope` (`^` is the module inside the subquery): `pages` = home and
  * pages, `projects` = projects, `all` = both — the sets the Studio's picker offers
- * (`contentRefReferenceFilter` in `studio/schemas/constants/references.ts`). Otherwise the
- * editor's picks, in their order.
+ * (`contentRefReferenceFilter` in `studio/schemas/constants/references.ts`) — that has a route
+ * (`routePathProjection`), newest first. Otherwise the editor's picks, in their order. The
+ * visitor's sort controls start from this.
  */
-export const moduleContentRefsInnerFields = `
+export const moduleContentRefsQuery = `_type == "module.contentRefs" => {
   heading,
   sourceScope,
   showProjectFilters,
-  selection,
   "references": select(
     selection == "all" => *[
       (
-        ^.sourceScope != "projects" &&
-        (_type == "home" || (_type == "page" && defined(slug.current)))
-      ) ||
-      (
-        ^.sourceScope != "pages" &&
-        _type == "project" && defined(slug.current)
-      )
-    ] | order(_updatedAt desc) {
+        (^.sourceScope != "projects" && _type in ["home", "page"]) ||
+        (^.sourceScope != "pages" && _type == "project")
+      ) &&
+      defined(${routePathProjection})
+    ] | order(_createdAt desc) {
       ${contentRefTargetProjection}
     },
     references[]->{
       ${contentRefTargetProjection}
     }
   )
-`;
-
-export const moduleContentRefsQuery = `_type == "module.contentRefs" => {
-  ${moduleContentRefsInnerFields}
 }`;

@@ -17,11 +17,11 @@ type Props = {
 
 /** `__MODULE_NAME__` — TODO: describe what this module renders. */
 export function __MODULE_COMPONENT__({ module, locale, siteLocale }: Props) {
-	const title = pickLocalizedString(module.title, locale, siteLocale);
+	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 
 	return (
 		<section className={moduleSectionClassName}>
-			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
+			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			{/* TODO: render the rest of the module data */}
 		</section>
 	);

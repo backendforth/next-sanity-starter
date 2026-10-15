@@ -1,8 +1,9 @@
-/** Shared layout for document-level `modules[]` blocks (see `ModulesRenderer`). */
-export const moduleSectionClassName =
-	"flex flex-col border-b border-color-border-subtle pb-lg last:border-b-0 last:pb-0";
+/**
+ * Shared layout for a module's `<section>`: `gap-md` under the heading. Spacing between modules
+ * comes from `ModulesStack`.
+ */
+export const moduleSectionClassName = "flex flex-col gap-md";
 
-export const moduleHeadingClassName = "content-title";
+export const moduleHeadingClassName = "heading-1";
 
-export const moduleCaptionClassName =
-	"mt-xs text-color-text-muted paragraph-small";
+export const moduleCaptionClassName = "mt-xs text-color-text-muted text-small";

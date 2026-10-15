@@ -1,40 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { stegaClean } from "next-sanity";
 import type { ReactNode } from "react";
+import { hasRevalidateWebhook } from "@/sanity/cacheTags";
 import { SanityLive } from "@/sanity/live";
 import { siteFaviconIcons } from "@/sanity/seo/siteFaviconIcons";
 import type { SiteFavicon } from "@/sanity/types";
+import { documentFontClassName } from "@/src/components/layout/documentFonts";
 import { LazyDraftModeOverlays } from "@/src/components/sanity/LazyDraftModeOverlays";
 import { handleSanityLiveError } from "@/src/components/sanity/SanityLiveWithErrors";
+import { applyBootState } from "@/src/components/theme/colorScheme";
 import { ThemeSync } from "@/src/components/theme/ThemeSync";
 import { SITE_BASE_URL } from "@/src/utils/siteUrl";
 import "../../assets/styles/tokens.css";
 import "../../assets/styles/globals.css";
-
-/**
- * Body + headings — see `typography/fonts.css` (`--font-family-text` / `--font-family-headline`).
- *
- * `display: "swap"` paints text immediately in the metrics-adjusted fallback that
- * `next/font` generates (`adjustFontFallback`), so first paint isn't held for up
- * to 3s of invisible text (`block`) and the swap itself causes no layout shift.
- */
-const geistSans = Geist({
-	subsets: ["latin"],
-	variable: "--font-family-sans",
-	display: "swap",
-});
-
-/** Tags, buttons, inline code — `font-mono` utilities. */
-const geistMono = Geist_Mono({
-	subsets: ["latin"],
-	variable: "--font-family-mono",
-	display: "swap",
-});
-
-/** `next/font` class names for `<html>` — also used by `app/not-found.tsx`, which has no shell. */
-export const documentFontClassName = `${geistSans.variable} ${geistMono.variable}`;
 
 /**
  * Document-level metadata, merged into `app/[locale]/layout.tsx`'s `generateMetadata`
@@ -45,8 +24,8 @@ export const documentFontClassName = `${geistSans.variable} ${geistMono.variable
  * every route below — route metadata merges field by field, so no page has to
  * repeat them. There is deliberately no static fallback: browsers, bookmarks
  * and search crawlers probe `/favicon.ico` regardless of the `<link>` tags, so
- * the Next.js default icon that used to sit in `public/` showed up beside or
- * instead of the Sanity one. With the field unset the site has no favicon.
+ * a static icon would show up beside or instead of the Sanity one. With the
+ * field unset the site has no favicon.
  */
 export function documentMetadata(
 	favicon: SiteFavicon | null | undefined,
@@ -59,29 +38,11 @@ export function documentMetadata(
 }
 
 /**
- * Tiny blocking inline script — runs synchronously before hydration.
- *
- * 1. Applies the stored theme override (`localStorage["color-scheme"]`) as
- *    `data-theme="light" | "dark"` on <html> **before** the first paint.
- *    Without JS, `<html>` carries no attribute and the `:root` light defaults
- *    in `variables/colors.css` apply — OS preference is deliberately ignored.
- * 2. Adds `js-enabled` to <html> so CSS can safely start images at opacity:0.
- *
- * The lazy-image `img-loaded` class is added by `MediaImage` itself via
- * `useEffect` — managing it from this inline script raced React 19 streaming
- * hydration on cached images and produced "tree hydrated but attributes didn't
- * match" warnings. Doing it through React's render flow keeps SSR and the
- * first client paint identical.
- *
- * Without JS the images remain fully visible (no opacity applied) — graceful degradation.
+ * Tiny blocking inline script, run before the first paint: `applyBootState` sets the stored
+ * theme (`data-theme`) and `js-enabled` on <html>. Without JS `<html>` carries neither, so the
+ * light `:root` tokens apply and images stay fully visible.
  */
-const bootScript = `(function(){
-  try{
-    var t=localStorage.getItem('color-scheme');
-    document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');
-  }catch(e){}
-  document.documentElement.classList.add('js-enabled');
-})();`;
+const bootScript = `(${applyBootState})();`;
 
 type Props = {
 	/** BCP-47 tag for `<html lang>` — the route's locale. */
@@ -95,8 +56,7 @@ type Props = {
  * The root layout sits on the dynamic `[locale]` segment because that is the only way the
  * route's language reaches the server-rendered `<html lang>`: `params` never reach a layout
  * above the segment, and reading the proxy's locale header would opt every route out of
- * static rendering. Before, `<html lang>` always carried the site default and was corrected
- * on the client after hydration.
+ * static rendering.
  *
  * The cost: `app/not-found.tsx` (a URL that matched no route, so no locale) gets no root
  * layout. It imports the stylesheets and font classes itself and must NOT render this
@@ -108,17 +68,13 @@ type Props = {
 export async function DocumentShell({ lang, children }: Props) {
 	const draft = await draftMode();
 	const isDraft = draft.isEnabled;
-	const hasRevalidateWebhook = Boolean(
-		process.env.SANITY_REVALIDATE_SECRET?.trim(),
-	);
 	/**
 	 * <SanityLive /> opens an SSE connection per open tab and refreshes the `sanityFetch` cache
 	 * through a server action on every publish event — needed for Presentation / Draft Mode.
 	 * With the revalidate webhook configured, anonymous visitors don't need it: `/api/revalidate`
 	 * expires the cache tags the `sanityFetch` wrappers attach. Without the webhook it runs for
 	 * everyone (no token needed for published content), so a deploy with neither webhook nor
-	 * read token still picks up publishes. (Env is read at render time — the prerender needs the
-	 * secret at build.)
+	 * read token still picks up publishes. (The prerender needs the secret at build.)
 	 */
 	const shouldMountSanityLive = isDraft || !hasRevalidateWebhook;
 
@@ -143,7 +99,8 @@ export async function DocumentShell({ lang, children }: Props) {
 
 				{/* Font preloads are emitted automatically by next/font/google */}
 			</head>
-			<body className="min-h-full flex flex-col bg-color-bg text-color-text font-text">
+			{/* Font, colour and background come from the base `body` rule in `globals.css`. */}
+			<body className="min-h-full flex flex-col">
 				<ThemeSync />
 				{children}
 				{shouldMountSanityLive ? (

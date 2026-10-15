@@ -9,10 +9,8 @@ import { muxInput } from "sanity-plugin-mux-input";
 import "./styles/fonts.css";
 import "./styles/portableTextStylePreviews.css";
 
-import {
-  presentationLocationsResolver,
-  presentationMainDocuments,
-} from "./config/presentation/resolve";
+import { presentationLocationsResolver } from "./config/presentation/locationsResolver";
+import { presentationMainDocuments } from "./config/presentation/resolve";
 import {
   filterSingletonDocumentActions,
   isSingletonTemplate,
@@ -25,7 +23,7 @@ import { schemaTypes } from "./schemas";
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = studioDataset;
 const previewOrigin =
-  process.env.SANITY_STUDIO_PREVIEW_ORIGIN ?? "http://localhost:3000";
+  process.env.SANITY_STUDIO_PREVIEW_ORIGIN || "http://localhost:3000";
 
 if (!projectId) {
   throw new Error(
@@ -81,8 +79,6 @@ export default defineConfig({
     }),
     internationalizedArray({
       languages: internationalizedArrayLanguagesFromClient,
-      /** Plugin only accepts a static list; runtime default comes from `siteLanguageSettings` in the fetch above. */
-      defaultLanguages: [],
       fieldTypes: ["string", "text", "richText", "richTextMedia"],
       /** Hide bulk “Add missing languages”; languages come only from Site languages (`siteLanguageSettings`). */
       buttonAddAll: false,

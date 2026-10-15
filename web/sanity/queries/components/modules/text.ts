@@ -1,16 +1,9 @@
-import { richTextMediaQuery } from "../text/richTextMedia";
+import { internationalizedRichTextMediaBodyQuery } from "../text/richTextMedia";
 
 /**
- * `module.text` (`objects/modules/moduleText.ts`): `title` = i18n strings; `body` = `internationalizedArrayRichTextMedia`.
+ * `module.text` (`objects/modules/moduleText.ts`): `heading` = i18n strings; `body` = `internationalizedArrayRichTextMedia`.
  */
 export const moduleTextQuery = `_type == "module.text" => {
-  title,
-  body[]{
-    _key,
-    _type,
-    language,
-    value[]{
-      ${richTextMediaQuery}
-    }
-  }
+  heading,
+  ${internationalizedRichTextMediaBodyQuery}
 }`;

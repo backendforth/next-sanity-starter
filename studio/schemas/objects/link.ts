@@ -1,11 +1,12 @@
 import { LinkIcon } from "@sanity/icons/Link";
 import { defineType } from "sanity";
 
+import { PROJECT_URL_PREFIX } from "../../config/presentation/conventions";
 import { firstLocalizedLabel } from "../../utils/firstLocalizedLabel";
 import {
+  LINK_REFERENCE_FILTER,
+  LINK_REFERENCES,
   NEWEST_FIRST_SUGGESTIONS,
-  PAGE_REFERENCE_FILTER,
-  PAGE_REFERENCES,
 } from "../constants/references";
 
 export const link = defineType({
@@ -35,9 +36,13 @@ export const link = defineType({
       name: "title",
       type: "internationalizedArrayString",
       description:
-        "Per-locale label. Optional for internal links — the referenced document title is used as fallback. Required for external and function links.",
+        "Per-locale label. Optional for internal links — the referenced document title is used as fallback. Required for external and function links, except in rich text, where the marked text is the label.",
       validation: (rule) =>
         rule.custom((value, context) => {
+          /* A rich-text link annotation (stored under `markDefs`) is labelled by its text. */
+          if (context.path?.includes("markDefs")) {
+            return true;
+          }
           const parent = context.parent as { type?: string } | undefined;
           const t = parent?.type;
           if (t === "external" || t === "function") {
@@ -53,10 +58,10 @@ export const link = defineType({
       name: "reference",
       type: "reference",
       weak: true,
-      to: [...PAGE_REFERENCES],
+      to: [...LINK_REFERENCES],
       options: {
         ...NEWEST_FIRST_SUGGESTIONS,
-        filter: PAGE_REFERENCE_FILTER,
+        filter: LINK_REFERENCE_FILTER,
       },
       hidden: ({ parent }) => parent?.type !== "internal",
       validation: (rule) =>
@@ -115,7 +120,6 @@ export const link = defineType({
       slug: "reference.slug.current",
       url: "url",
       funcKey: "func.key",
-      funcParams: "func.params",
     },
     prepare(selection) {
       const {
@@ -126,7 +130,6 @@ export const link = defineType({
         slug,
         url,
         funcKey,
-        funcParams,
       } = selection;
 
       let subtitle = "";
@@ -136,9 +139,9 @@ export const link = defineType({
         } else if (referenceType === "page" && slug) {
           subtitle = `→ /${slug}`;
         } else if (referenceType === "project" && slug) {
-          subtitle = `→ /work/${slug}`;
+          subtitle = `→ ${PROJECT_URL_PREFIX}/${slug}`;
         } else if (referenceType === "work") {
-          subtitle = "→ /work";
+          subtitle = `→ ${PROJECT_URL_PREFIX}`;
         } else if (referenceType) {
           subtitle = `→ (${referenceType})`;
         } else {
@@ -147,9 +150,7 @@ export const link = defineType({
       } else if (type === "external" && url) {
         subtitle = `→ ${url}`;
       } else if (type === "function") {
-        subtitle = funcKey
-          ? `→ ${funcKey}${funcParams ? ` (${funcParams})` : ""}`
-          : "→ (function)";
+        subtitle = funcKey ? `→ ${funcKey}` : "→ (function)";
       }
 
       const linkLabel = firstLocalizedLabel(titleEntries, "");

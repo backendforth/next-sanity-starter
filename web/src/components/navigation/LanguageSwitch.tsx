@@ -8,7 +8,7 @@ import {
 	navUtilityButtonClass,
 } from "./navControlStyles";
 
-export type LanguageSwitchProps = {
+type LanguageSwitchProps = {
 	/** After `setLocale` (e.g. close mobile nav). */
 	onAfterLocaleChange?: () => void;
 };

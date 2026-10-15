@@ -5,20 +5,7 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 ## Why these exist
 
 - **Dataset sync** is **never** automatic. Copying production content into a development dataset is destructive for anything that only lived in `development`, so it must stay a **conscious, manual** step. The sync script only runs when you invoke it; the dev server only **reminds** you that the command exists.
-- **`.env` loading** is duplicated here on purpose: these scripts run in plain Node without Vite. A tiny parser loads `studio/.env` so `SANITY_STUDIO_PROJECT_ID` and dataset name overrides match what you use for `sanity dev`, without adding a `dotenv` dependency.
-
----
-
-## `loadEnvFile.mjs`
-
-**What it does**
-
-- `loadEnvFile(path)` reads a `.env` file line by line, skips empty lines and `#` comments, parses `KEY=value` (optional quotes), and sets `process.env[key]` **only if** the variable is not already set (so your shell or CI can override).
-- `studioRootFromScript(import.meta.url)` resolves the `studio/` directory from any script file in `scripts/`.
-
-**Why**
-
-- Keeps `sync-prod-to-dev.mjs` and future CLI scripts aligned with the same env vars documented in `studio/.env.example`, without pulling in extra packages.
+- **`.env` loading**: these scripts run in plain Node without Vite. Their package scripts start Node with `--env-file-if-exists=.env`, so `studio/.env` supplies `SANITY_STUDIO_PROJECT_ID`, the dataset names and the tokens `sanity dev` sees. A variable already set in the shell or CI wins over the file. Run them through `pnpm run`, not `node` directly, or `.env` is not read.
 
 ---
 
@@ -44,18 +31,17 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 **What it does (step by step)**
 
-1. Loads `studio/.env` via `loadEnvFile`.
-2. Reads **`SANITY_STUDIO_PROJECT_ID`** (required).
-3. Resolves dataset names:
+1. Reads **`SANITY_STUDIO_PROJECT_ID`** (required).
+2. Resolves dataset names:
    - Production: `SANITY_STUDIO_DATASET_PRODUCTION` or **`production`**
    - Development: `SANITY_STUDIO_DATASET_DEVELOPMENT` or **`development`**
-4. Aborts if both names are identical (avoids accidental self-overwrites).
-5. Unless **`--yes`** / **`-y`** is passed, prompts for confirmation: importing will **replace** documents in the dev dataset that share IDs with the export.
-6. Ensures **`studio/.sync-tmp/`** exists (gitignored).
-7. **Export:** runs the Sanity CLI:
+3. Aborts if both names are identical (avoids accidental self-overwrites).
+4. Unless **`--yes`** / **`-y`** is passed, prompts for confirmation: importing will **replace** documents in the dev dataset that share IDs with the export.
+5. Ensures **`studio/.sync-tmp/`** exists (gitignored).
+6. **Export:** runs the Sanity CLI:
    - `sanity datasets export <prod> <path>/prod-to-dev-export.tar.gz --project-id <id> --overwrite`
    - Produces a **gzipped tarball** (documents + assets as implemented by the CLI; see Sanity docs for edge cases such as failed asset downloads).
-8. **Import:** runs:
+7. **Import:** runs:
    - `sanity datasets import -d <dev> <same-tarball> --project-id <id> --replace`
    - **`--replace`** updates existing documents in the target dataset when IDs match the export.
 
@@ -78,19 +64,15 @@ Small Node (ESM) helpers that run **outside** the Studio bundle: they use the Sa
 
 ---
 
-## `migrate-seo-i18n.mjs`
+## `mux-migrate-assets.mjs`
 
 **What it does**
 
-Wraps plain-string `seo.title` / `seo.description` (on `seo.page` and `seo.fallback`) into one `internationalizedArrayString` / `internationalizedArrayText` entry for the site's default language (`siteLanguageSettings.defaultLanguageId`; override with `--language <id>`). Empty strings are unset; values that are already arrays are skipped, so re-running is safe. Uses the `raw` perspective, so drafts are migrated too, and writes everything in one transaction. Each patch is tied to the revision that was read: if an editor changes a document while the prompt is open, nothing is written and the script asks you to run it again. `--language` must name an id from `siteLanguageSettings.availableLanguages`.
+Lists every Mux asset (paged through the Mux API) and reports two things: assets with static MP4 renditions, and assets encoded at the `premium` quality level. A dry run by default; `--apply` sets `mp4_support: "none"` on the MP4 ones. Premium assets are only listed — Mux does not re-encode in place, so re-upload them in the Studio or replace them in the Mux dashboard. Resolution is not checked: `media.video` encodes up to 2160p on purpose (AGENTS.md → "Mux video resolution").
 
-**Why**
+**When** — once per Mux environment, after the switch to HLS-only playback (`mp4_support: "none"`, `video_quality: "plus"` in `sanity.config.ts`), or when assets uploaded elsewhere show up with MP4 enabled.
 
-- The SEO fields were plain strings, so meta title and description could not be translated. Datasets created before the switch hold strings the Studio now flags as invalid; the web resolver still reads them until you migrate.
-
-**Run** `pnpm run migrate:seo-i18n` in `studio/`: `-- --dry-run` previews, the plain run asks before writing (`--yes` skips the prompt).
-
-Targets `SANITY_STUDIO_DATASET` from `studio/.env` (else `development`) — run it once per dataset.
+**Run** `pnpm run mux:migrate-assets` in `studio/` (`-- --apply` writes). Needs `MUX_TOKEN_ID` / `MUX_TOKEN_SECRET` in `studio/.env`.
 
 ---
 
@@ -137,10 +119,75 @@ pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id
 pnpm exec sanity migration run localize-captions-and-cookie-banner --project <id> --dataset development --no-dry-run
 ```
 
+### `localize-seo`
+
+**What it does** (`main` only) — wraps a plain-string `seo.title` / `seo.description` (`seo.page` on pages, projects, home and work; `seo.fallback` in the site settings) into one entry for the default language (`siteLanguageSettings.defaultLanguageId`; it stops if there is none). An empty string is unset. Values that are already arrays are skipped, so a re-run is safe.
+
+**When** — once per dataset that holds SEO texts from before they became translatable. Until then the Studio flags those fields as invalid, and the web still reads the string for every language.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run localize-seo --project <id> --dataset development
+pnpm exec sanity migration run localize-seo --project <id> --dataset development --no-dry-run
+```
+
+### `move-cookie-banner-switch`
+
+**What it does** (`main` only) — moves the cookie banner switch, `useCookieBanner`, from the `siteCookieBanner` singleton to `siteAnalyticsSettings`, next to the trackers it gates. The published banner's value goes onto the analytics document and its draft, unless they have one already; the analytics document is created when the banner was on and there is none. The field is then unset on the banner and its draft. A draft whose switch differs from the published one is reported. Only the fixed-id singletons are touched, so a re-run finds nothing to move.
+
+**When** — merge, deploy the web and the Studio, then migrate. Until then the web reads the unset switch as on (it fails closed): the banner shows and cookie-based trackers wait for consent, also on a site that had the banner off. A site with the banner on but no analytics document shows no banner and no cookie-preference links until the migration creates the document; it has no trackers, so nothing loads without consent.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run move-cookie-banner-switch --project <id> --dataset development
+pnpm exec sanity migration run move-cookie-banner-switch --project <id> --dataset development --no-dry-run
+```
+
+### `rename-text-module-title`
+
+**What it does** (both branches) — moves a text module's `title` to `heading`, the name `module.carousel` and `module.contentRefs` use. The value keeps its shape (i18n array on `main`, string on the variant). Modules that already have a `heading` are skipped, so a re-run is safe.
+
+**When** — merge, deploy the web and the Studio, then migrate right away. Until then text modules render without their heading; nothing breaks.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run rename-text-module-title --project <id> --dataset development
+pnpm exec sanity migration run rename-text-module-title --project <id> --dataset development --no-dry-run
+```
+
+### `unify-carousel-slides`
+
+**What it does** (both branches) — moves every carousel to one `slides` list of `module.media`, in modules and in rich text. The list the web rendered is kept: with `imagesOnly` on (or unset) each plain image in `slides` becomes an image media slide without a caption; with it off, `slidesMedia` moves to `slides`. `imagesOnly` and `slidesMedia` are unset, so the hidden list's content is dropped. Carousels already in the new shape are skipped, so a re-run is safe.
+
+**When** — merge, deploy the web and the Studio, then migrate right away. Until then a carousel in the old shape renders nothing; nothing breaks.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run unify-carousel-slides --project <id> --dataset development
+pnpm exec sanity migration run unify-carousel-slides --project <id> --dataset development --no-dry-run
+```
+
+### `unset-unused-fields`
+
+**What it does** (both branches) — unsets stored fields no schema declares, which the Studio lists as unknown fields: the hidden `title` of `siteNav`, `siteCookieBanner`, `siteAnalyticsSettings` and `siteLanguageSettings` (it only fed their previews, which now show a fixed title), `serverErrorTitle` / `serverErrorBody` on `errorSettings`, and `cookieFree` on Clarity and Plausible trackers (the web decides their consent by type). Missing fields are skipped, so a re-run is safe.
+
+**When** — any time after the Studio deploy. Nothing reads these fields; until then they only show as unknown fields.
+
+**Run** in `studio/`:
+
+```bash
+pnpm exec sanity migration run unset-unused-fields --project <id> --dataset development
+pnpm exec sanity migration run unset-unused-fields --project <id> --dataset development --no-dry-run
+```
+
 ---
 
 ## Related docs
 
 - [`../README.md`](../README.md) — Studio overview and sync summary
-- [`../utils/README.md`](../utils/README.md) — How dataset resolution works in the Studio app
+- [`../../README.md`](../../README.md#datasets) — How the dataset is picked
 - [`../.env.example`](../.env.example) — Env vars for project ID and dataset names

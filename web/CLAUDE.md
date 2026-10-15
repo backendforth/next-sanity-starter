@@ -7,6 +7,6 @@ Canonical: @../AGENTS.md. Deep docs: [README.md](README.md), [sanity/README.md](
 - Next preloads every client component a route's server tree imports, rendered or not. Heavy client code that only some pages render (video players, the carousel, the Visual Editing reorder) goes behind a lazy boundary: `next/dynamic` in a `"use client"` file.
 - A boundary with `ssr: true` sets no Suspense of its own. If it can first mount after hydration (an inactive slide becoming active), wrap it in `<Suspense>`, or it suspends the whole route.
 - `pnpm --filter web run build && node .github/scripts/bundle-report.mjs` shows first-load JS per route; CI fails a route over its ceiling in `.github/bundle-budget.json`.
-- Never read the locale from `useRouter()`, `usePathname()`, `window.location` or cookies in a module: it breaks SSR and the Presentation iframe. It comes in as a prop.
+- A module gets the locale as a prop, never from the router, the URL or cookies (AGENTS.md §"i18n DO / DON'T").
 - Build locale-prefixed URLs with the helpers in `src/i18n/`, never by concatenating prefixes.
 - Tailwind v4, CSS-first: tokens live in `src/assets/styles/`; no per-component CSS files.

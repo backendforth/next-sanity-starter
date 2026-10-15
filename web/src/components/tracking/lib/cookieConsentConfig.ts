@@ -188,12 +188,11 @@ function privacyPolicyHtml(
 	const href = stegaClean(resolved.href).trim();
 	if (!/^(https?:\/\/|\/)/i.test(href)) return null;
 
-	const label = resolveLinkLabel({
-		linkTitle: link?.title,
-		locale: options.locale,
-		siteLocale: options.siteLocale,
-		literalFallback: cookieBannerLabel("privacyPolicy", options.locale),
-	});
+	const label = resolveLinkLabel(
+		link,
+		options,
+		cookieBannerLabel("privacyPolicy", options.locale),
+	);
 	const target = resolved.target
 		? ` target="${resolved.target}" rel="${resolved.rel}"`
 		: "";
@@ -202,11 +201,11 @@ function privacyPolicyHtml(
 
 /**
  * The banner for one route, built on the server: every text resolved for `options.locale`,
- * escaped, with the defaults filled in and the tracker rows appended. The client banner gets
- * only this.
+ * escaped, with the defaults filled in and the tracker rows appended. Without a banner document
+ * every text is a default. The client banner gets only this.
  */
 export function cookieConsentTranslation(
-	doc: SiteCookieBanner,
+	doc: SiteCookieBanner | null,
 	trackers: AnalyticsTracker[],
 	options: LinkLocaleOptions,
 ): Translation {
@@ -219,8 +218,8 @@ export function cookieConsentTranslation(
 			read(entries) ?? (fallback ? cookieBannerLabel(fallback, locale) : ""),
 		);
 
-	const consent = doc.consentModal;
-	const preferences = doc.preferencesModal;
+	const consent = doc?.consentModal;
+	const preferences = doc?.preferencesModal;
 
 	const sections: Section[] = (preferences?.sections ?? []).map((section) => ({
 		title: text(section.title),

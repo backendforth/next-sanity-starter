@@ -14,13 +14,20 @@ type Props = {
 	module: ModuleOf<"module.text">;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
+	/** First module on the page: its first embed is the LCP candidate. */
+	priority?: boolean;
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-/** `module.text` — optional title + localized rich text body (with embedded modules). */
-export function ModuleText({ module, locale, siteLocale }: Props) {
-	const title = pickLocalizedString(module.title, locale, siteLocale);
+/** `module.text` — optional heading + localized rich text body (with embedded modules). */
+export function ModuleText({
+	module,
+	locale,
+	siteLocale,
+	priority = false,
+}: Props) {
+	const heading = pickLocalizedString(module.heading, locale, siteLocale);
 	const blocks = pickLocalizedPortableTextBlocks(
 		module.body,
 		locale,
@@ -28,9 +35,14 @@ export function ModuleText({ module, locale, siteLocale }: Props) {
 	);
 
 	return (
-		<article className={moduleSectionClassName}>
-			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
-			<RichTextMedia value={blocks} locale={locale} siteLocale={siteLocale} />
-		</article>
+		<section className={moduleSectionClassName}>
+			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
+			<RichTextMedia
+				value={blocks}
+				locale={locale}
+				siteLocale={siteLocale}
+				priority={priority}
+			/>
+		</section>
 	);
 }

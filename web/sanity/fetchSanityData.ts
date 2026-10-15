@@ -16,6 +16,7 @@ import {
 	siteLanguageSettingsQuery,
 	workQuery,
 } from "./queries";
+import { readToken } from "./readToken";
 
 /*
  * Every `sanityFetch` below passes the matching `SANITY_CACHE_TAGS` entry.
@@ -48,7 +49,7 @@ export const fetchPageBySlug = cache(async (slug: string) => {
 	const { data } = await sanityFetch({
 		query: pageBySlugQuery,
 		params: { slug },
-		tags: [SANITY_CACHE_TAGS.pageSlug(slug), ...EMBEDDED_CONTENT_TAGS],
+		tags: [...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -69,7 +70,7 @@ export const fetchProjectBySlug = cache(async (slug: string) => {
 	const { data } = await sanityFetch({
 		query: projectBySlugQuery,
 		params: { slug },
-		tags: [SANITY_CACHE_TAGS.projectSlug(slug), ...EMBEDDED_CONTENT_TAGS],
+		tags: [...EMBEDDED_CONTENT_TAGS],
 	});
 	return data;
 });
@@ -82,26 +83,18 @@ export const fetchSiteChrome = cache(async () => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: siteChromeQuery,
-		/* `pages`: nav and 404-body links resolve home and page paths (`PAGE_REFERENCES`). */
+		/* Nav, privacy and 404-body links resolve the paths and titles of their targets. */
 		tags: [
 			SANITY_CACHE_TAGS.siteNav,
 			SANITY_CACHE_TAGS.siteCookieBanner,
 			SANITY_CACHE_TAGS.siteSettings,
 			SANITY_CACHE_TAGS.siteAnalyticsSettings,
 			SANITY_CACHE_TAGS.errorSettings,
-			SANITY_CACHE_TAGS.pages,
+			...EMBEDDED_CONTENT_TAGS,
 		],
 	});
 	return data;
 });
-
-function draftClientForSiteLanguageSettings(token: string) {
-	return client.withConfig({
-		token,
-		useCdn: false,
-		perspective: "drafts",
-	});
-}
 
 /**
  * `draftMode()` throws outside a request scope (`generateStaticParams`, build-time
@@ -125,24 +118,21 @@ async function isDraftModeEnabled(): Promise<boolean> {
  *
  * The **drafts** perspective (uncached, no CDN) is reserved for renders that actually need
  * it: dev, and Draft Mode / Presentation requests. A production deploy sets
- * `SANITY_API_READ_TOKEN` for Visual Editing, and gating on the token alone made every
+ * `SANITY_API_READ_TOKEN` for Visual Editing, and gating on the token alone would make every
  * visitor-facing render pay an uncached Sanity API round trip before anything else.
  */
 export const fetchSiteLanguageSettings = cache(
 	async (): Promise<SiteLocaleConfig> => {
-		if (!isSanityConfigured) return cachedSiteLanguageSettingsPublished();
-		const token = process.env.SANITY_API_READ_TOKEN?.trim();
-		if (!token) {
+		if (
+			!isSanityConfigured ||
+			!readToken ||
+			!(process.env.NODE_ENV === "development" || (await isDraftModeEnabled()))
+		) {
 			return cachedSiteLanguageSettingsPublished();
 		}
-		const useDrafts =
-			process.env.NODE_ENV === "development" || (await isDraftModeEnabled());
-		if (!useDrafts) {
-			return cachedSiteLanguageSettingsPublished();
-		}
-		const data = await draftClientForSiteLanguageSettings(token).fetch(
-			siteLanguageSettingsQuery,
-		);
+		const data = await client
+			.withConfig({ token: readToken, useCdn: false, perspective: "drafts" })
+			.fetch(siteLanguageSettingsQuery);
 		return normalizeSiteLocaleConfig(data);
 	},
 );

@@ -10,8 +10,8 @@ export const moduleText = defineType({
   icon: TextIcon,
   fields: [
     {
-      name: "title",
-      title: "Title",
+      name: "heading",
+      title: "Heading",
       type: "internationalizedArrayString",
     },
     {
@@ -22,11 +22,11 @@ export const moduleText = defineType({
   ],
   preview: {
     select: {
-      titleEntries: "title",
+      headingEntries: "heading",
     },
-    prepare({ titleEntries }) {
+    prepare({ headingEntries }) {
       return {
-        title: firstLocalizedLabel(titleEntries, "Text"),
+        title: firstLocalizedLabel(headingEntries, "Text"),
         subtitle: "Text module",
       };
     },

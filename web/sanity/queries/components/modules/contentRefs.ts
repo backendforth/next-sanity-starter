@@ -28,7 +28,7 @@ const contentRefTargetProjection = `
  * (`contentRefReferenceFilter` in `studio/schemas/constants/references.ts`), newest first.
  * Otherwise the editor's picks, in their order. The visitor's sort controls start from this.
  */
-export const moduleContentRefsInnerFields = `
+export const moduleContentRefsQuery = `_type == "module.contentRefs" => {
   heading,
   sourceScope,
   showProjectFilters,
@@ -49,8 +49,4 @@ export const moduleContentRefsInnerFields = `
       ${contentRefTargetProjection}
     }
   )
-`;
-
-export const moduleContentRefsQuery = `_type == "module.contentRefs" => {
-  ${moduleContentRefsInnerFields}
 }`;

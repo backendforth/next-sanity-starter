@@ -3,6 +3,7 @@ import { defineQuery } from "next-sanity";
 import { blockFields } from "../components/text/richTextMedia";
 import { linkQuery } from "./link";
 import { imageQuery } from "./media";
+import { pageSeoQuery } from "./seo";
 
 /** `internationalizedArrayRichText` entries (`notFoundBody`, …) with resolved `link` marks. */
 const intlRichTextBody = `[]{
@@ -36,17 +37,14 @@ const navFooterMenuQuery = `footerMenu[]{
   ${linkQuery}
 }`;
 
-/** Document id `siteNav` — main + footer menus with resolved links, no `modules[]`. */
+/** Document id `siteNav` — main + footer menus with resolved links. */
 const siteNavQuery = `*[_type == "siteNav" && _id == "siteNav"][0]{
-  _id,
-  title,
   "mainMenu": ${navMainMenuQuery},
   "footerMenu": ${navFooterMenuQuery}
 }`;
 
-/** Document id `siteCookieBanner` — banner copy for the app shell, no `modules[]`. */
+/** Document id `siteCookieBanner` — banner copy for the app shell. */
 const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && _id == "siteCookieBanner"][0]{
-  _id,
   useCookieBanner,
   consentModal {
     description,
@@ -77,10 +75,9 @@ const siteCookieBannerQuery = `*[_type == "siteCookieBanner" && _id == "siteCook
   }
 }`;
 
-/** Document id: `siteLanguageSettings` — drives Next routes + `internationalizedArray` codegen in Studio. */
+/** Document id: `siteLanguageSettings` — the site's locales; the Studio reads it for its language tabs. */
 export const siteLanguageSettingsQuery =
 	defineQuery(`*[_type == "siteLanguageSettings" && _id == "siteLanguageSettings"][0]{
-  _id,
   availableLanguages[]{id, title},
   defaultLanguageId
 }`);
@@ -94,11 +91,7 @@ export const siteLanguageSettingsQuery =
 const siteSettingsQuery = `*[_type == "siteSettings" && _id == "siteSettings"][0]{
   title,
   "favicon": favicon${imageQuery},
-  "seo": seo{
-    title,
-    description,
-    "imageUrl": image.asset->url
-  }
+  ${pageSeoQuery}
 }`;
 
 /** Document id: `siteAnalyticsSettings` — tracking providers + load mode. */
@@ -132,11 +125,7 @@ const siteAnalyticsSettingsQuery = `*[_type == "siteAnalyticsSettings" && _id ==
   }
 }`;
 
-/**
- * Document id: `errorSettings` — the 404 copy. Its `modules[]` field is deliberately not
- * projected: no error page renders modules, and embedding `modulesQuery` inflated the query
- * from ~2 KB to ~79 KB.
- */
+/** Document id: `errorSettings` — the 404 copy. */
 const notFoundQuery = `*[_type == "errorSettings" && _id == "errorSettings"][0]{
   notFoundTitle,
   notFoundBody${intlRichTextBody}

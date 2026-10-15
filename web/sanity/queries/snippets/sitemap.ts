@@ -32,7 +32,6 @@ export const sitemapPagesQuery = defineQuery(`*[
   (_type == "page" && defined(slug.current)) ||
   (_type == "project" && defined(slug.current))
 ]{
-  _id,
   _type,
   _updatedAt,
   "path": ${routePathProjection}

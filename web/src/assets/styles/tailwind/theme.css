@@ -20,7 +20,7 @@
 	--border-width-DEFAULT: 0.0625rem;
 	--border-width-0: 0;
 
-	/* Semantic font stacks (see `typography/fonts.css`; Geist via `layout.tsx`) */
+	/* Semantic font stacks (see `typography/fonts.css`; Geist via `components/layout/DocumentShell.tsx`) */
 	--font-sans: var(--font-family-sans), ui-sans-serif, system-ui, sans-serif;
 	--font-text: var(--font-family-text), ui-sans-serif, system-ui, sans-serif;
 	--font-headline: var(--font-family-headline), ui-monospace, monospace;

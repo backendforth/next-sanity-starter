@@ -6,7 +6,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 | Source | When it applies |
 |--------|-----------------|
-| **Sanity `siteLanguageSettings`** | Normal operation — `availableLanguages` (order = translation fallback order), `defaultLanguageId` (unprefixed URLs + `<html lang>` default after hydration). |
+| **Sanity `siteLanguageSettings`** | Normal operation — `availableLanguages` (order = translation fallback order), `defaultLanguageId` (the language of unprefixed URLs). |
 | **Schema `initialValue`** ([`studio/schemas/settings/siteLanguageSettings.ts`](../../../studio/schemas/settings/siteLanguageSettings.ts)) | When an editor **creates** the singleton the first time — pre-fills e.g. `en` + `de` with default `en`. They can change or remove languages before publish (validation still requires ≥1 language and a valid default). |
 | **Code fallbacks** | Only when the document is **missing**, **unpublished** in a way that yields empty/invalid data, or **broken** (e.g. default id not in list). |
 
@@ -16,7 +16,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 
 | File | Role |
 |------|------|
-| **`fallbackSiteLocales.ts`** | Minimal **`en`** fallback when `siteLanguageSettings` is missing or invalid; also used for static bootstrap (e.g. root `<html lang>` before client sync). |
+| **`fallbackSiteLocales.ts`** | Minimal **`en`** fallback when `siteLanguageSettings` is missing or invalid; also the locale of `app/global-error.tsx`, which renders outside every layout. |
 | **`siteLocalePathUtils.ts`** | `createLanguagePathUtils({ defaultLocale, localeIds })` — `localePath`, prefixes, `isAppLocale`. |
 | **`proxyLocaleFetch.ts`** | CDN fetch + short cache for **`proxy.ts`**. |
 | **`paths.ts`** | `isCurrentNavHref`, path normalization (no locale coupling). |
@@ -29,7 +29,8 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 2. **Next** — `fetchSiteLanguageSettings()` (cached) supplies **`[locale]/layout.tsx`** → **`LanguageProvider`**, **`Footer`** path utils, **`generateStaticParams`**, **`ModulesRenderer`**, and **`pickLocalizedString`** / Portable Text helpers.
 3. User opens `/` or `/about` → **`proxy`** rewrites internally to `/{defaultLocale}/…` using the CDN-backed locale list.
 4. User opens `/de/about` → no rewrite; header marks locale `de`.
-5. `app/[locale]/page.tsx` (and nested routes) read `params.locale` and pass **`siteLocale`** into resolution helpers.
+5. `app/[locale]/layout.tsx` is the root layout: `DocumentShell` server-renders `<html lang={locale}>` for the route's language.
+6. `app/[locale]/page.tsx` (and nested routes) read `params.locale` and pass **`siteLocale`** into resolution helpers.
 
 ## Studio note
 

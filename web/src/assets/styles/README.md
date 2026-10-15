@@ -19,7 +19,7 @@ It is **imported twice**: in **`tokens.css`** (before sizes / font sizes) and in
 
 | Folder / file | Role |
 |---------------|------|
-| `variables/colors.css` | `--color-*`; dark via `prefers-color-scheme` |
+| `variables/colors.css` | `--color-*`; dark tokens under `:root[data-theme="dark"]`, set by the theme toggle (OS preference is ignored) |
 | `variables/sizes.css` | layout + `--space-*`, `--content-max-width` / `--content-min-width`, `--container-spacing`; tiers via `theme(--breakpoint-*)` |
 | `typography/fonts.css` | Geist / Geist Mono stacks (`next/font/google` in `components/layout/DocumentShell.tsx`) |
 | `variables/fontsizes.css` | type scale (`--font-size-*`, `--line-height-*`); tiers via `theme(--breakpoint-*)` |

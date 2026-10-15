@@ -274,11 +274,9 @@ export function muxLoopHlsSrc(
 	const resolutionTier = resolveMuxLoopTier(args);
 	const u = new URL(`https://stream.mux.com/${playbackId}.m3u8`);
 	u.searchParams.set("rendition_order", "desc");
-	/* Mux's documented parameter name is `min_resolution` (not
-	 * `min_resolution_tier`) — unknown params are silently dropped, so the
-	 * previous `min_resolution_tier=...` was a no-op and the manifest
-	 * contained every rendition from the asset's lowest tier upward.
-	 * Safari then naturally started ABR from the bottom rung. */
+	/* Mux's parameter is `min_resolution`, not `min_resolution_tier`: unknown
+	 * params are dropped silently. `min` = `max` leaves one rendition in the
+	 * manifest, so playback can't start ABR from the bottom rung. */
 	u.searchParams.set("min_resolution", resolutionTier);
 	u.searchParams.set("max_resolution", resolutionTier);
 	return u.toString();

@@ -84,9 +84,8 @@ function openPreferences(): void {
 
 /** Open the preferences modal — wired to the `open-cookie-preferences` linkFunction. */
 export function showCookiePreferences(): void {
-	// The link can be placed in navigation regardless of settings. With the banner
-	// enabled but not started yet (lazy chunk in flight), open the modal on start;
-	// with the banner disabled nothing ever starts and the click stays a no-op.
+	// The nav rows and rich-text buttons that call this render only while the banner
+	// is on. If it hasn't started yet (lazy chunk in flight), the modal opens on start.
 	if (!library || !started) {
 		preferencesRequested = true;
 		return;

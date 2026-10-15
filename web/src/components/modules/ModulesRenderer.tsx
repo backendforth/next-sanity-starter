@@ -62,7 +62,12 @@ function renderModuleChild(
 	switch (mod._type) {
 		case "module.text":
 			return (
-				<ModuleText module={mod} locale={locale} siteLocale={siteLocale} />
+				<ModuleText
+					module={mod}
+					locale={locale}
+					siteLocale={siteLocale}
+					priority={priority}
+				/>
 			);
 		case "module.media":
 			return (

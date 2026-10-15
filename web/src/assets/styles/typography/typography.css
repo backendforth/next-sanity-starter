@@ -166,17 +166,5 @@
 	}
 }
 
-/* Rich text block spacing → typography/rich-text.css. */
-
-/* ─── Contextual rules ──────────────────────────────────────────────────────
- * `@layer components`: above the element defaults, below utilities. Nav links and pills style
- * themselves (`navControlStyles.ts`); only the active-link underline lives here. */
-
-@layer components {
-	:is(header, footer) nav a[aria-current],
-	header h1 a[aria-current] {
-		text-decoration-line: underline;
-		text-decoration-color: var(--color-link-decoration);
-		text-underline-offset: 0.25rem;
-	}
-}
+/* Rich text block spacing → typography/rich-text.css. Nav links and pills style themselves
+ * (`components/navigation/navControlStyles.ts`). */

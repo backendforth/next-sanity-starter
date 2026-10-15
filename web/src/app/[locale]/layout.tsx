@@ -15,6 +15,7 @@ import {
 import { Footer } from "@/src/components/navigation/Footer";
 import { Header } from "@/src/components/navigation/Header";
 import { LazySiteTracking } from "@/src/components/tracking/LazySiteTracking";
+import { cookieConsentTranslation } from "@/src/components/tracking/lib/cookieConsentConfig";
 import { getEnabledTrackers } from "@/src/components/tracking/lib/trackingConfig";
 import { LanguageProvider } from "@/src/contexts/LanguageContext";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
@@ -105,13 +106,22 @@ export default async function LocaleLayout({ children, params }: Props) {
 			 * the `siteCookieBanner` cache tag, without a deploy. */}
 			{cookieBanner?.useCookieBanner ? (
 				<LazyCookieConsentBanner
-					doc={cookieBanner}
 					locale={locale}
-					trackers={enabledTrackers}
+					translation={cookieConsentTranslation(cookieBanner, enabledTrackers, {
+						locale,
+						siteLocale,
+					})}
 				/>
 			) : null}
 			{enabledTrackers.length > 0 ? (
-				<LazySiteTracking config={{ analytics, cookieBanner }} />
+				<LazySiteTracking
+					config={{
+						analytics,
+						cookieBanner: cookieBanner && {
+							useCookieBanner: cookieBanner.useCookieBanner,
+						},
+					}}
+				/>
 			) : null}
 		</LanguageProvider>
 	);

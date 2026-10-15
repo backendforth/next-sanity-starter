@@ -9,8 +9,8 @@ export const moduleText = defineType({
   icon: TextIcon,
   fields: [
     {
-      name: "title",
-      title: "Title",
+      name: "heading",
+      title: "Heading",
       type: "string",
     },
     {
@@ -21,11 +21,11 @@ export const moduleText = defineType({
   ],
   preview: {
     select: {
-      title: "title",
+      heading: "heading",
     },
-    prepare({ title }) {
+    prepare({ heading }) {
       return {
-        title: plainLabel(title, "Text"),
+        title: plainLabel(heading, "Text"),
         subtitle: "Text module",
       };
     },

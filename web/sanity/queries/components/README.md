@@ -15,7 +15,7 @@ GROQ **projections for `modules[]`** on documents (and the same module types in 
 | File | Export | Content |
 |------|--------|---------|
 | `modules/index.ts` | `modulesQuery` | Full `modules[]{ ... }` |
-| `modules/text.ts` | `moduleTextQuery` | `module.text` (title + body using `richTextMediaBodyQuery`) |
+| `modules/text.ts` | `moduleTextQuery` | `module.text` (heading + body using `richTextMediaBodyQuery`) |
 | `modules/media.ts` | `moduleMediaQuery` | `module.media` |
 | `modules/carousel.ts` | `moduleCarouselQuery` | `module.carousel` |
 | `modules/contentRefs.ts` | `moduleContentRefsQuery` | `module.contentRefs` (`sourceScope`, resolved `references`: every routable target of the scope in `$locale`, newest first, or the editor's picks in order). The `$locale` filter means every query that embeds `modulesQuery` must pass `$locale`. |

@@ -17,7 +17,7 @@ type Props = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
- * `module.text` — optional title + rich text body (with embedded modules).
+ * `module.text` — optional heading + rich text body (with embedded modules).
  * Document-level i18n: fields are plain values (document is in one locale).
  */
 export function ModuleText({
@@ -26,12 +26,12 @@ export function ModuleText({
 	siteLocale,
 	priority = false,
 }: Props) {
-	const title = typeof module.title === "string" ? module.title.trim() : "";
+	const heading = module.heading?.trim();
 	const blocks = module.body ?? [];
 
 	return (
 		<section className={moduleSectionClassName}>
-			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
+			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<RichTextMedia
 				value={blocks}
 				locale={locale}

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { baseLanguage } from "./uiLabels";
+
 /**
  * The cookie banner's default texts, for every text `siteCookieBanner` leaves empty. The banner
  * is built on the server (`cookieConsentTranslation`), so these stay out of `uiLabels.ts`, which
@@ -132,5 +134,5 @@ export function cookieBannerLabel(
 	key: CookieBannerLabelKey,
 	locale: string,
 ): string {
-	return (LABELS[locale] ?? LABELS.en)[key];
+	return (LABELS[locale] ?? LABELS[baseLanguage(locale)] ?? LABELS.en)[key];
 }

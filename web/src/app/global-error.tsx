@@ -2,6 +2,12 @@
 
 import { useEffect } from "react";
 
+import { FALLBACK_SITE_LOCALE_CONFIG } from "@/src/i18n/fallbackSiteLocales";
+import { uiLabel } from "@/src/i18n/uiLabels";
+
+/* The root layout failed, so neither the route's locale nor the site settings are known. */
+const LOCALE = FALLBACK_SITE_LOCALE_CONFIG.defaultLocale;
+
 export default function GlobalErrorBoundary({
 	error,
 	reset,
@@ -14,7 +20,7 @@ export default function GlobalErrorBoundary({
 	}, [error]);
 
 	return (
-		<html lang="en">
+		<html lang={LOCALE}>
 			<body
 				style={{
 					fontFamily: "system-ui, sans-serif",
@@ -39,11 +45,10 @@ export default function GlobalErrorBoundary({
 					}}
 				>
 					<h1 style={{ fontSize: "1.875rem", fontWeight: "bold", margin: 0 }}>
-						Something went wrong
+						{uiLabel("errorTitle", LOCALE)}
 					</h1>
 					<p style={{ color: "#52525b", margin: 0 }}>
-						A critical error occurred. Please try again or return to the home
-						page.
+						{uiLabel("errorBody", LOCALE)}
 					</p>
 					<div style={{ display: "flex", gap: "1rem" }}>
 						<button
@@ -63,7 +68,7 @@ export default function GlobalErrorBoundary({
 								cursor: "pointer",
 							}}
 						>
-							Try again
+							{uiLabel("retry", LOCALE)}
 						</button>
 						<a
 							href="/"
@@ -81,7 +86,7 @@ export default function GlobalErrorBoundary({
 								backgroundColor: "transparent",
 							}}
 						>
-							Back to home
+							{uiLabel("backHome", LOCALE)}
 						</a>
 					</div>
 				</main>

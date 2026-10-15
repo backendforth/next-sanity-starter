@@ -20,7 +20,7 @@ This folder wires **URL language** to **`[locale]` routes** and shared helpers. 
 | **`siteLocalePathUtils.ts`** | `createLanguagePathUtils({ defaultLocale, localeIds })` — `localePath`, prefixes, `isAppLocale`. `translationPathsByLocale(translations, pathUtils)` — locale → prefixed path for a document's language variants (slugs differ per language; feeds `hreflang`, the sitemap and the language switch). |
 | **`proxyLocaleFetch.ts`** | CDN fetch + short cache for **`proxy.ts`**. |
 | **`paths.ts`** | `isCurrentNavHref`, path normalization (no locale coupling). |
-| **`skipLinkLabel.ts`**, **`uiLabels.ts`**, **`cookieBannerLabels.ts`** | Fixed UI copy not authored in Sanity (skip link, `aria-label`s, error / 404 fallback, content-refs controls; the cookie banner's defaults, server-only) per locale, English fallback. Add a locale here when you add one in `siteLanguageSettings`. |
+| **`uiLabels.ts`**, **`cookieBannerLabels.ts`** | Fixed UI copy not authored in Sanity (skip link, `aria-label`s, error / 404 fallback, content-refs controls, label fallbacks; the cookie banner's defaults, server-only) per locale; a regional locale uses its base language, then English. Add a locale here when you add one in `siteLanguageSettings`. |
 | **`../proxy.ts`** (`web/src/proxy.ts`) | Rewrites unprefixed URLs to `/{defaultLocale}/…`. Redirects `/{defaultLocale}/…` to unprefixed canonical URLs. Server code that needs the route locale outside the page props (e.g. `[locale]/not-found.tsx`) reads it with `next/root-params` (`locale()`). |
 
 ## Flow

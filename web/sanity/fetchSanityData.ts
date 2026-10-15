@@ -83,14 +83,14 @@ export const fetchSiteChrome = cache(async () => {
 	if (!isSanityConfigured) return null;
 	const { data } = await sanityFetch({
 		query: siteChromeQuery,
-		/* `pages`: nav and 404-body links resolve home and page paths (`PAGE_REFERENCES`). */
+		/* Nav, privacy and 404-body links resolve the paths and titles of their targets. */
 		tags: [
 			SANITY_CACHE_TAGS.siteNav,
 			SANITY_CACHE_TAGS.siteCookieBanner,
 			SANITY_CACHE_TAGS.siteSettings,
 			SANITY_CACHE_TAGS.siteAnalyticsSettings,
 			SANITY_CACHE_TAGS.errorSettings,
-			SANITY_CACHE_TAGS.pages,
+			...EMBEDDED_CONTENT_TAGS,
 		],
 	});
 	return data;

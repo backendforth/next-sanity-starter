@@ -28,9 +28,9 @@ export function ModuleText({ module, locale, siteLocale }: Props) {
 	);
 
 	return (
-		<article className={moduleSectionClassName}>
+		<section className={moduleSectionClassName}>
 			{title ? <h2 className={moduleHeadingClassName}>{title}</h2> : null}
 			<RichTextMedia value={blocks} locale={locale} siteLocale={siteLocale} />
-		</article>
+		</section>
 	);
 }

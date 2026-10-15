@@ -27,6 +27,8 @@ export type NormalizedSlide = {
 type Props = {
 	slide: NormalizedSlide;
 	isActive: boolean;
+	/** LCP candidate: eager image / poster, no fade-in. */
+	priority?: boolean;
 	/** Responsive `sizes` for slide images (viewport differs in multi-slide mode). */
 	imageSizes?: string;
 	/** Multi-slide carousel: shared row height, width from native aspect ratio. */
@@ -58,6 +60,7 @@ const MULTI_SLIDE_MEDIA_CLASS = clsx(
 export function CarouselSlide({
 	slide,
 	isActive,
+	priority = false,
 	imageSizes = "100vw",
 	respectAspectRatio = false,
 }: Props) {
@@ -68,6 +71,7 @@ export function CarouselSlide({
 				caption={slide.caption}
 				fillParent
 				objectFit="cover"
+				priority={priority}
 				sizes={imageSizes}
 				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
 			/>
@@ -80,6 +84,7 @@ export function CarouselSlide({
 				media={slide.media}
 				caption={slide.caption}
 				posterPayload={slide.poster}
+				posterPriority={priority}
 				fillParent
 				isActive={isActive}
 				allowUnmute={slide.allowUnmute === true}
@@ -94,6 +99,7 @@ export function CarouselSlide({
 				media={slide.media}
 				caption={slide.caption}
 				posterPayload={slide.poster}
+				posterPriority={priority}
 				fillParent
 				isActive={isActive}
 				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
@@ -108,6 +114,7 @@ export function CarouselSlide({
 			caption={slide.caption}
 			fillParent
 			objectFit="cover"
+			priority={priority}
 			sizes={imageSizes}
 			className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
 		/>
@@ -123,6 +130,7 @@ export function CarouselSlide({
 				caption={slide.caption}
 				posterPayload={slide.poster}
 				videoSettings={slide.videoSettings}
+				priority={priority}
 				fillParent
 				className={respectAspectRatio ? MULTI_SLIDE_MEDIA_CLASS : FIT_TO_PARENT}
 			/>

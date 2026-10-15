@@ -11,6 +11,8 @@ import { portableTextMediaComponents } from "./portableTextComponents";
 type RichTextMediaProps = LinkLocaleOptions & {
 	value: RichTextMediaValue;
 	className?: string;
+	/** The body opens the page: its first embed is the LCP candidate and loads eagerly. */
+	priority?: boolean;
 };
 
 /**
@@ -23,8 +25,12 @@ export function RichTextMedia({
 	className,
 	locale,
 	siteLocale,
+	priority = false,
 }: RichTextMediaProps) {
 	if (!value.length) return null;
+	const priorityKey = priority
+		? value.find((item) => item._type !== "block")?._key
+		: undefined;
 
 	return (
 		<div
@@ -32,7 +38,11 @@ export function RichTextMedia({
 		>
 			<PortableText
 				value={value}
-				components={portableTextMediaComponents({ locale, siteLocale })}
+				components={portableTextMediaComponents({
+					locale,
+					siteLocale,
+					priorityKey,
+				})}
 				onMissingComponent={false}
 			/>
 		</div>

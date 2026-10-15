@@ -45,7 +45,11 @@ function LinkMarkRenderer({
 export function portableTextMediaComponents({
 	locale,
 	siteLocale,
-}: LinkLocaleOptions) {
+	priorityKey,
+}: LinkLocaleOptions & {
+	/** `_key` of the embed that is the page's LCP candidate. */
+	priorityKey?: string;
+}) {
 	return {
 		block: {
 			normal: ({ children }) => <p className="text">{children}</p>,
@@ -82,7 +86,7 @@ export function portableTextMediaComponents({
 						module={stegaBrand(value)}
 						locale={locale}
 						siteLocale={siteLocale}
-						variant="embed"
+						priority={value._key === priorityKey}
 					/>
 				</div>
 			),
@@ -92,7 +96,7 @@ export function portableTextMediaComponents({
 						module={stegaBrand(value)}
 						locale={locale}
 						siteLocale={siteLocale}
-						variant="embed"
+						priority={value._key === priorityKey}
 					/>
 				</div>
 			),

@@ -17,8 +17,8 @@ type Props = {
 	module: CarouselModule;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
-	variant?: "module" | "embed";
+	/** The page's LCP candidate: the first slide loads eagerly. */
+	priority?: boolean;
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -36,20 +36,19 @@ export function ModuleCarousel({
 	module,
 	locale,
 	siteLocale,
-	variant = "module",
+	priority = false,
 }: Props) {
 	const slides = normalizeCarouselSlides(module, locale, siteLocale);
 	if (slides.length === 0) return null;
 
 	const heading = pickLocalizedString(module.heading, locale, siteLocale);
-	const sectionClassName =
-		variant === "module" ? moduleSectionClassName : "flex flex-col";
 
 	return (
-		<section className={sectionClassName}>
+		<section className={moduleSectionClassName}>
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
 			<LazyCarouselViewport
 				slides={slides}
+				priority={priority}
 				options={{
 					loop: module.loop === true,
 					showThumbnails: module.showThumbnails === true,

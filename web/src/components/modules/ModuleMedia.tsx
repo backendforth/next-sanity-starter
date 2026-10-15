@@ -10,7 +10,7 @@ import {
 import { MediaImage } from "@/src/components/media/MediaImage";
 import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 
-import { moduleCaptionClassName, moduleSectionClassName } from "./moduleStyles";
+import { moduleCaptionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,12 +21,9 @@ type Props = {
 	module: MediaModule;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
-	/** `module` = document `modules[]` slot; `embed` = inline rich text (no section chrome). */
-	variant?: "module" | "embed";
 	/**
-	 * First module on the page — the LCP candidate. Eager-loads the image /
-	 * video poster (`fetchpriority=high`, no lazy fade-in). Set by
-	 * `ModulesRenderer` for index 0; leave unset everywhere else.
+	 * The page's LCP candidate (first module, or first rich-text embed). Eager-loads the image /
+	 * video poster (`fetchpriority=high`, no lazy fade-in).
 	 */
 	priority?: boolean;
 };
@@ -127,7 +124,6 @@ export function ModuleMedia({
 	module,
 	locale,
 	siteLocale,
-	variant = "module",
 	priority = false,
 }: Props) {
 	/* One string for the figcaption and the client media's alt / aria-label fallbacks. */
@@ -136,10 +132,5 @@ export function ModuleMedia({
 		locale,
 		siteLocale,
 	);
-	const figure = renderModuleMediaFigure(module, caption, priority);
-	if (!figure) return null;
-
-	if (variant === "embed") return figure;
-
-	return <section className={moduleSectionClassName}>{figure}</section>;
+	return renderModuleMediaFigure(module, caption, priority);
 }

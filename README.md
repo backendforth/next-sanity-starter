@@ -136,7 +136,7 @@ The deep-dive lives in the per-folder READMEs (see [Going deeper](#going-deeper)
 - **Data access** — `web/sanity/fetchSanityData.ts` is the only place React talks to Sanity; it wraps `sanityFetch` from `defineLive` for Draft Mode / Presentation. Published-only reads (sitemap, `generateStaticParams`, no-token paths) go through `web/sanity/cachedSanityQuery.ts` (`unstable_cache` + cache tags).
 - **GROQ** — strings live under `web/sanity/queries/` (snippets, page-level queries, component projections). The final queries are wrapped in `defineQuery` so `sanity typegen` emits result types.
 - **i18n** — Sanity's `siteLanguageSettings` singleton drives URL routing, `<html lang>`, `hreflang` alternates, and the Studio's document languages. Each language is its own document; queries select it with `language == $locale`. A minimal `en`-only fallback applies only when the document is missing/invalid (CI, first deploy).
-- **Media** — `<MediaImage />`, `<MediaVideo />`, `<MediaVideoLoop />` share container measurement, hydration-safe URLs, and viewport-deferred JS.
+- **Media** — `<MediaImage />` (Sanity CDN `srcset`, crop and hotspot), `<MediaVideo />` (Mux Player) and `<MediaVideoLoop />` (hls.js). Video code loads only when a video nears the viewport; the server HTML already has the final size, so nothing shifts.
 
 ---
 

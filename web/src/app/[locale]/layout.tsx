@@ -45,13 +45,14 @@ export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { locale: raw } = await params;
-	const siteLocale = await fetchSiteLanguageSettings();
+	const [siteLocale, chrome] = await Promise.all([
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(raw),
+	]);
 	const pathUtils = createLanguagePathUtils(siteLocale);
 	if (!pathUtils.isAppLocale(raw)) {
 		notFound();
 	}
-	/* The chrome is per language: its cache key needs the validated locale. */
-	const chrome = await fetchSiteChrome(raw);
 	const suffix = siteBrandTitle(chrome?.settings);
 	return {
 		...documentMetadata(chrome?.settings?.favicon),
@@ -64,18 +65,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocaleLayout({ children, params }: Props) {
 	const { locale: raw } = await params;
-	const siteLocale = await fetchSiteLanguageSettings();
-	const pathUtils = createLanguagePathUtils(siteLocale);
-
-	if (!pathUtils.isAppLocale(raw)) {
-		notFound();
-	}
-	const locale = raw;
-	const linkOptions = { locale, siteLocale };
-
-	// `siteLocale` is shared by all locales (single doc). The chrome bundle (nav, cookie banner,
-	// settings and analytics in one query) is per language, so it waits for the validated locale.
-	const chrome = await fetchSiteChrome(locale);
+	// Parallelize: locale config (for validation + LanguageProvider) and the chrome bundle
+	// (nav, cookie banner, settings, analytics, 404 copy in one query) are independent. The
+	// fetch when `raw` ends up invalid is wasted effort but the path is rare (404s only); the
+	// common case saves a roundtrip.
+	const [siteLocale, chrome] = await Promise.all([
+		fetchSiteLanguageSettings(),
+		fetchSiteChrome(raw),
+	]);
 	const siteNav = chrome?.nav ?? null;
 	const cookieBanner = chrome?.cookieBanner ?? null;
 	/* Clean: tracker ids and the load mode go to third-party scripts, not into the page. */
@@ -83,6 +80,13 @@ export default async function LocaleLayout({ children, params }: Props) {
 	const enabledTrackers = getEnabledTrackers(analytics);
 	/* The banner, the cookie-preferences links (nav, rich text) and tracking follow this switch. */
 	const cookieBannerEnabled = isCookieBannerEnabled(analytics);
+	const pathUtils = createLanguagePathUtils(siteLocale);
+
+	if (!pathUtils.isAppLocale(raw)) {
+		notFound();
+	}
+	const locale = raw;
+	const linkOptions = { locale, siteLocale };
 	const navOptions = { ...linkOptions, cookieBannerEnabled };
 
 	const site = (

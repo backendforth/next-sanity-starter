@@ -82,7 +82,7 @@ export const fetchProjectBySlug = cache(
 /**
  * The app shell of one language (`siteChromeQuery`): nav, cookie banner, site settings,
  * analytics and the 404 copy in one fetch. Read by the layout, every `generateMetadata` and the
- * 404 pages; call it with a validated locale, it is part of the cache key.
+ * 404 pages.
  */
 export const fetchSiteChrome = cache(async (locale: string) => {
 	if (!isSanityConfigured) return null;

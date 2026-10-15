@@ -246,7 +246,7 @@ URL /[locale]/[slug]
 - Hand-writing a type for Sanity data instead of deriving it from the generated query types (`web/sanity/types.ts`).
 - Comparing a fetched string to a literal without `stegaClean` / `isStegaVariant` — it is always `false` in Presentation.
 - Filtering an i18n field by language inside the query.
-- Adding a language by editing `fallbackSiteLocales.ts` only and forgetting the Studio singleton.
+- Adding a language to the code fallback (`@repo/site-languages`, `en` only on purpose) instead of the Studio singleton.
 - Importing from `studio/` inside `web/` or vice versa (use a `packages/*` package).
 - Bypassing the pre-commit hook with `--no-verify`.
 - Editing a `*.gen.ts` file to "fix" a type error — fix the schema or the query instead.
@@ -281,7 +281,7 @@ See `studio/config/README.md` and `studio/config/structure/README.md` for detail
 ### Add a locale
 
 1. Studio → **Site Language Settings** singleton → append `{ id: "<code>", title: "<Native Name>" }` to `availableLanguages`. Position controls fallback priority. Optionally update `defaultLanguageId`.
-2. `web/src/i18n/fallbackSiteLocales.ts` → extend `FALLBACK_SITE_LOCALE_CONFIG.localeIds` and `languages` in the same order (offline fallback only).
+2. Add the language's fixed UI copy to `web/src/i18n/uiLabels.ts` and `web/src/i18n/cookieBannerLabels.ts`. Without it the language gets English UI text (a regional id like `de-CH` uses its base language's).
 3. The Studio picks the language up on its own — `studio/config/sync/internationalizedArrayLanguages.ts` on `main`, `studio/config/sync/supportedLanguages.ts` on `variant/document-level`. No schema, query, or component change is required. If you think one is required — stop, that is an anti-pattern.
 
 See `web/src/i18n/README.md`.
@@ -363,7 +363,6 @@ Before declaring a task complete, all of the following must hold:
 - [ ] `pnpm format` produces no diff.
 - [ ] `pnpm generate` (after schema or query edits) produces no uncommitted diff.
 - [ ] `pnpm check:wiring` passes; for a new/renamed module all 6 wiring points land in the same commit as the schema.
-- [ ] For i18n changes: `siteLanguageSettings` singleton updated **before** `fallbackSiteLocales.ts`, never the reverse-only.
 - [ ] No edits to `*.gen.*` files.
 - [ ] No `--no-verify` commits, no `coalesce(...language==...)` GROQ, no hardcoded locale literals outside `web/src/i18n/`.
 - [ ] The PR description names its `Variant-Port` (see "Porting fixes between branches").

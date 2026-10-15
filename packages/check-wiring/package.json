@@ -5,9 +5,14 @@
 	"type": "module",
 	"scripts": {
 		"check": "node ./bin/check-wiring.mjs",
-		"check:typegen": "node ./bin/check-typegen.mjs"
+		"check:typegen": "node ./bin/check-typegen.mjs",
+		"typecheck": "tsc --noEmit"
 	},
 	"exports": {
 		"./manifest": "./src/manifest.mjs"
+	},
+	"devDependencies": {
+		"@types/node": "^22.20.4",
+		"typescript": "^6.0.3"
 	}
 }

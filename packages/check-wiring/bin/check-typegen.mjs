@@ -43,7 +43,7 @@ const defined = new Map();
 for (const file of await sourceFiles(QUERY_ROOT)) {
 	const source = await readFile(file, "utf8");
 	for (const [, name] of source.matchAll(DEFINE_QUERY)) {
-		defined.set(name, relative(root, file));
+		if (name) defined.set(name, relative(root, file));
 	}
 }
 

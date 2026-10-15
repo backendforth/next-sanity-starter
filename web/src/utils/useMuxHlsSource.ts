@@ -1,10 +1,9 @@
 "use client";
 
 import type { RefObject } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import {
-	computeLoopVideoTarget,
 	detectMuxLevelCodecFamily,
 	getPreferredVideoCodec,
 	type MuxLevelCodecFamily,
@@ -50,52 +49,11 @@ function needsNativeHlsPlayback(video: HTMLVideoElement): boolean {
 }
 
 /**
- * Warm-up: start fetching the hls.js chunk as soon as a video mounts, instead of first inside
- * the attach effect. That effect fires only after container measurement, so the chunk download
- * sat serially in front of the manifest/segment fetches; with the warm-up it overlaps the
- * measurement and the attach path's `import("hls.js")` resolves from the in-flight request.
- *
- * It used to run at module scope, which fires on every page whose bundle merely contains the
- * video components. In an effect it runs only where a video renders.
- *
- * Mirrors the attach path's native fallback ({@link needsNativeHlsPlayback}): native HLS never
- * touches hls.js, so those browsers skip the download entirely.
- */
-let hlsWarmedUp = false;
-function warmUpHls(): void {
-	if (hlsWarmedUp) return;
-	hlsWarmedUp = true;
-	if (needsNativeHlsPlayback(document.createElement("video"))) return;
-	void import("hls.js").catch(() => {
-		/* Fetch hiccup — the attach effect's own import retries. */
-	});
-}
-
-type UseMuxHlsSourceOptions = {
-	/**
-	 * When `false`, deselects the active audio track via `hls.audioTrack = -1`.
-	 * hls.js then stops requesting audio segments — saves the audio bandwidth for
-	 * muted-by-default loops where the visitor never unmutes. Re-enabling later
-	 * (the visitor clicks unmute) re-selects track 0 and audio starts loading
-	 * within ~1–2 s.
-	 *
-	 * Only takes effect with the hls.js backend; Native HLS (Safari/iOS) keeps
-	 * default behavior because the platform manages audio tracks itself.
-	 */
-	audioEnabled: boolean;
-	/**
-	 * Intrinsic video size: levels are picked for `object-fit: cover`
-	 * ({@link computeLoopVideoTarget}). Unknown → the element's own box.
-	 */
-	objectCoverVideoPx?: { width: number; height: number };
-};
-
-/**
  * Attach a Mux HLS (`.m3u8`) source to a `<video>` element, tuned for short silent loops:
  * AV1 → HEVC → H.264 renditions where the manifest and browser support them, a locked level
  * (no ABR upswitch) and a loop-sized buffer.
  *
- * Prefers **`hls.js`** (MSE, level cap to player size) — on desktop Safari too.
+ * Prefers **`hls.js`** (MSE) — on desktop Safari too.
  * Falls back to **native HLS** only where MSE is missing (iPhone). `hls.js` is imported
  * lazily so it only ships when a loop video is used.
  *
@@ -106,23 +64,7 @@ export function useMuxHlsSource(
 	videoRef: RefObject<HTMLVideoElement | null>,
 	playbackId: string | null,
 	src: string,
-	{ audioEnabled, objectCoverVideoPx }: UseMuxHlsSourceOptions,
 ): void {
-	const hlsRef = useRef<HlsInstance | null>(null);
-	useEffect(warmUpHls, []);
-	/* Exposed by the lifecycle effect so the ResizeObserver effect can re-pick
-	 * the rendition without rebuilding hls. `null` until the manifest is parsed
-	 * and after `detach()`. */
-	const applyPickRef = useRef<
-		((opts?: { upgradeOnly?: boolean }) => void) | null
-	>(null);
-	/* Mirror volatile opts into refs so the lifecycle effect dep list stays fixed
-	 * (React warns when dep array length changes across HMR / renders). */
-	const audioEnabledRef = useRef(audioEnabled);
-	audioEnabledRef.current = audioEnabled;
-	const objectCoverVideoPxRef = useRef(objectCoverVideoPx);
-	objectCoverVideoPxRef.current = objectCoverVideoPx;
-
 	useEffect(() => {
 		const video = videoRef.current;
 		if (!playbackId || !video) return;
@@ -138,21 +80,8 @@ export function useMuxHlsSource(
 				hls.destroy();
 				hls = null;
 			}
-			hlsRef.current = null;
-			applyPickRef.current = null;
 			video.removeAttribute("src");
 			video.load();
-		};
-
-		const syncAudioTrack = () => {
-			if (!hls) return;
-			const tracks = hls.audioTracks;
-			if (!tracks || tracks.length === 0) return;
-			if (audioEnabledRef.current) {
-				if (hls.audioTrack < 0) hls.audioTrack = 0;
-			} else if (hls.audioTrack >= 0) {
-				hls.audioTrack = -1;
-			}
 		};
 
 		/* Native-HLS fallback (iPhone — no MSE). Skips the hls.js dynamic import
@@ -197,8 +126,6 @@ export function useMuxHlsSource(
 					 * Desktop Safari has plain `MediaSource`; iPhone has only MMS and
 					 * takes the native path above anyway. */
 					preferManagedMediaSource: false,
-					capLevelToPlayerSize: true,
-					ignoreDevicePixelRatio: false,
 					videoPreference: {
 						videoCodec: muxCodecFamilyToHlsPreference(preferredCodec),
 						allowedVideoRanges: ["SDR"],
@@ -224,60 +151,23 @@ export function useMuxHlsSource(
 					fragLoadingMaxRetry: 6,
 					levelLoadingMaxRetry: 4,
 				});
-				/* Force the first segment at the smallest level that still saturates the
-				 * player size (DPR-aware). Without this hls.js ramps up from a low level
-				 * and the viewer sees a visible quality step-up after a few seconds.
-				 *
-				 * Filters by AV1 → HEVC → H.264 before applying the resolution pick so
-				 * multi-codec manifests don't default to AVC.
-				 *
-				 * `upgradeOnly` is set by the ResizeObserver path: a container that grew
-				 * gets a higher rendition; a container that shrunk keeps the current one
-				 * (no point wasting the already-buffered higher-quality segments). */
-				const applyPick = (pickOpts?: { upgradeOnly?: boolean }) => {
-					if (!hls) return;
-					const levels = hls.levels;
-					if (!levels?.length) return;
-					const cw = video.clientWidth || window.innerWidth || 0;
-					const ch = video.clientHeight || window.innerHeight || 0;
-					let targetW = cw * (window.devicePixelRatio || 1);
-					let targetH = ch * (window.devicePixelRatio || 1);
-					const videoPx = objectCoverVideoPxRef.current;
-					if (videoPx?.width && videoPx?.height) {
-						({ targetW, targetH } = computeLoopVideoTarget({
-							containerWidthPx: cw,
-							containerHeightPx: ch,
-							devicePixelRatio: window.devicePixelRatio,
-							videoWidthPx: videoPx.width,
-							videoHeightPx: videoPx.height,
-						}));
-					}
-					const pick = pickMuxHlsLevelIndex(levels, {
-						targetW,
-						targetH,
+				/* Lock the level before the first segment. `muxLoopHlsSrc` pins the manifest to one
+				 * tier, so this picks the codec: AV1 → HEVC → H.264 as the device decodes them,
+				 * minus families that failed with a media error. */
+				const applyPick = () => {
+					if (!hls?.levels.length) return;
+					const pick = pickMuxHlsLevelIndex(hls.levels, {
 						excludedFamilies: excludedCodecFamilies,
 						preferredCodec,
 					});
-					if (typeof pick !== "number") return;
-					if (pickOpts?.upgradeOnly) {
-						const currentIdx = hls.currentLevel;
-						if (currentIdx >= 0) {
-							const currentH = levels[currentIdx]?.height ?? 0;
-							const nextH = levels[pick]?.height ?? 0;
-							if (nextH <= currentH) return;
-						}
-					}
+					if (pick === undefined) return;
 					if (hls.currentLevel === pick && hls.nextLevel === pick) return;
 					hls.startLevel = pick;
 					hls.nextLevel = pick;
 					hls.currentLevel = pick;
 					hls.autoLevelCapping = pick;
 				};
-				applyPickRef.current = applyPick;
-				hls.on(Hls.Events.MANIFEST_PARSED, () => {
-					applyPick();
-					syncAudioTrack();
-				});
+				hls.on(Hls.Events.MANIFEST_PARSED, applyPick);
 				hls.on(Hls.Events.ERROR, (_, data) => {
 					if (!data.fatal || !hls) return;
 					if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
@@ -303,12 +193,9 @@ export function useMuxHlsSource(
 						hls.startLoad();
 					} else {
 						/* Unrecoverable (KEY/MUX/OTHER): tear down hls and fall back to a
-						 * native src. Clear the shared refs too — the audio effect and the
-						 * resize re-pick must not poke the destroyed instance. */
+						 * native src. */
 						hls.destroy();
 						hls = null;
-						hlsRef.current = null;
-						applyPickRef.current = null;
 						if (!cancelled) {
 							video.src = src;
 						}
@@ -321,7 +208,6 @@ export function useMuxHlsSource(
 				}
 				hls.loadSource(src);
 				hls.attachMedia(video);
-				hlsRef.current = hls;
 				return;
 			}
 
@@ -334,47 +220,4 @@ export function useMuxHlsSource(
 			detach();
 		};
 	}, [playbackId, src, videoRef]);
-
-	/* Toggle audio post-mount without rebuilding hls. When the manifest hasn't
-	 * been parsed yet the call is a no-op; MANIFEST_PARSED applies the latest
-	 * `audioEnabledRef` value when it fires. */
-	useEffect(() => {
-		const hls = hlsRef.current;
-		if (!hls) return;
-		const tracks = hls.audioTracks;
-		if (!tracks || tracks.length === 0) return;
-		if (audioEnabled) {
-			if (hls.audioTrack < 0) hls.audioTrack = 0;
-		} else if (hls.audioTrack >= 0) {
-			hls.audioTrack = -1;
-		}
-	}, [audioEnabled]);
-
-	/* Re-pick the rendition when the video element resizes — but only when the
-	 * resize *increased* the player size. Debounced to the trailing edge of a
-	 * resize gesture so window-drag doesn't fire a flurry of level switches.
-	 * Downscaling is intentionally ignored: the higher-quality segments are
-	 * already buffered, swapping down would waste them. */
-	useEffect(() => {
-		if (
-			typeof window === "undefined" ||
-			typeof ResizeObserver === "undefined"
-		) {
-			return;
-		}
-		const video = videoRef.current;
-		if (!video) return;
-		let timer: ReturnType<typeof setTimeout> | undefined;
-		const ro = new ResizeObserver(() => {
-			if (timer) clearTimeout(timer);
-			timer = setTimeout(() => {
-				applyPickRef.current?.({ upgradeOnly: true });
-			}, 250);
-		});
-		ro.observe(video);
-		return () => {
-			ro.disconnect();
-			if (timer) clearTimeout(timer);
-		};
-	}, [videoRef]);
 }

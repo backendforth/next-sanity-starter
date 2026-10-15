@@ -38,7 +38,7 @@ type UiLabels = {
 
 export type UiLabelKey = keyof UiLabels;
 
-const LABELS: Record<string, UiLabels> = {
+const LABELS: Record<string, UiLabels> & { en: UiLabels } = {
 	de: {
 		mainNav: "Hauptnavigation",
 		footer: "Fußzeile",

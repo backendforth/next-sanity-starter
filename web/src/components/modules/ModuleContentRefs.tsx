@@ -6,6 +6,7 @@ import type { SiteLocaleConfig } from "@/src/i18n/fallbackSiteLocales";
 import { createLanguagePathUtils } from "@/src/i18n/siteLocalePathUtils";
 import { uiLabel } from "@/src/i18n/uiLabels";
 
+import { ContentRefList } from "./ContentRefList";
 import { LazyModuleContentRefsClient } from "./LazyModuleContentRefsClient";
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
@@ -35,9 +36,10 @@ type Props = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
- * `module.contentRefs` — resolved reference list with optional project filters.
- * Document-level i18n: references are GROQ-filtered to the active locale and
- * carry plain `title` / `slug` strings (no locale picking needed).
+ * `module.contentRefs` — resolved reference list. Only a project list has controls (sort, category
+ * filters) and loads the client part; every other list is static markup from the server.
+ * Document-level i18n: references are GROQ-filtered to the active locale and carry plain
+ * `title` / `slug` strings.
  */
 export function ModuleContentRefs({
 	module,
@@ -67,7 +69,6 @@ export function ModuleContentRefs({
 		}));
 	/* In Presentation the value carries invisible stega markers; compare the clean string. */
 	const isProjectList = stegaClean(module.sourceScope) === "projects";
-	const showCategoryFilters = module.showProjectFilters !== false;
 
 	if (items.length === 0) {
 		return null;
@@ -76,13 +77,16 @@ export function ModuleContentRefs({
 	return (
 		<section className={moduleSectionClassName}>
 			{heading ? <h2 className={moduleHeadingClassName}>{heading}</h2> : null}
-			<LazyModuleContentRefsClient
-				locale={locale}
-				items={items}
-				isProjectList={isProjectList}
-				showCategoryFilters={showCategoryFilters}
-				priority={priority}
-			/>
+			{isProjectList ? (
+				<LazyModuleContentRefsClient
+					locale={locale}
+					items={items}
+					showCategoryFilters={module.showProjectFilters !== false}
+					priority={priority}
+				/>
+			) : (
+				<ContentRefList items={items} priority={priority} />
+			)}
 		</section>
 	);
 }

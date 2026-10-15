@@ -136,8 +136,3 @@ export function useLanguage() {
 	}
 	return ctx;
 }
-
-/** `useLanguage()` for shared components that may render outside a `LanguageProvider`. */
-export function useOptionalLanguage() {
-	return useContext(LanguageContext);
-}

@@ -30,7 +30,6 @@ export function ContentRefList({
 							imagePayload={previewImage}
 							alt={label}
 							fillParent
-							objectFit="cover"
 							quality={75}
 							/* One column, `sm:` two, `lg:` three (`breakpoints.css`). */
 							sizes="(max-width: 899px) 100vw, (max-width: 1439px) 50vw, 33vw"

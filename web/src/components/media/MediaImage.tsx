@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
 	cssObjectPositionFromSanityImageField,
@@ -21,10 +21,6 @@ type MediaImageProps = {
 	caption?: string | null;
 	/** Full-bleed in parent (no fixed aspect ratio) — e.g. intro background. */
 	fillParent?: boolean;
-	/**
-	 * `object-fit` for the image. Hotspot from Sanity sets `object-position` when present.
-	 */
-	objectFit?: CSSProperties["objectFit"];
 	/**
 	 * LCP candidate — use for the first visible image above the fold (e.g. hero).
 	 *
@@ -77,7 +73,6 @@ export function MediaImage({
 	alt,
 	caption,
 	fillParent = false,
-	objectFit = "cover",
 	priority = false,
 	sizes = "100vw",
 	quality,
@@ -146,7 +141,7 @@ export function MediaImage({
 					!priority && loaded && "img-loaded",
 				)}
 				style={{
-					objectFit,
+					objectFit: "cover",
 					objectPosition: cssObjectPositionFromSanityImageField(image),
 				}}
 			/>

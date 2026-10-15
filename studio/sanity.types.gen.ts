@@ -140,7 +140,7 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: InternationalizedArrayText;
-    privacyPolicy: Link;
+    privacyPolicy?: Link;
     acceptAllBtn?: InternationalizedArrayString;
     acceptNecessaryBtn?: InternationalizedArrayString;
     showPreferencesBtn?: InternationalizedArrayString;

@@ -633,7 +633,7 @@
                 "type": "inline",
                 "name": "link"
               },
-              "optional": false
+              "optional": true
             },
             "acceptAllBtn": {
               "type": "objectAttribute",

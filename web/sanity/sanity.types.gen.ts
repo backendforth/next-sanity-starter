@@ -140,7 +140,7 @@ export type SiteCookieBanner = {
   useCookieBanner?: boolean;
   consentModal?: {
     description?: InternationalizedArrayText;
-    privacyPolicy: Link;
+    privacyPolicy?: Link;
     acceptAllBtn?: InternationalizedArrayString;
     acceptNecessaryBtn?: InternationalizedArrayString;
     showPreferencesBtn?: InternationalizedArrayString;
@@ -3800,7 +3800,8 @@ export type SiteChromeQueryResult = {
                   path: string;
                 }
               | null;
-          };
+          }
+        | null;
       acceptAllBtn: InternationalizedArrayString | null;
       acceptNecessaryBtn: InternationalizedArrayString | null;
       showPreferencesBtn: InternationalizedArrayString | null;

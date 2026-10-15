@@ -54,7 +54,7 @@ export const trackerGoogleAnalytics = defineType({
       name: "cookieBannerDescription",
       title: "Cookie banner description",
       description:
-        "Shown in every language. Empty = the default text in the visitor's language.",
+        "Shown in every language. Empty = the default text in the banner's language.",
       type: "text",
       rows: 2,
     }),

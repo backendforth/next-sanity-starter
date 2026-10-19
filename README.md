@@ -174,7 +174,7 @@ No schema, query or component changes. [`web/src/i18n/README.md`](web/src/i18n/R
 
 ### Datasets
 
-A dataset is a separate content store inside the Sanity project. The starter uses `production` for the live site and `development` for local work and previews. Site and Studio pick their dataset once, when they build or when the dev server starts (`web/next.config.ts`, `studio/sanity.cli.ts`), and write the name into their code:
+A dataset is a separate content store inside the Sanity project. The starter uses `production` for the live site and `development` for local work, deploy previews and staging. Site and Studio pick their dataset once, when they build or when the dev server starts (`web/next.config.ts`, `studio/sanity.cli.ts`), and write the name into their code:
 
 1. `SANITY_STUDIO_DATASET`, if set, wins.
 2. Otherwise the candidates are tried in order. `SANITY_STUDIO_DEPLOYMENT_TARGET` sets the order: `production` tries production first, `development` or `preview` tries development first, any other value (e.g. `staging`) tries that dataset first. Without it, a Netlify or Vercel production build tries production first and everything else development first, a local `next build` or `sanity build` included.
@@ -259,7 +259,7 @@ Site and Studio are two Netlify sites built from the same repository. Each one b
 4. Add the site's origin to Sanity's CORS origins, with credentials (see [Local setup](#local-setup), step 5).
 5. Set up the [revalidate webhook](#revalidate-webhook).
 
-Production deploys read the `production` dataset, deploy previews and branch deploys `development`. [Dataset per site](#dataset-per-site) changes that.
+Production deploys read the `production` dataset, deploy previews and branch deploys `development`. [Dataset per site](#dataset-per-site) changes that, [Staging](#staging) adds the `development` branch.
 
 ### Revalidate webhook
 
@@ -369,7 +369,7 @@ Change any document in the Studio and publish it. Then open the webhook in sanit
 #### Later
 
 - **Change the secret:** generate a new one, put it into Netlify and the webhook, redeploy. Publishes in between fail with `401`; publish once more afterwards.
-- **Another site** on its own dataset (e.g. staging) gets its own webhook with its own secret. Deploy previews need none.
+- **Another site** on its own dataset gets its own webhook with its own secret. Staging and deploy previews need none.
 - **A new document type** goes into the filter and into `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts).
 
 The filter lists every document type the site shows, `translation.metadata` for the links between translations, and image and Mux assets so new alt text and poster frames reach the site. The projection sends only the type; `WEBHOOK_TAG_MAP` maps it to the cache tags to expire. Details: [`web/README.md`](web/README.md) → "Freshness".
@@ -387,6 +387,16 @@ The filter lists every document type the site shows, `translation.metadata` for 
    ```
 5. On the web site, set `NEXT_PUBLIC_SANITY_STUDIO_URL` to the Studio's URL and redeploy it, so Presentation can frame the site and click-to-edit opens this Studio.
 6. Register the Studio with Sanity: `pnpm studio:register` lists its URL in the project and uploads the schema (`--dry-run` to preview). With `SANITY_AUTH_TOKEN` on the Studio site, every production deploy does this on its own.
+
+### Staging
+
+A project has two long-lived branches: `main` is production, `development` is staging ([`AGENTS.md`](AGENTS.md) → "Projects built from this starter"). Staging is a branch deploy of `development` on both Netlify projects. Branch deploys read and edit the `development` dataset without a setting, `robots.txt` keeps search engines out, and without the webhook secret `SanityLive` keeps open pages fresh.
+
+1. On the web and the Studio project, under **Continuous deployment → Branches and deploy contexts → Branch deploys**, add `development`. Its deploys are at `https://development--<project>.netlify.app`.
+2. Point the staging site and the staging Studio at each other with a branch value for `development` (see [Dataset per site](#dataset-per-site) for how): on the web project `NEXT_PUBLIC_SANITY_STUDIO_URL` = `https://development--<studio-project>.netlify.app`, on the Studio project `SANITY_STUDIO_PREVIEW_ORIGIN` = `https://development--<web-project>.netlify.app`.
+3. Add both staging origins to Sanity's CORS origins with `--credentials`.
+4. Fill `development` with the production content: `pnpm studio:sync-prod-to-dev` ([Refresh development from production](#refresh-development-from-production)).
+5. Push `development`. Both projects build it.
 
 ### Dataset per site
 
@@ -413,8 +423,8 @@ To use another dataset, set `SANITY_STUDIO_DATASET` in that site's environment. 
 netlify env:set SANITY_STUDIO_DATASET production --context production --site <studio-site>
 netlify env:set SANITY_STUDIO_DATASET development --context deploy-preview branch-deploy --site <studio-site>
 
-# Site: the `staging` branch reads a `staging` dataset
-netlify env:set SANITY_STUDIO_DATASET staging --context branch:staging --site <web-site>
+# Site: the `development` branch (staging) gets its own value
+netlify env:set SANITY_STUDIO_DATASET development --context branch:development --site <web-site>
 
 # Show what a context gets
 netlify env:get SANITY_STUDIO_DATASET --context production --site <studio-site>
@@ -500,10 +510,23 @@ Every migration can run twice without harm. [`studio/scripts/README.md`](studio/
 
 ## Starting a new project
 
-1. Fork the repository or use it as a template, and pick a [branch](#choose-a-branch).
-2. Delete the workflows in `.github/workflows/` other than `ci.yml`: Claude review, Dependabot review and auto-merge and the Slack notifications need the starter organisation's secrets.
-3. Keep the READMEs in subfolders. They document the code next to them.
-4. Go through [Local setup](#local-setup) and [Deploy](#deploy).
+1. Copy one [branch](#choose-a-branch) into a new repository, without its history, as its `main`, and start `development` from it:
+   ```bash
+   git clone --depth 1 --branch <branch> https://github.com/backendforth/next-sanity-starter.git my-site
+   cd my-site
+   git rev-parse --short HEAD   # the starter commit, for step 2
+   rm -rf .git
+   git init -b main
+   git add -A
+   git commit -m "chore: copy next-sanity-starter <branch> at <commit>"
+   git switch -c development
+   ```
+   Add your GitHub repository as `origin` and push both branches.
+2. Add the "This repository" block to the top of `AGENTS.md`, with the starter branch and commit ([`AGENTS.md`](AGENTS.md) → "Projects built from this starter").
+3. Delete the workflows in `.github/workflows/` other than `ci.yml`: Claude review, Dependabot review and auto-merge and the Slack notifications need the starter organisation's secrets.
+4. Delete the `variant/document-level` entries in `.github/dependabot.yml` and the `Variant-Port` line in `.github/pull_request_template.md`. A project has no variant.
+5. Keep the READMEs in subfolders. They document the code next to them.
+6. Go through [Local setup](#local-setup) and [Deploy](#deploy), [Staging](#staging) included.
 
 ---
 

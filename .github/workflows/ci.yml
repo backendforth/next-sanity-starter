@@ -3,7 +3,9 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, variant/document-level]
+    # `development` is a project's staging branch (AGENTS.md → "Projects built
+    # from this starter"); the starter itself has none.
+    branches: [main, development, variant/document-level]
 
 permissions:
   contents: read

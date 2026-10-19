@@ -291,7 +291,7 @@ Always link to these; never duplicate their content.
 
 | README | Covers |
 |---|---|
-| `README.md` (root) | Setup from clone to production: layout, local setup, how the site works, env, deploy (dataset per site, webhook), day-to-day commands. |
+| `README.md` (root) | Setup from clone to production: layout, local setup, how the site works, env, deploy (staging, dataset per site, webhook), day-to-day commands. |
 | `studio/README.md` | Studio architecture, schema/structure wiring. |
 | `studio/schemas/README.md` | Adding schema types; module details beyond the wiring checklist. |
 | `studio/config/README.md` | Structure + Presentation wiring. |
@@ -354,6 +354,39 @@ Without that line, ten fixes from #182, #190 and #191 reached only `main` in 202
 4. Re-read the notes above and fix a row if the branch contradicts it.
 5. Once both are merged, `git diff main variant/document-level -- AGENTS.md .github/copilot-instructions.md` must be empty.
 
+## Projects built from this starter
+
+A client project starts as a copy of one starter branch without its history and lives on from there. This section is for the copy; the starter itself has no staging branch.
+
+### "This repository" block
+
+Right under the title of the copy's `AGENTS.md`, add this block filled in, so every agent reads the overrides first. Keep the i18n line only in a copy of `variant/document-level`.
+
+```markdown
+## This repository
+
+<project> is <what it is>, copied from `backendforth/next-sanity-starter` at `<branch>` `<commit>` (<date>) without its history. The rest of this file is the starter's and describes both starter branches. Read it with these overrides:
+
+- **i18n is document-level.** Wherever this file states the field-level model (TL;DR, principle 5, "i18n — the multilingual structure", the definition of done), the `variant/document-level` column of "Branch-specific notes" and "Variant-branch rules" win: one document per language, queries filter `language == $locale`, content fields are plain.
+- **Two long-lived branches: `main` (production) and `development` (staging).** See "Branches in a project". There is no variant branch to port to, and PRs carry no `Variant-Port` line.
+- **Starter changes arrive by cherry-pick.** There is no shared history with the starter, so `git merge` cannot be used. See "Syncing from the starter".
+```
+
+### Branches in a project
+
+- `main` is production: Netlify production deploys of the web and the Studio project, on the `production` dataset.
+- `development` is staging: a Netlify branch deploy on both projects, on the `development` dataset. Branch deploys pick that dataset without a setting (README → "Datasets").
+- Feature branches start from `development` and merge back into it by PR. A release is a PR from `development` into `main`.
+- Dependabot reads its config from the default branch, `main`, and opens its PRs there. After merging one, merge `main` back into `development`.
+- CI runs on every PR and on pushes to `main` and `development`.
+
+### Syncing from the starter
+
+1. `git fetch starter <branch>`. Once per clone, add the remote before the first fetch: `git remote add starter https://github.com/backendforth/next-sanity-starter.git`.
+2. `git log --oneline <anchor>..starter/<branch>` lists what is new; the anchor is the starter commit in "This repository".
+3. On a branch from `development`, `git cherry-pick -x` what applies. Skip commits that only concern the starter's two-branch process.
+4. Open the PR against `development` and move the anchor in "This repository" in the same PR.
+
 ## Definition of done
 
 Before declaring a task complete, all of the following must hold:
@@ -364,4 +397,4 @@ Before declaring a task complete, all of the following must hold:
 - [ ] `pnpm check:wiring` passes; for a new/renamed module all 6 wiring points land in the same commit as the schema.
 - [ ] No edits to `*.gen.*` files.
 - [ ] No `--no-verify` commits, no `coalesce(...language==...)` GROQ, no hardcoded locale literals outside `web/src/i18n/`.
-- [ ] The PR description names its `Variant-Port` (see "Porting fixes between branches").
+- [ ] In the starter, the PR description names its `Variant-Port` (see "Porting fixes between branches").

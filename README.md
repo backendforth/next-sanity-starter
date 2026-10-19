@@ -10,7 +10,7 @@ A starter for multilingual websites edited in Sanity: a **Next.js 16** site and 
 [![Biome](https://img.shields.io/badge/Biome-2-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
 [![License: ISC](https://img.shields.io/badge/license-ISC-green)](LICENSE)
 
-This README takes you from a fresh clone to a site in production. Read it in order once: each section builds on the ones before. Details live next to the code, see [Further reading](#further-reading).
+This README takes you from a fresh clone to a site in production. Read it in order once: each section builds on the ones before. For a new project, the [setup checklist](#setup-checklist) lists every step to tick off. Details live next to the code, see [Further reading](#further-reading).
 
 ## Contents
 
@@ -23,7 +23,7 @@ This README takes you from a fresh clone to a site in production. Read it in ord
 7. [Environment variables](#environment-variables)
 8. [Deploy](#deploy)
 9. [Day-to-day work](#day-to-day-work)
-10. [Starting a new project](#starting-a-new-project)
+10. [Setup checklist](#setup-checklist)
 11. [Further reading](#further-reading)
 
 ---
@@ -404,7 +404,7 @@ To use another dataset, set `SANITY_STUDIO_DATASET` in that site's environment. 
 
 1. Open the site → **Project configuration → Environment variables → Add a variable**.
 2. Key `SANITY_STUDIO_DATASET`. Choose **Different value for each deploy context** and enter a dataset per context. A single branch gets its own value with **Add branch value**.
-3. Save, then **Deploys → Trigger deploy**. The name is written into the code at build, so only a new deploy picks it up.
+3. Save, then **Deploys → Trigger deploy**. The name is written into the code at build, so only a new deploy picks it up. A branch value takes effect with the next deploy of that branch.
 
 **With the Netlify CLI** (`pnpm add -g netlify-cli`, then `netlify login`):
 
@@ -498,12 +498,115 @@ Every migration can run twice without harm. [`studio/scripts/README.md`](studio/
 
 ---
 
-## Starting a new project
+## Setup checklist
 
-1. Fork the repository or use it as a template, and pick a [branch](#choose-a-branch).
-2. Delete the workflows in `.github/workflows/` other than `ci.yml`: Claude review, Dependabot review and auto-merge and the Slack notifications need the starter organisation's secrets.
-3. Keep the READMEs in subfolders. They document the code next to them.
-4. Go through [Local setup](#local-setup) and [Deploy](#deploy).
+Every step for a new project, in order. Each one links to the section with the details. To tick them off, paste the list into the new repository's first issue, where GitHub makes the boxes clickable.
+
+`sanity` commands run from the repository root and use your `sanity login`. `<…>` marks a value you fill in.
+
+### 1. Repository
+
+- [ ] Create the repository from this one, as a template or a fork, and keep the [branch](#choose-a-branch) you need.
+- [ ] Delete the workflows in `.github/workflows/` other than `ci.yml`. Claude review, Dependabot review and auto-merge and the Slack notifications need the starter organisation's secrets.
+- [ ] Install: `pnpm install`.
+
+### 2. Sanity project
+
+- [ ] Log in with the account that should own the project: `pnpm --filter studio exec sanity login`.
+- [ ] Create the project with a public `production` dataset, and note the project id it prints. `sanity organizations list` shows the organization ids.
+  ```bash
+  pnpm --filter studio exec sanity projects create "<project name>" --organization <org-id> --dataset production --dataset-visibility public
+  ```
+- [ ] Copy the env files and set `SANITY_STUDIO_PROJECT_ID` in both. The commands below read it from `studio/.env`.
+  ```bash
+  cp web/.env.example web/.env.local
+  cp studio/.env.example studio/.env
+  ```
+- [ ] Create the `development` dataset. Local work, deploy previews and staging use it.
+  ```bash
+  pnpm --filter studio exec sanity datasets create development --visibility public
+  ```
+  Both datasets are public because the site reads published content without a token. Drafts stay private.
+- [ ] Invite the team as Administrators, one command per person:
+  ```bash
+  pnpm --filter studio exec sanity users invite <email> --role administrator
+  ```
+- [ ] Allow the local origins, with credentials:
+  ```bash
+  pnpm --filter studio exec sanity cors add http://localhost:3333 --credentials
+  pnpm --filter studio exec sanity cors add http://localhost:3000 --credentials
+  ```
+- [ ] Create a Viewer token and set it as `SANITY_API_READ_TOKEN` in `web/.env.local`. Preview and click-to-edit need it, and the web project on Netlify gets the same value.
+  ```bash
+  pnpm --filter studio exec sanity tokens create "Preview" --role viewer
+  ```
+
+### 3. First run
+
+- [ ] Start site and Studio: `pnpm dev`.
+- [ ] In the Studio, set the languages and publish Home and a first page ([Local setup](#local-setup), step 7).
+- [ ] Fill in **Settings** (site title, SEO, favicon) and **Navigation**.
+- [ ] If the site tracks visitors: **Analytics & Tracking** and **Cookie Banner** ([Analytics and cookie consent](#analytics-and-cookie-consent)).
+- [ ] If the site has video: the Mux token at the first upload ([Video](#video)).
+
+### 4. Production on Netlify
+
+Web project ([Web on Netlify](#web-on-netlify)):
+
+- [ ] Import the repository as a new Netlify project, all directories empty.
+- [ ] Set `SANITY_STUDIO_PROJECT_ID` and `SANITY_API_READ_TOKEN`.
+- [ ] Add the domain under **Domain management**, and its origin to Sanity CORS:
+  ```bash
+  pnpm --filter studio exec sanity cors add https://<domain> --credentials
+  ```
+
+Studio project ([Studio on Netlify](#studio-on-netlify)):
+
+- [ ] Import the repository a second time, package directory `studio`.
+- [ ] Set `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_PREVIEW_ORIGIN` (`https://<domain>`) and `SANITY_STUDIO_HOSTING_URL` (`https://studio.<domain>`).
+- [ ] Add `studio.<domain>` under **Domain management**, and its origin to Sanity CORS with `--credentials`.
+- [ ] Let production deploys register the Studio: create a token and set it as `SANITY_AUTH_TOKEN` on the Studio project, then redeploy.
+  ```bash
+  pnpm --filter studio exec sanity tokens create "Netlify Studio" --role deploy-studio
+  ```
+
+Connect the two:
+
+- [ ] On the web project, set `NEXT_PUBLIC_SANITY_STUDIO_URL` to `https://studio.<domain>` and redeploy.
+- [ ] Set up the [revalidate webhook](#revalidate-webhook): secret on the web project's Production context, webhook in Sanity, redeploy, test.
+
+### 5. Staging
+
+Staging is a `staging` branch that both Netlify projects deploy as a branch deploy. Like deploy previews, it reads and edits `development`, so it needs no dataset setting. `robots.txt` keeps search engines out, and without the webhook secret `SanityLive` refreshes open pages ([Freshness](#freshness)).
+
+- [ ] On both Netlify projects, allow branch deploys for `staging`: **Project configuration → Developer settings → Continuous deployment → Branches and deploy contexts → Configure → Branch deploys → Let me add individual branches**, enter `staging`.
+- [ ] Point the staging site and the staging Studio at each other. Their URLs will be `https://staging--<web-project>.netlify.app` and `https://staging--<studio-project>.netlify.app`. In the UI this is a branch value per variable ([Dataset per site](#dataset-per-site)), or with the Netlify CLI:
+  ```bash
+  netlify env:set NEXT_PUBLIC_SANITY_STUDIO_URL https://staging--<studio-project>.netlify.app --context branch:staging --site <web-project>
+  netlify env:set SANITY_STUDIO_PREVIEW_ORIGIN https://staging--<web-project>.netlify.app --context branch:staging --site <studio-project>
+  ```
+- [ ] Add both staging origins to Sanity CORS with `--credentials`.
+- [ ] Copy the production content into `development`:
+  ```bash
+  pnpm studio:sync-prod-to-dev
+  ```
+  It asks before it writes. Documents with the same id are replaced, documents that only exist in `development` stay. Local work and deploy previews share the dataset and see the copy too.
+- [ ] Create the branch from the default branch and push it. Both projects build their first staging deploy.
+  ```bash
+  git switch -c staging
+  git push -u origin staging
+  ```
+- [ ] On the web project, add a build hook for the `staging` branch: **Project configuration → Developer settings → Continuous deployment → Build hooks → Add build hook**. After every later sync, call it, so staging renders from the new content. A push that changes none of the site's files skips the build, a build hook always runs.
+  ```bash
+  curl -X POST -d '{}' https://api.netlify.com/build_hooks/<hook-id>
+  ```
+  Keep the hook URL out of the repository: anyone who has it can start builds.
+
+### 6. Before launch
+
+- [ ] Publish a change in production. The webhook's attempt log shows `200 {"revalidated":true,…}`, and the site shows the change without a deploy.
+- [ ] `https://<domain>/robots.txt` allows crawling, `https://staging--<web-project>.netlify.app/robots.txt` disallows it.
+- [ ] **Presentation** in the production Studio opens the site, and click-to-edit jumps to the right field.
 
 ---
 

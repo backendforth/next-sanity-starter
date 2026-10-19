@@ -8,7 +8,7 @@
 # Then add the Studio's domain under Domain management, and the same origin to the Sanity
 # project's CORS origins **with credentials** (root `README.md` → "Studio on Netlify").
 #
-# Set in Site configuration → Environment variables. `SANITY_STUDIO_*` values are inlined
+# Set in Project configuration → Environment variables. `SANITY_STUDIO_*` values are inlined
 # into the Studio bundle at BUILD time, so a change needs a redeploy.
 #   SANITY_STUDIO_PROJECT_ID      — required
 #   SANITY_STUDIO_DATASET         — optional, per deploy context (see below)

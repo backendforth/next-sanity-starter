@@ -254,7 +254,7 @@ Site and Studio are two Netlify sites built from the same repository. Each one b
 ### Web on Netlify
 
 1. In Netlify, import the repository as a new project. Leave base directory and package directory empty: the root [`netlify.toml`](netlify.toml) sets build command, publish directory and the Next.js plugin.
-2. Under **Site configuration → Environment variables**, set `SANITY_STUDIO_PROJECT_ID` and `SANITY_API_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL`, `CSP_ANALYTICS_ORIGINS`. `SANITY_REVALIDATE_SECRET` comes with the webhook in step 5.
+2. Under **Project configuration → Environment variables**, set `SANITY_STUDIO_PROJECT_ID` and `SANITY_API_READ_TOKEN`. Optional: `NEXT_PUBLIC_SITE_URL`, `CSP_ANALYTICS_ORIGINS`. `SANITY_REVALIDATE_SECRET` comes with the webhook in step 5.
 3. Deploy, then add your domain under **Domain management**.
 4. Add the site's origin to Sanity's CORS origins, with credentials (see [Local setup](#local-setup), step 5).
 5. Set up the [revalidate webhook](#revalidate-webhook).
@@ -299,7 +299,7 @@ Every run makes a new secret. Generate it once, paste it into Netlify (step 2) a
 
 #### 2. Add the secret to the web site on Netlify
 
-1. Open the web site on Netlify → **Site configuration → Environment variables → Add a variable → Add a single variable**.
+1. Open the web site on Netlify → **Project configuration → Environment variables → Add a variable → Add a single variable**.
 2. Fill in:
 
    | Field | Value |
@@ -402,7 +402,7 @@ To use another dataset, set `SANITY_STUDIO_DATASET` in that site's environment. 
 
 **In the Netlify UI:**
 
-1. Open the site → **Site configuration → Environment variables → Add a variable**.
+1. Open the site → **Project configuration → Environment variables → Add a variable**.
 2. Key `SANITY_STUDIO_DATASET`. Choose **Different value for each deploy context** and enter a dataset per context. A single branch gets its own value with **Add branch value**.
 3. Save, then **Deploys → Trigger deploy**. The name is written into the code at build, so only a new deploy picks it up.
 

@@ -382,7 +382,7 @@ Right under the title of the copy's `AGENTS.md`, add this block filled in, so ev
 
 ### Syncing from the starter
 
-1. `git remote add starter https://github.com/backendforth/next-sanity-starter.git && git fetch starter <branch>`
+1. `git fetch starter <branch>`. Once per clone, add the remote before the first fetch: `git remote add starter https://github.com/backendforth/next-sanity-starter.git`.
 2. `git log --oneline <anchor>..starter/<branch>` lists what is new; the anchor is the starter commit in "This repository".
 3. On a branch from `development`, `git cherry-pick -x` what applies. Skip commits that only concern the starter's two-branch process.
 4. Open the PR against `development` and move the anchor in "This repository" in the same PR.

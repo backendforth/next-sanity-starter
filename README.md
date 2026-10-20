@@ -230,7 +230,7 @@ Local values go into `web/.env.local` and `studio/.env`, deployed ones into each
 |---|---|---|---|
 | both | `SANITY_STUDIO_PROJECT_ID` | always | Sanity project id. Build |
 | both | `SANITY_STUDIO_DATASET` | no | Fixes the dataset, see [Datasets](#datasets). Build |
-| both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | no | Dataset order when no dataset is set. On the site it also decides whether the deploy counts as production for `robots.txt` and canonical URLs. Build |
+| both | `SANITY_STUDIO_DEPLOYMENT_TARGET` | [staging](#staging) | Dataset order when no dataset is set. On the site it also decides whether the deploy counts as production for `robots.txt` and canonical URLs. Build |
 | both | `SANITY_STUDIO_DATASET_DEVELOPMENT`, `SANITY_STUDIO_DATASET_PRODUCTION` | no | Only if your datasets have other names |
 | site | `SANITY_API_READ_TOKEN` | for preview | Viewer token for Draft Mode and Presentation. Secret |
 | site | `SANITY_REVALIDATE_SECRET` | production | Verifies the [revalidate webhook](#revalidate-webhook). Production context only, empty locally. Secret |
@@ -259,7 +259,7 @@ Site and Studio are two Netlify sites built from the same repository. Each one b
 4. Add the site's origin to Sanity's CORS origins, with credentials (see [Local setup](#local-setup), step 5).
 5. Set up the [revalidate webhook](#revalidate-webhook).
 
-Production deploys read the `production` dataset, deploy previews and branch deploys `development`. [Dataset per site](#dataset-per-site) changes that, [Staging](#staging) adds the `development` branch.
+Production deploys read the `production` dataset, deploy previews and branch deploys `development`. [Dataset per site](#dataset-per-site) changes that. [Staging](#staging) builds the `development` branch in two more projects.
 
 ### Revalidate webhook
 
@@ -323,7 +323,7 @@ Why production only: the webhook calls only the production address. Deploy previ
    | Name | e.g. `Revalidate production site` |
    | Description | optional |
    | URL | `https://<your-site>/api/revalidate` |
-   | Dataset | the dataset this site reads, usually `production` |
+   | Dataset | the dataset this site reads: `production`, `development` for [staging](#staging). Never `*` |
    | Trigger on | Create, Update, Delete |
    | Filter | the condition below, exactly as shown, without `*[ ]` around it |
    | Projection | `{_type}`, with the curly braces |
@@ -369,7 +369,7 @@ Change any document in the Studio and publish it. Then open the webhook in sanit
 #### Later
 
 - **Change the secret:** generate a new one, put it into Netlify and the webhook, redeploy. Publishes in between fail with `401`; publish once more afterwards.
-- **Another site** on its own dataset gets its own webhook with its own secret. Staging and deploy previews need none.
+- **Another site** on its own dataset, [staging](#staging) included, gets its own webhook with its own secret. Deploy previews need none.
 - **A new document type** goes into the filter and into `WEBHOOK_TAG_MAP` in [`web/sanity/cacheTags.ts`](web/sanity/cacheTags.ts).
 
 The filter lists every document type the site shows, `translation.metadata` for the links between translations, and image and Mux assets so new alt text and poster frames reach the site. The projection sends only the type; `WEBHOOK_TAG_MAP` maps it to the cache tags to expire. Details: [`web/README.md`](web/README.md) → "Freshness".
@@ -390,13 +390,28 @@ The filter lists every document type the site shows, `translation.metadata` for 
 
 ### Staging
 
-A project has two long-lived branches: `main` is production, `development` is staging ([`AGENTS.md`](AGENTS.md) → "Projects built from this starter"). Staging is a branch deploy of `development` on both Netlify projects. Branch deploys read and edit the `development` dataset without a setting, `robots.txt` keeps search engines out, and without the webhook secret `SanityLive` keeps open pages fresh.
+A project has two long-lived branches: `main` is production, `development` is staging ([`AGENTS.md`](AGENTS.md) → "Projects built from this starter"). Staging runs as two more Netlify projects that build `development`:
 
-1. On the web and the Studio project, under **Continuous deployment → Branches and deploy contexts → Branch deploys**, add `development`. Its deploys are at `https://development--<project>.netlify.app`.
-2. Point the staging site and the staging Studio at each other with a branch value for `development` (see [Dataset per site](#dataset-per-site) for how): on the web project `NEXT_PUBLIC_SANITY_STUDIO_URL` = `https://development--<studio-project>.netlify.app`, on the Studio project `SANITY_STUDIO_PREVIEW_ORIGIN` = `https://development--<web-project>.netlify.app`.
-3. Add both staging origins to Sanity's CORS origins with `--credentials`.
-4. Fill `development` with the production content: `pnpm studio:sync-prod-to-dev` ([Refresh development from production](#refresh-development-from-production)).
-5. Push `development`. Both projects build it.
+| | Netlify project | URL |
+|---|---|---|
+| Site | `stg-<name>` | `https://stg-<name>.netlify.app` |
+| Studio | `stg-<name>-sanity` | `https://stg-<name>-sanity.netlify.app` |
+
+Netlify treats `development` as their production branch, so they build in the production context. Both need `SANITY_STUDIO_DEPLOYMENT_TARGET=development`: without it they read and edit the `production` dataset, and the site's `robots.txt` lets search engines in ([Datasets](#datasets)).
+
+1. Import the repository as `stg-<name>` with branch `development`, as in [Web on Netlify](#web-on-netlify) step 1. Set `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DEPLOYMENT_TARGET` = `development`, `SANITY_API_READ_TOKEN`, `NEXT_PUBLIC_SANITY_STUDIO_URL` = `https://stg-<name>-sanity.netlify.app`, and in the Production context `NEXT_PUBLIC_SITE_URL` = `https://stg-<name>.netlify.app`.
+2. Import it again as `stg-<name>-sanity` with branch `development` and **package directory `studio`**, as in [Studio on Netlify](#studio-on-netlify) step 1. Set `SANITY_STUDIO_PROJECT_ID`, `SANITY_STUDIO_DEPLOYMENT_TARGET` = `development` and `SANITY_STUDIO_PREVIEW_ORIGIN` = `https://stg-<name>.netlify.app`.
+3. Deploy both: **Deploys → Trigger deploy → Deploy site**. The import built before the variables existed, and changing a variable doesn't rebuild. Without this the Studio waits for the next push that touches `studio/`: the `ignore` rule in [`studio/netlify.toml`](studio/netlify.toml) skips all others.
+4. Add both URLs to Sanity's CORS origins with credentials:
+   ```bash
+   pnpm --filter studio exec sanity cors add https://stg-<name>.netlify.app --credentials
+   pnpm --filter studio exec sanity cors add https://stg-<name>-sanity.netlify.app --credentials
+   ```
+5. Give staging its own [revalidate webhook](#revalidate-webhook) and secret. Without it a publish while nobody has the staging site open stays invisible ([Freshness](#freshness)). Follow the steps there with these values:
+   - `SANITY_REVALIDATE_SECRET` on `stg-<name>`, Production context only, so its deploy previews keep `SanityLive`.
+   - Webhook URL `https://stg-<name>.netlify.app/api/revalidate`, dataset `development`. Never `*`: that fires on production publishes too.
+
+From then on every push to `development` deploys staging. Staging shares the `development` dataset with local work; [Refresh development from production](#refresh-development-from-production) copies production content into it.
 
 ### Dataset per site
 
@@ -407,6 +422,8 @@ Without any setting, both sites follow the deploy context:
 | Production | `production` |
 | Deploy previews (pull requests) | `development` |
 | Branch deploys | `development` |
+
+The [staging](#staging) projects build `development` in the production context and get `development` through `SANITY_STUDIO_DEPLOYMENT_TARGET`.
 
 To use another dataset, set `SANITY_STUDIO_DATASET` in that site's environment. You can give each deploy context, and each branch, its own value. Site and Studio are set separately.
 
@@ -423,8 +440,8 @@ To use another dataset, set `SANITY_STUDIO_DATASET` in that site's environment. 
 netlify env:set SANITY_STUDIO_DATASET production --context production --site <studio-site>
 netlify env:set SANITY_STUDIO_DATASET development --context deploy-preview branch-deploy --site <studio-site>
 
-# Site: the `development` branch (staging) gets its own value
-netlify env:set SANITY_STUDIO_DATASET development --context branch:development --site <web-site>
+# Site: one branch gets its own value
+netlify env:set SANITY_STUDIO_DATASET development --context branch:<branch> --site <web-site>
 
 # Show what a context gets
 netlify env:get SANITY_STUDIO_DATASET --context production --site <studio-site>

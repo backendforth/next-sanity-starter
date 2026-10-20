@@ -375,7 +375,7 @@ Right under the title of the copy's `AGENTS.md`, add this block filled in, so ev
 ### Branches in a project
 
 - `main` is production: Netlify production deploys of the web and the Studio project, on the `production` dataset.
-- `development` is staging: a Netlify branch deploy on both projects, on the `development` dataset. Branch deploys pick that dataset without a setting (README → "Datasets").
+- `development` is staging: two more Netlify projects, `stg-<name>` (web) and `stg-<name>-sanity` (Studio), build it as their production branch, on the `development` dataset. Both need `SANITY_STUDIO_DEPLOYMENT_TARGET=development`, or their production context reads and edits `production` and the site allows crawling (README → "Staging").
 - Feature branches start from `development` and merge back into it by PR. A release is a PR from `development` into `main`.
 - Dependabot reads its config from the default branch, `main`, and opens its PRs there. After merging one, merge `main` back into `development`.
 - CI runs on every PR and on pushes to `main` and `development`.

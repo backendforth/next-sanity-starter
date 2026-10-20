@@ -248,6 +248,7 @@ URL /[locale]/[slug]
 - Adding a language to the code fallback (`@repo/site-languages`, `en` only on purpose) instead of the Studio singleton.
 - Importing from `studio/` inside `web/` or vice versa (use a `packages/*` package).
 - Bypassing the pre-commit hook with `--no-verify`.
+- Deleting a branch by hand while open PRs are based on it — GitHub closes them instead of retargeting. First `gh pr list --base <branch>`, then `gh pr edit <n> --base <new base>` for each.
 - Editing a `*.gen.ts` file to "fix" a type error — fix the schema or the query instead.
 
 ## Cookbook

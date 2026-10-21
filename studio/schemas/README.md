@@ -81,7 +81,7 @@ Fields that take an image upload (the `media.image` image, both video posters, t
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
-1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on `page`, `home` and `work`). Every module editors add on its own; a module that only lives inline or inside another module (`module.media` in a carousel's slides) can stay out.
+1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on `page`, `home` and `work`). Every module editors add on its own; a module that only lives inline can stay out. A module needs one of the two places: inside another module alone (`module.media` in a carousel's slides) it has no type of its own.
 2. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`). **Opt-in**: only modules that belong inside text (today `module.media` and `module.carousel`).
 
 ### Adding a new module

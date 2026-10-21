@@ -13,7 +13,7 @@ Compares the module wiring documented in [`/AGENTS.md`](../../AGENTS.md) ("The m
 | Schema index | `schemas/index.ts` (import + `schemaTypes`) lists every module. |
 | Page stack | `moduleTypes`, a `case` in `ModulesRenderer`'s switch and `modulesQuery` name the same modules: a module in a document's `modules[]` is in all three, any other in none. |
 | Inline (opt-in) | The Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx` name the same modules. |
-| Used | A module outside both groups is a field or array member type of another module's schema (`type: "module.<id>"`, a carousel's slides), else it is unused and fails. |
+| Used | Every module is in the page stack or inline. Being a field or array member type of another module (`type: "module.<id>"`, a carousel's slides) doesn't count: the parent projects it to its own shape, so the module keeps no `ModuleOf` type. Such a module fails as "only inside another module", any other as unused. |
 
 In every slot, an entry for a module without a schema is stale and fails.
 

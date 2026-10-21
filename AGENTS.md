@@ -60,7 +60,7 @@ A **module** is one content block. It exists as two halves that must always evol
 
 Then `pnpm generate` and commit `studio/schema.json` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types of the page stack and of rich text, so it does not depend on either.
 
-Points 3, 5 and 6 are the **page stack**: a module editors add to a document's `modules[]` is in all three, a module that only lives inline in rich text or inside other modules (`module.media` in a carousel's slides) is in none. Taking a module out of the page stack is those three lines; `check:wiring` names any left over, and fails a module that is in neither the page stack nor inline nor another module's schema.
+Points 3, 5 and 6 are the **page stack**: a module editors add to a document's `modules[]` is in all three, a module that only lives inline in rich text is in none. Taking a module out of the page stack is those three lines; `check:wiring` names any left over. Every module stays in the page stack or inline: one that only lives inside another module (`module.media` without its own entries, only in a carousel's slides) gets projected to the parent's shape, keeps no `ModuleOf` type, and `check:wiring` fails it.
 
 ### Inline modules (opt-in)
 

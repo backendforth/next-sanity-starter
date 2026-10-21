@@ -35,10 +35,17 @@ export type RouteDocument =
 
 /** One entry of a document's `modules[]` — the union `ModulesRenderer` switches on. */
 export type ContentModule = NonNullable<HomeDocument["modules"]>[number];
-type ModuleType = ContentModule["_type"];
+/**
+ * A module wherever a query projects it: in a document's `modules[]` or inline in rich text. A
+ * module that only one of the two holds keeps its type, so leaving the page stack changes nothing
+ * for its component.
+ */
+type ProjectedModule =
+	| ContentModule
+	| Extract<RichTextMediaItem, { _type: `module.${string}` }>;
 /** The projected shape of one module type, e.g. `ModuleOf<"module.text">`. */
-export type ModuleOf<T extends ModuleType> = Extract<
-	ContentModule,
+export type ModuleOf<T extends ProjectedModule["_type"]> = Extract<
+	ProjectedModule,
 	{ _type: T }
 >;
 
@@ -48,8 +55,12 @@ export type ContentRefTarget = NonNullable<
 
 // ── Rich text ───────────────────────────────────────────────────────────────
 
+/**
+ * Taken from the project body, a document field, so it does not depend on which modules a page
+ * offers.
+ */
 type RichTextMediaItem = NonNullable<
-	NonNullable<ModuleOf<"module.text">["body"]>[number]["value"]
+	NonNullable<ProjectDocument["body"]>[number]["value"]
 >[number];
 /** A `richTextMedia` body for one locale: blocks plus the inline modules it allows. */
 export type RichTextMediaValue = RichTextMediaItem[];

@@ -58,7 +58,9 @@ A **module** is one content block. It exists as two halves that must always evol
 | 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch ends in `const unhandled: never = mod`, so a module the query returns without a `case` fails `tsc`. |
 | 6 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` — the GROQ projection (`_type == "module.<id>" => { ...fields }`), listed in `modulesQuery` in `queries/components/modules/index.ts`. |
 
-Then `pnpm generate` and commit `studio/schema.json` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types.
+Then `pnpm generate` and commit `studio/schema.json` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types of the page stack and of rich text, so it does not depend on either.
+
+Points 3, 5 and 6 are the **page stack**: a module editors add to a document's `modules[]` is in all three, a module that only lives inline in rich text or inside other modules (`module.media` in a carousel's slides) is in none. Taking a module out of the page stack is those three lines; `check:wiring` names any left over, and fails a module that is in neither the page stack nor inline nor another module's schema.
 
 ### Inline modules (opt-in)
 
@@ -149,7 +151,7 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm lint` | `biome ci .`: format, lint and import order, no writes. The pre-push hook and CI run it. |
 | `pnpm format` | `biome check --write .` (auto-fix). |
 | `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component and query files and wires all 6 points, the `ModulesRenderer` `case` included (`--inline` also registers it in the three inline places). Writes nothing if any anchor is missing. PascalCase name. Add `--dry-run` to preview. |
-| `pnpm check:wiring` | Compare every module wiring list with the module schemas, both ways, and the inline places with each other. CI gate. |
+| `pnpm check:wiring` | Compare the module schemas with the schema index, both ways, the three page-stack places and the three inline places each with each other, and fail an unused module. CI gate. |
 | `pnpm check:typegen` | Every `defineQuery` in `web/sanity/` got a generated type (TypeGen skips queries it can't evaluate silently). Part of `pnpm generate`. |
 | `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including an end-to-end scaffold. CI gate. |
 | `pnpm up -r` | pnpm built-in: update every workspace's dependencies within their ranges (`--latest` crosses them, `-i` picks interactively). `pnpm --filter studio up` does the Studio only. |

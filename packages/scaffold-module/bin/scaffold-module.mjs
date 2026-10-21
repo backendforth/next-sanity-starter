@@ -94,7 +94,11 @@ try {
 		});
 	}
 
-	for (const slot of [...wiring.required, ...(inline ? wiring.inline : [])]) {
+	for (const slot of [
+		...wiring.required,
+		...wiring.page,
+		...(inline ? wiring.inline : []),
+	]) {
 		const current = plan.get(slot.file);
 		const source = current?.after ?? (await readFile(slot.file, "utf8"));
 		if (slot.read(source).has(mod.id)) {

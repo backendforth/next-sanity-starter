@@ -11,9 +11,10 @@
  * groups of slots in `src/manifest.mjs`, each all or none: `moduleTypes`, the `ModulesRenderer`
  * switch and `modulesQuery` for a module in a document's `modules[]`; the Studio's
  * `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`
- * for a module inside rich text. A module in neither group must be a field or array member type
- * of another module (a carousel's slides), or it is unused and fails. A slot that
- * lists a module without a schema is stale and fails too.
+ * for a module inside rich text. Every module is in at least one of the two groups. Being a field
+ * or array member type of another module (a carousel's slides) does not count: the parent
+ * projects it to its own shape, so the module keeps no type of its own and its component can't
+ * compile. A slot that lists a module without a schema is stale and fails too.
  *
  * The module's TS type is not a wiring point: it is `ModuleOf<"module.<id>">` from the
  * generated query types, and `tsc` checks its fields and the renderer's `never` fallback.
@@ -158,12 +159,13 @@ async function checkGroup(slots, group) {
 const pageModules = await checkGroup(wiring.page, "page stack");
 const inlineModules = await checkGroup(wiring.inline, "inline");
 for (const id of modules.keys()) {
-	if (!pageModules.has(id) && !inlineModules.has(id) && !nested.has(id)) {
-		fail(
-			id,
-			"unused: not in the page stack, not inline and no field or member type of another module",
-		);
-	}
+	if (pageModules.has(id) || inlineModules.has(id)) continue;
+	fail(
+		id,
+		nested.has(id)
+			? "only inside another module: its parent projects it to its own shape, so ModuleOf has no type for it and its component can't compile; keep it in the page stack or inline"
+			: "unused: neither in the page stack nor inline",
+	);
 }
 
 // ── Report ─────────────────────────────────────────────────────────────────

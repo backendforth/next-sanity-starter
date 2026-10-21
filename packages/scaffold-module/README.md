@@ -16,7 +16,7 @@ The name must be PascalCase (`Hero`, `Quote`, `VideoStrip`).
 
 ## What it does
 
-Creates the module's schema, component and query from `templates/` and adds it to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the slots `pnpm check:wiring` reads) — together the six points of the wiring checklist in `AGENTS.md`. `--inline` also registers the three inline places; use it only for a module that belongs inside text. A new module always joins the page stack; to keep it out (inline only, or only inside another module), delete its lines in `moduleTypes`, the `ModulesRenderer` switch and `modulesQuery` afterwards. The schema starts with a `heading` field, like `module.carousel` and `module.contentRefs`.
+Creates the module's schema, component and query from `templates/` and adds it to every list slot of the wiring manifest (`@repo/check-wiring/manifest`, the slots `pnpm check:wiring` reads) — together the six points of the wiring checklist in `AGENTS.md`. `--inline` also registers the three inline places; use it only for a module that belongs inside text. A new module always joins the page stack; to keep it inline only, delete its lines in `moduleTypes`, the `ModulesRenderer` switch and `modulesQuery` afterwards. The schema starts with a `heading` field, like `module.carousel` and `module.contentRefs`.
 
 Every change is computed before anything is written. A missing anchor, an existing file or a slot that already lists the module aborts with nothing written. Touched files are formatted with Biome.
 

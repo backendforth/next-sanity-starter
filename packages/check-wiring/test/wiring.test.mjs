@@ -122,7 +122,7 @@ test("an inline module needs all three places", async (t) => {
 	);
 });
 
-test("a module out of the page stack, not inline and in no other module is unused", async (t) => {
+test("a module neither in the page stack nor inline is unused", async (t) => {
 	const result = await checkWithEdits(t, {
 		"studio/schemas/fields/modulesArrayField.ts": (s) =>
 			s.replace(`\n  { type: "module.contentRefs" },`, ""),
@@ -133,4 +133,29 @@ test("a module out of the page stack, not inline and in no other module is unuse
 	});
 	assert.equal(result.status, 1);
 	assert.match(result.stdout, /✗ module\.contentRefs\n.*unused/);
+});
+
+test("a module only inside another module fails", async (t) => {
+	const result = await checkWithEdits(t, {
+		"studio/schemas/fields/modulesArrayField.ts": (s) =>
+			s.replace(
+				/\n {2}defineArrayMember\(\{\n {4}type: "module\.media",[\s\S]*?\}\),/,
+				"",
+			),
+		"web/src/components/modules/ModulesRenderer.tsx": (s) =>
+			s.replace(`case "module.media":`, ""),
+		"web/sanity/queries/components/modules/index.ts": (s) =>
+			s.replace(`\n  \${moduleMediaQuery},`, ""),
+		"studio/schemas/objects/editors/richTextMedia.ts": (s) =>
+			s.replace(
+				/\n {4}defineArrayMember\(\{\n {6}type: "module\.media",[\s\S]*?\n {4}\}\),/,
+				"",
+			),
+		"web/sanity/queries/components/text/richTextMedia.ts": (s) =>
+			s.replace(`\n    \${moduleMediaQuery},`, ""),
+		"web/src/components/text/portableTextComponents.tsx": (s) =>
+			s.replace(`"module.media": ({ value })`, `media: ({ value })`),
+	});
+	assert.equal(result.status, 1);
+	assert.match(result.stdout, /✗ module\.media\n.*only inside another module/);
 });

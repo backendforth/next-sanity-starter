@@ -81,7 +81,7 @@ Fields that take an image upload (the `media.image` image, both video posters, t
 
 Modules are **`type: "object"`** schema types whose name follows **`module.<something>`** (e.g. `module.media`, `module.text`). They are used in two places:
 
-1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on `page`, `home` and `work`). Every module.
+1. **On documents** — as items in the **`modules`** array field, defined by **`fields/modulesArrayField.ts`** (`moduleTypes` + `modulesArrayField({ group })` on `page`, `home` and `work`). Every module editors add on its own; a module that only lives inline or inside another module (`module.media` in a carousel's slides) can stay out.
 2. **Inside Portable Text** — as block types in **`objects/editors/richTextMedia.ts`** (alongside `block`), so editors can insert them in rich text bodies (`internationalizedArrayRichTextMedia`). **Opt-in**: only modules that belong inside text (today `module.media` and `module.carousel`).
 
 ### Adding a new module
@@ -93,7 +93,7 @@ Modules are **`type: "object"`** schema types whose name follows **`module.<some
 
 ### Inline is a choice per module
 
-**`moduleTypes`** lists every module; `richTextMedia` lists only the inline ones. A block-level module like `module.contentRefs` makes no sense inside a paragraph, which is why the two lists differ by design. What must not differ are the three inline places — a type in the editor's `of` without its query branch and component handler can be inserted but renders nothing.
+**`moduleTypes`** lists the page-stack modules (today all four); `richTextMedia` lists only the inline ones. A block-level module like `module.contentRefs` makes no sense inside a paragraph, which is why the two lists differ by design. What must not differ are the three inline places — a type in the editor's `of` without its query branch and component handler can be inserted but renders nothing.
 
 ### Module overview
 

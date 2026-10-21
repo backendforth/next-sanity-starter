@@ -7,11 +7,13 @@
  *   pnpm check:wiring
  *
  * Every `module.<id>` schema under studio/schemas/objects/modules/ must have its component and
- * GROQ projection file and an entry in each list slot of `src/manifest.mjs`: schema index,
- * `moduleTypes`, the `ModulesRenderer` switch, `modulesQuery`. A slot that
- * lists a module without a schema is stale and fails too. Inline modules are opt-in: the
- * Studio's `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in
- * `portableTextComponents.tsx` must name the same modules.
+ * GROQ projection file and an entry in the schema index. The page stack and inline use are two
+ * groups of slots in `src/manifest.mjs`, each all or none: `moduleTypes`, the `ModulesRenderer`
+ * switch and `modulesQuery` for a module in a document's `modules[]`; the Studio's
+ * `richTextMedia` `of`, `richTextMediaQuery` and the `types` map in `portableTextComponents.tsx`
+ * for a module inside rich text. A module in neither group must be a field or array member type
+ * of another module (a carousel's slides), or it is unused and fails. A slot that
+ * lists a module without a schema is stale and fails too.
  *
  * The module's TS type is not a wiring point: it is `ModuleOf<"module.<id>">` from the
  * generated query types, and `tsc` checks its fields and the renderer's `never` fallback.
@@ -41,6 +43,8 @@ const fail = (id, finding) =>
 // ── Modules: one schema file each ──────────────────────────────────────────
 /** @type {Map<string, ReturnType<typeof moduleNames>>} */
 const modules = new Map();
+/** Modules another module's schema takes as a field or array member type. */
+const nested = new Set();
 const schemaFiles = (await readdir(wiring.files.schemaDir)).filter((f) =>
 	/^module\w+\.ts$/.test(f),
 );
@@ -64,6 +68,9 @@ for (const file of schemaFiles) {
 		continue;
 	}
 	modules.set(mod.id, mod);
+	for (const [, type] of source.matchAll(/type:\s*"(module\.\w+)"/g)) {
+		if (type !== mod.id) nested.add(type);
+	}
 }
 
 if (modules.size === 0) {
@@ -114,25 +121,48 @@ for (const slot of wiring.required) {
 	}
 }
 
-/** @type {Map<string, Set<string>>} slot label → modules it lists */
-const inlineSlots = new Map();
-for (const slot of wiring.inline) {
-	const listed = await readSlot(slot);
-	if (listed) inlineSlots.set(slot.label, listed);
-}
-const inlineModules = new Set([...inlineSlots.values()].flatMap((s) => [...s]));
-for (const id of inlineModules) {
-	if (!modules.has(id)) {
-		general.push(`inline module "${id}" has no schema`);
-		continue;
+/**
+ * Slots that must name the same modules: a module is in every one of them or in none.
+ * @param {import("../src/manifest.mjs").ListSlot[]} slots
+ * @param {string} group for the finding
+ * @returns {Promise<Set<string>>} the modules the group holds
+ */
+async function checkGroup(slots, group) {
+	/** @type {Map<import("../src/manifest.mjs").ListSlot, Set<string>>} */
+	const listedBy = new Map();
+	for (const slot of slots) {
+		const listed = await readSlot(slot);
+		if (listed) listedBy.set(slot, listed);
 	}
-	for (const [label, listed] of inlineSlots) {
-		if (!listed.has(id)) {
-			fail(
-				id,
-				`inline in some places but missing in ${label} — inline needs all three or none`,
-			);
+	const members = new Set([...listedBy.values()].flatMap((s) => [...s]));
+	for (const id of members) {
+		if (!modules.has(id)) {
+			for (const [slot, listed] of listedBy) {
+				if (listed.has(id))
+					general.push(`${rel(slot.file)}: lists "${id}", which has no schema`);
+			}
+			continue;
 		}
+		for (const [slot, listed] of listedBy) {
+			if (!listed.has(id)) {
+				fail(
+					id,
+					`${group} in some places but missing in ${slot.label} — ${group} needs all three or none`,
+				);
+			}
+		}
+	}
+	return members;
+}
+
+const pageModules = await checkGroup(wiring.page, "page stack");
+const inlineModules = await checkGroup(wiring.inline, "inline");
+for (const id of modules.keys()) {
+	if (!pageModules.has(id) && !inlineModules.has(id) && !nested.has(id)) {
+		fail(
+			id,
+			"unused: not in the page stack, not inline and no field or member type of another module",
+		);
 	}
 }
 

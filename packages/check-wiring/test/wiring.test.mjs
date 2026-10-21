@@ -33,7 +33,7 @@ test("findBlock matches nested brackets and template literals", () => {
 test("every slot reads the repo's modules and takes a new one", async () => {
 	const wiring = wiringSlots(repo);
 	const hero = moduleNames("Hero");
-	for (const slot of wiring.required) {
+	for (const slot of [...wiring.required, ...wiring.page]) {
 		const source = await readFile(slot.file, "utf8");
 		const before = slot.read(source);
 		assert.ok(before.has("module.text"), `${slot.label} reads module.text`);
@@ -50,11 +50,10 @@ test("every slot reads the repo's modules and takes a new one", async () => {
 	}
 });
 
-/** A copy of just the files `check:wiring` reads, with `edit` applied to one of them. */
-async function checkWithEdit(
+/** A copy of just the files `check:wiring` reads, with an edit applied to each file named. */
+async function checkWithEdits(
 	/** @type {import("node:test").TestContext} */ t,
-	/** @type {string} */ file,
-	/** @type {(source: string) => string} */ edit,
+	/** @type {Record<string, (source: string) => string>} */ edits,
 ) {
 	const dir = await mkdtemp(join(tmpdir(), "check-wiring-"));
 	t.after(() => rm(dir, { recursive: true, force: true }));
@@ -65,14 +64,25 @@ async function checkWithEdit(
 	]) {
 		await cp(join(repo, sub), join(dir, sub), { recursive: true });
 	}
-	const target = join(dir, file);
-	const source = await readFile(target, "utf8");
-	const edited = edit(source);
-	assert.notEqual(edited, source, `the edit changed ${file}`);
-	await writeFile(target, edited);
+	for (const [file, edit] of Object.entries(edits)) {
+		const target = join(dir, file);
+		const source = await readFile(target, "utf8");
+		const edited = edit(source);
+		assert.notEqual(edited, source, `the edit changed ${file}`);
+		await writeFile(target, edited);
+	}
 	return spawnSync(process.execPath, [checkWiring, "--root", dir], {
 		encoding: "utf8",
 	});
+}
+
+/** `checkWithEdits` for one file. */
+function checkWithEdit(
+	/** @type {import("node:test").TestContext} */ t,
+	/** @type {string} */ file,
+	/** @type {(source: string) => string} */ edit,
+) {
+	return checkWithEdits(t, { [file]: edit });
 }
 
 test("a module missing from modulesQuery fails, even with its import left", async (t) => {
@@ -110,4 +120,17 @@ test("an inline module needs all three places", async (t) => {
 		result.stdout,
 		/✗ module\.carousel \(inline\)\n.*richTextMediaQuery/,
 	);
+});
+
+test("a module out of the page stack, not inline and in no other module is unused", async (t) => {
+	const result = await checkWithEdits(t, {
+		"studio/schemas/fields/modulesArrayField.ts": (s) =>
+			s.replace(`\n  { type: "module.contentRefs" },`, ""),
+		"web/src/components/modules/ModulesRenderer.tsx": (s) =>
+			s.replace(`case "module.contentRefs":`, ""),
+		"web/sanity/queries/components/modules/index.ts": (s) =>
+			s.replace(`,\n  \${moduleContentRefsQuery}`, ""),
+	});
+	assert.equal(result.status, 1);
+	assert.match(result.stdout, /✗ module\.contentRefs\n.*unused/);
 });

@@ -333,7 +333,9 @@ export function wiringSlots(root) {
 	return {
 		files,
 		/** Every module needs an entry in each of these. */
-		required: [schemaIndex, modulesArray, renderer, queryBarrel],
+		required: [schemaIndex],
+		/** The page stack (a document's `modules[]`): a module is in all three or in none. */
+		page: [modulesArray, renderer, queryBarrel],
 		/** Inline is opt-in: a module is in all three or in none. */
 		inline: [inlineSchema, inlineQuery, inlineComponents],
 		/** Files a module owns, created by the scaffolder. @param {ModuleNames} mod */

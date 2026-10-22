@@ -198,7 +198,7 @@ Production needs the webhook. [Revalidate webhook](#revalidate-webhook) sets it 
 
 - `SANITY_API_READ_TOKEN` on the site: a Viewer token, so the site can read drafts.
 - `SANITY_STUDIO_PREVIEW_ORIGIN` on the Studio: the site's origin. Default `http://localhost:3000`. `SANITY_STUDIO_WEB_PREVIEW_ORIGINS` adds more, such as deploy previews.
-- `NEXT_PUBLIC_SANITY_STUDIO_URL` on the site: the Studio's URL, so the site lets the Studio frame it and click-to-edit opens the right Studio. Default `http://localhost:3333`; `*.sanity.studio` is always allowed.
+- `NEXT_PUBLIC_SANITY_STUDIO_URL` on the site: the Studio's URL, so the site lets the Studio frame it and click-to-edit opens the right Studio. Default `http://localhost:3333`; `*.sanity.studio` and the Sanity Dashboard (`*.sanity.io`) are always allowed.
 
 Site and Studio must read the same dataset, or the preview shows other content.
 

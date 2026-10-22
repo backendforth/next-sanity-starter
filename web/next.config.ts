@@ -14,10 +14,10 @@ function originOf(raw: string | undefined): string | null {
 
 /**
  * Origin of the hosted Studio, for `frame-ancestors` — Sanity Presentation
- * embeds this site in an iframe on the Studio domain. `*.sanity.studio` and
- * the local Studio are always allowed; a custom Studio domain is picked up
- * from `NEXT_PUBLIC_SANITY_STUDIO_URL` (the same variable the Sanity client
- * uses for stega links).
+ * embeds this site in an iframe on the Studio domain. `*.sanity.studio`, the
+ * Sanity Dashboard and the local Studio are always allowed; a custom Studio
+ * domain is picked up from `NEXT_PUBLIC_SANITY_STUDIO_URL` (the same variable
+ * the Sanity client uses for stega links).
  */
 const studioOrigin = originOf(process.env.NEXT_PUBLIC_SANITY_STUDIO_URL);
 
@@ -101,7 +101,11 @@ const analyticsSources = {
  *   manifests/segments/thumbnails, analytics, and the dev server's HMR
  *   websocket.
  * - `frame-ancestors` must stay a header (a `<meta>` CSP cannot carry it):
- *   it is what lets Sanity Presentation embed the site.
+ *   it is what lets Sanity Presentation embed the site. The browser checks
+ *   every ancestor, not only the parent: a `*.sanity.studio` URL redirects
+ *   into the Sanity Dashboard (`www.sanity.io`), which frames the Studio,
+ *   which frames this site. A Studio opened from the Dashboard on its own
+ *   domain sits in the same chain, so `*.sanity.io` is listed as well.
  */
 function contentSecurityPolicy(): string {
 	const directives: Record<string, string[]> = {
@@ -151,6 +155,7 @@ function contentSecurityPolicy(): string {
 			"'self'",
 			"http://localhost:3333",
 			"https://*.sanity.studio",
+			"https://*.sanity.io",
 			...(studioOrigin ? [studioOrigin] : []),
 		],
 		"worker-src": ["'self'", "blob:"],

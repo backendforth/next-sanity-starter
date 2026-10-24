@@ -1,6 +1,8 @@
 import { resolveStudioDatasetAsync } from "@repo/sanity-dataset-resolve";
 import type { NextConfig } from "next";
 
+import { SITE_BASE_URL } from "./src/utils/siteUrl";
+
 const isDev = process.env.NODE_ENV === "development";
 
 function originOf(raw: string | undefined): string | null {
@@ -228,6 +230,10 @@ export default async function config(): Promise<NextConfig> {
 	return {
 		...nextConfig,
 		env: {
+			/* Resolved here, where Netlify's `URL` / `DEPLOY_PRIME_URL` exist, and
+			 * inlined: the function runtime lacks them, so ISR regenerations and
+			 * route handlers fell back to `http://localhost:3000`. */
+			NEXT_PUBLIC_SITE_URL: SITE_BASE_URL,
 			SANITY_STUDIO_PROJECT_ID: process.env.SANITY_STUDIO_PROJECT_ID ?? "",
 			SANITY_STUDIO_DATASET: await resolveStudioDatasetAsync(process.env),
 		},

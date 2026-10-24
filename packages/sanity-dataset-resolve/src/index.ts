@@ -50,7 +50,8 @@ function isProductionHost(env: SanityDatasetResolveInput): boolean {
  * Whether this deploy is the production site: an explicit `SANITY_STUDIO_DEPLOYMENT_TARGET`
  * decides (`production` or not, any case), otherwise the host's production context. A staging
  * site on a production host context sets the target to stay non-production. The web's crawl
- * switch (`robots.ts`) and canonical origin (`siteUrl.ts`) follow it.
+ * switch (`robots.ts`) follows it, and so does its canonical origin (`siteUrl.ts`) except on
+ * Netlify's production context, which serves the primary domain either way.
  */
 export function isProductionDeployment(
 	env: SanityDatasetResolveInput,

@@ -11,7 +11,7 @@ This folder holds **structure** (sidebar), **presentation** (Visual Editing / We
 
 So: **new document or object type → add it to `schemas/index.ts`**. **New sidebar entry → add or extend items in `config/structure/`** (see `config/structure/README.md`).
 
-Singletons (fixed document IDs) use `S.document().schemaType("…").documentId("…")` in structure; repeatable types often use `S.documentTypeList("…")`.
+Singletons (fixed document IDs) are registered with the Studio's singletons API (`document.singletons`, from `config/singletons.ts`) and use `S.listItem().singleton("…")` in structure; repeatable types often use `S.documentTypeList("…")`.
 
 ## Web Preview (Presentation)
 

@@ -5,8 +5,8 @@ The **Structure API** controls the left-hand navigation in Sanity Studio. The ro
 ## How items are wired
 
 - **`index.ts`** imports small factories from `items/*` and passes the `StructureBuilder` (`S`) into each. Each factory returns a `ListItem` (or similar) configured with title, icon, id, and **child** (what opens when you click).
-- **Singletons** (one document per type, fixed id) typically use:
-  - `S.document().schemaType("home").documentId("home")`
+- **Singletons** (one document per type, fixed id) are registered in `document.singletons` (`SINGLETON_DEFINITIONS` in `config/singletons.ts`) and use:
+  - `S.listItem().singleton("home")` — the list item opens the document by its fixed id; `.title()`, `.icon()` and `.id()` override the defaults from the schema type.
   - Same pattern for settings docs with stable ids (`siteSettings`, `errorSettings`, …).
 - **Collections** use something like:
   - `S.documentTypeList("page").title("Pages")` — shows all documents of that type.

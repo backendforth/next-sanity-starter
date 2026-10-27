@@ -3,8 +3,8 @@ import type { StructureBuilder } from "sanity/structure";
 
 export function siteSettingsStructureItem(S: StructureBuilder) {
   return S.listItem()
+    .singleton("siteSettings")
     .title("Settings")
     .icon(CogIcon)
-    .id("site-settings")
-    .child(S.document().schemaType("siteSettings").documentId("siteSettings"));
+    .id("site-settings");
 }

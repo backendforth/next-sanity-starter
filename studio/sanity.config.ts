@@ -13,7 +13,7 @@ import { presentationLocationsResolver } from "./config/presentation/locationsRe
 import { presentationMainDocuments } from "./config/presentation/resolve";
 import {
   filterSingletonDocumentActions,
-  isSingletonTemplate,
+  SINGLETON_DEFINITIONS,
 } from "./config/singletons";
 import { structure } from "./config/structure";
 import { internationalizedArrayLanguagesFromClient } from "./config/sync/internationalizedArrayLanguages";
@@ -88,13 +88,9 @@ export default defineConfig({
     types: schemaTypes,
   },
   document: {
-    actions: (prev, { schemaType }) =>
-      filterSingletonDocumentActions(prev, schemaType),
-    // `global` is the "Create" menu, `document` feeds the "Create new" button of reference
-    // inputs in a document pane; only `structure` items open singletons (by fixed id).
-    newDocumentOptions: (prev, { creationContext }) =>
-      creationContext.type === "structure"
-        ? prev
-        : prev.filter((item) => !isSingletonTemplate(item.templateId)),
+    // Keeps singletons out of every Create menu and drops their duplicate action.
+    singletons: SINGLETON_DEFINITIONS,
+    actions: (prev, { singleton }) =>
+      filterSingletonDocumentActions(prev, singleton),
   },
 });

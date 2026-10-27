@@ -5,5 +5,7 @@ export function pagesStructureItem(S: StructureBuilder) {
   return S.listItem()
     .title("Pages")
     .icon(DocumentTextIcon)
+    .schemaType("page")
+    .showCount()
     .child(S.documentTypeList("page").title("Pages"));
 }

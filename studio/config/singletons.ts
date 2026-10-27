@@ -10,8 +10,9 @@
  * This is the single source of truth: `presentation/conventions.ts` derives its
  * role-sets from this map, and `SINGLETON_SCHEMA_TYPES` (kept out of the Create
  * menus) is its key set. Add a new singleton here once and the Create-menu filter
- * and Presentation behaviour follow automatically; which singletons lock their
- * delete/unpublish/duplicate actions is `FIXED_ID_SINGLETON_TYPES` below.
+ * and Presentation behaviour follow automatically; which singletons the Studio
+ * registers, and which lock their delete/unpublish actions, is
+ * `SINGLETON_DEFINITIONS` below.
  */
 export const SINGLETON_PREVIEW_ROLE = {
   home: "root",
@@ -43,32 +44,42 @@ export function singletonTypesWithRole(
 /**
  * Singletons are opened from the structure, never created from a "Create" menu or a
  * reference input: the site reads one document of the type (per language, where the type is
- * translatable), and the structure is where that one is managed. Their only templates are the
- * defaults, whose id is the schema type.
+ * translatable), and the structure is where that one is managed. The registered singletons
+ * (`SINGLETON_DEFINITIONS`) never reach this filter: the Studio leaves their templates out of
+ * every menu. The per-language ones keep the defaults, whose id is the schema type.
  */
 export function isSingletonTemplate(templateId: string): boolean {
   return SINGLETON_SCHEMA_TYPES.has(templateId);
 }
 
 /**
- * Singletons the site reads by their fixed `_id`, one document for every language. Deleting,
- * unpublishing or duplicating one leaves the site without it or with a copy nothing reads, so
- * those actions are locked. The per-language singletons are one document per language and keep
- * them, like any document: a stray second document in a language (`onePerLanguage` blocks its
- * publish) or an unwanted language version can be deleted.
+ * `document.singletons` (Studio singletons API, beta): the singletons the site reads by their
+ * fixed `_id`, one document for every language. The `_id` is the schema type, so the string
+ * shorthand registers each (definition id = document id = schema type). Registered, a singleton
+ * gets no Create-menu or reference-input "Create new" entry and no duplicate action; structure
+ * items open it with `S.listItem().singleton(<type>)`.
+ *
+ * The per-language singletons are one document per language and stay unregistered, keeping
+ * their actions like any document: a stray second document in a language (`onePerLanguage`
+ * blocks its publish) or an unwanted language version can be deleted.
  */
-const FIXED_ID_SINGLETON_TYPES = new Set<string>([
+export const SINGLETON_DEFINITIONS = [
   "siteLanguageSettings",
   "siteAnalyticsSettings",
-] satisfies SingletonSchemaType[]);
+] satisfies SingletonSchemaType[];
 
-const LOCKED_SINGLETON_ACTIONS = new Set(["delete", "unpublish", "duplicate"]);
+/**
+ * The Studio only drops `duplicate` for a registered singleton. Deleting or unpublishing one
+ * would leave the site without the document it reads by fixed `_id`.
+ */
+const LOCKED_SINGLETON_ACTIONS = new Set(["delete", "unpublish"]);
 
+/** `singleton` is the definition id the Studio passes to `document.actions` for a singleton. */
 export function filterSingletonDocumentActions<T extends { action?: string }>(
   actions: T[],
-  schemaType: string,
+  singleton: string | undefined,
 ): T[] {
-  if (!FIXED_ID_SINGLETON_TYPES.has(schemaType)) {
+  if (singleton === undefined) {
     return actions;
   }
   return actions.filter((a) => !LOCKED_SINGLETON_ACTIONS.has(a.action ?? ""));

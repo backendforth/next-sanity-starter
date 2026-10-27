@@ -3,12 +3,8 @@ import type { StructureBuilder } from "sanity/structure";
 
 export function siteLanguageSettingsStructureItem(S: StructureBuilder) {
   return S.listItem()
+    .singleton("siteLanguageSettings")
     .title("Site languages")
     .icon(TranslateIcon)
-    .id("site-language-settings")
-    .child(
-      S.document()
-        .schemaType("siteLanguageSettings")
-        .documentId("siteLanguageSettings"),
-    );
+    .id("site-language-settings");
 }

@@ -22,10 +22,10 @@
 		"embla-carousel-autoplay": "^8.6.0",
 		"embla-carousel-react": "^8.6.0",
 		"hls.js": "^1.7.3",
-		"next": "16.3.6",
+		"next": "16.4.3",
 		"next-sanity": "^13.3.4",
-		"react": "19.3.0",
-		"react-dom": "19.3.0",
+		"react": "19.3.1",
+		"react-dom": "19.3.1",
 		"vanilla-cookieconsent": "^3.1.0"
 	},
 	"devDependencies": {
@@ -36,7 +36,7 @@
 		"postcss-calc": "^11.2.1",
 		"postcss-functions": "^4.0.2",
 		"postcss-import": "^17.0.0",
-		"sanity": "^6.16.0",
+		"sanity": "^6.20.0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3"
 	}

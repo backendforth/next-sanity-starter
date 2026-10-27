@@ -5,7 +5,7 @@ Schema types are defined with `defineType` from `sanity` and grouped in folders 
 ## 1. Create the type
 
 - **Document** — `type: "document"`, unique `_id` per document (e.g. `schemas/documents/page.ts`).
-- **Singleton** — still `type: "document"`, but you fix the id in structure (e.g. `documentId("home")`) so only one instance exists (`schemas/singletons/home.ts`).
+- **Singleton** — still `type: "document"`, but with a fixed id: its entry in `SINGLETON_PREVIEW_ROLE` (`config/singletons.ts`) registers it with the Studio's singletons API, and structure opens it with `S.listItem().singleton("home")`, so only one instance exists (`schemas/singletons/home.ts`).
 - **Object** — `type: "object"` for nested blocks, modules, SEO objects, links (`schemas/objects/...`).
 - **Root-level types** that are not documents (e.g. shared defs) follow the same `defineType` pattern.
 
@@ -39,7 +39,7 @@ CI fails if `pnpm generate` produces a diff. The web app has no hand-written San
 
 The sidebar does **not** read `schemaTypes`. Add an entry under **`config/structure/`**:
 
-- New file `config/structure/items/myPage.ts` that exports e.g. `myPageStructureItem(S)` using `S.documentTypeList("myPage")` or `S.document().schemaType("myPage").documentId("…")` for a singleton.
+- New file `config/structure/items/myPage.ts` that exports e.g. `myPageStructureItem(S)` using `S.documentTypeList("myPage")` or `S.listItem().singleton("myPage")` for a singleton.
 - Import that item in **`config/structure/index.ts`** and add it to the `.items([...])` array (or under Settings).
 
 See **`config/structure/README.md`** for patterns.
@@ -118,7 +118,7 @@ The encoding ceiling per field, the plugin default and the playback ceiling: [`A
 
 ## 10. Initial value templates (optional)
 
-If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of every create menu — the global “Create” menu and the “Create new” button of reference inputs — by `document.newDocumentOptions` (`isSingletonTemplate` in `config/singletons.ts`); only structure items, which open them by fixed id, keep their templates. The filter knows the default template ids (= schema type) only, so don't add templates for a singleton type.
+If you need “New document” templates with presets, add them through `schema.templates` in `sanity.config.ts` (`(prev) => [...prev, …]`). Singletons are kept out of every create menu — the global “Create” menu and the “Create new” button of reference inputs — by the Studio's singletons API (`document.singletons`, from `config/singletons.ts`). The Studio generates each singleton's one template itself (id = the singleton id), so don't add templates for a singleton type: a template that reuses a singleton id fails config validation.
 
 ## Checklist
 

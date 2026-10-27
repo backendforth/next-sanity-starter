@@ -3,9 +3,12 @@ import { isProductionDeployment } from "@repo/sanity-dataset-resolve";
 /**
  * The site's canonical origin, resolved once at module load.
  *
- * Server-only. Everything below `NEXT_PUBLIC_SITE_URL` reads host variables
- * that Next never inlines into the client bundle, so import this from
- * metadata, `robots.ts` and `sitemap.ts` — not from a client component.
+ * Resolved at build: `next.config.ts` imports it while the host's build
+ * variables exist and inlines the result as `NEXT_PUBLIC_SITE_URL`. Netlify's
+ * function runtime, which serves ISR regenerations and route handlers, has no
+ * `URL` / `DEPLOY_PRIME_URL`, so it reads that inlined value. Server-only all
+ * the same: import this from metadata, `robots.ts` and `sitemap.ts` — not
+ * from a client component.
  *
  * Canonicals, `hreflang`, `og:url`, `metadataBase` and the sitemap reference
  * in `robots.txt` all build on it. An explicit value wins, the deploy host's
@@ -27,15 +30,17 @@ function normalizeOrigin(value: string | undefined): string | null {
 const isProduction = isProductionDeployment(process.env);
 
 /**
- * Netlify's own view of where this build is served from. Previews, branch
- * deploys and non-production targets resolve to their own origin
- * (`DEPLOY_PRIME_URL`) rather than the production domain, so they never claim
- * to be canonical for the live site. The `NETLIFY` guard keeps a stray local
- * `URL` variable out.
+ * Netlify's own view of where this build is served from. Previews and branch
+ * deploys resolve to their own origin (`DEPLOY_PRIME_URL`) rather than the
+ * production domain, so they never claim to be canonical for the live site.
+ * The `NETLIFY` guard keeps a stray local `URL` variable out.
  */
 function netlifyOrigin(): string | null {
 	if (process.env.NETLIFY !== "true") return null;
-	if (isProduction) {
+	/* The production context serves the primary domain even when the deploy
+	 * target keeps it non-production (a staging site on the development
+	 * dataset): `DEPLOY_PRIME_URL` would be the `<branch>--` host there. */
+	if (isProduction || process.env.CONTEXT === "production") {
 		return normalizeOrigin(process.env.URL);
 	}
 	return (
@@ -54,10 +59,11 @@ function vercelOrigin(): string | null {
 }
 
 function resolveSiteBaseUrl(): string {
-	/* Explicit wins, and it is the only candidate that is inlined at build
-	 * time — so the prerender and every later ISR regeneration agree on it.
-	 * Set it (netlify.toml `[context.production.environment]`) on a site with
-	 * its own domain; don't rely on the rest. */
+	/* Explicit wins. Inside the app it is always set: `next.config.ts` inlines
+	 * this resolver's build-time result under that name, so the prerender and
+	 * every later ISR regeneration agree on it. Set it yourself (netlify.toml
+	 * `[context.production.environment]`) on a site with its own domain, so the
+	 * canonical never depends on which domain the host considers primary. */
 	const explicit = normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL);
 	if (explicit) return explicit;
 

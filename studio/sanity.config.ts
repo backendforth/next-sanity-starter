@@ -14,6 +14,7 @@ import { presentationMainDocuments } from "./config/presentation/resolve";
 import {
   filterSingletonDocumentActions,
   isSingletonTemplate,
+  SINGLETON_DEFINITIONS,
 } from "./config/singletons";
 import { structure } from "./config/structure";
 import { studioDataset } from "./config/sync/studioDataset";
@@ -101,10 +102,13 @@ export default defineConfig({
     types: schemaTypes,
   },
   document: {
-    actions: (prev, { schemaType }) =>
-      filterSingletonDocumentActions(prev, schemaType),
+    // Keeps the fixed-id singletons out of every Create menu and drops their duplicate action.
+    singletons: SINGLETON_DEFINITIONS,
+    actions: (prev, { singleton }) =>
+      filterSingletonDocumentActions(prev, singleton),
     // `global` is the "Create" menu, `document` feeds the "Create new" button of reference
-    // inputs in a document pane; singletons are created only from their `structure` items.
+    // inputs in a document pane; the per-language singletons are created only from their
+    // `structure` items.
     newDocumentOptions: (prev, { creationContext }) =>
       creationContext.type === "structure"
         ? prev

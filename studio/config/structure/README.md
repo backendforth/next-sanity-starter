@@ -5,8 +5,8 @@ The **Structure API** controls the left-hand navigation in Sanity Studio. The ro
 ## How items are wired
 
 - **`index.ts`** imports small factories from `items/*` and passes the `StructureBuilder` (`S`) into each. Each factory returns a `ListItem` (or similar) configured with title, icon, id, and **child** (what opens when you click).
-- **Global singletons** (one document, fixed id) use:
-  - `S.document().schemaType("siteLanguageSettings").documentId("siteLanguageSettings")`
+- **Global singletons** (one document, fixed id) are registered in `document.singletons` (`SINGLETON_DEFINITIONS` in `config/singletons.ts`) and use:
+  - `S.listItem().singleton("siteLanguageSettings")` — the list item opens the document by its fixed id; `.title()`, `.icon()` and `.id()` override the defaults from the schema type.
 - **Translatable types** — collections like `page` **and** the per-language "singletons" (`home`, `work`, `siteSettings`, `siteNav`, `errorSettings`, `siteCookieBanner`) — have one document per language, so they use:
   - `S.documentTypeList("home").title("Home")` — lists every language version of that type.
 

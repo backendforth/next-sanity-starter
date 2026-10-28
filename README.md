@@ -407,7 +407,7 @@ Set it up once per environment:
 1. On the web and the Studio project, under **Continuous deployment → Build hooks → Add build hook**, add a hook named `GitHub Actions` for the environment's branch: `main` for production, `development` for staging.
 2. In GitHub, under **Settings → Environments**, create `staging` and `production`. In each, add the secrets `NETLIFY_SITE_BUILD_HOOK` and `NETLIFY_STUDIO_BUILD_HOOK` with the hook URLs. Optional: the variables `SITE_URL` and `STUDIO_URL`, which the run's summary links to.
 
-An environment without hooks fails the run with a pointer to this section.
+An environment without hooks, or a hook Netlify no longer has, fails the run with a pointer to this section. With both selected, the other project is still called.
 
 Keep in mind:
 

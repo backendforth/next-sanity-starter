@@ -1,6 +1,6 @@
 # @repo/scaffold-module
 
-Scaffolds a new content module and wires it at every point of the module pattern in [`/AGENTS.md`](../../AGENTS.md).
+Scaffolds a new content module and wires it at every point of the module pattern in [`/AGENTS.md`](../../AGENTS.md), or clears the page stack so a project starts its own modules from an empty `modules[]`.
 
 ## Usage
 
@@ -28,10 +28,21 @@ pnpm check:wiring
 pnpm typecheck
 ```
 
+## Clearing the page stack
+
+```bash
+pnpm clear:modules --dry-run  # list the changes, write nothing
+pnpm clear:modules            # delete them
+```
+
+A module that rich text embeds (the inline slots) stays, inline only: it leaves `moduleTypes`, the `ModulesRenderer` switch and `modulesQuery`. Every other module is deleted: its schema, component and query, its entries in every slot, and the files in `web/src/components/modules/` that only deleted files import. If a kept module embeds a deleted one, or a slot is missing, nothing is written. Then `pnpm generate`, `pnpm check:wiring` and `pnpm typecheck`; all pass on the empty stack. The next `pnpm gen:module <Name>` is the only entry.
+
+Run it at the start of a project: content that already holds a deleted module shows it as an unknown type in the Studio.
+
 ## Templates
 
 `templates/*.tmpl` use `__MODULE_NAME__` (`module.hero`), `__MODULE_TITLE__` (`Hero`), `__MODULE_VAR__` (`moduleHero`), `__MODULE_QUERY_VAR__` (`moduleHeroQuery`) and `__MODULE_COMPONENT__` (`ModuleHero`).
 
 ## Tests
 
-`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs the schema extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio; a second test checks that a missing anchor writes nothing.
+`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs the schema extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio. A second test runs `clear:modules`, the same checks on the empty stack, then `Hero` and the checks again; a third checks that a missing anchor writes nothing.

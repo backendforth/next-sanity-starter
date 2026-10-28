@@ -1,0 +1,75 @@
+name: Netlify deploy
+
+# Rebuilds the web site and/or the Studio on Netlify from GitHub, so anyone
+# with write access to the repo can redeploy staging or production without a
+# local setup or a Netlify login: Actions → "Netlify deploy" → Run workflow.
+#
+# Each Netlify project gets a build hook, a secret URL that starts a build of
+# one branch. The hooks live as secrets in the GitHub environments `staging`
+# and `production` (README → "Redeploy from GitHub"), so no Netlify token is
+# stored here and the job needs no repository permissions. GitHub only shows
+# that a build was started; whether it passed shows on the site a few minutes
+# later.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        type: choice
+        options: [staging, production]
+        default: staging
+      target:
+        description: What to rebuild
+        type: choice
+        options: [site and studio, site, studio]
+        default: site and studio
+
+permissions: {}
+
+concurrency:
+  group: netlify-deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: ${{ inputs.target }} (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 5
+    steps:
+      - name: Start Netlify builds
+        env:
+          SITE_HOOK: ${{ secrets.NETLIFY_SITE_BUILD_HOOK }}
+          STUDIO_HOOK: ${{ secrets.NETLIFY_STUDIO_BUILD_HOOK }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          STUDIO_URL: ${{ vars.STUDIO_URL }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          TARGET: ${{ inputs.target }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          case "$TARGET" in
+            site) targets="site" ;;
+            studio) targets="studio" ;;
+            *) targets="site studio" ;;
+          esac
+          printf '### Netlify builds (%s)\n\n' "$ENVIRONMENT" >> "$GITHUB_STEP_SUMMARY"
+          status=0
+          for t in $targets; do
+            if [ "$t" = site ]; then hook="$SITE_HOOK" url="$SITE_URL"; else hook="$STUDIO_HOOK" url="$STUDIO_URL"; fi
+            if [ -z "$hook" ]; then
+              echo "::error::No $t build hook in the '$ENVIRONMENT' environment. README → \"Redeploy from GitHub\" sets it up."
+              echo "- $t: not set up for $ENVIRONMENT" >> "$GITHUB_STEP_SUMMARY"
+              status=1
+              continue
+            fi
+            # clear_cache: a full rebuild. With a cache, the `ignore` rule in
+            # netlify.toml skips a project whose files didn't change.
+            curl -fsS -X POST --get -o /dev/null \
+              --data clear_cache=true \
+              --data-urlencode "trigger_title=Redeploy by $ACTOR via GitHub Actions" \
+              "$hook"
+            echo "- $t: build started${url:+, live in a few minutes at $url}" >> "$GITHUB_STEP_SUMMARY"
+          done
+          exit "$status"

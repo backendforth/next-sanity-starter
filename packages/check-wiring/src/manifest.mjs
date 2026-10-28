@@ -5,8 +5,10 @@
  *
  * Each list slot finds its block by a header pattern and bracket matching — no marker
  * comments, and formatting or neighbouring code doesn't matter — then reports the module ids
- * it holds (`read`) or returns the source with one more entry (`insert`). An `insert` that
- * can't find its anchor throws; the scaffolder relies on that to abort before writing.
+ * it holds (`read`), returns the source with one more entry (`insert`) or with one entry less
+ * (`remove`, used by `clear:modules`). A slot that can't find its block throws; the scaffolder
+ * relies on that to abort before writing. An empty list is fine: `insert` then imports after
+ * the file's last import.
  */
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,6 +28,7 @@ import { fileURLToPath } from "node:url";
  *   file: string;
  *   read: (source: string) => Set<string>;
  *   insert: (source: string, mod: ModuleNames) => string;
+ *   remove: (source: string, mod: ModuleNames) => string;
  * }} ListSlot
  */
 
@@ -48,6 +51,12 @@ export function moduleNames(pascal) {
 		schemaVar: `module${pascal}`,
 		queryVar: `module${pascal}Query`,
 	};
+}
+
+/** `module.contentRefs` → the names of `ContentRefs`. @param {string} id */
+export function moduleNamesFromId(id) {
+	const camel = id.replace(/^module\./, "");
+	return moduleNames(camel.charAt(0).toUpperCase() + camel.slice(1));
 }
 
 /** `moduleHero` / `ModuleHero` / `moduleHeroQuery` → `module.hero`. */
@@ -100,13 +109,24 @@ function collect(text, pattern, toId = (m) => m) {
 	return new Set([...text.matchAll(pattern)].map((m) => toId(m[1] ?? "")));
 }
 
-/** Inserts `line` after the last line matching `pattern`. @param {string} source @param {RegExp} pattern @param {string} line @param {string} file */
-function insertAfterLastLine(source, pattern, line, file) {
-	const matches = [...source.matchAll(new RegExp(pattern.source, "gm"))];
-	const last = matches.at(-1);
-	if (!last || last.index === undefined) {
-		throw new Error(`${file}: no line matching ${pattern}`);
-	}
+/** The last line of any import, single- or multi-line. */
+const IMPORT_END = /^(?:import [^\n]*|\} from [^\n]*);$/;
+
+/** @param {string} source @param {RegExp} pattern */
+function lastLineMatch(source, pattern) {
+	return [...source.matchAll(new RegExp(pattern.source, "gm"))].at(-1);
+}
+
+/**
+ * Inserts `line` after the last line matching `pattern`. Without one (no module imported yet,
+ * e.g. after `clear:modules`) after the file's last import, else first in the file.
+ *
+ * @param {string} source @param {RegExp} pattern @param {string} line
+ */
+function insertAfterLastLine(source, pattern, line) {
+	const last =
+		lastLineMatch(source, pattern) ?? lastLineMatch(source, IMPORT_END);
+	if (!last || last.index === undefined) return `${line}\n\n${source}`;
 	const lineEnd = source.indexOf("\n", last.index);
 	const at = lineEnd === -1 ? source.length : lineEnd + 1;
 	return `${source.slice(0, at)}${line}\n${source.slice(at)}`;
@@ -117,6 +137,79 @@ function appendToBlock(source, block, text) {
 	let at = block.end;
 	while (at > 0 && /\s/.test(source[at - 1] ?? "")) at--;
 	return `${source.slice(0, at)}${text}${source.slice(at)}`;
+}
+
+/** @param {string} text */
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&");
+
+/** An element's text without comments. @param {string} text */
+const bare = (text) => text.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, "").trim();
+
+/** Drops every line that matches `pattern` in full. @param {string} source @param {RegExp} pattern */
+function removeLines(source, pattern) {
+	return source.replace(new RegExp(`${pattern.source}\\n?`, "gm"), "");
+}
+
+/**
+ * The top-level elements of an array or object literal block, split at commas outside of
+ * brackets, strings and comments. Each range runs from after the previous comma through its
+ * own comma, if it has one.
+ *
+ * @param {string} source @param {{ start: number; end: number }} block
+ */
+function blockElements(source, block) {
+	/** @type {{ start: number; end: number; comma: boolean }[]} */
+	const elements = [];
+	let depth = 0;
+	let from = block.start;
+	for (let i = block.start; i < block.end; i++) {
+		const ch = source[i];
+		if (ch === "/" && source[i + 1] === "/") {
+			i = source.indexOf("\n", i);
+			if (i === -1) break;
+		} else if (ch === "/" && source[i + 1] === "*") {
+			i = source.indexOf("*/", i) + 1;
+		} else if (ch === '"' || ch === "'" || ch === "`") {
+			for (i++; i < block.end && source[i] !== ch; i++) {
+				if (source[i] === "\\") i++;
+			}
+		} else if (ch === "(" || ch === "[" || ch === "{") depth++;
+		else if (ch === ")" || ch === "]" || ch === "}") depth--;
+		else if (ch === "," && depth === 0) {
+			elements.push({ start: from, end: i + 1, comma: true });
+			from = i + 1;
+		}
+	}
+	if (source.slice(from, block.end).trim()) {
+		elements.push({ start: from, end: block.end, comma: false });
+	}
+	return elements;
+}
+
+/**
+ * Drops the block's elements that `match` accepts. A last element without a trailing comma
+ * takes the comma before it along.
+ *
+ * @param {string} source @param {{ start: number; end: number }} block
+ * @param {(text: string) => boolean} match
+ */
+function removeElements(source, block, match) {
+	const ranges = blockElements(source, block)
+		.filter((el) =>
+			match(bare(source.slice(el.start, el.end).replace(/,$/, ""))),
+		)
+		.map((el) => ({
+			start:
+				!el.comma && source[el.start - 1] === "," ? el.start - 1 : el.start,
+			end: el.end,
+		}));
+	let out = source;
+	let limit = source.length;
+	for (const range of ranges.reverse()) {
+		out = `${out.slice(0, range.start)}${out.slice(Math.min(range.end, limit))}`;
+		limit = range.start;
+	}
+	return out;
 }
 
 // ── Slots ───────────────────────────────────────────────────────────────────
@@ -148,7 +241,7 @@ export function wiringSlots(root) {
 	const MODULE_TYPES = /export const moduleTypes = \[/;
 	const INLINE_OF =
 		/export const richTextMedia = defineType\(\{[\s\S]*?\bof: \[/;
-	const RENDERER_SWITCH = /switch \(mod\._type\) \{/;
+	const RENDERER_SWITCH = /switch \((?:mod\.)?_type\) \{/;
 	const RENDERER_IMPORT = /^import \{ (Module\w+) \} from "\.\/Module\w+";$/;
 	const MODULES_QUERY = /export const modulesQuery = `/;
 	const INLINE_QUERY = /export const richTextMediaQuery = `/;
@@ -180,7 +273,6 @@ export function wiringSlots(root) {
 				source,
 				SCHEMA_IMPORT,
 				`import { ${mod.schemaVar} } from "./objects/modules/${mod.schemaVar}";`,
-				this.file,
 			);
 			const block = findBlock(withImport, SCHEMA_TYPES, this.file);
 			const body = withImport.slice(block.start, block.end);
@@ -192,6 +284,16 @@ export function wiringSlots(root) {
 			}
 			const at = block.start + lastModule.index + lastModule[0].length;
 			return `${withImport.slice(0, at)}${lastModule[1] ?? ""}${mod.schemaVar},\n${withImport.slice(at)}`;
+		},
+		remove(source, mod) {
+			const withoutImport = removeLines(
+				source,
+				new RegExp(
+					`^import \\{ ${mod.schemaVar} \\} from "\\./objects/modules/\\w+";$`,
+				),
+			);
+			const block = findBlock(withoutImport, SCHEMA_TYPES, this.file);
+			return removeElements(withoutImport, block, (el) => el === mod.schemaVar);
 		},
 	};
 
@@ -209,6 +311,12 @@ export function wiringSlots(root) {
 		insert(source, mod) {
 			const block = findBlock(source, MODULE_TYPES, this.file);
 			return appendToBlock(source, block, `\n  { type: "${mod.id}" },`);
+		},
+		remove(source, mod) {
+			const block = findBlock(source, MODULE_TYPES, this.file);
+			return removeElements(source, block, (el) =>
+				el.includes(`type: "${mod.id}"`),
+			);
 		},
 	};
 
@@ -228,7 +336,6 @@ export function wiringSlots(root) {
 				source,
 				RENDERER_IMPORT,
 				`import { ${mod.component} } from "./${mod.component}";`,
-				this.file,
 			);
 			const block = findBlock(withImport, RENDERER_SWITCH, this.file);
 			const body = withImport.slice(block.start, block.end);
@@ -239,11 +346,30 @@ export function wiringSlots(root) {
 			const branch = `case "${mod.id}":\n${indent}\treturn (\n${indent}\t\t<${mod.component} module={mod} locale={locale} siteLocale={siteLocale} />\n${indent}\t);\n${indent}`;
 			return `${withImport.slice(0, at)}${branch}${withImport.slice(at)}`;
 		},
+		remove(source, mod) {
+			const withoutImport = removeLines(
+				source,
+				new RegExp(
+					`^import \\{ ${mod.component} \\} from "\\./${mod.component}";$`,
+				),
+			);
+			const block = findBlock(withoutImport, RENDERER_SWITCH, this.file);
+			/* From the `case` line to the next `case` or `default:` at the same indent. */
+			const branch = new RegExp(
+				`^([ \\t]*)case "${escapeRegExp(mod.id)}":[\\s\\S]*?(?=^\\1(?:case |default:))`,
+				"m",
+			);
+			const body = withoutImport
+				.slice(block.start, block.end)
+				.replace(branch, "");
+			return `${withoutImport.slice(0, block.start)}${body}${withoutImport.slice(block.end)}`;
+		},
 	};
 
 	/**
 	 * A template literal of `${module…Query}` fragments. `insert` imports the new fragment from
-	 * `from` and lists it after the template's last `${…}`.
+	 * `from` and lists it after the template's last `${…}`, or, with none listed, after the
+	 * projection's last field.
 	 *
 	 * @param {Pick<ListSlot, "label" | "file"> & { header: RegExp; indent: string; from: (mod: ModuleNames) => string }} spec
 	 * @returns {ListSlot}
@@ -263,16 +389,40 @@ export function wiringSlots(root) {
 				source,
 				QUERY_IMPORT,
 				`import { ${mod.queryVar} } from "${from(mod)}";`,
-				slot.file,
 			);
 			const block = findBlock(withImport, header, slot.file);
 			const body = withImport.slice(block.start, block.end);
 			const last = [...body.matchAll(/\$\{\w+\}/g)].at(-1);
-			if (!last || last.index === undefined) {
-				throw new Error(`${slot.file}: no \`\${…}\` to list the module after`);
+			if (last?.index !== undefined) {
+				const at = block.start + last.index + last[0].length;
+				return `${withImport.slice(0, at)},\n${indent}\${${mod.queryVar}}${withImport.slice(at)}`;
 			}
-			const at = block.start + last.index + last[0].length;
-			return `${withImport.slice(0, at)},\n${indent}\${${mod.queryVar}}${withImport.slice(at)}`;
+			const close = body.lastIndexOf("}");
+			if (close === -1) {
+				throw new Error(
+					`${slot.file}: no \`\${…}\` or \`}\` to list the module at`,
+				);
+			}
+			return appendToBlock(
+				withImport,
+				{ end: block.start + close },
+				`,\n${indent}\${${mod.queryVar}}`,
+			);
+		},
+		remove(source, mod) {
+			const withoutImport = removeLines(
+				source,
+				new RegExp(`^import \\{ ${mod.queryVar} \\} from "[^"]+";$`),
+			);
+			const block = findBlock(withoutImport, header, slot.file);
+			/* With the comma before it, or, as the first entry, the one after it. */
+			const entry = new RegExp(
+				`,\\s*\\$\\{${mod.queryVar}\\}|\\$\\{${mod.queryVar}\\},?[ \\t]*\\n?`,
+			);
+			const body = withoutImport
+				.slice(block.start, block.end)
+				.replace(entry, "");
+			return `${withoutImport.slice(0, block.start)}${body}${withoutImport.slice(block.end)}`;
 		},
 	});
 
@@ -299,6 +449,12 @@ export function wiringSlots(root) {
 			const block = findBlock(source, INLINE_OF, this.file);
 			return appendToBlock(source, block, `\n    { type: "${mod.id}" },`);
 		},
+		remove(source, mod) {
+			const block = findBlock(source, INLINE_OF, this.file);
+			return removeElements(source, block, (el) =>
+				el.includes(`type: "${mod.id}"`),
+			);
+		},
 	};
 
 	const inlineQuery = queryList({
@@ -322,11 +478,22 @@ export function wiringSlots(root) {
 				source,
 				COMPONENT_IMPORT,
 				`import { ${mod.component} } from "@/src/components/modules/${mod.component}";`,
-				this.file,
 			);
 			const block = findBlock(withImport, INLINE_TYPES, this.file);
 			const handler = `\n\t\t\t"${mod.id}": ({ value }) => (\n\t\t\t\t<div className="rich-text-embed w-full min-w-0">\n\t\t\t\t\t<${mod.component} module={stegaBrand(value)} locale={locale} siteLocale={siteLocale} />\n\t\t\t\t</div>\n\t\t\t),`;
 			return appendToBlock(withImport, block, handler);
+		},
+		remove(source, mod) {
+			const withoutImport = removeLines(
+				source,
+				new RegExp(
+					`^import \\{ ${mod.component} \\} from "@/src/components/modules/${mod.component}";$`,
+				),
+			);
+			const block = findBlock(withoutImport, INLINE_TYPES, this.file);
+			return removeElements(withoutImport, block, (el) =>
+				el.startsWith(`"${mod.id}":`),
+			);
 		},
 	};
 

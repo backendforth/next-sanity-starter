@@ -31,7 +31,7 @@ Before writing code:
 | `packages/sanity-dataset-resolve/` | Shared dev/prod dataset resolver used by web + studio. |
 | `packages/site-languages/` | The `siteLanguageSettings` projection, row rules and `en` fallback, shared by the web's routing and the Studio's language config. |
 | `packages/check-wiring/` | `check:wiring`, `check:typegen` and the wiring manifest (`src/manifest.mjs`) both checks and the scaffolder use. |
-| `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module. |
+| `packages/scaffold-module/` | `gen:module` — scaffolds and wires a module; `clear:modules` — empties the page stack. |
 | `studio/schemas/objects/modules/` | **Schema half** of every module. |
 | `web/src/components/modules/` | **Component half** of every module. |
 | `web/sanity/queries/components/modules/` | GROQ projection per module. |
@@ -55,7 +55,7 @@ A **module** is one content block. It exists as two halves that must always evol
 | 2 | `studio/schemas/index.ts` | Import + add to `schemaTypes` array. Group with other `module.*`. |
 | 3 | `studio/schemas/fields/modulesArrayField.ts` | Append `{ type: "module.<id>" }` to `moduleTypes` so the module is insertable in document-level `modules[]` fields. |
 | 4 | `web/src/components/modules/Module<Name>.tsx` | React component typed `module: ModuleOf<"module.<id>">`. Accept `{ module, locale, siteLocale }` (and any module-specific props). No `data-sanity` in the component: `ModulesRenderer` sets it. |
-| 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch ends in `const unhandled: never = mod`, so a module the query returns without a `case` fails `tsc`. |
+| 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch on `mod`'s `_type` ends in `const unhandled: never = _type`, so a module the query returns without a `case` fails `tsc`. |
 | 6 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` — the GROQ projection (`_type == "module.<id>" => { ...fields }`), listed in `modulesQuery` in `queries/components/modules/index.ts`. |
 
 Then `pnpm generate` and commit `studio/schema.json` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types of the page stack and of rich text, so it does not depend on either.
@@ -151,9 +151,10 @@ The repo has three pnpm scopes: **root** (orchestrates the monorepo), **web** (N
 | `pnpm lint` | `biome ci .`: format, lint and import order, no writes. The pre-push hook and CI run it. |
 | `pnpm format` | `biome check --write .` (auto-fix). |
 | `pnpm gen:module <Name>` | Scaffold a new module: creates the schema, component and query files and wires all 6 points, the `ModulesRenderer` `case` included (`--inline` also registers it in the three inline places). Writes nothing if any anchor is missing. PascalCase name. Add `--dry-run` to preview. |
+| `pnpm clear:modules` | Empty the page stack before a project builds its own modules: deletes every module rich text doesn't embed (schema, component, query, and the component files only it imports) and takes the inline ones out of the three page-stack places. Writes nothing if any slot is missing. Add `--dry-run` to preview, then `pnpm generate`. |
 | `pnpm check:wiring` | Compare the module schemas with the schema index, both ways, the three page-stack places and the three inline places each with each other, and fail an unused module. CI gate. |
 | `pnpm check:typegen` | Every `defineQuery` in `web/sanity/` got a generated type (TypeGen skips queries it can't evaluate silently). Part of `pnpm generate`. |
-| `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including an end-to-end scaffold. CI gate. |
+| `pnpm test:tooling` | `node:test` suites for check-wiring and gen:module, including end-to-end runs of `gen:module` and `clear:modules`. CI gate. |
 | `pnpm up -r` | pnpm built-in: update every workspace's dependencies within their ranges (`--latest` crosses them, `-i` picks interactively). `pnpm --filter studio up` does the Studio only. |
 
 ### web (run from `web/` or via `pnpm --filter web run …`)
@@ -262,6 +263,14 @@ URL /[locale]/[slug]
 3. `pnpm check:wiring && pnpm typecheck && pnpm format`.
 
 `studio/schemas/README.md` §8 "Content modules" has the Studio details.
+
+### Start a project's own modules
+
+1. `pnpm clear:modules --dry-run`, then `pnpm clear:modules`: `modules[]` offers nothing, the inline modules stay in rich text.
+2. `pnpm generate`, `pnpm check:wiring`, `pnpm typecheck`.
+3. `pnpm gen:module <Name>` for the first module; it is the page stack's only entry.
+
+Content that already holds a deleted module shows it as an unknown type in the Studio, so run it before content goes in.
 
 ### Add a document type (page-like)
 

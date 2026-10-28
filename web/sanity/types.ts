@@ -33,24 +33,27 @@ export type RouteDocument =
 
 // ── Modules ─────────────────────────────────────────────────────────────────
 
-/** One entry of a document's `modules[]` — the union `ModulesRenderer` switches on. */
-export type ContentModule = NonNullable<HomeDocument["modules"]>[number];
+type PageStackModule = NonNullable<HomeDocument["modules"]>[number];
+/**
+ * One entry of a document's `modules[]` — the union `ModulesRenderer` switches on. With no module
+ * in the page stack (`pnpm clear:modules`) TypeGen types `modules` as `null`; the stand-in then
+ * keeps `ModulesRenderer` compiling until `pnpm gen:module` adds the first one.
+ */
+export type ContentModule = [PageStackModule] extends [never]
+	? { _key: string; _type: never }
+	: PageStackModule;
 /**
  * A module wherever a query projects it: in a document's `modules[]` or inline in rich text. A
  * module that only one of the two holds keeps its type, so leaving the page stack changes nothing
  * for its component.
  */
 type ProjectedModule =
-	| ContentModule
+	| PageStackModule
 	| Extract<RichTextMediaItem, { _type: `module.${string}` }>;
-/** The projected shape of one module type, e.g. `ModuleOf<"module.text">`. */
+/** The projected shape of one module type, e.g. `ModuleOf<"module.media">`. */
 export type ModuleOf<T extends ProjectedModule["_type"]> = Extract<
 	ProjectedModule,
 	{ _type: T }
->;
-
-export type ContentRefTarget = NonNullable<
-	NonNullable<ModuleOf<"module.contentRefs">["references"]>[number]
 >;
 
 // ── Rich text ───────────────────────────────────────────────────────────────

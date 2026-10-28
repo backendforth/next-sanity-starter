@@ -1,6 +1,6 @@
 import { stegaClean } from "next-sanity";
 
-import type { ContentRefTarget, ModuleOf } from "@/sanity/types";
+import type { ModuleOf } from "@/sanity/types";
 import {
 	pickLocalizedString,
 	plainText,
@@ -14,6 +14,11 @@ import { LazyModuleContentRefsClient } from "./LazyModuleContentRefsClient";
 import { moduleHeadingClassName, moduleSectionClassName } from "./moduleStyles";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+
+/** One referenced document, as the query projects it. Here, not in `@/sanity/types`, so it goes with the module. */
+type ContentRefTarget = NonNullable<
+	NonNullable<ModuleOf<"module.contentRefs">["references"]>[number]
+>;
 
 /** A list entry with its href and labels resolved for the route's locale on the server. */
 export type ContentRefListItem = {

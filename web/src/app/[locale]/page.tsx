@@ -59,15 +59,13 @@ export default async function Home({ params }: PageProps) {
 
 	return (
 		<div className={pageContainerClassName}>
-			{data.modules?.length ? (
-				<ModulesRenderer
-					modules={data.modules}
-					locale={locale}
-					siteLocale={siteLocale}
-					documentId={data._id}
-					documentType="home"
-				/>
-			) : null}
+			<ModulesRenderer
+				modules={data.modules}
+				locale={locale}
+				siteLocale={siteLocale}
+				documentId={data._id}
+				documentType="home"
+			/>
 		</div>
 	);
 }

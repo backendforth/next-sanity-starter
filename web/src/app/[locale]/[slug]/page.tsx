@@ -69,15 +69,13 @@ export default async function Page({ params }: PageProps) {
 
 	return (
 		<div className={pageContainerClassName}>
-			{data.modules?.length ? (
-				<ModulesRenderer
-					modules={data.modules}
-					locale={locale}
-					siteLocale={siteLocale}
-					documentId={data._id}
-					documentType="page"
-				/>
-			) : null}
+			<ModulesRenderer
+				modules={data.modules}
+				locale={locale}
+				siteLocale={siteLocale}
+				documentId={data._id}
+				documentType="page"
+			/>
 		</div>
 	);
 }

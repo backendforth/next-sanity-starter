@@ -55,7 +55,7 @@ A **module** is one content block. It exists as two halves that must always evol
 | 2 | `studio/schemas/index.ts` | Import + add to `schemaTypes` array. Group with other `module.*`. |
 | 3 | `studio/schemas/fields/modulesArrayField.ts` | Append `{ type: "module.<id>" }` to `moduleTypes` so the module is insertable in document-level `modules[]` fields. |
 | 4 | `web/src/components/modules/Module<Name>.tsx` | React component typed `module: ModuleOf<"module.<id>">`. Accept `{ module, locale, siteLocale }` (and any module-specific props). No `data-sanity` in the component: `ModulesRenderer` sets it. |
-| 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch ends in `const unhandled: never = mod`, so a module the query returns without a `case` fails `tsc`. |
+| 5 | `web/src/components/modules/ModulesRenderer.tsx` | A `case "module.<id>":` in `renderModuleChild()`. The switch on `mod`'s `_type` ends in `const unhandled: never = _type`, so a module the query returns without a `case` fails `tsc`. |
 | 6 | `web/sanity/queries/components/modules/<name>.ts` | `module<Name>Query` — the GROQ projection (`_type == "module.<id>" => { ...fields }`), listed in `modulesQuery` in `queries/components/modules/index.ts`. |
 
 Then `pnpm generate` and commit `studio/schema.json` and `web/sanity/sanity.types.gen.ts`; CI rejects a diff. The module's TS type is not a wiring point — it is `ModuleOf<"module.<id>">`, derived from the generated query types of the page stack and of rich text, so it does not depend on either.

@@ -1,13 +1,14 @@
 // @ts-check
 /**
- * End to end: scaffold two modules — one of them inline — into a copy of this checkout, then
- * run what `pnpm generate` and CI run: schema extract and typegen, `check:typegen`, `check:wiring` and
- * `tsc` for web and studio. The copy shares this checkout's `node_modules` through symlinks.
+ * End to end: scaffold two modules — one of them inline — into a copy of this checkout, or clear
+ * the page stack and scaffold its first module, then run what `pnpm generate` and CI run: schema
+ * extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio. The copy
+ * shares this checkout's `node_modules` through symlinks.
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { cp, mkdtemp, readdir, rm, symlink } from "node:fs/promises";
+import { cp, mkdtemp, readdir, readFile, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { test } from "node:test";
@@ -32,9 +33,11 @@ function run(cwd, command, args) {
 	return result.stdout;
 }
 
-test("two scaffolded modules, one inline, generate, wire and typecheck", {
-	timeout: 300_000,
-}, async (t) => {
+const scaffold = join(repo, "packages/scaffold-module/bin/scaffold-module.mjs");
+const clear = join(repo, "packages/scaffold-module/bin/clear-modules.mjs");
+
+/** A copy of this checkout that shares its `node_modules`. @param {import("node:test").TestContext} t */
+async function copyCheckout(t) {
 	const dir = await mkdtemp(join(tmpdir(), "scaffold-e2e-"));
 	t.after(() => rm(dir, { recursive: true, force: true }));
 
@@ -50,14 +53,11 @@ test("two scaffolded modules, one inline, generate, wire and typecheck", {
 		if (existsSync(modules))
 			await symlink(modules, join(dir, sub, "node_modules"), "dir");
 	}
+	return dir;
+}
 
-	const scaffold = join(
-		repo,
-		"packages/scaffold-module/bin/scaffold-module.mjs",
-	);
-	run(repo, process.execPath, [scaffold, "--root", dir, "Hero"]);
-	run(repo, process.execPath, [scaffold, "--root", dir, "Quote", "--inline"]);
-
+/** Generate, check typegen and wiring, typecheck both apps; returns the wiring report. @param {string} dir */
+function generateAndCheck(dir) {
 	run(join(dir, "studio"), "pnpm", ["run", "generate"]);
 	run(join(dir, "web"), "pnpm", ["run", "generate"]);
 
@@ -72,12 +72,50 @@ test("two scaffolded modules, one inline, generate, wire and typecheck", {
 		"--root",
 		dir,
 	]);
-	assert.match(wiring, /✓ module\.hero\n/);
-	assert.match(wiring, /✓ module\.quote \(inline\)/);
 
 	for (const app of ["web", "studio"]) {
 		run(join(dir, app), "pnpm", ["run", "typecheck"]);
 	}
+	return wiring;
+}
+
+test("two scaffolded modules, one inline, generate, wire and typecheck", {
+	timeout: 300_000,
+}, async (t) => {
+	const dir = await copyCheckout(t);
+	run(repo, process.execPath, [scaffold, "--root", dir, "Hero"]);
+	run(repo, process.execPath, [scaffold, "--root", dir, "Quote", "--inline"]);
+
+	const wiring = generateAndCheck(dir);
+	assert.match(wiring, /✓ module\.hero\n/);
+	assert.match(wiring, /✓ module\.quote \(inline\)/);
+});
+
+test("a cleared page stack compiles, and its first module is its only one", {
+	timeout: 300_000,
+}, async (t) => {
+	const dir = await copyCheckout(t);
+	run(repo, process.execPath, [clear, "--root", dir]);
+	assert.equal(
+		existsSync(join(dir, "web/src/components/modules/ContentRefList.tsx")),
+		false,
+		"a helper only a deleted module imports goes with it",
+	);
+
+	const cleared = generateAndCheck(dir);
+	assert.doesNotMatch(cleared, /module\.(text|contentRefs)/);
+	assert.match(cleared, /✓ module\.media \(inline\)/);
+
+	run(repo, process.execPath, [scaffold, "--root", dir, "Hero"]);
+	const wiring = generateAndCheck(dir);
+	assert.match(wiring, /✓ module\.hero\n/);
+	assert.match(
+		await readFile(
+			join(dir, "studio/schemas/fields/modulesArrayField.ts"),
+			"utf8",
+		),
+		/moduleTypes = \[\s*\{ type: "module\.hero" \},?\s*\]/,
+	);
 });
 
 test("a missing anchor aborts before anything is written", async (t) => {
@@ -92,10 +130,6 @@ test("a missing anchor aborts before anything is written", async (t) => {
 		{ recursive: true },
 	);
 
-	const scaffold = join(
-		repo,
-		"packages/scaffold-module/bin/scaffold-module.mjs",
-	);
 	const result = spawnSync(
 		process.execPath,
 		[scaffold, "--root", dir, "Hero"],

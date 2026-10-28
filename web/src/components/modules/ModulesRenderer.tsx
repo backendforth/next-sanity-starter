@@ -15,7 +15,8 @@ import { ModuleText } from "./ModuleText";
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Props = {
-	modules: ContentModule[];
+	/** The document's `modules[]`; an empty or missing stack renders nothing. */
+	modules: ContentModule[] | null;
 	locale: string;
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">;
 	/** Document `_id` of the page rendering these modules. Used to mark each
@@ -59,7 +60,9 @@ function renderModuleChild(
 	siteLocale: Pick<SiteLocaleConfig, "localeIds" | "defaultLocale">,
 	priority: boolean,
 ) {
-	switch (mod._type) {
+	/* Destructured, `_type` still narrows `mod` per `case`, and an empty page stack compiles too. */
+	const { _type } = mod;
+	switch (_type) {
 		case "module.text":
 			return (
 				<ModuleText
@@ -86,10 +89,8 @@ function renderModuleChild(
 			);
 		default: {
 			/* A module type the query returns but no `case` handles fails `tsc` here. */
-			const unhandled: never = mod;
-			return (
-				<UnknownModule moduleType={(unhandled as { _type?: string })._type} />
-			);
+			const unhandled: never = _type;
+			return <UnknownModule moduleType={unhandled} />;
 		}
 	}
 }
@@ -111,6 +112,9 @@ export async function ModulesRenderer({
 	documentId,
 	documentType,
 }: Props) {
+	if (!modules?.length) {
+		return null;
+	}
 	const isDraft = (await draftMode()).isEnabled;
 	const initialModules: PrerenderedModule[] = modules.map((mod, index) => ({
 		_key: mod._key,

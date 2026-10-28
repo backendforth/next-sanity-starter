@@ -148,7 +148,7 @@ export function wiringSlots(root) {
 	const MODULE_TYPES = /export const moduleTypes = \[/;
 	const INLINE_OF =
 		/export const richTextMedia = defineType\(\{[\s\S]*?\bof: \[/;
-	const RENDERER_SWITCH = /switch \(mod\._type\) \{/;
+	const RENDERER_SWITCH = /switch \((?:mod\.)?_type\) \{/;
 	const RENDERER_IMPORT = /^import \{ (Module\w+) \} from "\.\/Module\w+";$/;
 	const MODULES_QUERY = /export const modulesQuery = `/;
 	const INLINE_QUERY = /export const richTextMediaQuery = `/;

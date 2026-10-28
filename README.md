@@ -398,6 +398,23 @@ A project has two long-lived branches: `main` is production, `development` is st
 4. Fill `development` with the production content: `pnpm studio:sync-prod-to-dev` ([Refresh development from production](#refresh-development-from-production)).
 5. Push `development`. Both projects build it.
 
+### Redeploy from GitHub
+
+Anyone with write access to the repository can rebuild site and Studio without a local setup or a Netlify login: **Actions → Netlify deploy → Run workflow**, then choose the environment (`staging` or `production`) and what to rebuild. The workflow ([`.github/workflows/netlify-deploy.yml`](.github/workflows/netlify-deploy.yml)) calls a Netlify build hook per project, and Netlify builds the environment's branch without cache. Netlify lists the deploy as "Redeploy by \<user\> via GitHub Actions". GitHub only shows that the build started; the site shows the result a few minutes later.
+
+Set it up once per environment:
+
+1. On the web and the Studio project, under **Continuous deployment → Build hooks → Add build hook**, add a hook named `GitHub Actions` for the environment's branch: `main` for production, `development` for staging.
+2. In GitHub, under **Settings → Environments**, create `staging` and `production`. In each, add the secrets `NETLIFY_SITE_BUILD_HOOK` and `NETLIFY_STUDIO_BUILD_HOOK` with the hook URLs. Optional: the variables `SITE_URL` and `STUDIO_URL`, which the run's summary links to.
+
+An environment without hooks fails the run with a pointer to this section.
+
+Keep in mind:
+
+- A hook URL is a secret: whoever has it can start builds of that branch. Keep it in GitHub's secrets only. If one leaks, delete it in Netlify and add a new one.
+- Hooks instead of a Netlify access token: a token belongs to a person and reaches all of their Netlify projects, a hook reaches one project and one branch.
+- Running a workflow needs write access to the repository. GitHub Team can't require an approval before a deployment in a private repository, so everyone with write access can rebuild production. A rebuild deploys what's on `main`; it changes no code.
+
 ### Dataset per site
 
 Without any setting, both sites follow the deploy context:
@@ -503,6 +520,7 @@ Every migration can run twice without harm. [`studio/scripts/README.md`](studio/
 - **Biome** formats and lints everything ([`biome.json`](biome.json)): tabs, two spaces in `studio/`.
 - **Git hooks.** Pre-commit formats the staged files. Pre-push runs `pnpm lint` and `pnpm typecheck`.
 - **CI** (`.github/workflows/ci.yml`, Node 22) runs lint, typecheck, `check:wiring`, the tooling tests, a check for stale types, `next build` with a size limit for the JavaScript of the first page load ([`.github/bundle-budget.json`](.github/bundle-budget.json)) and `sanity build`.
+- **Netlify deploy** (`.github/workflows/netlify-deploy.yml`) rebuilds site or Studio on Netlify by hand, from GitHub ([Redeploy from GitHub](#redeploy-from-github)).
 - **Dependabot** checks dependencies monthly on both branches. Minor and patch updates merge after CI, major ones wait for a review.
 - **AI agents.** [`AGENTS.md`](AGENTS.md) is the rulebook for Claude Code, Cursor, Copilot and others. The `CLAUDE.md` files and `.cursor/rules/` point to it.
 
@@ -523,10 +541,10 @@ Every migration can run twice without harm. [`studio/scripts/README.md`](studio/
    ```
    Add your GitHub repository as `origin` and push both branches.
 2. Add the "This repository" block to the top of `AGENTS.md`, with the starter branch and commit ([`AGENTS.md`](AGENTS.md) → "Projects built from this starter").
-3. Delete the workflows in `.github/workflows/` other than `ci.yml`: Claude review, Dependabot review and auto-merge and the Slack notifications need the starter organisation's secrets.
+3. Delete the workflows in `.github/workflows/` other than `ci.yml` and `netlify-deploy.yml`: Claude review, Dependabot review and auto-merge and the Slack notifications need the starter organisation's secrets.
 4. Delete the `variant/document-level` entries in `.github/dependabot.yml` and the `Variant-Port` line in `.github/pull_request_template.md`. A project has no variant.
 5. Keep the READMEs in subfolders. They document the code next to them.
-6. Go through [Local setup](#local-setup) and [Deploy](#deploy), [Staging](#staging) included.
+6. Go through [Local setup](#local-setup) and [Deploy](#deploy), [Staging](#staging) and [Redeploy from GitHub](#redeploy-from-github) included.
 
 ---
 

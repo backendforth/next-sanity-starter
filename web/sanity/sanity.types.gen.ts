@@ -21,26 +21,6 @@ type ArrayOf<T> = Array<
 >;
 
 // Source: ../studio/schema.json
-export type Summarize = {
-  jobId?: string;
-  completedAt?: number;
-  title?: string;
-  description?: string;
-  tags?: Array<string>;
-};
-
-export type Moderate = {
-  jobId?: string;
-  completedAt?: number;
-  exceedsThreshold?: boolean;
-  maxScores?: MaxScores;
-};
-
-export type MaxScores = {
-  sexual?: number;
-  violence?: number;
-};
-
 export type VideoSettings = {
   autoplay?: boolean;
   controls?: boolean;
@@ -657,28 +637,6 @@ export type MuxVideoAsset = {
   filename?: string;
   thumbTime?: number;
   data?: MuxAssetData;
-  robotsJobs?: Array<
-    {
-      _key: string;
-    } & MuxRobotsJob
-  >;
-  robotsOutputs?: MuxRobotsOutputs;
-  robotsDirectiveRuns?: Array<
-    {
-      _key: string;
-    } & MuxRobotsDirectiveRun
-  >;
-  robotsPendingCreates?: Array<
-    {
-      _key: string;
-    } & MuxRobotsPendingCreate
-  >;
-};
-
-export type MuxRobotsOutputs = {
-  _type: "mux.robotsOutputs";
-  summarize?: Summarize;
-  moderate?: Moderate;
 };
 
 export type MuxAssetData = {
@@ -698,7 +656,6 @@ export type MuxAssetData = {
   max_stored_frame_rate?: number;
   mp4_support?: string;
   max_resolution_tier?: string;
-  thumbnail_time?: number;
   tracks?: Array<
     {
       _key: string;
@@ -711,37 +668,6 @@ export type MuxAssetData = {
   >;
   static_renditions?: MuxStaticRenditions;
   master?: MuxMasterFile;
-};
-
-export type MuxRobotsPendingCreate = {
-  _type: "mux.robotsPendingCreate";
-  requestId?: string;
-  kind?: string;
-  workflow?: string;
-  directiveId?: string;
-  requestedAt?: number;
-};
-
-export type MuxRobotsDirectiveRun = {
-  _type: "mux.robotsDirectiveRun";
-  runId?: string;
-  directiveId?: string;
-  status?: string;
-  startedAt?: number;
-  completedAt?: number;
-  jobIds?: Array<string>;
-};
-
-export type MuxRobotsJob = {
-  _type: "mux.robotsJob";
-  id?: string;
-  workflow?: string;
-  status?: string;
-  created_at?: number;
-  updated_at?: number;
-  units_consumed?: number;
-  error?: string;
-  thumbnailApplied?: boolean;
 };
 
 export type MuxMasterFile = {
@@ -921,9 +847,6 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
-  | Summarize
-  | Moderate
-  | MaxScores
   | VideoSettings
   | CookieSection
   | TrackerPlausible
@@ -976,11 +899,7 @@ export type AllSanitySchemaTypes =
   | SiteNav
   | SiteSettings
   | MuxVideoAsset
-  | MuxRobotsOutputs
   | MuxAssetData
-  | MuxRobotsPendingCreate
-  | MuxRobotsDirectiveRun
-  | MuxRobotsJob
   | MuxMasterFile
   | MuxStaticRenditions
   | MuxStaticRenditionFile

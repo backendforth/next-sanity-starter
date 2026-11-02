@@ -28,7 +28,6 @@ const thumbStyle = {
  * thumbnail, optional kicker line, title, subtitle.
  */
 export function moduleRowPreview(kicker?: string) {
-  // biome-ignore lint/correctness/noComponentHookFactories: called once at schema definition, never during render
   return function ModuleRowPreview(props: PreviewProps) {
     const { title, subtitle, media } = props;
 

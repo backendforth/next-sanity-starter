@@ -43,6 +43,7 @@ export function richTextModulePreview(
   componentTitle: string,
   { showTitle }: { showTitle: boolean },
 ) {
+  // biome-ignore lint/correctness/noComponentHookFactories: called once at schema definition, never during render
   return function RichTextModulePreview(props: PreviewProps) {
     const { subtitle, media } = props;
     const title = showTitle ? props.title : undefined;

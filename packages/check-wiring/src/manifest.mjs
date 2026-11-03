@@ -132,11 +132,19 @@ function insertAfterLastLine(source, pattern, line) {
 	return `${source.slice(0, at)}${line}\n${source.slice(at)}`;
 }
 
-/** Inserts `text` right before the block's closing bracket, after its last non-blank char. @param {string} source @param {{ end: number }} block @param {string} text */
-function appendToBlock(source, block, text) {
+/**
+ * Inserts `entry` right before the block's closing bracket, after its last non-blank char, and
+ * sets the comma before it only where the list has none: Biome writes a one-entry list on one
+ * line without a trailing comma (`[{ type: "module.hero" }]`), a longer one with it. Callers pass
+ * the entry without a leading comma.
+ *
+ * @param {string} source @param {{ end: number }} block @param {string} entry
+ */
+function appendToBlock(source, block, entry) {
 	let at = block.end;
 	while (at > 0 && /\s/.test(source[at - 1] ?? "")) at--;
-	return `${source.slice(0, at)}${text}${source.slice(at)}`;
+	const comma = /[,[{]/.test(source[at - 1] ?? "") ? "" : ",";
+	return `${source.slice(0, at)}${comma}${entry}${source.slice(at)}`;
 }
 
 /** @param {string} text */
@@ -280,7 +288,7 @@ export function wiringSlots(root) {
 				-1,
 			);
 			if (!lastModule || lastModule.index === undefined) {
-				return appendToBlock(withImport, block, `,\n  ${mod.schemaVar}`);
+				return appendToBlock(withImport, block, `\n  ${mod.schemaVar},`);
 			}
 			const at = block.start + lastModule.index + lastModule[0].length;
 			return `${withImport.slice(0, at)}${lastModule[1] ?? ""}${mod.schemaVar},\n${withImport.slice(at)}`;
@@ -406,7 +414,7 @@ export function wiringSlots(root) {
 			return appendToBlock(
 				withImport,
 				{ end: block.start + close },
-				`,\n${indent}\${${mod.queryVar}}`,
+				`\n${indent}\${${mod.queryVar}}`,
 			);
 		},
 		remove(source, mod) {

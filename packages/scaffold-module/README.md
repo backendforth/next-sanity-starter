@@ -45,4 +45,4 @@ Run it at the start of a project: content that already holds a deleted module sh
 
 ## Tests
 
-`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `Hero` and `Quote --inline` into a copy of the checkout and runs the schema extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio. A second test runs `clear:modules`, the same checks on the empty stack, then `Hero` and the checks again; a third checks that a missing anchor writes nothing.
+`test/scaffold.e2e.test.mjs` (run by `pnpm test:tooling`) scaffolds `ScaffoldProbe` and `ScaffoldInlineProbe --inline` into a copy of the checkout and runs the schema extract and typegen, `check:typegen`, `check:wiring` and `tsc` for web and studio. A second test runs `clear:modules` and the same checks on the empty stack, then scaffolds the two again, the second after Biome has written the first as a one-line list, and runs the checks again; a third checks that a missing anchor writes nothing. The tests use their own module names and none of the starter's modules, so they pass in every project, cleared or not.

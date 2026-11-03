@@ -91,7 +91,7 @@ test("two scaffolded modules, one inline, generate, wire and typecheck", {
 	assert.match(wiring, /✓ module\.quote \(inline\)/);
 });
 
-test("a cleared page stack compiles, and its first module is its only one", {
+test("a cleared page stack compiles, then takes one module after another", {
 	timeout: 300_000,
 }, async (t) => {
 	const dir = await copyCheckout(t);
@@ -106,15 +106,25 @@ test("a cleared page stack compiles, and its first module is its only one", {
 	assert.doesNotMatch(cleared, /module\.(text|contentRefs)/);
 	assert.match(cleared, /✓ module\.media \(inline\)/);
 
+	const modulesArray = join(dir, "studio/schemas/fields/modulesArrayField.ts");
 	run(repo, process.execPath, [scaffold, "--root", dir, "Hero"]);
+	/* Biome writes a one-entry list on one line, without a trailing comma. */
+	assert.match(
+		await readFile(modulesArray, "utf8"),
+		/moduleTypes = \[\{ type: "module\.hero" \}\];/,
+	);
+	run(repo, process.execPath, [scaffold, "--root", dir, "Quote", "--inline"]);
+
 	const wiring = generateAndCheck(dir);
 	assert.match(wiring, /✓ module\.hero\n/);
-	assert.match(
-		await readFile(
-			join(dir, "studio/schemas/fields/modulesArrayField.ts"),
-			"utf8",
-		),
-		/moduleTypes = \[\s*\{ type: "module\.hero" \},?\s*\]/,
+	assert.match(wiring, /✓ module\.quote \(inline\)/);
+	assert.deepEqual(
+		[
+			...(await readFile(modulesArray, "utf8")).matchAll(
+				/type: "(module\.\w+)"/g,
+			),
+		].map((m) => m[1]),
+		["module.hero", "module.quote"],
 	);
 });
 

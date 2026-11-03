@@ -63,7 +63,7 @@ test("every slot reads the repo's modules and takes a new one", async () => {
 	}
 });
 
-test("every slot drops its modules one by one, then takes a new one", async () => {
+test("every slot drops its modules one by one, then takes a new one with one comma", async () => {
 	const wiring = wiringSlots(repo);
 	for (const slot of [...wiring.required, ...wiring.page, ...wiring.inline]) {
 		let source = await readFile(slot.file, "utf8");
@@ -76,10 +76,13 @@ test("every slot drops its modules one by one, then takes a new one", async () =
 				`${slot.label} drops ${id}`,
 			);
 		}
-		assert.deepEqual(
-			[...slot.read(slot.insert(source, pageProbe))],
-			[pageProbe.id],
-			slot.label,
+		const inserted = slot.insert(source, pageProbe);
+		assert.deepEqual([...slot.read(inserted)], [pageProbe.id], slot.label);
+		/* An emptied list still ends in a trailing comma: no second one before the new entry. */
+		assert.doesNotMatch(
+			inserted,
+			/,\s*,/,
+			`${slot.label}: one comma per entry`,
 		);
 	}
 });

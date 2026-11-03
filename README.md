@@ -158,6 +158,8 @@ pnpm generate                    # regenerate the types
 pnpm check:wiring                # verify all eight places
 ```
 
+To start a project's own modules from an empty page stack, run `pnpm clear:modules` first. It deletes `module.text` and `module.contentRefs` and keeps `module.media` and `module.carousel` for rich text only; the next `pnpm gen:module` is then the only module in `modules[]`. Add `--dry-run` to see the changes first.
+
 [`AGENTS.md`](AGENTS.md) → "The module pattern" has the rules.
 
 ### Languages
@@ -481,6 +483,7 @@ Run from the repository root.
 | `pnpm lint` / `pnpm format` | Biome check / Biome fix |
 | `pnpm build` | Builds site and Studio |
 | `pnpm gen:module <Name>` | Creates a module, see [Modules](#modules) |
+| `pnpm clear:modules` | Empties the page stack for a project's own modules, see [Modules](#modules) |
 | `pnpm studio:sync-prod-to-dev` | Copies `production` into `development` |
 | `pnpm studio:register` | Registers the Netlify Studio with Sanity |
 | `pnpm studio:deploy` | Deploys the Studio to Sanity Hosting |

@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"gen": "node ./bin/scaffold-module.mjs",
+		"clear": "node ./bin/clear-modules.mjs",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {

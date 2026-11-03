@@ -25,8 +25,8 @@ Part of `pnpm generate`. Sanity TypeGen skips a `defineQuery` it cannot evaluate
 
 ## The manifest (`@repo/check-wiring/manifest`)
 
-`src/manifest.mjs` describes each list slot once: the file, a header pattern that opens the list, and bracket matching to find its end — no marker comments. Each slot can `read` the module ids it holds and `insert` one more. `check:wiring` reads through it; `gen:module` writes through it, so the two cannot disagree about where a module goes.
+`src/manifest.mjs` describes each list slot once: the file, a header pattern that opens the list, and bracket matching to find its end — no marker comments. Each slot can `read` the module ids it holds, `insert` one more and `remove` one. `check:wiring` reads through it; `gen:module` and `clear:modules` write through it, so they cannot disagree about where a module goes.
 
 ## Tests
 
-`pnpm test:tooling` runs `test/*.test.mjs` here and in `@repo/scaffold-module`: the manifest against the repo's files, each failure mode of `check:wiring` on a modified copy, and an end-to-end scaffold. CI runs it in the `format • typecheck` job.
+`pnpm test:tooling` runs `test/*.test.mjs` here and in `@repo/scaffold-module`: the manifest against the repo's files, each failure mode of `check:wiring` on a modified copy, and end-to-end runs of `gen:module` and `clear:modules`. CI runs it in the `format • typecheck` job.

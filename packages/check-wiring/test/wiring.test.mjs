@@ -7,7 +7,12 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { findBlock, moduleNames, wiringSlots } from "../src/manifest.mjs";
+import {
+	findBlock,
+	moduleNames,
+	moduleNamesFromId,
+	wiringSlots,
+} from "../src/manifest.mjs";
 
 const repo = fileURLToPath(new URL("../../..", import.meta.url));
 const checkWiring = fileURLToPath(
@@ -47,6 +52,28 @@ test("every slot reads the repo's modules and takes a new one", async () => {
 	for (const slot of wiring.inline) {
 		const source = await readFile(slot.file, "utf8");
 		assert.ok(slot.read(slot.insert(source, hero)).has(hero.id), slot.label);
+	}
+});
+
+test("every slot drops its modules one by one, then takes a new one", async () => {
+	const wiring = wiringSlots(repo);
+	const hero = moduleNames("Hero");
+	for (const slot of [...wiring.required, ...wiring.page, ...wiring.inline]) {
+		let source = await readFile(slot.file, "utf8");
+		for (const id of slot.read(source)) {
+			const rest = [...slot.read(source)].filter((other) => other !== id);
+			source = slot.remove(source, moduleNamesFromId(id));
+			assert.deepEqual(
+				[...slot.read(source)].sort(),
+				rest.sort(),
+				`${slot.label} drops ${id}`,
+			);
+		}
+		assert.deepEqual(
+			[...slot.read(slot.insert(source, hero))],
+			[hero.id],
+			slot.label,
+		);
 	}
 });
 

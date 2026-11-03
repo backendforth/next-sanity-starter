@@ -64,15 +64,13 @@ export default async function Home({ params }: PageProps) {
 				path={data.path}
 				translations={data.translations}
 			/>
-			{data.modules?.length ? (
-				<ModulesRenderer
-					modules={data.modules}
-					locale={locale}
-					siteLocale={siteLocale}
-					documentId={data._id}
-					documentType="home"
-				/>
-			) : null}
+			<ModulesRenderer
+				modules={data.modules}
+				locale={locale}
+				siteLocale={siteLocale}
+				documentId={data._id}
+				documentType="home"
+			/>
 		</div>
 	);
 }

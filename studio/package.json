@@ -22,18 +22,18 @@
     "@repo/site-languages": "workspace:*",
     "@sanity/icons": "^5.2.2",
     "@sanity/image-url": "^2.1.1",
-    "@sanity/vision": "^6.20.0",
+    "@sanity/vision": "^6.21.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "rxjs": "^7.8.2",
-    "sanity": "^6.20.0",
-    "sanity-plugin-internationalized-array": "^5.3.1",
-    "sanity-plugin-media": "^6.3.1",
-    "sanity-plugin-mux-input": "^5.0.12",
-    "styled-components": "^6.5.3"
+    "sanity": "^6.21.0",
+    "sanity-plugin-internationalized-array": "^5.3.9",
+    "sanity-plugin-media": "^6.6.0",
+    "sanity-plugin-mux-input": "^5.2.1",
+    "styled-components": "^6.6.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.4",
+    "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "typescript": "^6.0.3"
   }

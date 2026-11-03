@@ -77,6 +77,22 @@ test("every slot drops its modules one by one, then takes a new one", async () =
 	}
 });
 
+test("an entry after a one-line list gets the comma Biome left out", () => {
+	const wiring = wiringSlots(repo);
+	const modulesArray = wiring.page.find(
+		(slot) => slot.file === wiring.files.modulesArray,
+	);
+	assert.ok(modulesArray);
+	const after = modulesArray.insert(
+		'export const moduleTypes = [{ type: "module.hero" }];\n',
+		moduleNames("Quote"),
+	);
+	assert.match(
+		after,
+		/\{ type: "module\.hero" \},\n {2}\{ type: "module\.quote" \},\]/,
+	);
+});
+
 /** A copy of just the files `check:wiring` reads, with an edit applied to each file named. */
 async function checkWithEdits(
 	/** @type {import("node:test").TestContext} */ t,

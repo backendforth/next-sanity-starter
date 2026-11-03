@@ -132,11 +132,19 @@ function insertAfterLastLine(source, pattern, line) {
 	return `${source.slice(0, at)}${line}\n${source.slice(at)}`;
 }
 
-/** Inserts `text` right before the block's closing bracket, after its last non-blank char. @param {string} source @param {{ end: number }} block @param {string} text */
+/**
+ * Inserts `text` right before the block's closing bracket, after its last non-blank char. A
+ * `text` on its own line after a last entry without a trailing comma gets that comma first:
+ * Biome writes a one-entry list on one line, `[{ type: "module.hero" }]`.
+ *
+ * @param {string} source @param {{ end: number }} block @param {string} text
+ */
 function appendToBlock(source, block, text) {
 	let at = block.end;
 	while (at > 0 && /\s/.test(source[at - 1] ?? "")) at--;
-	return `${source.slice(0, at)}${text}${source.slice(at)}`;
+	const comma =
+		text.startsWith("\n") && !/[,[{]/.test(source[at - 1] ?? "") ? "," : "";
+	return `${source.slice(0, at)}${comma}${text}${source.slice(at)}`;
 }
 
 /** @param {string} text */

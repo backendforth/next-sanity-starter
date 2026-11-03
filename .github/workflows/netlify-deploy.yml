@@ -5,7 +5,7 @@ name: Netlify deploy
 # local setup or a Netlify login: Actions → "Netlify deploy" → Run workflow.
 #
 # Each Netlify project gets a build hook, a secret URL that starts a build of
-# one branch. The hooks live as secrets in the GitHub environments `staging`
+# that project, by default of the hook's branch. The hooks live as secrets in the GitHub environments `staging`
 # and `production` (README → "Redeploy from GitHub"), so no Netlify token is
 # stored here and the job needs no repository permissions. GitHub only shows
 # that a build was started; whether it passed shows on the site a few minutes
@@ -65,11 +65,17 @@ jobs:
               continue
             fi
             # clear_cache: a full rebuild. With a cache, the `ignore` rule in
-            # netlify.toml skips a project whose files didn't change.
-            curl -fsS -X POST --get -o /dev/null \
+            # netlify.toml skips a project whose files didn't change. A failed
+            # request doesn't stop the other target; the run fails at the end.
+            if ! curl -fsS -X POST --get -o /dev/null \
               --data clear_cache=true \
               --data-urlencode "trigger_title=Redeploy by $ACTOR via GitHub Actions" \
-              "$hook"
+              "$hook"; then
+              echo "::error::Calling the $t build hook for '$ENVIRONMENT' failed. If Netlify no longer has the hook, add a new one (README → \"Redeploy from GitHub\")."
+              echo "- $t: request failed, no build started" >> "$GITHUB_STEP_SUMMARY"
+              status=1
+              continue
+            fi
             echo "- $t: build started${url:+, live in a few minutes at $url}" >> "$GITHUB_STEP_SUMMARY"
           done
           exit "$status"

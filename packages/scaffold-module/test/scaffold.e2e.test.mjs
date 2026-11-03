@@ -33,6 +33,7 @@ function run(cwd, command, args) {
 	return result.stdout;
 }
 
+/* Names no project picks, since `pnpm test:tooling` runs in every project built from this. */
 const scaffold = join(repo, "packages/scaffold-module/bin/scaffold-module.mjs");
 const clear = join(repo, "packages/scaffold-module/bin/clear-modules.mjs");
 
@@ -83,15 +84,21 @@ test("two scaffolded modules, one inline, generate, wire and typecheck", {
 	timeout: 300_000,
 }, async (t) => {
 	const dir = await copyCheckout(t);
-	run(repo, process.execPath, [scaffold, "--root", dir, "Hero"]);
-	run(repo, process.execPath, [scaffold, "--root", dir, "Quote", "--inline"]);
+	run(repo, process.execPath, [scaffold, "--root", dir, "ScaffoldProbe"]);
+	run(repo, process.execPath, [
+		scaffold,
+		"--root",
+		dir,
+		"ScaffoldInlineProbe",
+		"--inline",
+	]);
 
 	const wiring = generateAndCheck(dir);
-	assert.match(wiring, /✓ module\.hero\n/);
-	assert.match(wiring, /✓ module\.quote \(inline\)/);
+	assert.match(wiring, /✓ module\.scaffoldProbe\n/);
+	assert.match(wiring, /✓ module\.scaffoldInlineProbe \(inline\)/);
 });
 
-test("a cleared page stack compiles, and its first module is its only one", {
+test("a cleared page stack compiles, then takes one module after another", {
 	timeout: 300_000,
 }, async (t) => {
 	const dir = await copyCheckout(t);
@@ -102,19 +109,34 @@ test("a cleared page stack compiles, and its first module is its only one", {
 		"a helper only a deleted module imports goes with it",
 	);
 
-	const cleared = generateAndCheck(dir);
-	assert.doesNotMatch(cleared, /module\.(text|contentRefs)/);
-	assert.match(cleared, /✓ module\.media \(inline\)/);
+	/* Only inline modules are left: no `✓` line without "(inline)". */
+	assert.doesNotMatch(generateAndCheck(dir), /✓ module\.\w+\n/);
 
-	run(repo, process.execPath, [scaffold, "--root", dir, "Hero"]);
-	const wiring = generateAndCheck(dir);
-	assert.match(wiring, /✓ module\.hero\n/);
+	const modulesArray = join(dir, "studio/schemas/fields/modulesArrayField.ts");
+	run(repo, process.execPath, [scaffold, "--root", dir, "ScaffoldProbe"]);
+	/* Biome writes a one-entry list on one line, without a trailing comma. */
 	assert.match(
-		await readFile(
-			join(dir, "studio/schemas/fields/modulesArrayField.ts"),
-			"utf8",
-		),
-		/moduleTypes = \[\s*\{ type: "module\.hero" \},?\s*\]/,
+		await readFile(modulesArray, "utf8"),
+		/moduleTypes = \[\{ type: "module\.scaffoldProbe" \}\];/,
+	);
+	run(repo, process.execPath, [
+		scaffold,
+		"--root",
+		dir,
+		"ScaffoldInlineProbe",
+		"--inline",
+	]);
+
+	const wiring = generateAndCheck(dir);
+	assert.match(wiring, /✓ module\.scaffoldProbe\n/);
+	assert.match(wiring, /✓ module\.scaffoldInlineProbe \(inline\)/);
+	assert.deepEqual(
+		[
+			...(await readFile(modulesArray, "utf8")).matchAll(
+				/type: "(module\.\w+)"/g,
+			),
+		].map((m) => m[1]),
+		["module.scaffoldProbe", "module.scaffoldInlineProbe"],
 	);
 });
 
@@ -132,17 +154,19 @@ test("a missing anchor aborts before anything is written", async (t) => {
 
 	const result = spawnSync(
 		process.execPath,
-		[scaffold, "--root", dir, "Hero"],
+		[scaffold, "--root", dir, "ScaffoldProbe"],
 		{ encoding: "utf8" },
 	);
 	assert.notEqual(result.status, 0);
 	assert.match(result.stderr, /Nothing was written/);
 	assert.equal(
-		existsSync(join(dir, "studio/schemas/objects/modules/moduleHero.ts")),
+		existsSync(
+			join(dir, "studio/schemas/objects/modules/moduleScaffoldProbe.ts"),
+		),
 		false,
 	);
 	assert.equal(
-		existsSync(join(dir, "web/src/components/modules/ModuleHero.tsx")),
+		existsSync(join(dir, "web/src/components/modules/ModuleScaffoldProbe.tsx")),
 		false,
 	);
 });

@@ -29,4 +29,4 @@ Part of `pnpm generate`. Sanity TypeGen skips a `defineQuery` it cannot evaluate
 
 ## Tests
 
-`pnpm test:tooling` runs `test/*.test.mjs` here and in `@repo/scaffold-module`: the manifest against the repo's files, each failure mode of `check:wiring` on a modified copy, and end-to-end runs of `gen:module` and `clear:modules`. CI runs it in the `format • typecheck` job.
+`pnpm test:tooling` runs `test/*.test.mjs` here and in `@repo/scaffold-module`: the manifest against the repo's files, each failure mode of `check:wiring` on a copy with two fixture modules, and end-to-end runs of `gen:module` and `clear:modules`. None of them relies on the starter's own modules, so they pass in a project after `clear:modules` too. CI runs it in the `format • typecheck` job.

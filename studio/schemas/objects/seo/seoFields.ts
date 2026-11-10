@@ -43,7 +43,7 @@ export function seoFields(titleDescription: string) {
       name: "image",
       title: "Social / OG image",
       type: "image",
-      description: IMAGE_COLOR_PROFILE_HINT,
+      description: `On pages and the home page, also the image of their card in content reference lists. ${IMAGE_COLOR_PROFILE_HINT}`,
       options: {
         hotspot: true,
       },

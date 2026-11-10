@@ -1,7 +1,11 @@
 import { imageQuery } from "../../snippets/media";
 import { routePathProjection } from "../../snippets/routePath";
 
-/** One list entry: a page, the home singleton or a project, with its card preview. */
+/**
+ * One list entry: a page, the home singleton or a project, with its card preview. A project's
+ * card shows its title media (a video's poster); pages and home have no title media, so theirs
+ * shows the social image from `seo.image`.
+ */
 const contentRefTargetProjection = `
   _id,
   _createdAt,
@@ -9,7 +13,7 @@ const contentRefTargetProjection = `
   "slug": slug.current,
   "path": ${routePathProjection},
   "previewImage": select(
-    _type != "project" => null,
+    _type != "project" => seo.image${imageQuery},
     titleMedia.type == "image" => titleMedia.imageContent.image${imageQuery},
     titleMedia.type == "video" => titleMedia.videoContent.poster${imageQuery},
     titleMedia.type == "loop" => titleMedia.videoLoopContent.poster${imageQuery}

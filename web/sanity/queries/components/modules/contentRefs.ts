@@ -4,6 +4,8 @@ import { routePathProjection } from "../../snippets/routePath";
 /**
  * One list entry: a page, the home singleton or a project, with its card preview. Document-level
  * i18n: every target is a document of the active locale, so `title` / `slug` are plain values.
+ * A project's card shows its title media (a video's poster); pages and home have no title media,
+ * so theirs shows the social image from `seo.image`.
  */
 const contentRefTargetProjection = `
   _id,
@@ -12,7 +14,7 @@ const contentRefTargetProjection = `
   "slug": slug.current,
   "path": ${routePathProjection},
   "previewImage": select(
-    _type != "project" => null,
+    _type != "project" => seo.image${imageQuery},
     titleMedia.type == "image" => titleMedia.imageContent.image${imageQuery},
     titleMedia.type == "video" => titleMedia.videoContent.poster${imageQuery},
     titleMedia.type == "loop" => titleMedia.videoLoopContent.poster${imageQuery}
